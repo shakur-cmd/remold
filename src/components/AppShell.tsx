@@ -1,6 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
+import { useConvex } from "convex/react";
+import { toast } from "sonner";
+import { api } from "../../convex/_generated/api";
+import { Input } from "@/components/ui/input";
 import { Menu, Plus, Settings } from "lucide-react";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -71,7 +75,7 @@ function GoToCode({ orgId }: { orgId: Doc<"orgs">["_id"] }) {
     const found = await convex.query(api.records.byRef, { orgId, ref: code });
     if (!found) return toast.error("No record with that code");
     setCode("");
-    navigate(`/o///`);
+    navigate(`/o/${orgId}/${found.object.key}/${found.record._id}`);
   }
   return (
     <form onSubmit={go} className="hidden sm:block">
