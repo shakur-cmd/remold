@@ -73,3 +73,21 @@ for (const option of ["slots", "values"] as const) {
     await expect(t.mutation(cleanup, { ...scope, orgId: "someone-else" })).rejects.toThrow("Not the benchmark scope");
   });
 }
+
+for (const option of ["slots", "values"] as const) {
+  test(`${option}: server-side seeding writes the whole fixture once, resumes as a no-op, and refuses a different fixture`, async () => {
+    const t = convexTest(schema, modules);
+    const seedRange = makeFunctionReference<"action">("bench:seedRange");
+    const inventory = makeFunctionReference<"query">("bench:inventory");
+    const scope = { option, orgId: "remold-benchmark", objectKey: "customJob" };
+    expect(await t.action(seedRange, { ...scope, offset: 0, limit: 150, total: 250 })).toBe(150);
+    expect(await t.action(seedRange, { ...scope, offset: 150, limit: 5_000, total: 250 })).toBe(100);
+    const first = await t.query(inventory, { ...scope, cursor: null });
+    expect(first.page.map((r: ManifestRow) => r.values)).toEqual(fixture(250).map(r => r.values));
+    expect(await t.action(seedRange, { ...scope, offset: 0, limit: 250, total: 250 })).toBe(250);
+    expect((await t.query(inventory, { ...scope, cursor: null })).page).toEqual(first.page);
+    // A different total shuffles stages differently, so the same source IDs carry different values.
+    await expect(t.action(seedRange, { ...scope, offset: 0, limit: 100, total: 300 })).rejects.toThrow("different values");
+    expect((await t.query(inventory, { ...scope, cursor: null })).page).toEqual(first.page);
+  });
+}

@@ -1,42 +1,38 @@
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, openSync, closeSync } from "node:fs";
-import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
-import { deployment, run, scope, type Option } from "./cli.ts";
-import { fixture, expected, type ManifestRow } from "./fixture.ts";
+import { deployment, run, scope, streamLogs, reconciled } from "./cli.ts";
+import { fixture, expected } from "./fixture.ts";
 import { evaluate, type Sample } from "./telemetry.ts";
 
 const target = deployment();
-const stored = JSON.parse(readFileSync("bench/manifest.json", "utf8")) as { deployment: string; manifest: Record<Option, ManifestRow[]> };
-assert.equal(stored.deployment, target);
-const oracleFile = JSON.parse(readFileSync("bench/expected.json", "utf8")) as Record<string, ReturnType<typeof expected>>;
+const oracleFile = JSON.parse(readFileSync("bench/expected.json", "utf8")) as { deployment: string } & Record<string, ReturnType<typeof expected>>;
+assert.equal(oracleFile.deployment, target, "bench/expected.json was written for a different deployment; run pnpm seed here first");
 const stamp = new Date().toISOString().replaceAll(":", "-");
 const logPath = `bench/results-${stamp}-logs.jsonl`;
 const fd = openSync(logPath, "wx");
-const logger = spawn("pnpm", ["exec", "convex", "logs", "--jsonl", "--success"], { stdio: ["ignore", fd, "inherit"] });
+const logger = streamLogs(fd);
 const samples: Sample[] = [];
 let report: object = { status: "UNVERIFIED" };
+
+// `convex logs` only streams events that happen after its first poll. Prove it
+// is receiving before any measured sample runs, and fail fast if it never does.
+async function awaitLogStream() {
+  const deadline = Date.now() + 90_000;
+  while (Date.now() < deadline) {
+    const sampleId = `probe-${randomUUID()}`;
+    run("bench:sample", { ...scope("slots"), query: "score", cursor: null, sampleId });
+    await delay(2_000);
+    if (readFileSync(logPath, "utf8").includes(sampleId)) return;
+  }
+  throw new Error("The log stream never reported a probe sample. Check that `convex logs --jsonl --success` works for this deployment.");
+}
+
 try {
-  await delay(1500);
+  await awaitLogStream();
   for (const option of ["slots", "values"] as const) {
-    const records: ManifestRow[] = [];
-    let cursor: string | null = null;
-    for (;;) {
-      const inventory: { page: ManifestRow[]; isDone: boolean; continueCursor: string } = run("bench:inventory", { ...scope(option), cursor });
-      records.push(...inventory.page);
-      if (inventory.isDone) break;
-      cursor = inventory.continueCursor;
-    }
-    // Reject an old fixture or an interrupted recovery. Never silently delete data.
-    assert.equal(records.length, 50_000, "Seed must contain exactly 50,000 records before benchmarking");
-    const canonical = fixture();
-    for (let i = 0; i < canonical.length; i++) {
-      assert.equal(records[i]!.sourceId, canonical[i]!.sourceId);
-      assert.deepEqual(records[i]!.values, canonical[i]!.values);
-      assert.equal(records[i]!._id, stored.manifest[option][i]!._id);
-    }
-    assert.deepEqual(expected(records), oracleFile[option]);
+    assert.deepEqual(expected(reconciled(option)), oracleFile[option], `${option}: live inventory disagrees with bench/expected.json`);
   }
   for (const option of ["slots", "values"] as const) {
     const oracle = oracleFile[option]!;
@@ -59,7 +55,7 @@ try {
       const row = fixture(1)[0]!;
       row.sourceId = 50_001;
       row.values.score = 10_000;
-      const [inserted] = run<ManifestRow[]>("bench:seedBatch", { ...scope(option), rows: [row] });
+      const [inserted] = run<{ _id: string }[]>("bench:seedBatch", { ...scope(option), rows: [row] });
       const recoveryIds = [inserted!._id, ...oracle.score.slice(0, 49)];
       for (let i = 0; i < 20; i++) {
         const sampleId = randomUUID();

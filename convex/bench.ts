@@ -1,7 +1,8 @@
-import { v } from "convex/values";
+import { v, type GenericId } from "convex/values";
 import { makeFunctionReference, internalActionGeneric } from "convex/server";
 import { internalQuery, internalMutation } from "./server";
 import { values } from "./schema";
+import { fixture } from "../bench/fixture";
 
 const option = v.union(v.literal("slots"), v.literal("values"));
 const scope = { option, orgId: v.string(), objectKey: v.string() };
@@ -74,12 +75,25 @@ export const seedBatch = internalMutation({
   },
 });
 
+// Generates the fixture server-side so seeding is a handful of calls instead of
+// one CLI process per 100 rows. Rerunning a range is a no-op because seedBatch
+// is idempotent, so a timed-out or killed seed resumes safely.
+export const seedRange = internalActionGeneric({
+  args: { ...scope, offset: v.number(), limit: v.number(), total: v.number() },
+  handler: async (ctx, { offset, limit, total, ...target }) => {
+    const rows = fixture(total).slice(offset, offset + limit);
+    const seed = makeFunctionReference<"mutation">("bench:seedBatch");
+    for (let i = 0; i < rows.length; i += 100) await ctx.runMutation(seed, { ...target, rows: rows.slice(i, i + 100) });
+    return rows.length;
+  },
+});
+
 export const inventory = internalQuery({
   args: { ...scope, cursor: v.union(v.string(), v.null()) },
   handler: async (ctx, args) => {
     const table = args.option === "slots" ? "slotRecords" : "valueRecords";
     return await ctx.db.query(table).withIndex("source", q => q.eq("orgId", args.orgId).eq("objectKey", args.objectKey))
-      .paginate({ numItems: 100, cursor: args.cursor });
+      .paginate({ numItems: 1000, cursor: args.cursor });
   },
 });
 
@@ -105,7 +119,7 @@ export const removeRecovery = internalMutation({
     if (!record) return;
     if (record.values.score !== 10_000 || record.values.name !== "Fictional job 1") throw new Error("Not the recovery fixture");
     if (table === "valueRecords") {
-      const values = await ctx.db.query("recordValues").withIndex("record", q => q.eq("orgId", args.orgId).eq("recordId", record._id as import("convex/values").GenericId<"valueRecords">)).take(13);
+      const values = await ctx.db.query("recordValues").withIndex("record", q => q.eq("orgId", args.orgId).eq("recordId", record._id as GenericId<"valueRecords">)).take(13);
       if (values.length !== 12) throw new Error("Unexpected recovery field count");
       for (const value of values) await ctx.db.delete(value._id);
     }
