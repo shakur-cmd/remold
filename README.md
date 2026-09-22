@@ -33,3 +33,12 @@ pnpm build
 - `evidence/` before and after runs for every claim in the log.
 
 The benchmark spike that chose the records design lives on branch `spike/records`.
+
+## Deploy
+
+The web app is a Cloudflare Worker serving static assets (`wrangler.jsonc`), the backend is Convex.
+
+```sh
+pnpm build && pnpm dlx wrangler deploy     # https://remold.shakur-949.workers.dev
+pnpm exec convex deploy                    # production backend, when we get there
+```
