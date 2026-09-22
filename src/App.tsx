@@ -1,9 +1,10 @@
 import { useEffect, type ReactNode } from "react";
-import { Navigate, Route, Routes, useOutletContext } from "react-router";
+import { Navigate, Route, Routes, useLocation, useOutletContext } from "react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Toaster } from "@/components/ui/sonner";
 import { Loading } from "@/components/Loading";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SignInPage } from "@/routes/SignInPage";
 import { Home } from "@/routes/Home";
 import { OrgLayout, type OrgContext } from "@/routes/OrgLayout";
@@ -24,6 +25,7 @@ export default function App() {
       </Unauthenticated>
       <Authenticated>
         <Stored>
+          <Guarded>
           <Routes>
             <Route index element={<Home />} />
             <Route path="invite/:token" element={<InvitePage />} />
@@ -35,6 +37,7 @@ export default function App() {
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Guarded>
         </Stored>
       </Authenticated>
     </>
@@ -50,6 +53,10 @@ function Stored({ children }: { children: ReactNode }) {
   }, [store]);
   if (!me) return <Loading />;
   return children;
+}
+
+function Guarded({ children }: { children: ReactNode }) {
+  return <ErrorBoundary resetKey={useLocation().pathname}>{children}</ErrorBoundary>;
 }
 
 function FirstObject() {

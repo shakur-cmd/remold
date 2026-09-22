@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
-import { Menu, Settings } from "lucide-react";
+import { Menu, Plus, Settings } from "lucide-react";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,11 +18,9 @@ type Props = {
 export function AppShell({ org, orgs, objects, children }: Props) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const nav = (
-    <Nav org={org} objects={objects} onNavigate={() => setOpen(false)} />
-  );
+  const nav = <Nav org={org} objects={objects} onNavigate={() => setOpen(false)} />;
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[14rem_1fr]">
+    <div className="min-h-dvh w-full max-w-full overflow-x-hidden md:grid md:grid-cols-[14rem_minmax(0,1fr)]">
       <aside className="hidden border-r bg-muted/30 md:flex md:flex-col">
         <div className="px-4 py-4 text-lg font-semibold tracking-tight">Remold</div>
         {nav}
@@ -56,7 +54,7 @@ export function AppShell({ org, orgs, objects, children }: Props) {
             <UserButton />
           </div>
         </header>
-        <main className="flex-1 px-3 py-4 md:px-6 md:py-6">{children}</main>
+        <main className="min-w-0 flex-1 px-3 py-4 md:px-6 md:py-6">{children}</main>
       </div>
     </div>
   );
@@ -72,6 +70,9 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
           {object.labelPlural}
         </NavLink>
       ))}
+      <NavLink to={`/o/${org._id}/settings`} className={link} onClick={onNavigate}>
+        <Plus className="size-4" /> New object
+      </NavLink>
       <div className="mt-auto pt-4">
         <NavLink to={`/o/${org._id}/settings`} className={link} onClick={onNavigate}>
           <Settings className="size-4" /> Settings

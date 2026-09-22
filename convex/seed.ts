@@ -4,6 +4,7 @@ import type { MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireMember, type Membership } from "./identity";
 import { applyChange } from "./lib/applyChange";
+import { seedStandard } from "./lib/standard";
 import { fail } from "./errors";
 
 async function objectAndFields(ctx: MutationCtx, orgId: Id<"orgs">, key: string) {
@@ -56,4 +57,10 @@ export const demoAs = internalMutation({
     if (!user || !member || !org || member.role === "member") fail("FORBIDDEN", "Admin membership required");
     await seedDemo(ctx, { user, actor: { kind: "user", id: user._id }, member, org }, args.orgId);
   },
+});
+
+// Adds any standard object this org predates (`convex run seed:ensureStandard`).
+export const ensureStandard = internalMutation({
+  args: { orgId: v.id("orgs") },
+  handler: (ctx, args) => seedStandard(ctx, args.orgId),
 });

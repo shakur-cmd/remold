@@ -71,19 +71,20 @@ export function RecordForm({ orgId, fields, initial = {}, hidden = [], submitLab
   );
 }
 
-function FieldInput({ orgId, field, value, onChange }: { orgId: Id<"orgs">; field: Field; value: unknown; onChange: (v: unknown) => void }) {
+export function FieldInput({ orgId, field, value, onChange, autoFocus }: { orgId: Id<"orgs">; field: Field; value: unknown; onChange: (v: unknown) => void; autoFocus?: boolean }) {
   const id = field._id;
   switch (field.type) {
     case "text":
       return isLongText(field) ? (
-        <Textarea id={id} value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} />
+        <Textarea id={id} autoFocus={autoFocus} value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} />
       ) : (
-        <Input id={id} value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} />
+        <Input id={id} autoFocus={autoFocus} value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} />
       );
     case "number":
       return (
         <Input
           id={id}
+          autoFocus={autoFocus}
           type="number"
           inputMode="decimal"
           value={value === undefined || value === null ? "" : String(value)}
@@ -91,7 +92,7 @@ function FieldInput({ orgId, field, value, onChange }: { orgId: Id<"orgs">; fiel
         />
       );
     case "date":
-      return <Input id={id} type="date" value={dateToInput(value)} onChange={(e) => onChange(inputToDate(e.target.value))} />;
+      return <Input id={id} autoFocus={autoFocus} type="date" value={dateToInput(value)} onChange={(e) => onChange(inputToDate(e.target.value))} />;
     case "boolean":
       return (
         <div className="flex h-9 items-center">
