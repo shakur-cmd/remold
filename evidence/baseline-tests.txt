@@ -1,0 +1,159 @@
+$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+
+ ❯ bench/records.test.ts (2 tests | 2 failed) 64ms
+   ❯ slots (1)
+     × custom score sorting, selective stage filters and cursor page match independent fixture order 30ms
+   ❯ values (1)
+     × custom score sorting, selective stage filters and cursor page match independent fixture order 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  bench/records.test.ts > slots > custom score sorting, selective stage filters and cursor page match independent fixture order
+AssertionError: expected [] to deeply equal [ …(50) ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010140slotRecords",
+-   "000000000000000010007slotRecords",
+-   "000000000000000010024slotRecords",
+-   "000000000000000010138slotRecords",
+-   "000000000000000010019slotRecords",
+-   "000000000000000010034slotRecords",
+-   "000000000000000010170slotRecords",
+-   "000000000000000010158slotRecords",
+-   "000000000000000010037slotRecords",
+-   "000000000000000010100slotRecords",
+-   "000000000000000010110slotRecords",
+-   "000000000000000010053slotRecords",
+-   "000000000000000010165slotRecords",
+-   "000000000000000010004slotRecords",
+-   "000000000000000010048slotRecords",
+-   "000000000000000010149slotRecords",
+-   "000000000000000010066slotRecords",
+-   "000000000000000010174slotRecords",
+-   "000000000000000010154slotRecords",
+-   "000000000000000010152slotRecords",
+-   "000000000000000010049slotRecords",
+-   "000000000000000010047slotRecords",
+-   "000000000000000010122slotRecords",
+-   "000000000000000010009slotRecords",
+-   "000000000000000010031slotRecords",
+-   "000000000000000010166slotRecords",
+-   "000000000000000010091slotRecords",
+-   "000000000000000010079slotRecords",
+-   "000000000000000010189slotRecords",
+-   "000000000000000010135slotRecords",
+-   "000000000000000010159slotRecords",
+-   "000000000000000010084slotRecords",
+-   "000000000000000010177slotRecords",
+-   "000000000000000010120slotRecords",
+-   "000000000000000010109slotRecords",
+-   "000000000000000010143slotRecords",
+-   "000000000000000010022slotRecords",
+-   "000000000000000010155slotRecords",
+-   "000000000000000010132slotRecords",
+-   "000000000000000010115slotRecords",
+-   "000000000000000010190slotRecords",
+-   "000000000000000010057slotRecords",
+-   "000000000000000010162slotRecords",
+-   "000000000000000010010slotRecords",
+-   "000000000000000010151slotRecords",
+-   "000000000000000010194slotRecords",
+-   "000000000000000010070slotRecords",
+-   "000000000000000010082slotRecords",
+-   "000000000000000010141slotRecords",
+-   "000000000000000010065slotRecords",
+- ]
++ []
+
+ ❯ bench/records.test.ts:35:57
+     33|     const args = { option, orgId: "demo", objectKey: "customJob", curs…
+     34|     const first = await t.query(page, { ...args, query: "score" });
+     35|     expect(first.page.map((r: {_id: string}) => r._id)).toEqual(oracle…
+       |                                                         ^
+     36|     const second = await t.query(page, { ...args, query: "score", curs…
+     37|     expect(second.page.map((r: {_id: string}) => r._id)).toEqual(oracl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  bench/records.test.ts > values > custom score sorting, selective stage filters and cursor page match independent fixture order
+AssertionError: expected [] to deeply equal [ …(50) ]
+
+- Expected
++ Received
+
+- [
+-   "00000000000000011820valueRecords",
+-   "00000000000000010091valueRecords",
+-   "00000000000000010312valueRecords",
+-   "00000000000000011794valueRecords",
+-   "00000000000000010247valueRecords",
+-   "00000000000000010442valueRecords",
+-   "00000000000000012210valueRecords",
+-   "00000000000000012054valueRecords",
+-   "00000000000000010481valueRecords",
+-   "00000000000000011300valueRecords",
+-   "00000000000000011430valueRecords",
+-   "00000000000000010689valueRecords",
+-   "00000000000000012145valueRecords",
+-   "00000000000000010052valueRecords",
+-   "00000000000000010624valueRecords",
+-   "00000000000000011937valueRecords",
+-   "00000000000000010858valueRecords",
+-   "00000000000000012262valueRecords",
+-   "00000000000000012002valueRecords",
+-   "00000000000000011976valueRecords",
+-   "00000000000000010637valueRecords",
+-   "00000000000000010611valueRecords",
+-   "00000000000000011586valueRecords",
+-   "00000000000000010117valueRecords",
+-   "00000000000000010403valueRecords",
+-   "00000000000000012158valueRecords",
+-   "00000000000000011183valueRecords",
+-   "00000000000000011027valueRecords",
+-   "00000000000000012457valueRecords",
+-   "00000000000000011755valueRecords",
+-   "00000000000000012067valueRecords",
+-   "00000000000000011092valueRecords",
+-   "00000000000000012301valueRecords",
+-   "00000000000000011560valueRecords",
+-   "00000000000000011417valueRecords",
+-   "00000000000000011859valueRecords",
+-   "00000000000000010286valueRecords",
+-   "00000000000000012015valueRecords",
+-   "00000000000000011716valueRecords",
+-   "00000000000000011495valueRecords",
+-   "00000000000000012470valueRecords",
+-   "00000000000000010741valueRecords",
+-   "00000000000000012106valueRecords",
+-   "00000000000000010130valueRecords",
+-   "00000000000000011963valueRecords",
+-   "00000000000000012522valueRecords",
+-   "00000000000000010910valueRecords",
+-   "00000000000000011066valueRecords",
+-   "00000000000000011833valueRecords",
+-   "00000000000000010845valueRecords",
+- ]
++ []
+
+ ❯ bench/records.test.ts:35:57
+     33|     const args = { option, orgId: "demo", objectKey: "customJob", curs…
+     34|     const first = await t.query(page, { ...args, query: "score" });
+     35|     expect(first.page.map((r: {_id: string}) => r._id)).toEqual(oracle…
+       |                                                         ^
+     36|     const second = await t.query(page, { ...args, query: "score", curs…
+     37|     expect(second.page.map((r: {_id: string}) => r._id)).toEqual(oracl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  04:42:34
+   Duration  182ms (tests 54%, transform 26%, import 18%, worker 1%)
+
+[ELIFECYCLE] Test failed. See above for more details.

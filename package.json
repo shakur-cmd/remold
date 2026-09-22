@@ -1,0 +1,23 @@
+{
+  "name": "remold",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "packageManager": "pnpm@11.23.0",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "bench": "node bench/run.ts",
+    "seed": "node bench/seed.ts"
+  },
+  "dependencies": {
+    "convex": "^1.46.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "convex-test": "^0.0.59",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

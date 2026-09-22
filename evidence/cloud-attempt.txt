@@ -1,0 +1,14 @@
+$ node bench/run.ts
+file:///Users/urkel/Documents/CodeMyVibe/Projects/active/remold/bench/cli.ts:5
+  if (!value?.startsWith("dev:")) throw new Error("This spike requires a dedicated Convex Cloud dev deployment, never production.");
+                                        ^
+
+Error: This spike requires a dedicated Convex Cloud dev deployment, never production.
+    at deployment (file:///Users/urkel/Documents/CodeMyVibe/Projects/active/remold/bench/cli.ts:5:41)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/active/remold/bench/run.ts:10:16
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+[ELIFECYCLE] Command failed with exit code 1.
