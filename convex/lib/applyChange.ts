@@ -3,6 +3,7 @@ import type { MutationCtx } from "../_generated/server";
 import type { Membership } from "../identity";
 import { fail } from "../errors";
 import { projections } from "./slots";
+import { uniqueRef } from "./ref";
 
 export type Change =
   | { action: "create"; orgId: Id<"orgs">; objectId: Id<"objects">; values: Record<string, unknown>; reason?: string }
@@ -69,7 +70,7 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
   const changedIds = Object.keys(change.action === "create" ? values : validated).filter((fieldId) => change.action === "create" || !same(record!.values[fieldId], values[fieldId]));
   if (change.action === "update" && changedIds.length === 0) return { recordId: record!._id, eventId: null };
   const patch = { values, title, updatedAt: Date.now(), ...projections(fields, values) };
-  const recordId = record ? record._id : await ctx.db.insert("records", { orgId: change.orgId, objectId: object._id, createdBy: membership.user._id, ...patch });
+  const recordId = record ? record._id : await ctx.db.insert("records", { orgId: change.orgId, objectId: object._id, createdBy: membership.user._id, ref: await uniqueRef(ctx, change.orgId), ...patch });
   if (record) await ctx.db.patch(recordId, patch);
   for (const field of fields) {
     if (field.type !== "links") continue;

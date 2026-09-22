@@ -14,6 +14,7 @@ import type * as fields from "../fields.js";
 import type * as identity from "../identity.js";
 import type * as invites from "../invites.js";
 import type * as lib_applyChange from "../lib/applyChange.js";
+import type * as lib_ref from "../lib/ref.js";
 import type * as lib_slots from "../lib/slots.js";
 import type * as lib_standard from "../lib/standard.js";
 import type * as objects from "../objects.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   identity: typeof identity;
   invites: typeof invites;
   "lib/applyChange": typeof lib_applyChange;
+  "lib/ref": typeof lib_ref;
   "lib/slots": typeof lib_slots;
   "lib/standard": typeof lib_standard;
   objects: typeof objects;

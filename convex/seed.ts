@@ -5,6 +5,7 @@ import { v } from "convex/values";
 import { requireMember, type Membership } from "./identity";
 import { applyChange } from "./lib/applyChange";
 import { seedStandard } from "./lib/standard";
+import { uniqueRef } from "./lib/ref";
 import { fail } from "./errors";
 
 async function objectAndFields(ctx: MutationCtx, orgId: Id<"orgs">, key: string) {
@@ -63,4 +64,18 @@ export const demoAs = internalMutation({
 export const ensureStandard = internalMutation({
   args: { orgId: v.id("orgs") },
   handler: (ctx, args) => seedStandard(ctx, args.orgId),
+});
+
+// Gives a code to records created before codes existed (`convex run seed:backfillRefs`).
+export const backfillRefs = internalMutation({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect();
+    let count = 0;
+    for (const object of objects) {
+      const records = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect();
+      for (const record of records) if (!record.ref) { await ctx.db.patch(record._id, { ref: await uniqueRef(ctx, args.orgId) }); count += 1; }
+    }
+    return count;
+  },
 });

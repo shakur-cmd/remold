@@ -1,17 +1,18 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
-import { MoreHorizontal } from "lucide-react";
+import { Copy, MoreHorizontal, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
-import { FieldInput } from "@/components/RecordForm";
+import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { errorMessage } from "@/lib/errors";
 import { dateToInput, isEmpty, optionLabel, type Field } from "@/lib/fields";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
   const reverse = useQuery(api.records.reverseFields, detail ? { orgId, objectId: detail.object._id } : "skip");
   const remove = useMutation(api.records.remove);
   const navigate = useNavigate();
+  const [showEmpty, setShowEmpty] = useState(false);
 
   if (detail === undefined) return <Loading />;
   if (detail === null)
@@ -43,6 +45,9 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
   const live = fields.filter((f) => !f.retired);
   const titleField = live.find((f) => f._id === object.titleFieldId);
   const rest = live.filter((f) => f._id !== object.titleFieldId);
+  const filled = rest.filter((f) => !isEmpty(record.values[f._id]));
+  const empty = rest.filter((f) => isEmpty(record.values[f._id]));
+  const shown = showEmpty ? rest : filled;
 
   async function destroy() {
     if (!confirm(`Delete this ${object.label.toLowerCase()}? Its history stays in the timeline.`)) return;
@@ -68,6 +73,7 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
             ) : (
               <h1 className="text-2xl font-semibold tracking-tight">{record.title || "Untitled"}</h1>
             )}
+            {record.ref && <RefBadge value={record.ref} />}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -83,16 +89,24 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
           </DropdownMenu>
         </div>
 
-        <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border p-3 sm:grid-cols-2">
-          {rest.map((field) => (
-            <div key={field._id} className="grid min-w-0 gap-0.5">
-              <dt className="px-2 text-xs text-muted-foreground">{field.label}</dt>
-              <dd className="min-w-0 text-sm">
-                <InlineField orgId={orgId} recordId={recordId} field={field} value={record.values[field._id]} />
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <div className="grid gap-2">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-lg border p-3 sm:grid-cols-2">
+            {shown.map((field) => (
+              <div key={field._id} className="grid min-w-0 gap-0.5">
+                <dt className="px-2 text-xs text-muted-foreground">{field.label}</dt>
+                <dd className="min-w-0 text-sm">
+                  <InlineField orgId={orgId} recordId={recordId} field={field} value={record.values[field._id]} />
+                </dd>
+              </div>
+            ))}
+            {shown.length === 0 && <p className="px-2 text-sm text-muted-foreground">Nothing filled in yet</p>}
+          </dl>
+          {empty.length > 0 && (
+            <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => setShowEmpty((v) => !v)}>
+              {showEmpty ? "Hide empty fields" : `Show ${empty.length} empty ${empty.length === 1 ? "field" : "fields"}`}
+            </Button>
+          )}
+        </div>
 
         {reverse?.map(({ field, object: source }) => (
           <RelatedPanel key={field._id} orgId={orgId} recordId={recordId} field={field} source={source} />
@@ -101,6 +115,20 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
 
       <Timeline orgId={orgId} recordId={recordId} fields={fields} />
     </div>
+  );
+}
+
+// The code is what a person pastes into a prompt so an agent finds this exact record.
+function RefBadge({ value }: { value: string }) {
+  return (
+    <button
+      type="button"
+      className="mt-1 inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground hover:text-foreground"
+      onClick={() => navigator.clipboard?.writeText(value).then(() => toast.success("Code copied"))}
+      title="Copy code"
+    >
+      {value} <Copy className="size-3" />
+    </button>
   );
 }
 
@@ -165,13 +193,21 @@ function InlineField({ orgId, recordId, field, value, title = false }: { orgId: 
 
 function RelatedPanel({ orgId, recordId, field, source }: { orgId: Id<"orgs">; recordId: Id<"records">; field: Field; source: Doc<"objects"> }) {
   const { results, status, loadMore } = usePaginatedQuery(api.records.related, { orgId, recordId, fieldId: field._id }, { initialNumItems: 20 });
+  const sourceDetail = useQuery(api.objects.get, { orgId, objectId: source._id });
+  const create = useMutation(api.records.create);
+  const [adding, setAdding] = useState(false);
   const isNote = source.key === "note";
   return (
     <Card className="min-w-0">
-      <CardHeader>
+      <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">
           {source.labelPlural} <span className="font-normal text-muted-foreground">via {field.label}</span>
         </CardTitle>
+        {!isNote && (
+          <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+            <Plus /> Add
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="grid gap-2">
         {isNote && <NoteComposer orgId={orgId} noteObject={source} aboutField={field} recordId={recordId} />}
@@ -187,6 +223,28 @@ function RelatedPanel({ orgId, recordId, field, source }: { orgId: Id<"orgs">; r
           </Button>
         )}
       </CardContent>
+      <Dialog open={adding} onOpenChange={setAdding}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New {source.label}</DialogTitle>
+          </DialogHeader>
+          {sourceDetail && (
+            <RecordForm
+              orgId={orgId}
+              fields={sourceDetail.fields}
+              hidden={[field._id]}
+              submitLabel="Create"
+              onCancel={() => setAdding(false)}
+              onSubmit={async (values) => {
+                // The relation back to this record is filled in for the user.
+                await create({ orgId, objectId: source._id, values: { ...values, [field._id]: field.type === "links" ? [recordId] : recordId } });
+                setAdding(false);
+                toast.success(`${source.label} added`);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
@@ -216,8 +274,11 @@ function NoteComposer({ orgId, noteObject, aboutField, recordId }: { orgId: Id<"
   );
 }
 
+const TIMELINE_PREVIEW = 5;
+
 function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id<"records">; fields: Field[] }) {
   const events = useQuery(api.events.forRecord, { orgId, recordId });
+  const [expanded, setExpanded] = useState(false);
   const byId = new Map(fields.map((f) => [f._id, f]));
   const show = (field: Field | undefined, value: unknown) => {
     if (isEmpty(value)) return "empty";
@@ -227,6 +288,7 @@ function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id
     if (field.type === "lookup" || field.type === "links") return "a linked record";
     return String(value);
   };
+  const visible = expanded ? events : events?.slice(0, TIMELINE_PREVIEW);
   return (
     <Card className="h-fit min-w-0">
       <CardHeader>
@@ -234,7 +296,7 @@ function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id
       </CardHeader>
       <CardContent className="grid gap-4">
         {events === undefined && <span className="text-sm text-muted-foreground">Loading</span>}
-        {events?.map((event) => (
+        {visible?.map((event) => (
           <div key={event._id} className="grid min-w-0 gap-1 text-sm">
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="font-medium">{event.actorName}</span>
@@ -255,6 +317,11 @@ function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id
             {event.reason && <p className="text-muted-foreground">{event.reason}</p>}
           </div>
         ))}
+        {events && events.length > TIMELINE_PREVIEW && (
+          <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => setExpanded((v) => !v)}>
+            {expanded ? "Show less" : `Show all ${events.length}`}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

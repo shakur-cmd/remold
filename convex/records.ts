@@ -33,3 +33,11 @@ export const reverseFields = query({ args: { orgId: v.id("orgs"), objectId: v.id
 export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), values, reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "create", ...args }) });
 export const update = mutation({ args: { orgId: v.id("orgs"), recordId: v.id("records"), values, reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "update", ...args }) });
 export const remove = mutation({ args: { orgId: v.id("orgs"), recordId: v.id("records"), reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "delete", ...args }) });
+// Exact lookup by three-word code, for people and agents pasting a code.
+export const byRef = query({ args: { orgId: v.id("orgs"), ref: v.string() }, handler: async (ctx, args) => {
+  await requireMember(ctx, args.orgId);
+  const record = await ctx.db.query("records").withIndex("by_org_ref", (q) => q.eq("orgId", args.orgId).eq("ref", args.ref.trim().toLowerCase())).unique();
+  if (!record) return null;
+  const object = await ctx.db.get(record.objectId);
+  return object ? { record, object } : null;
+} });

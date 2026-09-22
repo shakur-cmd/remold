@@ -50,13 +50,33 @@ export function AppShell({ org, orgs, objects, children }: Props) {
               ))}
             </SelectContent>
           </Select>
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-2">
+            <GoToCode orgId={org._id} />
             <UserButton />
           </div>
         </header>
         <main className="min-w-0 flex-1 px-3 py-4 md:px-6 md:py-6">{children}</main>
       </div>
     </div>
+  );
+}
+
+// Paste a record code (three words) to jump straight to it.
+function GoToCode({ orgId }: { orgId: Doc<"orgs">["_id"] }) {
+  const convex = useConvex();
+  const navigate = useNavigate();
+  const [code, setCode] = useState("");
+  async function go(e: FormEvent) {
+    e.preventDefault();
+    const found = await convex.query(api.records.byRef, { orgId, ref: code });
+    if (!found) return toast.error("No record with that code");
+    setCode("");
+    navigate(`/o///`);
+  }
+  return (
+    <form onSubmit={go} className="hidden sm:block">
+      <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Go to code" aria-label="Go to record code" className="h-8 w-40 font-mono text-xs" />
+    </form>
   );
 }
 
