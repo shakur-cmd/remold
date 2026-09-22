@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
@@ -199,14 +199,16 @@ function RelatedPanel({ orgId, recordId, field, source }: { orgId: Id<"orgs">; r
   const isNote = source.key === "note";
   return (
     <Card className="min-w-0">
-      <CardHeader className="flex-row items-center justify-between space-y-0">
+      <CardHeader>
         <CardTitle className="text-base">
           {source.labelPlural} <span className="font-normal text-muted-foreground">via {field.label}</span>
         </CardTitle>
         {!isNote && (
-          <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
-            <Plus /> Add
-          </Button>
+          <CardAction>
+            <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+              <Plus /> Add
+            </Button>
+          </CardAction>
         )}
       </CardHeader>
       <CardContent className="grid gap-2">
