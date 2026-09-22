@@ -1,0 +1,25 @@
+$ pnpm typecheck
+$ tsc --noEmit
+exit 0
+$ pnpm test
+$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+
+
+ Test Files  3 passed (3)
+      Tests  13 passed (13)
+   Start at  10:15:11
+   Duration  528ms (tests 75%, transform 16%, import 8%, worker 1%)
+
+exit 0
+$ mutation check: page order flipped to asc (then restored)
+Tests  2 failed | 11 passed (13): slots ordering test and slots seed/recovery test failed as expected
+$ pnpm exec convex function-spec vs evidence/2026-09-22-convex/functions.json
+FUNCTION SPEC IDENTICAL (identifier, type, visibility, args)
+$ pnpm exec convex dev --once   (redeployed to gallant-pika-581, exit 0)
+$ pnpm bench   (full Cloud run on the cleaned functions)
+status BUILDER_CHECK_PASSED_AWAITING_IV, passingOptions slots+values, 520 samples, 26 groups, exit 0
+engine reads unchanged: slots 50 docs / 1 range, values 100 docs / 51 ranges per query
+slots p50 12.08-17.64ms p95 16.25-48.64ms | values p50 31.96-54.06ms p95 48.25-165.81ms (prev run 13:58: slots p50 12.21-18.29 p95 18.83-40.47; values p50 27.48-36.79 p95 53.15-115.85)
+raw: results-2026-09-22T14-14-49.996Z.json and -logs.jsonl in this folder

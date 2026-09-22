@@ -1,12 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { convexTest } from "convex-test";
-import { makeFunctionReference } from "convex/server";
 import schema from "../convex/schema";
+import { internal } from "../convex/_generated/api";
 import { fixture, expected, type ManifestRow } from "./fixture";
-// convex-test uses a generated-module path to locate the function root. The
-// spike uses typed generic builders so it can run before a Cloud login exists.
-const modules = { "../convex/bench.ts": () => import("../convex/bench"), "../convex/_generated/root.ts": async () => ({}) };
-const page = makeFunctionReference<"query">("bench:page");
+// convex-test locates the function root from any module path under _generated.
+const modules = { "../convex/bench.ts": () => import("../convex/bench"), "../convex/_generated/api.js": () => import("../convex/_generated/api.js") };
+const { page, seedBatch: seed, removeRecovery: cleanup, seedRange, inventory } = internal.bench;
 for (const option of ["slots", "values"] as const) describe(option, () => {
   test("custom score sorting, selective stage filters and cursor page match independent fixture order", async () => {
     const t = convexTest(schema, modules);
@@ -32,12 +31,12 @@ for (const option of ["slots", "values"] as const) describe(option, () => {
     const oracle = expected(rows);
     const args = { option, orgId: "demo", objectKey: "customJob", cursor: null };
     const first = await t.query(page, { ...args, query: "score" });
-    expect(first.page.map((r: {_id: string}) => r._id)).toEqual(oracle.score);
+    expect(first.page.map(r => r._id)).toEqual(oracle.score);
     const second = await t.query(page, { ...args, query: "score", cursor: first.continueCursor });
-    expect(second.page.map((r: {_id: string}) => r._id)).toEqual(oracle.page2);
+    expect(second.page.map(r => r._id)).toEqual(oracle.page2);
     for (const query of ["won", "contacted"] as const) {
       const result = await t.query(page, { ...args, query });
-      expect(result.page.map((r: {_id: string}) => r._id)).toEqual(oracle[query]);
+      expect(result.page.map(r => r._id)).toEqual(oracle[query]);
     }
     expect((await t.query(page, { ...args, query: "score", orgId: "other" })).page).toEqual([]);
     expect((await t.query(page, { ...args, query: "score", objectKey: "other" })).page).toEqual([]);
@@ -47,8 +46,6 @@ for (const option of ["slots", "values"] as const) describe(option, () => {
 for (const option of ["slots", "values"] as const) {
   test(`${option}: repeated seed is idempotent, conflicting seed rolls back, recovery record wins then cleans up`, async () => {
     const t = convexTest(schema, modules);
-    const seed = makeFunctionReference<"mutation">("bench:seedBatch");
-    const cleanup = makeFunctionReference<"mutation">("bench:removeRecovery");
     const scope = { option, orgId: "remold-benchmark", objectKey: "customJob" };
     const rows = fixture(2);
     rows[0]!.values.score = 9999;
@@ -57,7 +54,7 @@ for (const option of ["slots", "values"] as const) {
     expect(await t.mutation(seed, { ...scope, rows })).toEqual(original);
     const before = await t.query(page, { ...scope, query: "score", cursor: null });
     expect(before.page).toHaveLength(2);
-    expect(before.page.map((r: {_id: string}) => r._id)).toEqual(expected(original.map((r: ManifestRow, i: number) => ({ ...r, values: rows[i]!.values }))).score);
+    expect(before.page.map(r => r._id)).toEqual(expected(original.map((r, i) => ({ ...r, values: rows[i]!.values }))).score);
     await expect(t.mutation(seed, { ...scope, rows: [{ ...rows[0], values: { ...rows[0]!.values, score: 7 } }] })).rejects.toThrow("different values");
     expect((await t.query(page, { ...scope, query: "score", cursor: null })).page).toEqual(before.page);
     const recovery = fixture(1)[0]!;
@@ -65,7 +62,7 @@ for (const option of ["slots", "values"] as const) {
     recovery.values.score = 10_000;
     const added = await t.mutation(seed, { ...scope, rows: [recovery] });
     const after = await t.query(page, { ...scope, query: "score", cursor: null });
-    expect(after.page.map((r: {_id: string}) => r._id)).toEqual([added[0]._id, ...before.page.map((r: {_id: string}) => r._id)]);
+    expect(after.page.map(r => r._id)).toEqual([added[0]._id, ...before.page.map(r => r._id)]);
     await t.mutation(cleanup, scope);
     expect((await t.query(page, { ...scope, query: "score", cursor: null })).page).toEqual(before.page);
     await t.mutation(cleanup, scope);
@@ -77,13 +74,11 @@ for (const option of ["slots", "values"] as const) {
 for (const option of ["slots", "values"] as const) {
   test(`${option}: server-side seeding writes the whole fixture once, resumes as a no-op, and refuses a different fixture`, async () => {
     const t = convexTest(schema, modules);
-    const seedRange = makeFunctionReference<"action">("bench:seedRange");
-    const inventory = makeFunctionReference<"query">("bench:inventory");
     const scope = { option, orgId: "remold-benchmark", objectKey: "customJob" };
     expect(await t.action(seedRange, { ...scope, offset: 0, limit: 150, total: 250 })).toBe(150);
     expect(await t.action(seedRange, { ...scope, offset: 150, limit: 5_000, total: 250 })).toBe(100);
     const first = await t.query(inventory, { ...scope, cursor: null });
-    expect(first.page.map((r: ManifestRow) => r.values)).toEqual(fixture(250).map(r => r.values));
+    expect(first.page.map(r => r.values)).toEqual(fixture(250).map(r => r.values));
     expect(await t.action(seedRange, { ...scope, offset: 0, limit: 250, total: 250 })).toBe(250);
     expect((await t.query(inventory, { ...scope, cursor: null })).page).toEqual(first.page);
     // A different total shuffles stages differently, so the same source IDs carry different values.

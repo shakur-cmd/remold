@@ -1,17 +1,20 @@
 import { v, type GenericId } from "convex/values";
-import { makeFunctionReference, internalActionGeneric } from "convex/server";
-import { internalQuery, internalMutation } from "./server";
+import type { PaginationResult } from "convex/server";
+import { internal } from "./_generated/api";
+import type { Doc } from "./_generated/dataModel";
+import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { values } from "./schema";
 import { fixture } from "../bench/fixture";
 
 const option = v.union(v.literal("slots"), v.literal("values"));
 const scope = { option, orgId: v.string(), objectKey: v.string() };
 const query = v.union(v.literal("score"), v.literal("won"), v.literal("contacted"));
+type Page = PaginationResult<Doc<"slotRecords"> | Doc<"valueRecords">>;
 
 // Internal-only functions: the spike has no public endpoints or user data.
 export const page = internalQuery({
   args: { ...scope, query, cursor: v.union(v.string(), v.null()), sampleId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Page> => {
     const pagination = { numItems: 50, cursor: args.cursor };
     let indexRangeRequests = 0;
     const log = () => { if (args.sampleId) console.log(JSON.stringify({ marker: "REMOLD_BENCH", sampleId: args.sampleId, indexRangeRequests })); };
@@ -78,12 +81,11 @@ export const seedBatch = internalMutation({
 // Generates the fixture server-side so seeding is a handful of calls instead of
 // one CLI process per 100 rows. Rerunning a range is a no-op because seedBatch
 // is idempotent, so a timed-out or killed seed resumes safely.
-export const seedRange = internalActionGeneric({
+export const seedRange = internalAction({
   args: { ...scope, offset: v.number(), limit: v.number(), total: v.number() },
   handler: async (ctx, { offset, limit, total, ...target }) => {
     const rows = fixture(total).slice(offset, offset + limit);
-    const seed = makeFunctionReference<"mutation">("bench:seedBatch");
-    for (let i = 0; i < rows.length; i += 100) await ctx.runMutation(seed, { ...target, rows: rows.slice(i, i + 100) });
+    for (let i = 0; i < rows.length; i += 100) await ctx.runMutation(internal.bench.seedBatch, { ...target, rows: rows.slice(i, i + 100) });
     return rows.length;
   },
 });
@@ -97,11 +99,12 @@ export const inventory = internalQuery({
   },
 });
 
-export const sample = internalActionGeneric({
+export const sample = internalAction({
   args: { ...scope, query, cursor: v.union(v.string(), v.null()), sampleId: v.string() },
-  handler: async (ctx, { sampleId, ...args }) => {
+  // The annotation breaks the type cycle between this module and the generated api.
+  handler: async (ctx, { sampleId, ...args }): Promise<Page & { serverActionElapsedMs: number; sampleId: string }> => {
     const start = Date.now();
-    const result = await ctx.runQuery(makeFunctionReference<"query">("bench:page"), { ...args, sampleId });
+    const result = await ctx.runQuery(internal.bench.page, { ...args, sampleId });
     // Includes server dispatch; never label this engine execution time or read telemetry.
     const serverActionElapsedMs = Date.now() - start;
     return { ...result, serverActionElapsedMs, sampleId };

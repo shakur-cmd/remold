@@ -9,7 +9,6 @@
  */
 
 import type * as bench from "../bench.js";
-import type * as server from "../server.js";
 
 import type {
   ApiFromModules,
@@ -19,7 +18,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   bench: typeof bench;
-  server: typeof server;
 }>;
 
 /**
