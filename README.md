@@ -17,6 +17,8 @@ pnpm test
 
 ## Cloud benchmark (dedicated development project only)
 
+The Mac is connected to the `remold` project under team `shakur-46299`, Cloud development deployment `gallant-pika-581` (US East). See [convex-setup.html](convex-setup.html) for current setup evidence. Use the existing project when configuring another machine for the same benchmark.
+
 ```sh
 pnpm exec convex login
 pnpm exec convex dev --configure new --once

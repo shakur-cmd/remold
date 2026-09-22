@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold Convex setup</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Remold Convex setup</h1><div class="meta">2026-09-22 · Builder: Codex · Awaiting independent verification</div>
+<div class="decisions"><h2>Your calls</h2><p>Sign-in and Terms of Service acceptance are complete. No further account input needed at this stage.</p></div>
+<div class="status"><h2>Done and proven</h2><p>Remold has a working Cloud development deployment in US East. CLI deployment completed with exit 0; local typecheck and all 10 tests pass. The account remains on Free.</p></div>
+<h2>Before and after</h2><table><tr><th>Check</th><th>Before</th><th>After</th></tr><tr><td>Account</td><td>No saved Convex login</td><td>Authenticated; team shakur-46299</td></tr><tr><td>Deployment</td><td>No configured Cloud deployment</td><td>gallant-pika-581; functions and six indexes deployed</td></tr><tr><td>Local checks</td><td>10 tests and typecheck pass</td><td>Same checks pass after CLI code generation</td></tr><tr><td>Cloud benchmark</td><td>Blocked by login</td><td>Seeding in progress. No performance claim yet.</td></tr></table>
+<h2>Access and reproduction</h2><p><a href="https://dashboard.convex.dev/t/shakur-46299/remold/gallant-pika-581">Open the development dashboard</a>. The local <code>.env.local</code> contains deployment URLs and is ignored by Git. Account credentials remain outside the repository.</p><pre>pnpm exec convex login status
+pnpm exec convex dev --once
+pnpm typecheck
+pnpm test
+pnpm seed
+pnpm bench</pre><p>A fresh clone must select the existing remold project and a Cloud dev deployment, then confirm it targets gallant-pika-581 for independent comparison. Do not create a second project for that check.</p>
+<h2>Evidence</h2><p><a href="evidence/2026-09-22-convex/setup.txt">Setup observations</a>. Generated files came from the installed Convex CLI. No application behavior was changed.</p><p>The builder ran the checks. No independent verifier has checked this setup or certified Step 0. Steps 1 through 13 remain pending.</p></body></html>
