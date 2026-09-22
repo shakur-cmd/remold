@@ -1,6 +1,6 @@
 # Records storage: proposed, not selected
 
-Step 0 compares two implemented candidates. Cloud measurements and independent review are pending; neither is approved for production. The third option is rejected for this multi-tenant product unless later evidence changes the decision.
+Step 0 compares two implemented candidates. Builder Cloud measurements now pass for both candidates; independent performance review remains pending. Neither is approved for production. See ../../convex-setup.html for results and raw evidence. The third option is rejected for this multi-tenant product unless later evidence changes the decision.
 
 | Option | Benefits | Cost and constraints | Spike |
 | --- | --- | --- | --- |
@@ -24,4 +24,4 @@ Sources checked 2026-09-22:
 
 Seeding runs server-side through the `bench:seedRange` action so the fixture is generated once per range on the deployment instead of being pushed through hundreds of CLI processes; the oracle is still computed in plain TypeScript from the read-back inventory and never calls the query implementation.
 
-Before: no repository, schema, fixture or benchmark. After: both prototypes and local correctness checks exist. No Cloud timings exist and the records decision remains pending.
+Before: no repository, schema, fixture or benchmark. After: both prototypes and local correctness checks exist. The 2026-09-22 builder Cloud run passed all 520 samples across both candidates. The records decision remains pending independent repetition and range-evidence acceptance.

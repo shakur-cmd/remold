@@ -33,7 +33,7 @@ The seed is deterministic and resumable. A server-side action generates the fixt
 
 The benchmark temporarily inserts synthetic source ID 50001 with score 10000 and removes only that fixture in `finally`. If the process is killed during recovery, explicitly run the internal `bench:removeRecovery` function for that candidate with orgId `remold-benchmark` and objectKey `customJob` before rerunning. There is no broad reset command.
 
-The benchmark CLI has not yet been run end to end against Cloud. The telemetry parser is tested against fixtures shaped from Convex 1.46.0's log API type; actual live logs still need validation. The local `convex-test` runtime proves query behavior only, not engine performance or production limits. The scripts call the Convex CLI through `node` directly rather than `pnpm exec`, so they run unchanged on the Windows machine.
+The benchmark completed end to end against Cloud on 2026-09-22: both candidates passed 520 total samples, with actual engine logs parsed successfully. The independent performance repeat and acceptance of range instrumentation remain pending; see [the Cloud handover](convex-setup.html). The local `convex-test` runtime proves query behavior only, not engine performance or production limits. The scripts call the Convex CLI through `node` directly rather than `pnpm exec`, so they run unchanged on the Windows machine.
 
 ## Review
 

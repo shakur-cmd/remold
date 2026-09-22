@@ -20,7 +20,9 @@ export function deployment() {
   return value;
 }
 export function run<T>(name: string, args: object): T {
-  return JSON.parse(execFileSync(process.execPath, [convexBin, "run", name, JSON.stringify(args)], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 })) as T;
+  const output = execFileSync(process.execPath, [convexBin, "run", name, JSON.stringify(args)], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  // Convex CLI suppresses output for a successful null/void return.
+  return (output.trim() === "" ? null : JSON.parse(output)) as T;
 }
 export function streamLogs(fd: number) {
   return spawn(process.execPath, [convexBin, "logs", "--jsonl", "--success"], { stdio: ["ignore", fd, "inherit"] });

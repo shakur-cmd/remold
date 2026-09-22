@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent Convex setup verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Independent Convex setup verification</h1><div class="meta">2026-09-22 · Checked by separate Codex verifier session · commit 852d176</div>
+<div class="decisions"><h2>Verdict</h2><p><strong>PASS for working Cloud development setup.</strong> Step 0 remains pending. No account decision is needed for the verified setup checks.</p></div>
+<div class="status"><h2>Done and proven</h2><p>Independently repeated login, development-target, deployed-function, six-index availability, local typecheck/test and Git-ignore checks. All succeeded. No deployment, seed, mutation, benchmark or production operation was run.</p></div>
+<h2>Before and after</h2><table><tr><th>Check</th><th>Before: builder record</th><th>After: independently observed</th></tr><tr><td>Login</td><td>No saved login</td><td>Logged in; accessible team shakur-46299</td></tr><tr><td>Cloud target</td><td>No configured deployment</td><td>remold / gallant-pika-581 / type dev</td></tr><tr><td>Functions and indexes</td><td>Not deployed</td><td>Six internal functions listed remotely; page query executes; all six named indexes readable</td></tr><tr><td>Local checks</td><td>10 tests and typecheck passed</td><td>Typecheck passes; 2 test files, 10 tests pass</td></tr><tr><td>Benchmark gate</td><td>Blocked by login</td><td>Access blocker removed; benchmark correctness/performance unverified</td></tr></table><p>The prior state is from <a href="setup.txt">builder observations</a>; it cannot be retrospectively reproduced by this read-only review.</p>
+<h2>Commands and results</h2><p>Commands below completed successfully. Setup checks used the installed CLI and existing local dependencies.</p><pre>pnpm exec convex login status
+# exit 0: Logged in; 1 team accessible, shakur-46299
+pnpm exec convex deployments
+# exit 0: team shakur-46299, project remold, deployment gallant-pika-581, Type: dev
+pnpm exec convex function-spec
+# exit 0: https://gallant-pika-581.convex.cloud
+# bench.js:page, seedBatch, seedRange, inventory, sample, removeRecovery
+# all visibility.kind = internal
+pnpm typecheck
+# tsc --noEmit passed
+pnpm test
+# 2 files, 10 tests passed; 462 ms
+git check-ignore -v .env.local
+# .gitignore:2:.env* .env.local
+git ls-files .env.local .convex
+# no tracked matches</pre><p>The local deployment selector is <code>dev:gallant-pika-581</code>. Generated API, data-model and server files exist; API declarations include bench. Their generated headers and passing typecheck support compatibility. Code generation was not rerun because this review forbids deploying or changing setup.</p><pre>pnpm exec convex run bench:page '{"option":"slots","orgId":"independent-setup-empty-scope","objectKey":"setupCheck","query":"score","cursor":null}' --deployment gallant-pika-581 --codegen disable
+# exit 0: page [], isDone true</pre><p>A bounded read-only inline query checked every named index, scoped to a nonexistent verification org. Each returned zero rows without an index error:</p><pre>pnpm exec convex run --inline-query &#x27;const specs = [[&quot;slotRecords&quot;,&quot;score&quot;],[&quot;slotRecords&quot;,&quot;stage&quot;],[&quot;slotRecords&quot;,&quot;source&quot;],[&quot;valueRecords&quot;,&quot;source&quot;],[&quot;recordValues&quot;,&quot;value&quot;],[&quot;recordValues&quot;,&quot;record&quot;]]; const results = []; for (const [table,index] of specs) { const rows = await ctx.db.query(table).withIndex(index,q=&gt;q.eq(&quot;orgId&quot;,&quot;independent-setup-empty-scope&quot;)).take(1); results.push({table,index,rows:rows.length}); } return results;&#x27; --deployment gallant-pika-581 --codegen disable
+# exit 0: six results, each rows: 0</pre><p>Result: slotRecords.score, slotRecords.stage, slotRecords.source, valueRecords.source, recordValues.value and recordValues.record all readable.</p>
+<h2>Claims and remaining gaps</h2><p><a href="../../convex-setup.html">convex-setup.html</a> correctly describes authenticated development access, deployed functions/indexes, passing local checks and ignored local configuration. Its Free-plan, US East region, Terms acceptance and original deployment-exit claims remain supported only by builder records in this review; billing/dashboard and the historical login flow were not independently repeated. The current target is proven development, but this check does not inventory every production deployment or certify that no production deployment exists.</p><p>Login status identifies credentials at <code>~/.convex/config.json</code>, outside the repository. Secret contents were not opened. The Git checks prove that local configuration is ignored and untracked; they are not a repository-history secret audit.</p><p>No 50,000-record completeness, cursor correctness, engine timing, read telemetry, recovery case or repeated benchmark comparison was tested. This setup review does not certify Step 0, select a records schema or authorize Step 1. The independent benchmark verifier remains required by AGENTS.md and docs/build-plan.html.</p><h2>Independent CLI empty-result fix review</h2><p>2026-09-22 09:58 EDT. <strong>PASS for this local fix; no issues found.</strong> Reviewed the working-tree diff to <code>bench/cli.ts</code>, new <code>bench/cli.test.ts</code>, and builder failure records <a href="benchmark-before.txt">benchmark-before.txt</a> and <a href="cli-before.txt">cli-before.txt</a>.</p><p>The installed primary implementation, <code>node_modules/convex/src/cli/lib/run.ts:137</code>, prints a result only when it is non-null. The helper now maps successful blank stdout to null, preserves JSON results, and still propagates malformed JSON and command failures. The three tests exercise those caller-visible outcomes.</p><table><tr><th>Before: independent replay</th><th>After: independent checks</th></tr><tr><td>Copied <code>git show HEAD:bench/cli.ts</code> plus the current test and fixture into a disposable temporary directory with existing dependencies. Ran installed Vitest with <code>node node_modules/vitest/vitest.mjs run --root &lt;temporary-dir&gt;</code>. Exit 1: empty-success test failed with Unexpected end of JSON input; other 2 tests passed. Temp directory removed.</td><td><code>pnpm typecheck</code> passed. <code>pnpm test</code> passed: 3 files, 13 tests, 445 ms. Working implementation was not changed by the verifier.</td></tr></table><p>The observed regression is independently reproduced and repaired locally. The Cloud benchmark was not rerun by this verifier; its results and Step 0 remain uncertified. No Cloud reads or writes were needed for this follow-up review.</p></body></html>
