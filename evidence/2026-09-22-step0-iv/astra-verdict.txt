@@ -1,0 +1,59 @@
+STEP0_VERDICT: UNVERIFIED  
+SLOTS: PASS (p50 11.934–15.538 ms, p95 16.349–37.804 ms, reads: 50 native documents; 1 instrumented range request)  
+VALUES: PASS (p50 27.675–44.634 ms, p95 50.390–95.874 ms, reads: 100 native documents; 51 instrumented range requests)  
+WITHIN_20_PERCENT: no (slots: 13/26 percentile comparisons outside tolerance against cleanup, 12/26 against earlier evidence; values: 14/26 and 8/26 respectively. Consistent with Cloud variance: every group still passes 100/250 ms; no demonstrated gate-breaking regression.)  
+RANGE_EVIDENCE: REJECTED (the instrumentation counts application calls, not engine ranges; native document counts do not establish equivalence. It does not satisfy the engine-native evidence requirement.)  
+RECOMMENDED_DESIGN: slots (Slots avoid the values design’s 12 extra rows per record and halve measured document reads. Production still needs an explicit allocation contract and validation for 8 number, 8 string, 4 date and 4 boolean slots, since this spike exercises only one number and one string slot.)  
+RISKS:
+
+- Candidate PASS labels cover measured correctness, timing and document reads; the full gate remains unverified.
+- The literal ±20% repeatability requirement was not met.
+- Engine-native range evidence remains missing.
+- Reconciliation checks record payloads, not all 600,000 expected value rows.
+- Production slot capacity, compound queries and write costs remain unproven.
+
+Astra independently verified this run. Typecheck and all 13 tests passed; seed reconciled exactly 50,000 records per candidate. The oracle independently sorts and filters reconciled fixture data without calling the Convex query implementation. All correctness and recovery checks passed. No tracked files changed.
+
+All three reports have status `BUILDER_CHECK_PASSED_AWAITING_IV`, 520 samples, 26 groups, and identical per-candidate read counts. I independently cross-checked all IV measurements against raw logs and recomputed the percentiles. [HTML report with every group compared side by side](/tmp/remold-iv-report.html).
+
+Raw results path:
+```text
+/tmp/remold-iv-122037/remold/bench/results-2026-09-22T16-29-54.936Z.json
+```
+
+Exact terminal output projecting the final report’s requested fields below. The runner’s status string is unchanged; it is distinct from my verdict.
+
+```json
+{
+  "status": "BUILDER_CHECK_PASSED_AWAITING_IV",
+  "passingOptions": ["slots", "values"],
+  "groups": [
+    {"key": "slots/1/score/false", "p50": 15.537537, "p95": 27.277538, "pass": true},
+    {"key": "slots/1/won/false", "p50": 13.011527000000001, "p95": 20.450301, "pass": true},
+    {"key": "slots/1/contacted/false", "p50": 13.100543, "p95": 37.804171999999994, "pass": true},
+    {"key": "slots/1/page2/false", "p50": 13.313948000000002, "p95": 24.866687, "pass": true},
+    {"key": "slots/2/score/false", "p50": 12.268093, "p95": 18.466619, "pass": true},
+    {"key": "slots/2/won/false", "p50": 12.606321, "p95": 22.709008, "pass": true},
+    {"key": "slots/2/contacted/false", "p50": 12.542617, "p95": 27.510225, "pass": true},
+    {"key": "slots/2/page2/false", "p50": 12.783469, "p95": 24.636675, "pass": true},
+    {"key": "slots/3/score/false", "p50": 12.288582, "p95": 16.348703, "pass": true},
+    {"key": "slots/3/won/false", "p50": 11.933731, "p95": 17.85766, "pass": true},
+    {"key": "slots/3/contacted/false", "p50": 12.375136, "p95": 22.376228, "pass": true},
+    {"key": "slots/3/page2/false", "p50": 13.193991, "p95": 32.16315899999999, "pass": true},
+    {"key": "slots/4/score/true", "p50": 12.076414, "p95": 28.064004, "pass": true},
+    {"key": "values/1/score/false", "p50": 29.161357, "p95": 50.389823, "pass": true},
+    {"key": "values/1/won/false", "p50": 44.634466999999994, "p95": 95.873814, "pass": true},
+    {"key": "values/1/contacted/false", "p50": 40.708863, "p95": 84.771501, "pass": true},
+    {"key": "values/1/page2/false", "p50": 36.289614, "p95": 88.192409, "pass": true},
+    {"key": "values/2/score/false", "p50": 28.431434, "p95": 82.375468, "pass": true},
+    {"key": "values/2/won/false", "p50": 28.746546000000002, "p95": 73.026184, "pass": true},
+    {"key": "values/2/contacted/false", "p50": 29.941329, "p95": 64.305532, "pass": true},
+    {"key": "values/2/page2/false", "p50": 33.394606, "p95": 59.91999, "pass": true},
+    {"key": "values/3/score/false", "p50": 30.550455, "p95": 54.647271999999994, "pass": true},
+    {"key": "values/3/won/false", "p50": 28.643703, "p95": 70.528796, "pass": true},
+    {"key": "values/3/contacted/false", "p50": 29.331678, "p95": 59.270873, "pass": true},
+    {"key": "values/3/page2/false", "p50": 30.280959, "p95": 91.655767, "pass": true},
+    {"key": "values/4/score/true", "p50": 27.674622, "p95": 80.824021, "pass": true}
+  ]
+}
+```
