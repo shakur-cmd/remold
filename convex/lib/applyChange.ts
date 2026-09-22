@@ -34,7 +34,10 @@ async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unkn
   return value;
 }
 
-export async function applyChange(ctx: MutationCtx, membership: Membership, change: Change): Promise<{ recordId: Id<"records">; eventId: Id<"events"> }> {
+const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+
+// Returns eventId null only when an update changed nothing, so no event is written.
+export async function applyChange(ctx: MutationCtx, membership: Membership, change: Change): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   let record: Doc<"records"> | null = null;
   let object: Doc<"objects"> | null;
   if (change.action === "create") object = await ctx.db.get(change.objectId);
@@ -63,6 +66,8 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;
   if (titleField?.type === "lookup" && typeof titleValue === "string") title = (await ctx.db.get(titleValue as Id<"records">))?.title ?? "";
+  const changedIds = Object.keys(change.action === "create" ? values : validated).filter((fieldId) => change.action === "create" || !same(record!.values[fieldId], values[fieldId]));
+  if (change.action === "update" && changedIds.length === 0) return { recordId: record!._id, eventId: null };
   const patch = { values, title, updatedAt: Date.now(), ...projections(fields, values) };
   const recordId = record ? record._id : await ctx.db.insert("records", { orgId: change.orgId, objectId: object._id, createdBy: membership.user._id, ...patch });
   if (record) await ctx.db.patch(recordId, patch);
@@ -74,9 +79,8 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
     for (const row of existing) if (!wanted.delete(row.toRecordId)) await ctx.db.delete(row._id);
     for (const toRecordId of wanted) await ctx.db.insert("links", { orgId: change.orgId, fieldId: field._id, fromRecordId: recordId, toRecordId: toRecordId as Id<"records"> });
   }
-  const changed = change.action === "create" ? values : validated;
-  const before = Object.fromEntries(Object.keys(changed).map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
-  const after = Object.fromEntries(Object.keys(changed).map((fieldId) => [fieldId, values[fieldId] ?? null]));
+  const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
+  const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
   const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason });
   return { recordId, eventId };
 }
