@@ -1,0 +1,15 @@
+1. Signed in with `shakur@codemyvibe.com`.
+2. Created **Remold**, keeping Email and Google enabled. No paid plan selected.
+3. Enabled **Configure → Developers → Integrations → Convex** and confirmed it persisted after reload. No JWT template needed.
+4. Copied public credentials into [keys.env](/tmp/remold-clerk/keys.env):
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_b3JnYW5pYy1hZGRlci04NDcwLmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_JWT_ISSUER_DOMAIN=https://organic-adder-8470.clerk.accounts.dev
+```
+
+Menu difference: credentials are under **Instance → API keys**.
+
+Secret key was never copied or printed. Remold remains open in Helium.
+
+[Report with before/after evidence](/tmp/remold-clerk/report.html). Checked by Astra; independent verification pending.
