@@ -1,0 +1,15 @@
+[Independent verification report with test source and command evidence](/Users/urkel/Documents/CodeMyVibe/Projects/remold/evidence/2026-09-22-slice-iv/astra-report.html)
+
+1. **Identity/isolation:** Typecheck and original 10 tests passed. Added same-database isolation tests: foreign record reads returned `null`; mutations, metadata and event access were denied; rejected calls left all nine tables unchanged. Membership checks cover all org endpoints, with the spec’s documented setup/invite exceptions.
+2. **Persistence/attribution:** Booking lifecycle, exact event attribution, atomic validation failures, stable rename slots, ninth-number-field rejection, and pagination all passed. With temporary tests: **12/12 passed**.
+3. **Deployment:** Root and deep path returned HTTP 200 and identical HTML. Bundle initializes `gallant-pika-581` and supplies a Clerk publishable key. No phone-journey evidence found.
+
+Temporary test removed; original checks passed again. No tracked files edited, deployments, or commits.
+
+ACCEPTANCE_VERDICT: PASS — Check 1: identity and isolation  
+ACCEPTANCE_VERDICT: PASS — Check 2: generic persistence and attribution  
+ACCEPTANCE_VERDICT: UNVERIFIED — Check 3: deployed phone journey
+
+**Blocker:** Shakur’s interactive phone evidence is missing.
+
+**Optional improvement:** Replace the maintained isolation test’s separate databases with shared-database coverage.

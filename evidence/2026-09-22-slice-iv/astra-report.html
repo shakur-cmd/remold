@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold independent slice verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Remold independent slice verification</h1><div class="meta">2026-09-22 · Astra, independent verifier · main b65e0c99fef82afd745b1d1ed003abd485ecd4c1</div>
+<div class="decisions"><h2>Your check</h2><p>The interactive phone journey remains UNVERIFIED. Attach phone evidence covering sign-in and the intended record workflow before accepting the whole slice. No tracked files edited, deployment, or commit performed.</p></div>
+<div class="status"><h2>Done and proven</h2><p>Check 1: PASS at code and test level. Check 2: PASS in convex-test. Check 3: UNVERIFIED overall; deployed HTML fallback and bundle configuration PASS.</p><p>Checked independently by Astra in this session. Runtime checks 1–2 use local convex-test, not the deployed backend. No assertion that the deployed backend matches this commit or that Clerk authentication succeeds.</p></div>
+<h2>Identity and isolation</h2><p>All 21 membership-gated public endpoints call requireMember before their org operations. The literal “every public function” rule has six documented exceptions: users.store/me, orgs.create/mine, invites.get/accept. orgs.mine resolves memberships before org reads; invites.get intentionally exposes org name, role and expiry to a bearer of an invite token. No record, field, object or event content is exposed through this exception.</p><p>In a single database with two users and two orgs, 21 unauthenticated probes returned UNAUTHENTICATED and the same 21 probes using A's identity with org B returned FORBIDDEN. With org A and known foreign IDs, records.get returned null; 13 other record/metadata/event probes returned NOT_FOUND. A's org event page was empty. Exact before/after snapshots of all nine tables were equal, proving the rejected calls wrote nothing in these tested cases. There is no public event-by-ID endpoint.</p><p>The committed isolation.test.ts uses two independent makeTest databases. It does not establish isolation between two tenants sharing a database; the temporary verifier test closes that evidence gap.</p>
+<h2>Generic persistence and attribution</h2><p>Created Booking with select and company lookup fields. Created, edited, queried, and deleted a Booking. Exact actor user ID, action, before and after values matched create, update and delete. Deletion removed the record while preserving the delete event, accessible through events.forOrg. Invalid select and cross-org lookup each failed on create and update with VALIDATION, with all nine tables unchanged. Renaming the select changed only its label. Nine number fields allocated n0 through n7, then no slot; sorting the ninth returned UNINDEXED_FIELD and its values remained stored. Sorted pagination returned 23 exact IDs and numeric values across pages of 10, 10, 3 without duplication or omission.</p>
+<h2>Deployed shell and phone evidence</h2><p>curl fetched exactly https://remold.shakur-949.workers.dev/ and /o/x/person/y: HTTP/2 200, text/html, identical index HTML. The linked /assets/index-BemvsETN.js returned HTTP/2 200 and constructs the client with https://gallant-pika-581.convex.cloud; ClerkProvider receives pk_test_b3JnYW5pYy1hZGRlci04NDcwLmNsZXJrLmFjY291bnRzLmRldiQ. happy-otter-123 in the same bundle is library error-message example text, not the configured endpoint.</p><p>The web fetch tool could not access the URLs and Python urllib returned 403. curl succeeded directly, and its raw evidence is embedded below. No browser or phone interaction was attempted. evidence/ contains Step 0 benchmarking and Clerk setup only; the Clerk report explicitly says no Remold app login or end-to-end test was performed.</p>
+<h2>Before and after</h2><table><tr><th>Before verifier test</th><th>After verifier test</th></tr><tr><td>Typecheck exit 0; 7 files / 10 tests passed. Clean tracked working tree.</td><td>Typecheck exit 0; 8 files / 12 tests passed. Temporary test removed, then typecheck exit 0 and original 7 files / 10 tests passed again. Tracked and staged diffs empty.</td></tr></table><p>One intermediate typecheck failed in the verifier's temporary pagination test (TS7022). An explicit result type corrected that test; no production code changed. The final source is embedded for reproduction.</p>
+<h2>Blockers and optional improvements</h2><p>Blocker: phone journey evidence is absent, so full slice acceptance remains unverified. Optional: retain equivalent same-database isolation coverage in the maintained suite. events.forRecord refuses deleted records; deleted-record audit events are available through events.forOrg, but a record-specific historical timeline after deletion would require a change.</p>
+<details><summary>typecheck.txt</summary><pre>$ tsc -b &amp;&amp; tsc --noEmit -p convex
+</pre></details><details><summary>tests.txt</summary><pre>$ vitest run --reporter=verbose
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ✓ convex/identity.test.ts &gt; identity &gt; rejects unauthenticated membership calls 46ms
+ ✓ convex/identity.test.ts &gt; identity &gt; creates one user on repeated store and seeds exact standard objects 24ms
+ ✓ convex/isolation.test.ts &gt; organization isolation &gt; does not reveal or mutate another organization&#x27;s records 87ms
+ ✓ convex/invites.test.ts &gt; invites &gt; lets an invited user join once and read the org 83ms
+ ✓ convex/invites.test.ts &gt; invites &gt; expires old invites and keeps members from creating them 12ms
+ ✓ convex/related.test.ts &gt; related records &gt; returns lookup and link relationships and cleans links on delete 93ms
+ ✓ convex/slots.test.ts &gt; slots &gt; allocates eight number slots, never reuses retired slots, and rejects unindexed sorting 95ms
+ ✓ convex/seed.test.ts &gt; demo seed &gt; creates its fictional demo exactly once and gives every record an event 108ms
+ ✓ convex/applyChange.test.ts &gt; applyChange &gt; writes records, projections, events, updates, and deletes linked rows 107ms
+ ✓ convex/applyChange.test.ts &gt; applyChange &gt; rejects bad values without writing a record or event 5ms
+ ✓ convex/astra.acceptance.test.ts &gt; isolates two orgs in ONE database, rejects foreign IDs, and leaves ALL tables unchanged 112ms
+ ✓ convex/astra.acceptance.test.ts &gt; persists Booking lifecycle with exact attribution, atomic validation, stable slots and complete pagination 26ms
+
+ Test Files  8 passed (8)
+      Tests  12 passed (12)
+   Start at  13:25:54
+   Duration  296ms (tests 61%, import 19%, transform 18%, worker 1%)
+
+</pre></details><details><summary>clean-typecheck.txt</summary><pre>$ tsc -b &amp;&amp; tsc --noEmit -p convex
+</pre></details><details><summary>clean-tests.txt</summary><pre>$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+
+ Test Files  7 passed (7)
+      Tests  10 passed (10)
+   Start at  13:25:57
+   Duration  219ms (tests 62%, transform 19%, import 17%, worker 2%)
+
+</pre></details><details><summary>root.headers</summary><pre>HTTP/2 200 
+date: Tue, 22 Sep 2026 17:24:20 GMT
+content-type: text/html
+cf-cache-status: HIT
+cache-control: public, max-age=0, must-revalidate
+nel: {&quot;report_to&quot;:&quot;cf-nel&quot;,&quot;success_fraction&quot;:0.0,&quot;max_age&quot;:604800}
+report-to: {&quot;group&quot;:&quot;cf-nel&quot;,&quot;max_age&quot;:604800,&quot;endpoints&quot;:[{&quot;url&quot;:&quot;https://a.nel.cloudflare.com/report/v4?s=SiUJgUi5LqnTgcWXh1SiV2jaD1RpfMe5maAHMHySpwH1TuVxmme8OoKjk8zp4noO%2FddCpqv%2B7P9yB8rEeB4IQRFm%2Fo7Phsa%2FEm4wNTtvHhgInx%2B2HUGdSffQqkAPBYtwQcqES6UtT5WhYk9Dhdc3Ga8sqp2AN6oMJqO7Aw%3D%3D&quot;}]}
+server: cloudflare
+cf-ray: a3f300ae2b73c8b3-ATL
+alt-svc: h3=&quot;:443&quot;; ma=86400
+
+</pre></details><details><summary>deep.headers</summary><pre>HTTP/2 200 
+date: Tue, 22 Sep 2026 17:24:21 GMT
+content-type: text/html
+cf-cache-status: HIT
+cache-control: public, max-age=0, must-revalidate
+nel: {&quot;report_to&quot;:&quot;cf-nel&quot;,&quot;success_fraction&quot;:0.0,&quot;max_age&quot;:604800}
+report-to: {&quot;group&quot;:&quot;cf-nel&quot;,&quot;max_age&quot;:604800,&quot;endpoints&quot;:[{&quot;url&quot;:&quot;https://a.nel.cloudflare.com/report/v4?s=kW0406feiB4tKopWx9h7QZXnmejG3%2Bh25l8iwVC03TYxDvVuyoX8a1JvidZDRwAJgGulGQ2nxQynFg8Cz2VUOuu%2Fkwh4Rvy7TD5qpXP8rPvfzJQUOV1pY3bBMJwRNXYfId0Ou4pMMRzffIvrOayod9b2Mm%2Bdw0ozm%2BE7Yw%3D%3D&quot;}]}
+server: cloudflare
+cf-ray: a3f300af6a8f7a02-EWR
+alt-svc: h3=&quot;:443&quot;; ma=86400
+
+</pre></details><details><summary>root.html</summary><pre>&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot; /&gt;
+    &lt;meta name=&quot;theme-color&quot; content=&quot;#fafafa&quot; /&gt;
+    &lt;title&gt;Remold&lt;/title&gt;
+    &lt;script type=&quot;module&quot; crossorigin src=&quot;/assets/index-BemvsETN.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; crossorigin href=&quot;/assets/index-C_uxWjwL.css&quot;&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre></details><details><summary>http-evidence.json</summary><pre>{
+  &quot;root_deep_identical&quot;: true,
+  &quot;html_sha256&quot;: &quot;8313caa726b4a2d854ffe9f25a9b15e808289969bd5f4506a7ee554cf1d5d90f&quot;,
+  &quot;bundle_bytes&quot;: 631254,
+  &quot;convex_urls&quot;: [
+    &quot;https://gallant-pika-581.convex.cloud&quot;,
+    &quot;https://happy-otter-123.convex.cloud&quot;
+  ],
+  &quot;clerk_keys&quot;: [
+    &quot;pk_test_b3JnYW5pYy1hZGRlci04NDcwLmNsZXJrLmFjY291bnRzLmRldiQ&quot;
+  ]
+}</pre></details><details><summary>bundle.headers</summary><pre>HTTP/2 200 
+date: Tue, 22 Sep 2026 17:24:34 GMT
+content-type: text/javascript
+content-length: 631254
+cf-cache-status: HIT
+cache-control: public, max-age=0, must-revalidate
+etag: &quot;4a6e20acf39e0203823de3a1811bd410&quot;
+report-to: {&quot;group&quot;:&quot;cf-nel&quot;,&quot;max_age&quot;:604800,&quot;endpoints&quot;:[{&quot;url&quot;:&quot;https://a.nel.cloudflare.com/report/v4?s=zVO7bGDmjHOo7ZuhcNo%2FFmP%2B8woWwCUu46TNU2a3elwOXnrDcQIuSCTDAnGvjPkXGNbjm5wHnmOHWREvJHDKS88O1woq9BfduBnZKJ1AgWoCyPZpJYDkM5EAqP6%2BbGF0Q%2FAfY45v2gEHjyizXOMfO3V9IyA8n41XCSiHbA%3D%3D&quot;}]}
+nel: {&quot;report_to&quot;:&quot;cf-nel&quot;,&quot;success_fraction&quot;:0.0,&quot;max_age&quot;:604800}
+server: cloudflare
+cf-ray: a3f30102efb342d7-EWR
+alt-svc: h3=&quot;:443&quot;; ma=86400
+
+</pre></details><details><summary>astra.acceptance.test.ts</summary><pre>import { expect, it } from &quot;vitest&quot;;
+import { api, objectFields, userAndOrg } from &quot;./test.helpers&quot;;
+
+const paginationOpts = { numItems: 10, cursor: null };
+async function fixture() {
+  const a = await userAndOrg(&quot;astraA&quot;);
+  const b = a.t.withIdentity({ tokenIdentifier: &quot;clerk|astraB&quot;, name: &quot;B&quot; });
+  await b.mutation(api.users.store, {});
+  const orgB = await b.mutation(api.orgs.create, { name: &quot;B&quot; });
+  const companyB = await objectFields(b, orgB, &quot;company&quot;);
+  const recordB = await b.mutation(api.records.create, { orgId: orgB, objectId: companyB.object._id, values: { [companyB.fields.name._id]: &quot;Private B&quot; } });
+  const snapshot = () =&gt; a.t.run(async ctx =&gt; {
+    const result: Record&lt;string, unknown&gt; = {};
+    for (const table of [&quot;users&quot;, &quot;orgs&quot;, &quot;members&quot;, &quot;invites&quot;, &quot;objects&quot;, &quot;fields&quot;, &quot;records&quot;, &quot;links&quot;, &quot;events&quot;] as const) result[table] = await ctx.db.query(table).collect();
+    return result;
+  });
+  return { ...a, b, orgB, companyB, recordB, snapshot };
+}
+
+it(&quot;isolates two orgs in ONE database, rejects foreign IDs, and leaves ALL tables unchanged&quot;, async () =&gt; {
+  const { t, client, orgId, orgB, companyB, recordB, snapshot } = await fixture();
+  const local = await objectFields(client, orgId, &quot;company&quot;);
+  const foreign = { orgId, recordId: recordB.recordId };
+  const calls: [&quot;query&quot; | &quot;mutation&quot;, any, any][] = [
+    [&quot;query&quot;, api.orgs.get, { orgId }], [&quot;mutation&quot;, api.orgs.rename, { orgId, name: &quot;No&quot; }],
+    [&quot;query&quot;, api.orgs.members, { orgId }], [&quot;mutation&quot;, api.invites.create, { orgId, role: &quot;member&quot; }],
+    [&quot;query&quot;, api.objects.list, { orgId }], [&quot;query&quot;, api.objects.get, { orgId, objectId: local.object._id }],
+    [&quot;mutation&quot;, api.objects.create, { orgId, key: &quot;other&quot;, label: &quot;Other&quot;, labelPlural: &quot;Others&quot; }],
+    [&quot;query&quot;, api.fields.list, { orgId, objectId: local.object._id }],
+    [&quot;mutation&quot;, api.fields.create, { orgId, objectId: local.object._id, key: &quot;extra&quot;, label: &quot;Extra&quot;, type: &quot;text&quot; }],
+    [&quot;mutation&quot;, api.fields.update, { orgId, fieldId: local.fields.name._id, label: &quot;Other&quot; }],
+    [&quot;mutation&quot;, api.fields.retire, { orgId, fieldId: local.fields.name._id }],
+    [&quot;query&quot;, api.records.list, { orgId, objectId: local.object._id, paginationOpts }],
+    [&quot;query&quot;, api.records.get, foreign],
+    [&quot;query&quot;, api.records.related, { ...foreign, fieldId: local.fields.name._id, paginationOpts }],
+    [&quot;query&quot;, api.records.reverseFields, { orgId, objectId: local.object._id }],
+    [&quot;mutation&quot;, api.records.create, { orgId, objectId: local.object._id, values: {} }],
+    [&quot;mutation&quot;, api.records.update, { ...foreign, values: {} }], [&quot;mutation&quot;, api.records.remove, foreign],
+    [&quot;query&quot;, api.events.forRecord, foreign], [&quot;query&quot;, api.events.forOrg, { orgId, paginationOpts }],
+    [&quot;mutation&quot;, api.seed.demo, { orgId }],
+  ];
+  const before = await snapshot();
+  for (const [kind, fn, args] of calls) {
+    await expect((t[kind] as any)(fn, args)).rejects.toMatchObject({ data: { code: &quot;UNAUTHENTICATED&quot; } });
+    await expect((client[kind] as any)(fn, { ...args, orgId: orgB })).rejects.toMatchObject({ data: { code: &quot;FORBIDDEN&quot; } });
+  }
+  expect(await client.query(api.records.get, foreign)).toBeNull();
+  const probes: [&quot;query&quot; | &quot;mutation&quot;, any, any][] = [
+    [&quot;mutation&quot;, api.records.update, { ...foreign, values: { [companyB.fields.name._id]: &quot;Stolen&quot; } }],
+    [&quot;mutation&quot;, api.records.remove, foreign], [&quot;query&quot;, api.events.forRecord, foreign],
+    [&quot;query&quot;, api.records.related, { ...foreign, fieldId: companyB.fields.name._id, paginationOpts }],
+    [&quot;query&quot;, api.objects.get, { orgId, objectId: companyB.object._id }],
+    [&quot;query&quot;, api.fields.list, { orgId, objectId: companyB.object._id }],
+    [&quot;mutation&quot;, api.fields.create, { orgId, objectId: companyB.object._id, key: &quot;extra&quot;, label: &quot;Extra&quot;, type: &quot;text&quot; }],
+    [&quot;mutation&quot;, api.fields.update, { orgId, fieldId: companyB.fields.name._id, label: &quot;Stolen&quot; }],
+    [&quot;mutation&quot;, api.fields.retire, { orgId, fieldId: companyB.fields.name._id }],
+    [&quot;query&quot;, api.records.list, { orgId, objectId: companyB.object._id, paginationOpts }],
+    [&quot;query&quot;, api.records.list, { orgId, objectId: local.object._id, sort: { fieldId: companyB.fields.name._id, direction: &quot;asc&quot; }, paginationOpts }],
+    [&quot;query&quot;, api.records.reverseFields, { orgId, objectId: companyB.object._id }],
+    [&quot;mutation&quot;, api.records.create, { orgId, objectId: companyB.object._id, values: {} }],
+  ];
+  for (const [kind, fn, args] of probes) await expect((client[kind] as any)(fn, args)).rejects.toMatchObject({ data: { code: &quot;NOT_FOUND&quot; } });
+  expect((await client.query(api.events.forOrg, { orgId, paginationOpts })).page).toEqual([]);
+  expect(await snapshot()).toEqual(before);
+});
+
+it(&quot;persists Booking lifecycle with exact attribution, atomic validation, stable slots and complete pagination&quot;, async () =&gt; {
+  const { t, client, orgId, recordB, snapshot } = await fixture();
+  const actor = { kind: &quot;user&quot;, id: (await client.query(api.users.me, {}))!._id };
+  const company = await objectFields(client, orgId, &quot;company&quot;);
+  const companyRecord = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: &quot;Local&quot; } });
+  const objectId = await client.mutation(api.objects.create, { orgId, key: &quot;booking&quot;, label: &quot;Booking&quot;, labelPlural: &quot;Bookings&quot; });
+  const { fields } = await client.query(api.objects.get, { orgId, objectId });
+  const name = fields.find(f =&gt; f.key === &quot;name&quot;)!._id;
+  const select = await client.mutation(api.fields.create, { orgId, objectId, key: &quot;status&quot;, label: &quot;Status&quot;, type: &quot;select&quot;, options: [{ id: &quot;new&quot;, label: &quot;New&quot; }, { id: &quot;done&quot;, label: &quot;Done&quot; }] });
+  const lookup = await client.mutation(api.fields.create, { orgId, objectId, key: &quot;company&quot;, label: &quot;Company&quot;, type: &quot;lookup&quot;, targetObjectId: company.object._id });
+  const values = { [name]: &quot;Initial&quot;, [select.fieldId]: &quot;new&quot;, [lookup.fieldId]: companyRecord.recordId };
+  const created = await client.mutation(api.records.create, { orgId, objectId, values });
+  expect((await client.query(api.records.get, { orgId, recordId: created.recordId }))!.record.values).toEqual(values);
+  expect(await t.run(ctx =&gt; ctx.db.get(created.eventId))).toMatchObject({ actor, action: &quot;create&quot;, before: null, after: values });
+  const changes = { [name]: &quot;Edited&quot;, [select.fieldId]: &quot;done&quot; };
+  const updated = await client.mutation(api.records.update, { orgId, recordId: created.recordId, values: changes });
+  expect(await t.run(ctx =&gt; ctx.db.get(updated.eventId))).toMatchObject({ actor, action: &quot;update&quot;, before: { [name]: &quot;Initial&quot;, [select.fieldId]: &quot;new&quot; }, after: changes });
+  expect((await client.query(api.records.get, { orgId, recordId: created.recordId }))!.record.values).toEqual({ ...values, ...changes });
+  for (const bad of [{ [select.fieldId]: &quot;invalid&quot; }, { [lookup.fieldId]: recordB.recordId }]) {
+    const before = await snapshot();
+    await expect(client.mutation(api.records.create, { orgId, objectId, values: { ...values, ...bad } })).rejects.toMatchObject({ data: { code: &quot;VALIDATION&quot; } });
+    await expect(client.mutation(api.records.update, { orgId, recordId: created.recordId, values: { [name]: &quot;Must roll back&quot;, ...bad } })).rejects.toMatchObject({ data: { code: &quot;VALIDATION&quot; } });
+    expect(await snapshot()).toEqual(before);
+  }
+  const fieldBefore = await t.run(ctx =&gt; ctx.db.get(select.fieldId));
+  await client.mutation(api.fields.update, { orgId, fieldId: select.fieldId, label: &quot;Booking status&quot; });
+  expect(await t.run(ctx =&gt; ctx.db.get(select.fieldId))).toEqual({ ...fieldBefore, label: &quot;Booking status&quot; });
+  const made = [];
+  for (let i = 0; i &lt; 9; i++) made.push(await client.mutation(api.fields.create, { orgId, objectId, key: `number${i}`, label: `Number ${i}`, type: &quot;number&quot; }));
+  expect(made.map(f =&gt; f.slot)).toEqual([...Array.from({ length: 8 }, (_, index) =&gt; ({ kind: &quot;n&quot;, index })), undefined]);
+  await expect(client.query(api.records.list, { orgId, objectId, sort: { fieldId: made[8].fieldId, direction: &quot;asc&quot; }, paginationOpts })).rejects.toMatchObject({ data: { code: &quot;UNINDEXED_FIELD&quot; } });
+  const removed = await client.mutation(api.records.remove, { orgId, recordId: created.recordId });
+  expect(await client.query(api.records.get, { orgId, recordId: created.recordId })).toBeNull();
+  expect(await t.run(ctx =&gt; ctx.db.get(removed.eventId))).toMatchObject({ actor, action: &quot;delete&quot;, before: { ...values, ...changes }, after: null });
+  expect((await client.query(api.events.forOrg, { orgId, paginationOpts: { numItems: 100, cursor: null } })).page.map(e =&gt; e._id)).toContain(removed.eventId);
+  const expected = [];
+  for (let i = 22; i &gt;= 0; i--) {
+    const row = await client.mutation(api.records.create, { orgId, objectId, values: { [name]: `Booking ${i}`, [made[0].fieldId]: i, [made[8].fieldId]: i + 100 } });
+    expected.unshift(row.recordId);
+  }
+  const ids: string[] = [], numbers: number[] = [], sizes: number[] = [];
+  let cursor: string | null = null;
+  for (let pageNo = 0; pageNo &lt; 10; pageNo++) {
+    const result: { page: import(&quot;./_generated/dataModel&quot;).Doc&lt;&quot;records&quot;&gt;[]; isDone: boolean; continueCursor: string } = await client.query(api.records.list, { orgId, objectId, sort: { fieldId: made[0].fieldId, direction: &quot;asc&quot; }, paginationOpts: { numItems: 10, cursor } });
+    sizes.push(result.page.length);
+    for (const row of result.page) { ids.push(row._id); numbers.push(row.values[made[0].fieldId]); expect(row.values[made[8].fieldId]).toBe(row.values[made[0].fieldId] + 100); }
+    if (result.isDone) break;
+    expect(result.continueCursor).not.toBe(cursor); cursor = result.continueCursor;
+  }
+  expect(sizes).toEqual([10, 10, 3]);
+  expect(ids).toEqual(expected);
+  expect(numbers).toEqual(Array.from({ length: 23 }, (_, i) =&gt; i));
+});
+</pre></details><h2>Bundle initialization evidence</h2><pre>var qC=new nc(`https://gallant-pika-581.convex.cloud`),JC=Sd;(0,v.createRoot)(document.getElementById(`root`)).render((0,Z.jsx)(_.StrictMode,{children:(0,Z.jsx)(_a,{publishableKey:`pk_test_b3JnYW5pYy1hZGRlci04NDcwLmNsZXJrLmFjY291bnRzLmRldiQ`,children:(0,Z.jsx)(jc,{client:qC,useAuth:ir,children:(0,Z.jsx)(JC,{children:(0,Z.jsx)(WC,{})})})})}));</pre><pre>ACCEPTANCE_VERDICT: PASS — Check 1: identity and isolation (code/test)
+ACCEPTANCE_VERDICT: PASS — Check 2: generic persistence and attribution (convex-test)
+ACCEPTANCE_VERDICT: UNVERIFIED — Check 3: deployed phone journey (shell checks PASS)</pre></body></html>
