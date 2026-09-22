@@ -1,40 +1,35 @@
 # Remold
 
-A customizable CRM on Convex, built for service businesses and agents working as team members. AGPL-3.0-only.
+A CRM you reshape as you go: custom objects and fields without code, every change attributed, agents as team members. Built on Convex. AGPL-3.0-only.
 
-**Status: Step 0 benchmark spike. There is no usable CRM yet.** No records design has passed the Cloud gate. The full approved roadmap is in [docs/build-plan.html](docs/build-plan.html).
+**Status (2026-09-22): first usable slice, ready for testing, awaiting verification.** Sign in, create an organisation, work People, Companies, Opportunities, Projects, Tasks and Notes, add your own objects and fields, and see every change in a timeline. The approved roadmap is in [docs/build-plan.html](docs/build-plan.html); the backend contract is [docs/spec/backend-v1.md](docs/spec/backend-v1.md); the records design decision is [docs/adr/001-records.md](docs/adr/001-records.md).
 
-## Local checks
+## Run it
 
-Implementation is isolated on `spike/records`. Check out that branch first. Node 24+ and pnpm 11.23.0:
+Node 24+, pnpm 11. You need a Convex project and a Clerk application with a JWT template named `convex`.
 
 ```sh
-git checkout spike/records
-pnpm install --frozen-lockfile
+pnpm install
+cp .env.example .env.local        # fill VITE_CONVEX_URL and VITE_CLERK_PUBLISHABLE_KEY
+pnpm exec convex dev              # first run creates the deployment and writes CONVEX_DEPLOYMENT
+pnpm exec convex env set CLERK_JWT_ISSUER_DOMAIN https://<your-instance>.clerk.accounts.dev
+pnpm dev
+```
+
+Create an organisation on first sign-in. In Settings you can run nothing destructive; the demo fixture is `pnpm seed` (fictional data, idempotent).
+
+## Checks
+
+```sh
 pnpm typecheck
 pnpm test
+pnpm build
 ```
 
-## Cloud benchmark (dedicated development project only)
+## Layout
 
-```sh
-pnpm exec convex login
-pnpm exec convex dev --configure new --once
-# Select a new project named remold and a Cloud dev deployment.
-pnpm seed
-pnpm bench
-```
+- `convex/` backend: `identity.ts` (Clerk behind one module, `requireMember`), `lib/applyChange.ts` (the only record write path, appends `events`), `lib/slots.ts` (typed indexed slot allocation), `lib/standard.ts` (seeded objects), one file per public module.
+- `src/` web app: Vite, React, Tailwind, shadcn. Routes under `src/routes`, generic form and value rendering under `src/components`.
+- `evidence/` before and after runs for every claim in the log.
 
-The seed is deterministic and resumable, writes 50,000 records per candidate (plus 600,000 per-field rows for the value candidate), and reconciles every record against the independent TypeScript fixture before writing `bench/expected.json`. Check the deployment's available storage first. The seed never resets or deletes existing data. Use only a dedicated empty Cloud development project.
-
-`pnpm bench` orchestrates all three runs, each with 20 samples per query, plus 20 recovery samples for each candidate. It refuses production configuration and checks the exact starting inventory. Raw server logs and measurements go to `bench/results-<timestamp>*`. Unique sample arguments avoid query-cache measurements. Engine times and document counts come from Convex completion logs; index-range requests are instrumented at each indexed pagination and primary-key read. These counts are application instrumentation, not a native engine range counter. Missing evidence fails the run.
-
-The benchmark temporarily inserts synthetic source ID 50001 with score 10000 and removes only that fixture in `finally`. If the process is killed during recovery, explicitly run the internal `bench:removeRecovery` function for that candidate with orgId `remold-benchmark` and objectKey `customJob` before rerunning. There is no broad reset command.
-
-The benchmark CLI has not yet been run end to end against Cloud. The telemetry parser is tested against fixtures shaped from Convex 1.46.0's log API type; actual live logs still need validation. The local `convex-test` runtime proves query behavior only, not engine performance or production limits.
-
-## Review
-
-See [handover.html](handover.html) for baseline, current evidence and gaps. An independent session must repeat the Cloud check on the same deployment; p50/p95 should match within the plan's 20% tolerance. Then record the selected candidate in the records ADR before implementing identity or application features.
-
-No Clerk keys, real contact data, outbound messages, paid provisioning or EspoCRM migration are part of this spike.
+The benchmark spike that chose the records design lives on branch `spike/records`.
