@@ -12,7 +12,8 @@
     "module": "ESNext",
     "isolatedModules": true,
     "noEmit": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "types": ["node", "vite/client", "vitest/importMeta"]
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]
