@@ -1,0 +1,28 @@
+Observed by Codex on 2026-09-22
+
+BEFORE
+convex login status: No Convex account token found; Status: Not logged in
+Git branch spike/records; working tree clean at def92ae.
+
+AFTER
+convex login status: Status: Logged in; sole team shakur-46299
+User explicitly accepted Convex Terms of Service in chat. Login exit 0.
+convex dev --configure new --team shakur-46299 --project remold --dev-deployment cloud --once: exit 0
+Cloud dev: gallant-pika-581; US East (N. Virginia)
+Six indexes added; Convex functions ready (1.12s).
+convex data: recordValues, slotRecords, valueRecords
+
+LOCAL CHECKS AFTER CODEGEN
+pnpm typecheck: exit 0
+pnpm test: exit 0; 2 files, 10 tests passed; 474ms
+
+BROWSER OBSERVATIONS
+https://dashboard.convex.dev/t/shakur-46299/settings/billing: Free, Current Plan
+https://dashboard.convex.dev/t/shakur-46299/settings/usage: Database Storage 0 B / 512 MB; usage reporting not yet updated for seed.
+
+Cloud seed and benchmark still running/pending at capture.
+Independent verification pending.
+
+SEED FINISHED
+pnpm seed: exit 0
+Both options contain exactly 50,000 independently reconciled records. Expected IDs saved to bench/expected.json.

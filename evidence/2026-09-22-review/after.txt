@@ -1,0 +1,19 @@
+$ pnpm typecheck
+$ tsc --noEmit
+exit 0
+$ pnpm test
+$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  09:22:30
+   Duration  495ms (tests 80%, transform 13%, import 6%, worker 1%)
+
+exit 0
+$ node bench/seed.ts (no deployment)
+Error: This spike requires a dedicated Convex Cloud dev deployment, never production.
+$ node bench/run.ts (no deployment)
+Error: This spike requires a dedicated Convex Cloud dev deployment, never production.

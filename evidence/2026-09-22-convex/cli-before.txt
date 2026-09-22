@@ -1,0 +1,27 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+
+ ❯ bench/cli.test.ts (3 tests | 1 failed) 3ms
+   × a successful function with no CLI output returns null 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  bench/cli.test.ts > a successful function with no CLI output returns null
+SyntaxError: Unexpected end of JSON input
+ ❯ Module.run bench/cli.ts:23:15
+     21| }
+     22| export function run<T>(name: string, args: object): T {
+     23|   return JSON.parse(execFileSync(process.execPath, [convexBin, "run", …
+       |               ^
+     24| }
+     25| export function streamLogs(fd: number) {
+ ❯ bench/cli.test.ts:10:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  09:57:33
+   Duration  106ms (transform 66%, import 22%, tests 8%, worker 4%)
+

@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold: Step 0 handover</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><div class="decisions"><h2>Current setup status, 2026-09-22</h2><p>Convex login and Cloud development provisioning are now complete. See <a href="convex-setup.html">the current setup handover</a> for evidence and the current benchmark status. The earlier login blockers below are historical.</p></div><h1>Remold: Step 0 handover</h1><div class="meta">2026-09-22 · Builder: Codex · Independent verification: pending</div>
+<div class="decisions"><h2>Your next action</h2><p>Sign in to Convex on this Mac and choose the team that should own Remold. The device login expired without authorization. Run <code>pnpm exec convex login</code> in the project folder for a fresh link. No keys need to be pasted into chat.</p></div>
+<div class="status"><h2>Done and proven locally</h2><ul><li>Two indexed storage prototypes, a deterministic fixture, independent order oracle and Cloud benchmark runner are implemented.</li><li><code>pnpm typecheck</code>: exit 0.</li><li><code>pnpm test</code>: exit 0, eight tests pass. The original ordering checks failed against the empty implementation before it was replaced.</li></ul>
+<h2>Review pass, 2026-09-22 (Fable 5.1)</h2><ul>
+<li>Fixed: <code>pnpm bench</code> waited a fixed 1.5 seconds for <code>convex logs</code>, but the Convex CLI only streams events that happen after its first poll. Early samples could be lost and the whole run reported UNVERIFIED. The runner now sends probe samples until one shows up in the stream, and fails fast if none does within 90 seconds.</li>
+<li>Fixed: <code>pnpm bench</code> required <code>bench/manifest.json</code>, a gitignored file only <code>pnpm seed</code> wrote, so an independent verifier on a fresh clone could not run it. The manifest is gone; both scripts read the live inventory back and reconcile it against the fixture, and the runner checks <code>bench/expected.json</code> was written for this deployment.</li>
+<li>Fixed: seeding pushed 100-row JSON arguments through 1,000 <code>pnpm exec convex run</code> processes per candidate. A new internal action <code>bench:seedRange</code> generates the fixture server-side and writes it in idempotent batches; the seed is now 10 calls per candidate and resumes after a kill. Inventory pages went from 100 to 1,000 records.</li>
+<li>Fixed: scripts spawned <code>pnpm</code> by name, which needs a shell on Windows and a shell breaks the JSON argument. They now call the Convex CLI entry point through <code>node</code>.</li>
+<li>Recorded in the ADR: the oracle's tie-break (creation time, then string order of <code>_id</code>) is not documented by Convex as matching engine index order. The Cloud correctness check fails closed if it differs.</li>
+<li>After: <code>pnpm typecheck</code> exit 0; <code>pnpm test</code> 10 pass (two new tests cover the seeding action: full write, no-op resume, refusal of a different fixture). Removing the idempotency check made 4 tests fail, so the new tests can fail. Evidence: <code>evidence/2026-09-22-review/</code>. Still not run against Cloud; that needs the Convex login above.</li></ul><p>The Cloud runner is implemented but has not been exercised end to end. Step 0 has not passed. There is no usable CRM yet.</p></div>
+<h2>Before and after</h2><table><tr><th>Check</th><th>Before</th><th>After</th></tr><tr><td>Indexed record queries</td><td>Two ordering checks failed: expected 50 IDs, received none.</td><td>Both candidates match the independent oracle for score, stage and cursor page; cross-scope queries return no rows.</td></tr><tr><td>Seed and recovery</td><td>No implementation.</td><td>Repeated seed returns the same IDs; conflicting seed rejects without modifying records; score 10000 wins; cleanup leaves the initial records intact.</td></tr><tr><td>Evidence gate</td><td>No runner.</td><td>Parser rejects missing/cached telemetry and document-limit violations; slow samples fail timing thresholds.</td></tr><tr><td>50,000-record Cloud check</td><td>No deployment/login.</td><td>Still unverified. No timings or performance claim.</td></tr></table>
+<h2>Reproduce</h2><pre>cd /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm test
+
+# After signing in, select a dedicated Cloud development project:
+pnpm exec convex login
+pnpm exec convex dev --configure new --once
+pnpm seed
+pnpm bench</pre>
+<p>One benchmark command runs all three batches of twenty samples per query, for both candidates, and the recovery cases. The seed creates 50,000 records per option and 600,000 value rows for the per-field candidate. Use a dedicated empty development deployment and check its available storage. No reset of unrelated data is implemented.</p>
+<h2>Unverified and awaiting handover</h2><ul><li>Actual deployment/codegen, Cloud log shape, 50k correctness and performance, read-limit evidence and all independent checks.</li><li>Index ranges use instrumented database calls, because the installed Convex completion-log type exposes document reads but no native range counter. The independent verifier must review this evidence or obtain native evidence before accepting the gate.</li><li>The storage design remains undecided. Steps 1 through 13 are not started. No EspoCRM cutover occurred.</li></ul>
+<h2>Evidence and sources</h2><p>Full local baseline and final check output follow. The builder ran these checks; no independent verifier has checked them.</p><h3>Baseline</h3><pre>$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+
+ ❯ bench/records.test.ts (2 tests | 2 failed) 64ms
+   ❯ slots (1)
+     × custom score sorting, selective stage filters and cursor page match independent fixture order 30ms
+   ❯ values (1)
+     × custom score sorting, selective stage filters and cursor page match independent fixture order 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  bench/records.test.ts &gt; slots &gt; custom score sorting, selective stage filters and cursor page match independent fixture order
+AssertionError: expected [] to deeply equal [ …(50) ]
+
+- Expected
++ Received
+
+- [
+-   &quot;000000000000000010140slotRecords&quot;,
+-   &quot;000000000000000010007slotRecords&quot;,
+-   &quot;000000000000000010024slotRecords&quot;,
+-   &quot;000000000000000010138slotRecords&quot;,
+-   &quot;000000000000000010019slotRecords&quot;,
+-   &quot;000000000000000010034slotRecords&quot;,
+-   &quot;000000000000000010170slotRecords&quot;,
+-   &quot;000000000000000010158slotRecords&quot;,
+-   &quot;000000000000000010037slotRecords&quot;,
+-   &quot;000000000000000010100slotRecords&quot;,
+-   &quot;000000000000000010110slotRecords&quot;,
+-   &quot;000000000000000010053slotRecords&quot;,
+-   &quot;000000000000000010165slotRecords&quot;,
+-   &quot;000000000000000010004slotRecords&quot;,
+-   &quot;000000000000000010048slotRecords&quot;,
+-   &quot;000000000000000010149slotRecords&quot;,
+-   &quot;000000000000000010066slotRecords&quot;,
+-   &quot;000000000000000010174slotRecords&quot;,
+-   &quot;000000000000000010154slotRecords&quot;,
+-   &quot;000000000000000010152slotRecords&quot;,
+-   &quot;000000000000000010049slotRecords&quot;,
+-   &quot;000000000000000010047slotRecords&quot;,
+-   &quot;000000000000000010122slotRecords&quot;,
+-   &quot;000000000000000010009slotRecords&quot;,
+-   &quot;000000000000000010031slotRecords&quot;,
+-   &quot;000000000000000010166slotRecords&quot;,
+-   &quot;000000000000000010091slotRecords&quot;,
+-   &quot;000000000000000010079slotRecords&quot;,
+-   &quot;000000000000000010189slotRecords&quot;,
+-   &quot;000000000000000010135slotRecords&quot;,
+-   &quot;000000000000000010159slotRecords&quot;,
+-   &quot;000000000000000010084slotRecords&quot;,
+-   &quot;000000000000000010177slotRecords&quot;,
+-   &quot;000000000000000010120slotRecords&quot;,
+-   &quot;000000000000000010109slotRecords&quot;,
+-   &quot;000000000000000010143slotRecords&quot;,
+-   &quot;000000000000000010022slotRecords&quot;,
+-   &quot;000000000000000010155slotRecords&quot;,
+-   &quot;000000000000000010132slotRecords&quot;,
+-   &quot;000000000000000010115slotRecords&quot;,
+-   &quot;000000000000000010190slotRecords&quot;,
+-   &quot;000000000000000010057slotRecords&quot;,
+-   &quot;000000000000000010162slotRecords&quot;,
+-   &quot;000000000000000010010slotRecords&quot;,
+-   &quot;000000000000000010151slotRecords&quot;,
+-   &quot;000000000000000010194slotRecords&quot;,
+-   &quot;000000000000000010070slotRecords&quot;,
+-   &quot;000000000000000010082slotRecords&quot;,
+-   &quot;000000000000000010141slotRecords&quot;,
+-   &quot;000000000000000010065slotRecords&quot;,
+- ]
++ []
+
+ ❯ bench/records.test.ts:35:57
+     33|     const args = { option, orgId: &quot;demo&quot;, objectKey: &quot;customJob&quot;, curs…
+     34|     const first = await t.query(page, { ...args, query: &quot;score&quot; });
+     35|     expect(first.page.map((r: {_id: string}) =&gt; r._id)).toEqual(oracle…
+       |                                                         ^
+     36|     const second = await t.query(page, { ...args, query: &quot;score&quot;, curs…
+     37|     expect(second.page.map((r: {_id: string}) =&gt; r._id)).toEqual(oracl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  bench/records.test.ts &gt; values &gt; custom score sorting, selective stage filters and cursor page match independent fixture order
+AssertionError: expected [] to deeply equal [ …(50) ]
+
+- Expected
++ Received
+
+- [
+-   &quot;00000000000000011820valueRecords&quot;,
+-   &quot;00000000000000010091valueRecords&quot;,
+-   &quot;00000000000000010312valueRecords&quot;,
+-   &quot;00000000000000011794valueRecords&quot;,
+-   &quot;00000000000000010247valueRecords&quot;,
+-   &quot;00000000000000010442valueRecords&quot;,
+-   &quot;00000000000000012210valueRecords&quot;,
+-   &quot;00000000000000012054valueRecords&quot;,
+-   &quot;00000000000000010481valueRecords&quot;,
+-   &quot;00000000000000011300valueRecords&quot;,
+-   &quot;00000000000000011430valueRecords&quot;,
+-   &quot;00000000000000010689valueRecords&quot;,
+-   &quot;00000000000000012145valueRecords&quot;,
+-   &quot;00000000000000010052valueRecords&quot;,
+-   &quot;00000000000000010624valueRecords&quot;,
+-   &quot;00000000000000011937valueRecords&quot;,
+-   &quot;00000000000000010858valueRecords&quot;,
+-   &quot;00000000000000012262valueRecords&quot;,
+-   &quot;00000000000000012002valueRecords&quot;,
+-   &quot;00000000000000011976valueRecords&quot;,
+-   &quot;00000000000000010637valueRecords&quot;,
+-   &quot;00000000000000010611valueRecords&quot;,
+-   &quot;00000000000000011586valueRecords&quot;,
+-   &quot;00000000000000010117valueRecords&quot;,
+-   &quot;00000000000000010403valueRecords&quot;,
+-   &quot;00000000000000012158valueRecords&quot;,
+-   &quot;00000000000000011183valueRecords&quot;,
+-   &quot;00000000000000011027valueRecords&quot;,
+-   &quot;00000000000000012457valueRecords&quot;,
+-   &quot;00000000000000011755valueRecords&quot;,
+-   &quot;00000000000000012067valueRecords&quot;,
+-   &quot;00000000000000011092valueRecords&quot;,
+-   &quot;00000000000000012301valueRecords&quot;,
+-   &quot;00000000000000011560valueRecords&quot;,
+-   &quot;00000000000000011417valueRecords&quot;,
+-   &quot;00000000000000011859valueRecords&quot;,
+-   &quot;00000000000000010286valueRecords&quot;,
+-   &quot;00000000000000012015valueRecords&quot;,
+-   &quot;00000000000000011716valueRecords&quot;,
+-   &quot;00000000000000011495valueRecords&quot;,
+-   &quot;00000000000000012470valueRecords&quot;,
+-   &quot;00000000000000010741valueRecords&quot;,
+-   &quot;00000000000000012106valueRecords&quot;,
+-   &quot;00000000000000010130valueRecords&quot;,
+-   &quot;00000000000000011963valueRecords&quot;,
+-   &quot;00000000000000012522valueRecords&quot;,
+-   &quot;00000000000000010910valueRecords&quot;,
+-   &quot;00000000000000011066valueRecords&quot;,
+-   &quot;00000000000000011833valueRecords&quot;,
+-   &quot;00000000000000010845valueRecords&quot;,
+- ]
++ []
+
+ ❯ bench/records.test.ts:35:57
+     33|     const args = { option, orgId: &quot;demo&quot;, objectKey: &quot;customJob&quot;, curs…
+     34|     const first = await t.query(page, { ...args, query: &quot;score&quot; });
+     35|     expect(first.page.map((r: {_id: string}) =&gt; r._id)).toEqual(oracle…
+       |                                                         ^
+     36|     const second = await t.query(page, { ...args, query: &quot;score&quot;, curs…
+     37|     expect(second.page.map((r: {_id: string}) =&gt; r._id)).toEqual(oracl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  04:42:34
+   Duration  182ms (tests 54%, transform 26%, import 18%, worker 1%)
+
+[ELIFECYCLE] Test failed. See above for more details.
+</pre><h3>Final checks</h3><pre>$ tsc --noEmit
+
+$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/active/remold
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  04:52:57
+   Duration  184ms (tests 54%, transform 28%, import 16%, worker 2%)
+
+Cloud command (exit 1, expected access block):
+$ node bench/run.ts
+file:///Users/urkel/Documents/CodeMyVibe/Projects/active/remold/bench/cli.ts:5
+  if (!value?.startsWith(&quot;dev:&quot;)) throw new Error(&quot;This spike requires a dedicated Convex Cloud dev deployment, never production.&quot;);
+                                        ^
+
+Error: This spike requires a dedicated Convex Cloud dev deployment, never production.
+    at deployment (file:///Users/urkel/Documents/CodeMyVibe/Projects/active/remold/bench/cli.ts:5:41)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/active/remold/bench/run.ts:10:16
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+[ELIFECYCLE] Command failed with exit code 1.
+</pre><p>Sources for index and telemetry design: <a href="https://docs.convex.dev/database/reading-data/indexes/">Convex index documentation</a>, <a href="https://stack.convex.dev/pagination">Convex pagination and index tie breakers</a>, <a href="https://docs.convex.dev/cli/overview">Convex CLI</a>, and the installed Convex 1.46.0 completion-log API type. Architecture notes are in <code>docs/adr/001-records.md</code> and <code>002-events.md</code>; the approved roadmap is in <code>docs/build-plan.html</code>.</p></body></html>

@@ -1,0 +1,403 @@
+{
+  "url": "https://gallant-pika-581.convex.cloud",
+  "functions": [
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "objectKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "option": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "slots"
+                },
+                {
+                  "type": "literal",
+                  "value": "values"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "query": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "score"
+                },
+                {
+                  "type": "literal",
+                  "value": "won"
+                },
+                {
+                  "type": "literal",
+                  "value": "contacted"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "sampleId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "bench.js:page",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "objectKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "option": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "slots"
+                },
+                {
+                  "type": "literal",
+                  "value": "values"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "rows": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "sourceId": {
+                    "fieldType": {
+                      "type": "number"
+                    },
+                    "optional": false
+                  },
+                  "values": {
+                    "fieldType": {
+                      "keys": {
+                        "type": "string"
+                      },
+                      "type": "record",
+                      "values": {
+                        "fieldType": {
+                          "type": "union",
+                          "value": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "optional": false
+                      }
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bench.js:seedBatch",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "limit": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "objectKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "offset": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "option": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "slots"
+                },
+                {
+                  "type": "literal",
+                  "value": "values"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "total": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "bench.js:seedRange",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "objectKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "option": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "slots"
+                },
+                {
+                  "type": "literal",
+                  "value": "values"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "bench.js:inventory",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "objectKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "option": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "slots"
+                },
+                {
+                  "type": "literal",
+                  "value": "values"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "query": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "score"
+                },
+                {
+                  "type": "literal",
+                  "value": "won"
+                },
+                {
+                  "type": "literal",
+                  "value": "contacted"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "sampleId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "bench.js:sample",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "objectKey": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "option": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "slots"
+                },
+                {
+                  "type": "literal",
+                  "value": "values"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "bench.js:removeRecovery",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    }
+  ]
+}
