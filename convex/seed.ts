@@ -1,21 +1,27 @@
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
-import { requireMember } from "./identity";
+import { requireMember, type Membership } from "./identity";
 import { applyChange } from "./lib/applyChange";
 import { fail } from "./errors";
 
-async function objectAndFields(ctx: any, orgId: any, key: string) {
-  const object = await ctx.db.query("objects").withIndex("by_org_key", (q: any) => q.eq("orgId", orgId).eq("key", key)).unique();
+async function objectAndFields(ctx: MutationCtx, orgId: Id<"orgs">, key: string) {
+  const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", key)).unique();
   if (!object) fail("NOT_FOUND", "Standard object not found");
-  const fields = await ctx.db.query("fields").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", object._id)).collect();
-  return { object, byKey: Object.fromEntries(fields.map((field: any) => [field.key, field._id])) };
+  const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", object._id)).collect();
+  return { object, byKey: Object.fromEntries(fields.map((field) => [field.key, field._id])) };
 }
-export const demo = mutation({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
-  const member = await requireMember(ctx, args.orgId, "admin");
-  const company = await objectAndFields(ctx, args.orgId, "company");
-  const existing = await ctx.db.query("records").withIndex("by_s0", (q) => q.eq("orgId", args.orgId).eq("objectId", company.object._id).eq("s0", "Fictional Plumbing Co")).unique();
+
+async function seedDemo(ctx: MutationCtx, member: Membership, orgId: Id<"orgs">) {
+  const company = await objectAndFields(ctx, orgId, "company");
+  const existing = await ctx.db.query("records").withIndex("by_s0", (q) => q.eq("orgId", orgId).eq("objectId", company.object._id).eq("s0", "Fictional Plumbing Co")).unique();
   if (existing) return;
-  const create = async (key: string, values: Record<string, unknown>) => { const item = await objectAndFields(ctx, args.orgId, key); return (await applyChange(ctx, member, { action: "create", orgId: args.orgId, objectId: item.object._id, values: Object.fromEntries(Object.entries(values).map(([field, value]) => [item.byKey[field], value])) })).recordId; };
+  const create = async (key: string, values: Record<string, unknown>) => {
+    const item = await objectAndFields(ctx, orgId, key);
+    const mapped = Object.fromEntries(Object.entries(values).map(([field, value]) => [item.byKey[field]!, value]));
+    return (await applyChange(ctx, member, { action: "create", orgId, objectId: item.object._id, values: mapped })).recordId;
+  };
   const fictional = await create("company", { name: "Fictional Plumbing Co", city: "Fabletown" });
   const atlas = await create("company", { name: "Atlas Imaginary Works", city: "Sample City" });
   await create("company", { name: "Example Electric LLC", city: "Demo Bay" });
@@ -32,4 +38,22 @@ export const demo = mutation({ args: { orgId: v.id("orgs") }, handler: async (ct
   await create("task", { title: "Send imaginary update", project });
   await create("note", { body: "Fictional customer note", about: fictional });
   await create("note", { body: "Sample project note", about: project });
-} });
+}
+
+export const demo = mutation({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => seedDemo(ctx, await requireMember(ctx, args.orgId, "admin"), args.orgId),
+});
+
+// CLI seeding (`convex run seed:demoAs`) has no signed-in identity, so the
+// member is named explicitly and must be an admin of the org.
+export const demoAs = internalMutation({
+  args: { orgId: v.id("orgs"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    const member = await ctx.db.query("members").withIndex("by_org_user", (q) => q.eq("orgId", args.orgId).eq("userId", args.userId)).unique();
+    const org = await ctx.db.get(args.orgId);
+    if (!user || !member || !org || member.role === "member") fail("FORBIDDEN", "Admin membership required");
+    await seedDemo(ctx, { user, actor: { kind: "user", id: user._id }, member, org }, args.orgId);
+  },
+});

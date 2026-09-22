@@ -5,7 +5,9 @@ export const store = mutation({ args: {}, handler: async (ctx) => {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) fail("UNAUTHENTICATED", "Sign in first");
   const existing = await ctx.db.query("users").withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier)).unique();
-  const data = { name: identity.name ?? "", email: identity.email, imageUrl: identity.pictureUrl };
+  // The Clerk token may carry no profile claims; keep a readable fallback for the timeline.
+  const name = identity.name || [identity.givenName, identity.familyName].filter(Boolean).join(" ") || identity.email || identity.nickname || "Member";
+  const data = { name, email: identity.email, imageUrl: identity.pictureUrl };
   if (existing) { await ctx.db.patch(existing._id, data); return existing._id; }
   return ctx.db.insert("users", { tokenIdentifier: identity.tokenIdentifier, ...data });
 } });
