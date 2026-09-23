@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { usePaginatedQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RecordMultiPicker, RecordPicker } from "@/components/RecordPicker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -115,46 +114,8 @@ export function FieldInput({ orgId, field, value, onChange, autoFocus }: { orgId
         </Select>
       );
     case "lookup":
-      return <RecordSelect id={id} orgId={orgId} objectId={field.targetObjectId!} value={(value as string) ?? ""} onChange={(v) => onChange(v || null)} />;
+      return <RecordPicker id={id} autoFocus={autoFocus} orgId={orgId} objectId={field.targetObjectId!} value={(value as string) ?? ""} onChange={onChange} />;
     case "links":
-      return <RecordMultiSelect orgId={orgId} objectId={field.targetObjectId!} value={(value as string[]) ?? []} onChange={onChange} />;
+      return <RecordMultiPicker id={id} autoFocus={autoFocus} orgId={orgId} objectId={field.targetObjectId!} value={(value as string[]) ?? []} onChange={onChange} />;
   }
-}
-
-function useRecordOptions(orgId: Id<"orgs">, objectId: Id<"objects">) {
-  return usePaginatedQuery(api.records.list, { orgId, objectId }, { initialNumItems: 100 }).results;
-}
-
-function RecordSelect({ id, orgId, objectId, value, onChange }: { id: string; orgId: Id<"orgs">; objectId: Id<"objects">; value: string; onChange: (v: string) => void }) {
-  const records = useRecordOptions(orgId, objectId);
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger id={id} className="w-full">
-        <SelectValue placeholder="Choose" />
-      </SelectTrigger>
-      <SelectContent>
-        {records.map((record) => (
-          <SelectItem key={record._id} value={record._id}>
-            {record.title || "Untitled"}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-function RecordMultiSelect({ orgId, objectId, value, onChange }: { orgId: Id<"orgs">; objectId: Id<"objects">; value: string[]; onChange: (v: string[]) => void }) {
-  const records = useRecordOptions(orgId, objectId);
-  const toggle = (id: string, on: boolean) => onChange(on ? [...value, id] : value.filter((v) => v !== id));
-  return (
-    <div className="grid max-h-48 gap-2 overflow-y-auto rounded-md border p-3">
-      {records.length === 0 && <span className="text-sm text-muted-foreground">Nothing to link yet</span>}
-      {records.map((record) => (
-        <label key={record._id} className="flex items-center gap-2 text-sm">
-          <Checkbox checked={value.includes(record._id)} onCheckedChange={(checked) => toggle(record._id, checked === true)} />
-          {record.title || "Untitled"}
-        </label>
-      ))}
-    </div>
-  );
 }

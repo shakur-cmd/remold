@@ -2,10 +2,12 @@ import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { allocateSlot, kindFor } from "./slots";
 
-type FieldDef = { key: string; label: string; type: "text" | "number" | "select" | "date" | "boolean" | "lookup" | "links"; required?: boolean; target?: string; options?: { id: string; label: string }[] };
+type FieldDef = { key: string; label: string; type: "text" | "number" | "select" | "date" | "boolean" | "lookup" | "links"; required?: boolean; indexed?: false; target?: string; options?: { id: string; label: string }[] };
 type ObjectDef = { key: string; label: string; plural: string; fields: FieldDef[] };
+// Only fields people sort or filter by get an indexed slot; an object has 8
+// text slots and notes or address lines would use them up.
 const standard: ObjectDef[] = [
-  { key: "company", label: "Company", plural: "Companies", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "domain", label: "Domain", type: "text" }, { key: "city", label: "City", type: "text" }, { key: "notes", label: "Notes", type: "text" }, { key: "street", label: "Street", type: "text" }, { key: "state", label: "State", type: "text" }, { key: "postalCode", label: "Postal Code", type: "text" }, { key: "country", label: "Country", type: "text" }] },
+  { key: "company", label: "Company", plural: "Companies", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "domain", label: "Domain", type: "text" }, { key: "city", label: "City", type: "text" }, { key: "notes", label: "Notes", type: "text", indexed: false }, { key: "street", label: "Street", type: "text", indexed: false }, { key: "state", label: "State", type: "text", indexed: false }, { key: "postalCode", label: "Postal Code", type: "text", indexed: false }, { key: "country", label: "Country", type: "text", indexed: false }] },
   { key: "person", label: "Person", plural: "People", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "email", label: "Email", type: "text" }, { key: "phone", label: "Phone", type: "text" }, { key: "title", label: "Title", type: "text" }, { key: "company", label: "Company", type: "lookup", target: "company" }] },
   { key: "opportunity", label: "Opportunity", plural: "Opportunities", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "amount", label: "Amount", type: "number" }, { key: "stage", label: "Stage", type: "select", options: ["new", "contacted", "qualified", "proposal", "won", "lost"].map((id) => ({ id, label: id[0].toUpperCase() + id.slice(1) })) }, { key: "closeDate", label: "Close Date", type: "date" }, { key: "company", label: "Company", type: "lookup", target: "company" }, { key: "person", label: "Person", type: "lookup", target: "person" }] },
   { key: "project", label: "Project", plural: "Projects", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "status", label: "Status", type: "select", options: ["active", "paused", "done"].map((id) => ({ id, label: id[0].toUpperCase() + id.slice(1) })) }, { key: "company", label: "Company", type: "lookup", target: "company" }] },
@@ -27,7 +29,7 @@ export async function seedStandard(ctx: MutationCtx, orgId: Id<"orgs">) {
     const present = new Set((await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect()).map((field) => field.key));
     for (const [order, field] of definition.fields.entries()) {
       if (present.has(field.key)) continue;
-      const kind = kindFor(field.type);
+      const kind = field.indexed === false ? undefined : kindFor(field.type);
       const fieldId = await ctx.db.insert("fields", { orgId, objectId, key: field.key, label: field.label, type: field.type, options: field.options, targetObjectId: field.target ? ids[field.target] : undefined, required: field.required ?? false, slot: kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined, encoding: 1, retired: false, order });
       if (order === 0) await ctx.db.patch(objectId, { titleFieldId: fieldId });
     }

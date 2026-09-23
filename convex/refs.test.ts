@@ -33,5 +33,5 @@ test("ensureStandard adds new standard fields to an existing org without touchin
   const after = await objectFields(client, orgId, "company");
   expect(Object.keys(after.fields).sort()).toEqual(Object.keys(before.fields).sort());
   expect(after.fields.name._id).toBe(before.fields.name._id);
-  expect(after.fields.country.slot).toBeDefined();
+  expect(after.fields.country.slot).toBeUndefined(); // address lines are seeded unindexed
 });

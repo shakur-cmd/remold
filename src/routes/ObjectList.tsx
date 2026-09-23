@@ -54,7 +54,11 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
             <Select
               key={field._id}
               value={filter?.fieldId === field._id ? filter.value : "all"}
-              onValueChange={(value) => setFilter(value === "all" ? undefined : { fieldId: field._id, value })}
+              onValueChange={(value) => {
+                // The server sorts and filters through one index, so a filter drops a sort on another column.
+                if (value !== "all" && sort && sort.fieldId !== field._id) setSort(undefined);
+                setFilter(value === "all" ? undefined : { fieldId: field._id, value });
+              }}
             >
               <SelectTrigger className="h-9" aria-label={`Filter by ${field.label}`}>
                 <SelectValue />
@@ -102,13 +106,13 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
               <TableHead>{fields.find((f) => f._id === object.titleFieldId)?.label ?? "Title"}</TableHead>
               {columns.map((field) => (
                 <TableHead key={field._id}>
-                  {isSlotted(field) ? (
+                  {isSlotted(field) && (!filter || filter.fieldId === field._id) ? (
                     <button type="button" className="inline-flex items-center gap-1" onClick={() => toggleSort(field._id)}>
                       {field.label}
                       {sort?.fieldId === field._id && (sort.direction === "desc" ? <ArrowDown className="size-3" /> : <ArrowUp className="size-3" />)}
                     </button>
                   ) : (
-                    field.label
+                    <span title={isSlotted(field) ? "Clear the filter to sort by this column" : undefined}>{field.label}</span>
                   )}
                 </TableHead>
               ))}

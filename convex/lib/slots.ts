@@ -27,3 +27,16 @@ export function projections(fields: Doc<"fields">[], values: Record<string, unkn
   }
   return out;
 }
+
+// The one exception to "a slot is never reused": clear the slot's projection on
+// every record of the object, then free it, in one transaction. No record can
+// then carry an old value under a slot a later field takes. Bounded by one
+// object's records, so it is for migrations, not for request paths.
+export async function releaseSlot(ctx: MutationCtx, field: Doc<"fields">) {
+  if (!field.slot) return 0;
+  const name = `${field.slot.kind}${field.slot.index}`;
+  const records = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", field.orgId).eq("objectId", field.objectId)).collect();
+  for (const record of records) if ((record as Record<string, unknown>)[name] !== undefined) await ctx.db.patch(record._id, { [name]: undefined });
+  await ctx.db.patch(field._id, { slot: undefined });
+  return records.length;
+}

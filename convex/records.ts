@@ -41,3 +41,23 @@ export const byRef = query({ args: { orgId: v.id("orgs"), ref: v.string() }, han
   const object = await ctx.db.get(record.objectId);
   return object ? { record, object } : null;
 } });
+// Title search for pickers and the search box. Without text it returns the
+// most recently updated, so a picker is never empty.
+export const search = query({ args: { orgId: v.id("orgs"), objectId: v.optional(v.id("objects")), text: v.string(), limit: v.optional(v.number()) }, handler: async (ctx, args) => {
+  await requireMember(ctx, args.orgId);
+  const limit = Math.min(args.limit ?? 10, 50), text = args.text.trim();
+  if (args.objectId) { const object = await ctx.db.get(args.objectId); if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); }
+  const records = text
+    ? await ctx.db.query("records").withSearchIndex("search_title", (q) => { const base = q.search("title", text).eq("orgId", args.orgId); return args.objectId ? base.eq("objectId", args.objectId) : base; }).take(limit)
+    : args.objectId
+      ? await ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId!)).order("desc").take(limit)
+      : [];
+  const objects = new Map<string, { key: string; label: string }>();
+  const result = [];
+  for (const record of records) {
+    if (!objects.has(record.objectId)) { const object = await ctx.db.get(record.objectId); if (object) objects.set(record.objectId, { key: object.key, label: object.label }); }
+    const object = objects.get(record.objectId);
+    if (object) result.push({ _id: record._id, title: record.title, ref: record.ref, objectKey: object.key, objectLabel: object.label });
+  }
+  return result;
+} });

@@ -38,7 +38,27 @@ async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unkn
 const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 // Returns eventId null only when an update changed nothing, so no event is written.
-export async function applyChange(ctx: MutationCtx, membership: Membership, change: Change): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+// Lookups store the target id in `values`, not in `links`, so a delete has to
+// find them by field: through the slot index when the lookup has one, else by
+// reading the source object's records.
+async function clearReferencesTo(ctx: MutationCtx, membership: Membership, orgId: Id<"orgs">, deleted: Doc<"records">) {
+  const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
+  for (const source of objects) {
+    const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === deleted.objectId));
+    for (const field of lookups) {
+      const slot = field.slot;
+      const referrers: Doc<"records">[] = slot
+        ? await (ctx.db.query("records") as any).withIndex(`by_${slot.kind}${slot.index}`, (q: any) => q.eq("orgId", orgId).eq("objectId", source._id).eq(`${slot.kind}${slot.index}`, deleted._id)).collect()
+        : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === deleted._id);
+      for (const record of referrers) {
+        if (record._id === deleted._id) continue;
+        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: `Linked ${deleted.title || "record"} was deleted` }, { clearingReference: true });
+      }
+    }
+  }
+}
+
+export async function applyChange(ctx: MutationCtx, membership: Membership, change: Change, options: { clearingReference?: boolean } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   let record: Doc<"records"> | null = null;
   let object: Doc<"objects"> | null;
   if (change.action === "create") object = await ctx.db.get(change.objectId);
@@ -50,6 +70,7 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
     const targets = await ctx.db.query("links").withIndex("by_target_any", (q) => q.eq("orgId", change.orgId).eq("toRecordId", record!._id)).collect();
     for (const row of new Map([...rows, ...targets].map((item) => [item._id, item])).values()) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
+    await clearReferencesTo(ctx, membership, change.orgId, record!);
     const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason });
     return { recordId: record!._id, eventId };
   }
@@ -62,7 +83,13 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
   }
   const values: Record<string, unknown> = change.action === "create" ? {} : { ...record!.values };
   for (const [fieldId, value] of Object.entries(validated)) { if (empty(value)) delete values[fieldId]; else values[fieldId] = value; }
-  for (const field of fields) if (field.required && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
+  // An update only checks the fields it touches, so adding a required field
+  // later does not lock every older record. Clearing references on delete may
+  // empty a required lookup; a dangling id would be worse.
+  for (const field of fields) {
+    const checked = change.action === "create" || (field._id in validated && !options.clearingReference);
+    if (checked && field.required && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
+  }
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;

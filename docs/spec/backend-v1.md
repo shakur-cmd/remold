@@ -157,6 +157,7 @@ Capacity per object: n 8, s 8, d 4, b 4. Type to kind: number => n; text, select
 
 Rules:
 - A field's slot is assigned at creation and never changes. Rename never touches storage. Retire keeps the slot reserved. No reuse.
+- One exception (added 2026-09-22): `releaseSlot` in a migration clears that slot's projection on every record of the object and frees it in the same transaction, so no stale value can surface under a later field. Used to free Company's text slots from notes and address lines, which seed unindexed.
 - Exhausted capacity creates the field with `slot` absent. Such a field stores values in `values` but `records.list` refuses to sort or filter by it with `fail("UNINDEXED_FIELD")`. Never a scan.
 - Type is immutable after creation.
 - `projections(fields, values)` returns the `{n0: .., s3: ..}` object for a record from its canonical values: every slotted field of the object, `undefined` when the value is empty, so stale projections are cleared on update.
@@ -177,9 +178,9 @@ applyChange(ctx: MutationCtx, membership: Membership, change: Change): Promise<{
 In one mutation, in this order; any failure throws before any write:
 1. Load object (create) or record then object (update, delete); both must have `orgId === change.orgId`, else `fail("NOT_FOUND")`. Never reveal cross-org existence: the same NOT_FOUND for wrong org and for missing.
 2. Load the object's fields. Every key in `change.values` must be a non-retired field `_id` of this object, else `fail("VALIDATION", ..., { fieldId })`.
-3. Validate each value by type. Empty is `null` or `undefined` and means "clear". number: finite number. text: string. select: string equal to an option id. date: integer. boolean: boolean. lookup: string that is a record `_id` whose record exists, has this `orgId`, and whose `objectId` equals `targetObjectId` when set. links: array of such ids (same checks, target per element). On create, every `required` field must be non-empty. Failure: `fail("VALIDATION", message, { fieldId })`.
+3. Validate each value by type. Empty is `null` or `undefined` and means "clear". number: finite number. text: string. select: string equal to an option id. date: integer. boolean: boolean. lookup: string that is a record `_id` whose record exists, has this `orgId`, and whose `objectId` equals `targetObjectId` when set. links: array of such ids (same checks, target per element). On create, every `required` field must be non-empty; on update, only required fields the change touches are checked. Failure: `fail("VALIDATION", message, { fieldId })`.
 4. Compute the new canonical `values` (create: validated values; update: previous merged with validated partial, cleared keys removed). Compute `title` from `object.titleFieldId` (string of the value, "" if empty; for lookup use the target record's title). Compute projections.
-5. Write: create => insert record; update => patch `values`, `title`, `updatedAt` and all projection slots; delete => delete record and every `links` row where it is `fromRecordId` or `toRecordId`. For links fields, reconcile `links` rows to the new array (insert missing, delete extra) on create and update.
+5. Write: create => insert record; update => patch `values`, `title`, `updatedAt` and all projection slots; delete => delete record and every `links` row where it is `fromRecordId` or `toRecordId`, and clear every lookup value pointing at it through an attributed update (reason names the deleted record). For links fields, reconcile `links` rows to the new array (insert missing, delete extra) on create and update.
 6. Append the event. `before`/`after` carry only the changed field ids; create has `before: null`, delete has `after: null` and `before` = full previous values. `actor` comes from `membership.actor`.
 7. Return ids.
 

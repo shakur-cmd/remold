@@ -142,7 +142,7 @@ function InlineField({ orgId, recordId, field, value, title = false }: { orgId: 
     if (!editing) setDraft(value);
   }, [value, editing]);
   const readOnly = field.type === "lookup" && !field.targetObjectId;
-  const instant = field.type === "select" || field.type === "boolean";
+  const instant = field.type === "select" || field.type === "boolean" || field.type === "lookup";
 
   async function save(next: unknown) {
     try {

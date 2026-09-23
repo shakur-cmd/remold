@@ -4,7 +4,8 @@ import type { MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireMember, type Membership } from "./identity";
 import { applyChange } from "./lib/applyChange";
-import { seedStandard } from "./lib/standard";
+import { seedStandard, standard } from "./lib/standard";
+import { releaseSlot } from "./lib/slots";
 import { uniqueRef } from "./lib/ref";
 import { fail } from "./errors";
 
@@ -77,5 +78,23 @@ export const backfillRefs = internalMutation({
       for (const record of records) if (!record.ref) { await ctx.db.patch(record._id, { ref: await uniqueRef(ctx, args.orgId) }); count += 1; }
     }
     return count;
+  },
+});
+
+// Frees slots held by standard fields that are no longer indexed (notes and
+// address lines), for orgs seeded before that changed (`convex run seed:releaseStandardSlots`).
+export const releaseStandardSlots = internalMutation({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    const released: string[] = [];
+    for (const definition of standard) {
+      const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", args.orgId).eq("key", definition.key)).unique();
+      if (!object) continue;
+      for (const def of definition.fields.filter((field) => field.indexed === false)) {
+        const field = await ctx.db.query("fields").withIndex("by_object_key", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id).eq("key", def.key)).unique();
+        if (field?.slot) { await releaseSlot(ctx, field); released.push(`${definition.key}.${def.key}`); }
+      }
+    }
+    return released;
   },
 });
