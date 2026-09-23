@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useOutletContext } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -63,8 +63,14 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
 
 function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
   const members = useQuery(api.orgs.members, { orgId });
+  const me = useQuery(api.users.me);
   const createInvite = useMutation(api.invites.create);
+  const setRole = useMutation(api.orgs.setRole);
+  const removeMember = useMutation(api.orgs.removeMember);
+  const leave = useMutation(api.orgs.leave);
+  const navigate = useNavigate();
   const [link, setLink] = useState<string | null>(null);
+  const myRole = members?.find(({ user }) => user._id === me?._id)?.member.role;
   async function invite(role: "admin" | "member") {
     await run(async () => {
       const { token } = await createInvite({ orgId, role });
@@ -80,25 +86,55 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
         <CardTitle className="text-base">Members</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3">
-        {members?.map(({ member, user }) => (
-          <div key={member._id} className="flex items-center gap-2 text-sm">
-            <span className="font-medium">{user.name}</span>
-            <span className="text-muted-foreground">{user.email}</span>
-            <Badge variant="outline" className="ml-auto">
-              {member.role}
-            </Badge>
-          </div>
-        ))}
-        {admin && (
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button size="sm" variant="outline" onClick={() => invite("member")}>
-              Invite a member
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => invite("admin")}>
-              Invite an admin
-            </Button>
-          </div>
-        )}
+        {members?.map(({ member, user }) => {
+          const self = user._id === me?._id;
+          // Only an owner touches owners; nobody edits their own row here.
+          const editable = admin && !self && (member.role !== "owner" || myRole === "owner");
+          return (
+            <div key={member._id} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium">{user.name}</span>
+              <span className="text-muted-foreground">{user.email}</span>
+              <span className="ml-auto flex items-center gap-1">
+                {editable ? (
+                  <Select value={member.role} onValueChange={(role) => run(() => setRole({ orgId, userId: user._id, role: role as "owner" | "admin" | "member" }), "Role changed")}>
+                    <SelectTrigger size="sm" aria-label={`Role of ${user.name}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(["member", "admin", ...(myRole === "owner" ? ["owner"] : [])] as const).map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge variant="outline">{member.role}</Badge>
+                )}
+                {editable && (
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => confirm(`Remove ${user.name} from this organisation?`) && run(() => removeMember({ orgId, userId: user._id }), "Removed")}>
+                    Remove
+                  </Button>
+                )}
+              </span>
+            </div>
+          );
+        })}
+        <div className="flex flex-wrap gap-2 pt-2">
+          {admin && (
+            <>
+              <Button size="sm" variant="outline" onClick={() => invite("member")}>
+                Invite a member
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => invite("admin")}>
+                Invite an admin
+              </Button>
+            </>
+          )}
+          <Button size="sm" variant="ghost" className="ml-auto text-destructive" onClick={() => confirm("Leave this organisation?") && run(async () => { await leave({ orgId }); navigate("/"); })}>
+            Leave
+          </Button>
+        </div>
         {link && <Input readOnly value={link} onFocus={(e) => e.currentTarget.select()} aria-label="Invite link" />}
       </CardContent>
     </Card>
