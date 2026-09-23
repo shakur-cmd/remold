@@ -1,0 +1,11 @@
+{
+  "name": "@remold/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "bin": { "remold-mcp": "dist/index.js" },
+  "scripts": { "build": "tsc", "test": "vitest run src" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.30.0", "zod": "^4.6.5" },
+  "devDependencies": { "typescript": "~6.0.2", "vitest": "^5.0.1" }
+}
