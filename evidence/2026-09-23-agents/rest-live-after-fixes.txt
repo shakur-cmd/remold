@@ -1,0 +1,7 @@
+after fixes, live:
+POST /suggestions with impossible date
+{"error":{"code":"VALIDATION","fieldKey":"dueDate","message":"Expected a real date as YYYY-MM-DD"}} [400]
+POST /suggestions company without name
+{"error":{"code":"VALIDATION","fieldKey":"name","message":"Name is required"}} [400]
+GET /suggestions pending count
+2 [('astra-verifier', {'city': 'X'}, {'city': 'Fabletown'}), ('fable-mac', {'city': 'Baltimore'}, {'city': 'Fabletown'})]

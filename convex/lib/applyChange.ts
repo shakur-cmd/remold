@@ -86,7 +86,8 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const validated: Record<string, unknown> = {};
   for (const [fieldId, value] of Object.entries(change.values)) {
     const field = byId.get(fieldId as Id<"fields">);
-    if (!field || field.retired) fail("VALIDATION", "Unknown or retired field", { fieldId });
+    // Reference cleanup may touch a retired field: its stored links still exist.
+    if (!field || (field.retired && !options.clearingReference)) fail("VALIDATION", "Unknown or retired field", { fieldId });
     validated[fieldId] = await validateValue(ctx, field, value, change.orgId);
   }
   const values: Record<string, unknown> = change.action === "create" ? {} : { ...record!.values };

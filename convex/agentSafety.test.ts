@@ -99,4 +99,39 @@ describe("agent safety", () => {
     const events = await client.query(api.events.forRecord, { orgId, recordId: blocked.recordId });
     expect(events[0]).toMatchObject({ action: "update", reason: "Linked Blocker was deleted" });
   });
+
+  it("still deletes a task that a retired links field pointed at", async () => {
+    const { client, orgId } = await userAndOrg();
+    const task = await objectFields(client, orgId, "task");
+    const target = await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: "Target" } });
+    const source = await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: "Source", [task.fields.blockedBy._id]: [target.recordId] } });
+    await client.mutation(api.fields.retire, { orgId, fieldId: task.fields.blockedBy._id });
+    await client.mutation(api.records.remove, { orgId, recordId: target.recordId });
+    expect(await client.query(api.records.get, { orgId, recordId: target.recordId })).toBeNull();
+    expect((await client.query(api.records.get, { orgId, recordId: source.recordId }))!.record.values[task.fields.blockedBy._id] ?? []).toEqual([]);
+  });
+
+  it("refuses a person from another org applying a suggestion, writing nothing", async () => {
+    const { t, a, b } = await twoOrgs();
+    const company = await objectFields(a.client, a.orgId, "company");
+    const record = await a.client.mutation(api.records.create, { orgId: a.orgId, objectId: company.object._id, values: { [company.fields.name._id]: "A Co" } });
+    const agent = await agentFor(a.client, a.orgId, { name: "a" });
+    const proposal = await rest(t, agent.key)("POST", "/api/v1/suggestions", { action: "update", record: record.recordId, values: { city: "Boston" }, reason: "move" });
+    const before = await snapshot(t);
+    await expect(b.client.mutation(api.suggestions.apply, { orgId: b.orgId, suggestionId: proposal.json.suggestion.id })).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
+    await expect(b.client.mutation(api.suggestions.dismiss, { orgId: b.orgId, suggestionId: proposal.json.suggestion.id })).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
+    expect(await snapshot(t)).toBe(before);
+  });
+
+  it("links an inbox item to the suggestion an agent resolves it with", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "agent" }), call = rest(t, agent.key);
+    const inboxId = await client.mutation(api.inbox.add, { orgId, text: "Add Atlas" });
+    const proposal = await call("POST", "/api/v1/suggestions", { action: "create", object: "company", values: { name: "Atlas" }, reason: "from inbox" });
+    const resolved = await call("POST", `/api/v1/inbox/${inboxId}/resolve`, { suggestionId: proposal.json.suggestion.id, note: "proposed Atlas" });
+    expect(resolved.status).toBe(200);
+    expect(resolved.json).toMatchObject({ status: "resolved", suggestionId: proposal.json.suggestion.id, note: "proposed Atlas" });
+    expect((await call("GET", "/api/v1/inbox")).json).toEqual([]);
+    expect(await client.query(api.inbox.list, { orgId, status: "pending" })).toEqual([]);
+  });
 });
