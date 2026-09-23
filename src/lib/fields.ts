@@ -17,3 +17,13 @@ export const optionLabel = (field: Field, id: unknown) =>
   field.options?.find((option) => option.id === id)?.label ?? String(id ?? "");
 
 export const isLongText = (field: Field) => field.type === "text" && (field.key === "body" || field.key === "notes");
+
+// Standard contact fields become one-tap actions: call, email, open the site.
+export function contactHref(field: Field, value: unknown): string | undefined {
+  if (field.type !== "text" || typeof value !== "string" || !value.trim()) return undefined;
+  const text = value.trim();
+  if (field.key === "phone") return `tel:${text.replace(/[^\d+]/g, "")}`;
+  if (field.key === "email") return `mailto:${text}`;
+  if (field.key === "domain" || field.key === "website") return /^https?:\/\//i.test(text) ? text : `https://${text}`;
+  return undefined;
+}

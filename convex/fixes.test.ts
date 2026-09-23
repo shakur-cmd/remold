@@ -74,3 +74,35 @@ describe("search", () => {
     await expect(other.query(api.records.search, { orgId, text: "zebra" })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
   });
 });
+
+describe("filtering for empty", () => {
+  it("a null filter finds records with no value, for the board's empty column", async () => {
+    const { client, orgId } = await userAndOrg();
+    const deal = await objectFields(client, orgId, "opportunity");
+    await client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Staged", [deal.fields.stage._id]: "won" } });
+    await client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Unstaged" } });
+    const page = await client.query(api.records.list, { orgId, objectId: deal.object._id, filter: { fieldId: deal.fields.stage._id, value: null }, paginationOpts: { numItems: 10, cursor: null } });
+    expect(page.page.map((record: any) => record.title)).toEqual(["Unstaged"]);
+  });
+});
+
+describe("today", () => {
+  it("lists open tasks due within a week, overdue first, and deals gone quiet", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const task = await objectFields(client, orgId, "task"); const deal = await objectFields(client, orgId, "opportunity");
+    const today = Date.UTC(2026, 8, 22), day = 86400000;
+    const make = (title: string, dueDate: number, done = false) => client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: title, [task.fields.dueDate._id]: dueDate, [task.fields.done._id]: done } });
+    await make("Next month", today + 30 * day);
+    await make("Tomorrow", today + day);
+    await make("Overdue", today - 3 * day);
+    await make("Finished", today, true);
+    await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: "No date" } });
+    const stale = await client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Stale deal", [deal.fields.stage._id]: "proposal" } });
+    const won = await client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Won deal", [deal.fields.stage._id]: "won" } });
+    await client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Fresh deal" } });
+    await t.run(async (ctx) => { for (const id of [stale.recordId, won.recordId]) await ctx.db.patch(id, { updatedAt: Date.now() - 20 * day }); });
+    const result = await client.query(api.today.get, { orgId, today });
+    expect(result.tasks.map((r: any) => r.title)).toEqual(["Overdue", "Tomorrow"]);
+    expect(result.quiet.map((r: any) => r.title)).toEqual(["Stale deal"]);
+  });
+});

@@ -21,6 +21,7 @@ import type * as objects from "../objects.js";
 import type * as orgs from "../orgs.js";
 import type * as records from "../records.js";
 import type * as seed from "../seed.js";
+import type * as today from "../today.js";
 import type * as users from "../users.js";
 
 import type {
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   orgs: typeof orgs;
   records: typeof records;
   seed: typeof seed;
+  today: typeof today;
   users: typeof users;
 }>;
 

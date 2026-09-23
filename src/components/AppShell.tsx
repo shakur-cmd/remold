@@ -1,11 +1,8 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
-import { useConvex } from "convex/react";
-import { toast } from "sonner";
-import { api } from "../../convex/_generated/api";
-import { Input } from "@/components/ui/input";
-import { Menu, Plus, Settings } from "lucide-react";
+import { SearchDialog } from "@/components/SearchDialog";
+import { CalendarCheck, Menu, Plus, Settings } from "lucide-react";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -55,7 +52,7 @@ export function AppShell({ org, orgs, objects, children }: Props) {
             </SelectContent>
           </Select>
           <div className="ml-auto flex items-center gap-2">
-            <GoToCode orgId={org._id} />
+            <SearchDialog orgId={org._id} />
             <UserButton />
           </div>
         </header>
@@ -65,30 +62,14 @@ export function AppShell({ org, orgs, objects, children }: Props) {
   );
 }
 
-// Paste a record code (three words) to jump straight to it.
-function GoToCode({ orgId }: { orgId: Doc<"orgs">["_id"] }) {
-  const convex = useConvex();
-  const navigate = useNavigate();
-  const [code, setCode] = useState("");
-  async function go(e: FormEvent) {
-    e.preventDefault();
-    const found = await convex.query(api.records.byRef, { orgId, ref: code });
-    if (!found) return toast.error("No record with that code");
-    setCode("");
-    navigate(`/o/${orgId}/${found.object.key}/${found.record._id}`);
-  }
-  return (
-    <form onSubmit={go} className="hidden sm:block">
-      <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Go to code" aria-label="Go to record code" className="h-8 w-40 font-mono text-xs" />
-    </form>
-  );
-}
-
 function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"objects">[]; onNavigate: () => void }) {
   const link = ({ isActive }: { isActive: boolean }) =>
     cn("flex items-center gap-2 rounded-md px-3 py-2 text-sm", isActive ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground");
   return (
     <nav className="flex flex-1 flex-col gap-0.5 px-2 pb-4">
+      <NavLink to={`/o/${org._id}/today`} className={link} onClick={onNavigate}>
+        <CalendarCheck className="size-4" /> Today
+      </NavLink>
       {objects.map((object) => (
         <NavLink key={object._id} to={`/o/${org._id}/${object.key}`} className={link} onClick={onNavigate}>
           {object.labelPlural}

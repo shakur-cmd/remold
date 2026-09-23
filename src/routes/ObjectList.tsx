@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, Navigate, useOutletContext, useParams } from "react-router";
+import { Link, Navigate, useOutletContext, useParams, useSearchParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
-import { ArrowDown, ArrowUp, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, Columns3, Plus, Rows3 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Board } from "@/components/Board";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { RecordForm } from "@/components/RecordForm";
@@ -32,12 +33,15 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   const [sort, setSort] = useState<Sort | undefined>();
   const [filter, setFilter] = useState<Filter | undefined>();
   const [open, setOpen] = useState(false);
-  const { results, status, loadMore } = usePaginatedQuery(api.records.list, { orgId, objectId, sort, filter }, { initialNumItems: 50 });
+  const [params, setParams] = useSearchParams();
+  const board = params.get("view") === "board";
+  const { results, status, loadMore } = usePaginatedQuery(api.records.list, board ? "skip" : { orgId, objectId, sort, filter }, { initialNumItems: 50 });
 
   if (!detail) return <Loading />;
   const { object, fields } = detail;
   const selectFields = fields.filter((f) => f.type === "select" && isSlotted(f));
   const columns = fields.filter((f) => f._id !== object.titleFieldId).slice(0, 6);
+  const groupBy = selectFields[0];
 
   function toggleSort(fieldId: Id<"fields">) {
     setSort((current) =>
@@ -50,7 +54,17 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-semibold tracking-tight">{object.labelPlural}</h1>
         <div className="ml-auto flex items-center gap-2">
-          {selectFields.map((field) => (
+          {groupBy && (
+            <div className="flex rounded-md border p-0.5">
+              <Button variant={board ? "ghost" : "secondary"} size="icon" className="size-7" aria-label="Table view" onClick={() => setParams({}, { replace: true })}>
+                <Rows3 />
+              </Button>
+              <Button variant={board ? "secondary" : "ghost"} size="icon" className="size-7" aria-label={`Board by ${groupBy.label}`} onClick={() => setParams({ view: "board" }, { replace: true })}>
+                <Columns3 />
+              </Button>
+            </div>
+          )}
+          {!board && selectFields.map((field) => (
             <Select
               key={field._id}
               value={filter?.fieldId === field._id ? filter.value : "all"}
@@ -86,6 +100,7 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
               <RecordForm
                 orgId={orgId}
                 fields={fields}
+                duplicates={{ objectId, titleFieldId: object.titleFieldId }}
                 submitLabel="Create"
                 onCancel={() => setOpen(false)}
                 onSubmit={async (values) => {
@@ -99,6 +114,10 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
         </div>
       </div>
 
+      {board && groupBy ? (
+        <Board orgId={orgId} object={object} groupBy={groupBy} fields={fields} />
+      ) : (
+      <>
       <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
@@ -147,6 +166,8 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
         <Button variant="outline" className="justify-self-center" onClick={() => loadMore(50)}>
           Load more
         </Button>
+      )}
+      </>
       )}
     </div>
   );

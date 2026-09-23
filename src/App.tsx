@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { Navigate, Route, Routes, useLocation, useOutletContext } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Toaster } from "@/components/ui/sonner";
@@ -7,10 +7,11 @@ import { Loading } from "@/components/Loading";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SignInPage } from "@/routes/SignInPage";
 import { Home } from "@/routes/Home";
-import { OrgLayout, type OrgContext } from "@/routes/OrgLayout";
+import { OrgLayout } from "@/routes/OrgLayout";
 import { ObjectList } from "@/routes/ObjectList";
 import { RecordPage } from "@/routes/RecordPage";
 import { Settings } from "@/routes/Settings";
+import { Today } from "@/routes/Today";
 import { InvitePage } from "@/routes/InvitePage";
 
 export default function App() {
@@ -30,7 +31,8 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="invite/:token" element={<InvitePage />} />
             <Route path="o/:orgId" element={<OrgLayout />}>
-              <Route index element={<FirstObject />} />
+              <Route index element={<Navigate to="today" replace />} />
+              <Route path="today" element={<Today />} />
               <Route path="settings" element={<Settings />} />
               <Route path=":objectKey" element={<ObjectList />} />
               <Route path=":objectKey/:recordId" element={<RecordPage />} />
@@ -57,10 +59,4 @@ function Stored({ children }: { children: ReactNode }) {
 
 function Guarded({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={useLocation().pathname}>{children}</ErrorBoundary>;
-}
-
-function FirstObject() {
-  const { org, objects } = useOutletContext<OrgContext>();
-  const first = objects[0];
-  return first ? <Navigate to={`/o/${org._id}/${first.key}`} replace /> : <Navigate to={`/o/${org._id}/settings`} replace />;
 }

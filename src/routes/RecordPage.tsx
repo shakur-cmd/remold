@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
-import { Copy, MoreHorizontal, Plus } from "lucide-react";
+import { Copy, ExternalLink, Mail, MoreHorizontal, Phone, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
@@ -14,7 +14,7 @@ import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { errorMessage } from "@/lib/errors";
-import { dateToInput, isEmpty, optionLabel, type Field } from "@/lib/fields";
+import { contactHref, dateToInput, isEmpty, optionLabel, type Field } from "@/lib/fields";
 import { cn } from "@/lib/utils";
 import type { OrgContext } from "@/routes/OrgLayout";
 
@@ -73,7 +73,12 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
             ) : (
               <h1 className="text-2xl font-semibold tracking-tight">{record.title || "Untitled"}</h1>
             )}
-            {record.ref && <RefBadge value={record.ref} />}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              {record.ref && <RefBadge value={record.ref} />}
+              <span className="mt-1 text-xs text-muted-foreground">
+                Created {new Date(record._creationTime).toLocaleDateString()} · Updated {new Date(record.updatedAt).toLocaleDateString()}
+              </span>
+            </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -154,7 +159,9 @@ function InlineField({ orgId, recordId, field, value, title = false }: { orgId: 
   }
 
   if (!editing || readOnly) {
-    return (
+    const href = title ? undefined : contactHref(field, value);
+    const Icon = href?.startsWith("tel:") ? Phone : href?.startsWith("mailto:") ? Mail : ExternalLink;
+    const view = (
       <button
         type="button"
         disabled={readOnly}
@@ -164,8 +171,19 @@ function InlineField({ orgId, recordId, field, value, title = false }: { orgId: 
           title ? "text-2xl font-semibold tracking-tight" : "min-h-9",
         )}
       >
-        {title ? (value as string) || "Untitled" : <FieldValue orgId={orgId} field={field} value={value} />}
+        {title ? (value as string) || "Untitled" : <FieldValue orgId={orgId} field={field} value={value} plain />}
       </button>
+    );
+    if (!href) return view;
+    return (
+      <div className="flex min-w-0 items-center gap-1">
+        {view}
+        <Button asChild variant="ghost" size="icon" className="shrink-0" aria-label={`Open ${field.label.toLowerCase()}`}>
+          <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+            <Icon />
+          </a>
+        </Button>
+      </div>
     );
   }
   return (

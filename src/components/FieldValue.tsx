@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
-import { type Field, dateToInput, isEmpty, optionLabel } from "@/lib/fields";
+import { type Field, contactHref, dateToInput, isEmpty, optionLabel } from "@/lib/fields";
 
 export function RecordLink({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"> }) {
   const result = useQuery(api.records.get, { orgId, recordId });
@@ -16,8 +16,16 @@ export function RecordLink({ orgId, recordId }: { orgId: Id<"orgs">; recordId: I
   );
 }
 
-export function FieldValue({ orgId, field, value }: { orgId: Id<"orgs">; field: Field; value: unknown }) {
+// `plain` is for values shown inside a button, where a nested link would be invalid.
+export function FieldValue({ orgId, field, value, plain = false }: { orgId: Id<"orgs">; field: Field; value: unknown; plain?: boolean }) {
   if (isEmpty(value)) return <span className="text-muted-foreground">·</span>;
+  const href = plain ? undefined : contactHref(field, value);
+  if (href)
+    return (
+      <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="underline decoration-muted-foreground/50 underline-offset-4">
+        {String(value)}
+      </a>
+    );
   switch (field.type) {
     case "select":
       return <Badge variant="secondary">{optionLabel(field, value)}</Badge>;

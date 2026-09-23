@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,9 +20,11 @@ type Props = {
   submitLabel?: string;
   onSubmit: (values: Values) => Promise<void>;
   onCancel?: () => void;
+  // When creating, warn about existing records with a similar name.
+  duplicates?: { objectId: Id<"objects">; titleFieldId?: Id<"fields"> };
 };
 
-export function RecordForm({ orgId, fields, initial = {}, hidden = [], submitLabel = "Save", onSubmit, onCancel }: Props) {
+export function RecordForm({ orgId, fields, initial = {}, hidden = [], submitLabel = "Save", onSubmit, onCancel, duplicates }: Props) {
   const [values, setValues] = useState<Values>(initial);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -49,6 +53,7 @@ export function RecordForm({ orgId, fields, initial = {}, hidden = [], submitLab
             {field.required && <span className="text-destructive"> *</span>}
           </Label>
           <FieldInput orgId={orgId} field={field} value={values[field._id]} onChange={(v) => setValues((prev) => ({ ...prev, [field._id]: v }))} />
+          {duplicates && field._id === duplicates.titleFieldId && <Similar orgId={orgId} objectId={duplicates.objectId} text={String(values[field._id] ?? "")} />}
         </div>
       ))}
       {error && (
@@ -118,4 +123,14 @@ export function FieldInput({ orgId, field, value, onChange, autoFocus }: { orgId
     case "links":
       return <RecordMultiPicker id={id} autoFocus={autoFocus} orgId={orgId} objectId={field.targetObjectId!} value={(value as string[]) ?? []} onChange={onChange} />;
   }
+}
+
+function Similar({ orgId, objectId, text }: { orgId: Id<"orgs">; objectId: Id<"objects">; text: string }) {
+  const hits = useQuery(api.records.search, text.trim().length >= 3 ? { orgId, objectId, text, limit: 3 } : "skip");
+  if (!hits?.length) return null;
+  return (
+    <p className="text-xs text-amber-700 dark:text-amber-400">
+      Already have: {hits.map((hit) => hit.title || "Untitled").join(", ")}
+    </p>
+  );
 }
