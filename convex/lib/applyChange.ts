@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import type { Membership } from "../identity";
+import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
@@ -41,7 +41,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stri
 // Lookups store the target id in `values`, not in `links`, so a delete has to
 // find them by field: through the slot index when the lookup has one, else by
 // reading the source object's records.
-async function clearReferencesTo(ctx: MutationCtx, membership: Membership, orgId: Id<"orgs">, deleted: Doc<"records">) {
+async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">) {
   const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
   for (const source of objects) {
     const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === deleted.objectId));
@@ -58,7 +58,7 @@ async function clearReferencesTo(ctx: MutationCtx, membership: Membership, orgId
   }
 }
 
-export async function applyChange(ctx: MutationCtx, membership: Membership, change: Change, options: { clearingReference?: boolean } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions"> } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   let record: Doc<"records"> | null = null;
   let object: Doc<"objects"> | null;
   if (change.action === "create") object = await ctx.db.get(change.objectId);
@@ -71,7 +71,7 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
     for (const row of new Map([...rows, ...targets].map((item) => [item._id, item])).values()) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
     await clearReferencesTo(ctx, membership, change.orgId, record!);
-    const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason });
+    const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
     return { recordId: record!._id, eventId };
   }
   const byId = new Map(fields.map((field) => [field._id, field]));
@@ -97,7 +97,7 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
   const changedIds = Object.keys(change.action === "create" ? values : validated).filter((fieldId) => change.action === "create" || !same(record!.values[fieldId], values[fieldId]));
   if (change.action === "update" && changedIds.length === 0) return { recordId: record!._id, eventId: null };
   const patch = { values, title, updatedAt: Date.now(), ...projections(fields, values) };
-  const recordId = record ? record._id : await ctx.db.insert("records", { orgId: change.orgId, objectId: object._id, createdBy: membership.user._id, ref: await uniqueRef(ctx, change.orgId), ...patch });
+  const recordId = record ? record._id : await ctx.db.insert("records", { orgId: change.orgId, objectId: object._id, createdBy: "user" in membership ? membership.user._id : membership.agent._id, ref: await uniqueRef(ctx, change.orgId), ...patch });
   if (record) await ctx.db.patch(recordId, patch);
   for (const field of fields) {
     if (field.type !== "links") continue;
@@ -109,6 +109,6 @@ export async function applyChange(ctx: MutationCtx, membership: Membership, chan
   }
   const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
-  const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason });
+  const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
   return { recordId, eventId };
 }
