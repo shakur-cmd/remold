@@ -13,6 +13,7 @@ import { RecordPage } from "@/routes/RecordPage";
 import { Settings } from "@/routes/Settings";
 import { Today } from "@/routes/Today";
 import { InvitePage } from "@/routes/InvitePage";
+import { CapturePage } from "@/routes/CapturePage";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Routes>
             <Route index element={<Home />} />
             <Route path="invite/:token" element={<InvitePage />} />
+            <Route path="capture" element={<CapturePage />} />
             <Route path="o/:orgId" element={<OrgLayout />}>
               <Route index element={<Navigate to="today" replace />} />
               <Route path="today" element={<Today />} />

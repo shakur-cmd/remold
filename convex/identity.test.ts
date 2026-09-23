@@ -13,6 +13,6 @@ describe("identity", () => {
     expect((await client.query(api.orgs.members, { orgId })).length).toBe(1);
     expect(objects.map((object) => object.key)).toEqual(["company", "person", "opportunity", "project", "task", "note", "campaign"]);
     const person = await client.query(api.objects.get, { orgId, objectId: objects.find((object) => object.key === "person")!._id });
-    expect(person.fields.map((field) => field.key)).toEqual(["name", "email", "phone", "title", "company"]);
+    expect(person.fields.map((field) => field.key)).toEqual(["name", "email", "phone", "title", "company", "linkedin"]);
   });
 });

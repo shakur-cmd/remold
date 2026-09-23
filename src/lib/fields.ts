@@ -24,6 +24,6 @@ export function contactHref(field: Field, value: unknown): string | undefined {
   const text = value.trim();
   if (field.key === "phone") return `tel:${text.replace(/[^\d+]/g, "")}`;
   if (field.key === "email") return `mailto:${text}`;
-  if (field.key === "domain" || field.key === "website") return /^https?:\/\//i.test(text) ? text : `https://${text}`;
+  if (field.key === "domain" || field.key === "website" || field.key === "linkedin") return /^https?:\/\//i.test(text) ? text : `https://${text}`;
   return undefined;
 }

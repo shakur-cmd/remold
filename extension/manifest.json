@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Save to Remold",
+  "version": "0.1.0",
+  "description": "Save the LinkedIn profile or website you are looking at into Remold.",
+  "action": { "default_title": "Save to Remold" },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": ["activeTab", "scripting"],
+  "commands": {
+    "_execute_action": { "suggested_key": { "default": "Alt+Shift+S" } }
+  }
+}
