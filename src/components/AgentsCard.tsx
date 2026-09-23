@@ -73,7 +73,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
             <p className="font-medium">Key for {issued.name}. Copy it now; it is not shown again.</p>
             <Input readOnly value={issued.key} onFocus={(e) => e.currentTarget.select()} aria-label="Agent key" />
             <p className="text-muted-foreground">Connect Claude Code:</p>
-            <pre className="overflow-x-auto rounded bg-muted p-2 text-xs">{`claude mcp add remold -e REMOLD_URL=${siteUrl} -e REMOLD_KEY=${issued.key} -- npx -y @remold/mcp`}</pre>
+            <pre className="overflow-x-auto rounded bg-muted p-2 text-xs">{`claude mcp add remold -e REMOLD_URL=${siteUrl} -e REMOLD_KEY=${issued.key} -- node <path to remold>/packages/mcp/dist/index.js`}</pre>
             <p className="text-muted-foreground">Or call REST directly:</p>
             <pre className="overflow-x-auto rounded bg-muted p-2 text-xs">{`curl -H "Authorization: Bearer ${issued.key}" ${siteUrl}/api/v1/me`}</pre>
             <Button size="sm" variant="outline" className="justify-self-start" onClick={() => setIssued(null)}>

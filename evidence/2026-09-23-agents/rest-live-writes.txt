@@ -1,0 +1,14 @@
+POST /changes without grant
+{"error":{"code":"FORBIDDEN","message":"No grant for update:company. Propose it instead."}} [403]
+
+GET record before
+{'city': 'Fabletown', 'domain': 'Testing.com', 'name': 'Fictional Plumbing Co East', 'notes': 'We should allow for the full address in case we want to mail something '}
+
+POST /suggestions
+{"suggestion":{"action":"update","agent":"fable-mac","before":{"city":"Fabletown"},"createdAt":1790160437606.9194,"id":"kx73sj55j825pt67fp38kfnf958eydrg","object":"company","reason":"Live probe from Fable: the company moved to Baltimore. Apply or dismiss from the Suggestions page.","record":{"id":"k9730d7vqcwkfv8ehxyzzshbw98exaab","ref":"brisk-ember-oyster","title":"Fictional Plumbing Co East"},"resolvedAt":null,"status":"pending","values":{"city":"Baltimore"}}} [201]
+
+GET record after (unchanged)
+{'city': 'Fabletown', 'domain': 'Testing.com', 'name': 'Fictional Plumbing Co East', 'notes': 'We should allow for the full address in case we want to mail something '}
+
+GET /me
+pendingSuggestions 1

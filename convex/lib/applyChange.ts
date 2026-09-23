@@ -66,9 +66,17 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   if (!object || object.orgId !== change.orgId || (record && record.orgId !== change.orgId)) fail("NOT_FOUND", "Record or object not found");
   const fields = await fieldsFor(ctx, change.orgId, object._id);
   if (change.action === "delete") {
-    const rows = await ctx.db.query("links").withIndex("by_record_any", (q) => q.eq("orgId", change.orgId).eq("fromRecordId", record!._id)).collect();
+    // Records that link to this one drop it from their links value through an
+    // attributed update, which also removes the rows; then this record's own rows go.
     const targets = await ctx.db.query("links").withIndex("by_target_any", (q) => q.eq("orgId", change.orgId).eq("toRecordId", record!._id)).collect();
-    for (const row of new Map([...rows, ...targets].map((item) => [item._id, item])).values()) await ctx.db.delete(row._id);
+    for (const row of targets) {
+      if (row.fromRecordId === record!._id) continue;
+      const source = await ctx.db.get(row.fromRecordId);
+      const current = (source?.values[row.fieldId] as string[] | undefined) ?? [];
+      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: `Linked ${record!.title || "record"} was deleted` }, { clearingReference: true });
+    }
+    const rows = await ctx.db.query("links").withIndex("by_record_any", (q) => q.eq("orgId", change.orgId).eq("fromRecordId", record!._id)).collect();
+    for (const row of rows) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
     await clearReferencesTo(ctx, membership, change.orgId, record!);
     const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });

@@ -18,8 +18,9 @@ async function auth(request: Request) {
 async function dispatch(ctx: any, request: Request) {
   const keyHash = await auth(request), url = new URL(request.url), path = url.pathname.replace(/^\/api\/v1\/?/, "").split("/").filter(Boolean), q = url.searchParams;
   const body = request.method === "POST" ? request.headers.get("content-type")?.includes("application/json") ? await request.json().catch(() => { throw { data: { code: "VALIDATION", message: "Expected JSON body" } }; }) : {} : undefined;
-  const query = (reference: any, args: any) => ctx.runQuery(reference, { keyHash, ...args });
-  const mutation = (reference: any, args: any) => ctx.runMutation(reference, { keyHash, ...args });
+  // keyHash goes last so nothing in a request body can replace the identity the header proved.
+  const query = (reference: any, args: any) => ctx.runQuery(reference, { ...args, keyHash });
+  const mutation = (reference: any, args: any) => ctx.runMutation(reference, { ...args, keyHash });
   if (request.method === "GET" && path[0] === "me" && path.length === 1) return json(await query(internal.agentApi.me, {}));
   if (request.method === "GET" && path[0] === "objects" && path.length === 1) return json(await query(internal.agentApi.objects, {}));
   if (request.method === "GET" && path[0] === "records" && path.length === 1) return json(await query(internal.agentApi.listRecords, { object: q.get("object") ?? "", cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), ...(q.get("sort") ? { sort: { field: q.get("sort"), direction: q.get("direction") ?? "asc" } } : {}), ...(q.get("filter") ? { filter: { field: q.get("filter"), value: q.get("value") } } : {}) }));

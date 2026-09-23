@@ -15,24 +15,25 @@ export const list = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, 
 } });
 
 // The key is minted here, in an action, because mutations have no
-// crypto.subtle. Only its hash reaches the database; the plain key goes back
-// to the admin once. The explicit return type breaks the internal.* type cycle.
+// crypto.subtle. Only the hash and a display prefix are passed on; the plain
+// key goes back to the admin once. The explicit return type breaks the
+// internal.* type cycle.
 export const create = action({ args: { orgId: v.id("orgs"), name: v.string(), role: v.optional(role), grants: v.optional(grants) }, handler: async (ctx, args): Promise<{ agentId: Id<"agents">; key: string }> => {
-  return ctx.runMutation(internal.agents.insert, { ...args, ...(await mint()) });
+  const { key, ...stored } = await mint();
+  return { agentId: await ctx.runMutation(internal.agents.insert, { ...args, ...stored }), key };
 } });
 
 const mint = async () => {
   const key = `rm_${hex(crypto.getRandomValues(new Uint8Array(20)))}`;
-  return { key, keyHash: hex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))) };
+  return { key, keyHash: hex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))), keyPrefix: key.slice(0, 12) };
 };
 
-export const insert = internalMutation({ args: { orgId: v.id("orgs"), name: v.string(), role: v.optional(role), grants: v.optional(grants), key: v.string(), keyHash: v.string(), asUserId: v.optional(v.id("users")) }, handler: async (ctx, args) => {
+export const insert = internalMutation({ args: { orgId: v.id("orgs"), name: v.string(), role: v.optional(role), grants: v.optional(grants), keyHash: v.string(), keyPrefix: v.string(), asUserId: v.optional(v.id("users")) }, handler: async (ctx, args): Promise<Id<"agents">> => {
   // CLI creation (`convex run agents:createAs`) has no signed-in identity, so
   // the admin is named explicitly, the same way seed:demoAs works.
   const userId = args.asUserId ? await adminId(ctx, args.orgId, args.asUserId) : (await requireMember(ctx, args.orgId, "admin")).user._id;
   if (!args.name.trim()) fail("VALIDATION", "Agent name is required");
-  const agentId = await ctx.db.insert("agents", { orgId: args.orgId, name: args.name.trim(), role: args.role ?? "member", createdBy: userId, keyHash: args.keyHash, keyPrefix: args.key.slice(0, 12), grants: args.grants ?? [] });
-  return { agentId, key: args.key };
+  return ctx.db.insert("agents", { orgId: args.orgId, name: args.name.trim(), role: args.role ?? "member", createdBy: userId, keyHash: args.keyHash, keyPrefix: args.keyPrefix, grants: args.grants ?? [] });
 } });
 
 async function adminId(ctx: { db: any }, orgId: Id<"orgs">, userId: Id<"users">) {
@@ -42,8 +43,8 @@ async function adminId(ctx: { db: any }, orgId: Id<"orgs">, userId: Id<"users">)
 }
 
 export const createAs = internalAction({ args: { orgId: v.id("orgs"), userId: v.id("users"), name: v.string(), role: v.optional(role), grants: v.optional(grants) }, handler: async (ctx, args): Promise<{ agentId: Id<"agents">; key: string }> => {
-  const { userId, ...rest } = args;
-  return ctx.runMutation(internal.agents.insert, { ...rest, ...(await mint()), asUserId: userId });
+  const { userId, ...rest } = args, { key, ...stored } = await mint();
+  return { agentId: await ctx.runMutation(internal.agents.insert, { ...rest, ...stored, asUserId: userId }), key };
 } });
 
 export const setGrants = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("agents"), grants }, handler: async (ctx, args) => {

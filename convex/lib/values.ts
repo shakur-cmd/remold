@@ -33,7 +33,7 @@ function scalar(field: Doc<"fields">, value: unknown, fieldKey: string) {
   if (field.type === "text") { if (typeof value !== "string") fail("VALIDATION", "Expected text", { fieldKey }); return value; }
   if (field.type === "number") { const number = typeof value === "number" ? value : typeof value === "string" ? Number(value.replace(/[$,\s]/g, "")) : NaN; if (!Number.isFinite(number)) fail("VALIDATION", "Expected a finite number", { fieldKey }); return number; }
   if (field.type === "boolean") { if (typeof value === "boolean") return value; if (typeof value === "string") { const normalized = value.toLowerCase(); if (["true", "yes"].includes(normalized)) return true; if (["false", "no"].includes(normalized)) return false; } fail("VALIDATION", "Expected boolean", { fieldKey }); }
-  if (field.type === "date") { if (typeof value === "number" && Number.isInteger(value)) return value; if (typeof value === "string") { const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value); if (match) return Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!); } fail("VALIDATION", "Expected date", { fieldKey }); }
+  if (field.type === "date") { if (typeof value === "number" && Number.isInteger(value)) return value; if (typeof value === "string") { const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value); if (match) { const ms = Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!); if (dateText(ms) === value.slice(0, 10)) return ms; } } fail("VALIDATION", "Expected a real date as YYYY-MM-DD", { fieldKey }); }
   if (field.type === "select") { if (typeof value !== "string") fail("VALIDATION", "Expected select option", { fieldKey }); const option = field.options?.find((item) => item.id === value || item.label.toLowerCase() === value.toLowerCase()); if (!option) fail("VALIDATION", "Invalid select option", { fieldKey }); return option.id; }
   return value;
 }
@@ -53,6 +53,7 @@ export async function resolveValues(ctx: Ctx, orgId: Id<"orgs">, _object: Doc<"o
 
 export async function readableValue(ctx: Ctx, field: Doc<"fields">, value: unknown) {
   if (empty(value)) return undefined;
+  if (field.type === "number" || field.type === "text" || field.type === "boolean" || field.type === "select") return value;
   if (field.type === "date") return dateText(value as number);
   if (field.type === "lookup") { const record = typeof value === "string" ? await ctx.db.get(value as Id<"records">) : null; return record ? { id: record._id, ref: record.ref ?? null, title: record.title } : null; }
   if (field.type === "links") return Promise.all(((value as string[]) ?? []).map(async (id) => { const record = await ctx.db.get(id as Id<"records">); return record ? { id: record._id, ref: record.ref ?? null, title: record.title } : null; })).then((items) => items.filter(Boolean));
@@ -63,4 +64,12 @@ export async function readable(ctx: Ctx, _orgId: Id<"orgs">, record: Doc<"record
   const values: Record<string, unknown> = {};
   for (const field of fields) if (!field.retired) { const value = await readableValue(ctx, field, record.values[field._id]); if (value !== undefined) values[field.key] = value; }
   return { id: record._id, ref: record.ref ?? null, object: object.key, title: record.title, createdAt: record._creationTime, updatedAt: record.updatedAt, values };
+}
+
+// Suggestion payloads keep an explicit null: "clear this field" must survive JSON.
+export async function readableMap(ctx: Ctx, fields: Doc<"fields">[], values: Record<string, unknown>) {
+  const byId = new Map(fields.map((field) => [field._id as string, field]));
+  const out: Record<string, unknown> = {};
+  for (const [id, value] of Object.entries(values)) { const field = byId.get(id); out[field?.key ?? id] = field ? ((await readableValue(ctx, field, value)) ?? null) : value; }
+  return out;
 }

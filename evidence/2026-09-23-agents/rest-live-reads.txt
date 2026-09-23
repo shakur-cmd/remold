@@ -1,0 +1,17 @@
+GET /me
+{"agent":{"grants":[],"id":"ks72rw1avt0smnpmdcthcz56m58ez3bb","name":"fable-mac","role":"member"},"org":{"id":"kh74gfj79fms7mk2x7w3fx56ts8ewy52","name":"Codemyvibe"},"pendingInbox":0,"pendingSuggestions":0}
+
+GET /objects (keys only)
+['company', 'person', 'opportunity', 'project', 'task', 'note', 'campaign']
+
+GET /records?object=company&limit=3
+[('brisk-ember-oyster', 'Fictional Plumbing Co East'), ('sapphire-tulip-bridge', 'Example Electric LLC'), ('clover-cinder-tiny', 'Atlas Imaginary Works')]
+
+GET /search?q=plumbing
+[('anchor-timber-beacon', 'Fictional Plumbing Refresh', 'project'), ('kite-pine-delta', 'Plumbing Sample Renewal', 'opportunity'), ('oak-coral-stone', 'Fictional Plumbing Website', 'opportunity'), ('brisk-ember-oyster', 'Fictional Plumbing Co East', 'company')]
+
+GET /today
+tasks 0 quiet 0
+
+GET /inbox
+[]
