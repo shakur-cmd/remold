@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { errorMessage } from "@/lib/errors";
 import type { OrgContext } from "@/routes/OrgLayout";
+import { AgentsCard } from "@/components/AgentsCard";
 
 const run = async (action: () => Promise<unknown>, success?: string) => {
   try {
@@ -30,6 +31,7 @@ export function Settings() {
       <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
       <OrgCard org={org} admin={admin} />
       <MembersCard orgId={org._id} admin={admin} />
+      <AgentsCard orgId={org._id} objects={objects} admin={admin} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
     </div>
   );

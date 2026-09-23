@@ -15,6 +15,7 @@ import { Settings } from "@/routes/Settings";
 import { Today } from "@/routes/Today";
 import { InvitePage } from "@/routes/InvitePage";
 import { CapturePage } from "@/routes/CapturePage";
+import { Suggestions } from "@/routes/Suggestions";
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
               <Route index element={<Navigate to="today" replace />} />
               <Route path="today" element={<Today />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="suggestions" element={<Suggestions />} />
               <Route path=":objectKey" element={<ObjectList />} />
               <Route path=":objectKey/:recordId" element={<RecordPage />} />
             </Route>

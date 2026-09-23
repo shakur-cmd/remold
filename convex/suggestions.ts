@@ -1,4 +1,5 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { requireMember } from "./identity";
 import { fail } from "./errors";
@@ -6,7 +7,7 @@ import { applyChange } from "./lib/applyChange";
 
 const same = (left: unknown, right: unknown) => JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
 
-async function row(ctx: any, suggestion: any) {
+async function row(ctx: QueryCtx, suggestion: Doc<"suggestions">) {
   const [agent, object, record] = await Promise.all([ctx.db.get(suggestion.agentId), ctx.db.get(suggestion.change.objectId), suggestion.change.recordId ? ctx.db.get(suggestion.change.recordId) : null]);
   return { suggestion, agentName: agent?.name ?? null, objectKey: object?.key ?? null, objectLabel: object?.label ?? null, recordTitle: record?.title ?? null, recordRef: record?.ref ?? null };
 }

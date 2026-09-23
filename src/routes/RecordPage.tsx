@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Textarea } from "@/components/ui/textarea";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
+import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { errorMessage } from "@/lib/errors";
 import { contactHref, dateToInput, isEmpty, optionLabel, type Field } from "@/lib/fields";
@@ -118,7 +119,10 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
         ))}
       </div>
 
-      <Timeline orgId={orgId} recordId={recordId} fields={fields} />
+      <div className="grid min-w-0 content-start gap-6">
+        <PendingSuggestions orgId={orgId} recordId={recordId} />
+        <Timeline orgId={orgId} recordId={recordId} fields={fields} />
+      </div>
     </div>
   );
 }
@@ -296,6 +300,23 @@ function NoteComposer({ orgId, noteObject, aboutField, recordId }: { orgId: Id<"
 
 const TIMELINE_PREVIEW = 5;
 
+function PendingSuggestions({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"> }) {
+  const rows = useQuery(api.suggestions.forRecord, { orgId, recordId });
+  if (!rows?.length) return null;
+  return (
+    <Card className="h-fit min-w-0 border-primary/40">
+      <CardHeader>
+        <CardTitle className="text-base">Suggested</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {rows.map((row) => (
+          <SuggestionCard key={row.suggestion._id} orgId={orgId} row={row} />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id<"records">; fields: Field[] }) {
   const events = useQuery(api.events.forRecord, { orgId, recordId });
   const [expanded, setExpanded] = useState(false);
@@ -319,7 +340,8 @@ function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id
         {visible?.map((event) => (
           <div key={event._id} className="grid min-w-0 gap-1 text-sm">
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-medium">{event.actorName}</span>
+              <span className="font-medium">{event.actorName ?? (event.actor.kind === "agent" ? "An agent" : "Automation")}</span>
+              {event.appliedByName && <span className="text-muted-foreground">applied by {event.appliedByName}</span>}
               <span className="text-muted-foreground">{event.action === "create" ? "created" : event.action === "delete" ? "deleted" : "changed"}</span>
               <time className="ml-auto text-xs text-muted-foreground">{new Date(event._creationTime).toLocaleString()}</time>
             </div>

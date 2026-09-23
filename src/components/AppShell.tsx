@@ -2,7 +2,9 @@ import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
 import { SearchDialog } from "@/components/SearchDialog";
-import { CalendarCheck, Menu, Plus, Settings } from "lucide-react";
+import { CalendarCheck, Menu, Plus, Settings, Sparkles } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -63,6 +65,7 @@ export function AppShell({ org, orgs, objects, children }: Props) {
 }
 
 function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"objects">[]; onNavigate: () => void }) {
+  const pending = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
   const link = ({ isActive }: { isActive: boolean }) =>
     cn("flex items-center gap-2 rounded-md px-3 py-2 text-sm", isActive ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground");
   return (
@@ -75,6 +78,10 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
           {object.labelPlural}
         </NavLink>
       ))}
+      <NavLink to={`/o/${org._id}/suggestions`} className={link} onClick={onNavigate}>
+        <Sparkles className="size-4" /> Suggestions
+        {pending > 0 && <span className="ml-auto rounded-full bg-primary px-2 text-xs font-medium text-primary-foreground">{pending}</span>}
+      </NavLink>
       <NavLink to={`/o/${org._id}/settings`} className={link} onClick={onNavigate}>
         <Plus className="size-4" /> New object
       </NavLink>

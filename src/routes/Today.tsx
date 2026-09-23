@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loading } from "@/components/Loading";
 import { errorMessage } from "@/lib/errors";
 import type { OrgContext } from "@/routes/OrgLayout";
+import { InboxCard } from "@/components/InboxCard";
 
 const DAY = 86400000;
 // Date fields hold UTC midnight of the chosen day, so "today" is encoded the same way.
@@ -42,6 +43,7 @@ export function Today() {
   return (
     <div className="grid max-w-2xl gap-4">
       <h1 className="text-xl font-semibold tracking-tight">Today</h1>
+      <InboxCard orgId={org._id} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Follow-ups</CardTitle>
