@@ -17,7 +17,9 @@
     "seed": "convex run seed:demo",
     "preview": "vite preview",
     "verify:release": "node --test ops/release/release.test.mjs",
-    "proof:rate-limit": "node ops/rehearsal/rate-limit.mjs"
+    "proof:rate-limit": "node ops/rehearsal/rate-limit.mjs",
+    "proof:flags": "node ops/rehearsal/flags.mjs",
+    "proof:version": "node ops/release/version-service.mjs"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.3",

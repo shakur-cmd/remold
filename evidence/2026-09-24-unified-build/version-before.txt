@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /application\/json/. Input:
+
+'text/html; charset=utf-8'
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/release/version-service.mjs:36:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'text/html; charset=utf-8',
+  expected: /application\/json/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

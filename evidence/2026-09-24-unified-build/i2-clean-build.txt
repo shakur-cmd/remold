@@ -1,0 +1,91 @@
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg[39m
+
+ [32m✓[39m convex/members.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m convex/applyChange.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 142[2mms[22m[39m
+ [32m✓[39m convex/csv.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m convex/capture.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 162[2mms[22m[39m
+ [32m✓[39m convex/rest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 229[2mms[22m[39m
+ [32m✓[39m convex/suggestions.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 243[2mms[22m[39m
+ [32m✓[39m convex/refs.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m convex/related.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m convex/invites.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m convex/fixes.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 354[2mms[22m[39m
+ [32m✓[39m convex/agentSafety.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 356[2mms[22m[39m
+ [32m✓[39m convex/agents.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 82[2mms[22m[39m
+ [32m✓[39m convex/diff.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m convex/slots.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m src/lib/csv.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m convex/identity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m convex/seed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m convex/rateLimit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 502[2mms[22m[39m
+   [33m[2m✓[22m[39m limits writes per key without starving reads or other agents[33m 388[2mms[22m[39m
+ [32m✓[39m convex/isolation.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m convex/inbox.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 54[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m      Tests [22m [1m[32m51 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 14:06:01
+[2m   Duration [22m 733ms[2m (tests 65%, transform 17%, import 16%, worker 1%)[22m
+
+$ tsc -b && tsc --noEmit -p convex
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.586208ms)
+✔ changed, missing and injected artifact bytes are refused (1.64025ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.027916ms)
+✔ version metadata must name the artifact commit (0.737917ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.803333ms)
+✔ failed real process halts checks before a later process can run (20.902416ms)
+✔ successful real processes run in order (40.231833ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.207625ms)
+✔ missing metadata and destructive contraction are refused (0.08325ms)
+✔ a rollback to a schema without the expanded fields is refused (0.142291ms)
+✔ persisted changes remain blocked even when a caller supplies a synthetic passing restore claim (0.048833ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.421334ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (19.800167ms)
+✔ PR changes use their common ancestor when the target branch advances independently (233.561167ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 361.8025
+$ vitest run src
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg/packages/mcp[39m
+
+ [32m✓[39m src/client.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 14:06:06
+[2m   Duration [22m 83ms[2m (transform 41%, tests 37%, import 16%, worker 5%)[22m
+
+$ tsc
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 2166 modules transformed.
+
+(!) outDir /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/index.html                                              0.45 kB │ gzip:   0.28 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/index-BYimn4tU.css                              71.48 kB │ gzip:  12.50 kB
+../../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact/assets/index-D5hO2zAA.js                              724.67 kB │ gzip: 219.48 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 550ms
+{"sha":"63d7d92a5ec9f38af69112be6483d83aa6638d06","manifestSha256":"e1bbe50b1fb3650b2837c3683fbadd7740218bb60934657cc7b2b3e21c5402af","output":"/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-clean-bpakp8xg-artifact","deploymentAuthorized":false}

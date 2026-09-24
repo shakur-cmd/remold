@@ -27,6 +27,7 @@ import type * as lib_slots from "../lib/slots.js";
 import type * as lib_standard from "../lib/standard.js";
 import type * as lib_values from "../lib/values.js";
 import type * as objects from "../objects.js";
+import type * as ops from "../ops.js";
 import type * as orgs from "../orgs.js";
 import type * as rateLimit from "../rateLimit.js";
 import type * as records from "../records.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "lib/standard": typeof lib_standard;
   "lib/values": typeof lib_values;
   objects: typeof objects;
+  ops: typeof ops;
   orgs: typeof orgs;
   rateLimit: typeof rateLimit;
   records: typeof records;

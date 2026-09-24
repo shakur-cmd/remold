@@ -6,7 +6,8 @@ const values = v.record(v.string(), v.any());
 
 export default defineSchema({
   users: defineTable({ tokenIdentifier: v.string(), name: v.string(), email: v.optional(v.string()), imageUrl: v.optional(v.string()) }).index("by_token", ["tokenIdentifier"]),
-  orgs: defineTable({ name: v.string(), createdBy: v.id("users") }),
+  orgs: defineTable({ name: v.string(), createdBy: v.id("users"), flags: v.optional(v.record(v.string(), v.boolean())) }),
+  opsEvents: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.literal("operator"), id: v.literal("internal-admin") }), action: v.literal("featureFlagChanged"), flag: v.string(), before: v.boolean(), after: v.boolean(), reason: v.string() }).index("by_org", ["orgId"]),
   members: defineTable({ orgId: v.id("orgs"), userId: v.id("users"), role: v.union(v.literal("owner"), v.literal("admin"), v.literal("member")) }).index("by_org_user", ["orgId", "userId"]).index("by_user", ["userId"]),
   invites: defineTable({ orgId: v.id("orgs"), token: v.string(), role: v.union(v.literal("admin"), v.literal("member")), createdBy: v.id("users"), expiresAt: v.number(), acceptedBy: v.optional(v.id("users")), acceptedAt: v.optional(v.number()) }).index("by_token", ["token"]).index("by_org", ["orgId"]),
   objects: defineTable({ orgId: v.id("orgs"), key: v.string(), label: v.string(), labelPlural: v.string(), icon: v.optional(v.string()), titleFieldId: v.optional(v.id("fields")), isStandard: v.boolean(), order: v.number() }).index("by_org", ["orgId"]).index("by_org_key", ["orgId", "key"]),
