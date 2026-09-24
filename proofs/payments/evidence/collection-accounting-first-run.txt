@@ -1,0 +1,34 @@
+FAIL Exact paid allocation replaces one local hold with ack-first
+FAIL Exact paid allocation replaces one local hold with receipt-first
+PASS Same provider PI cannot acknowledge two local holds
+PASS Complete payment reconciliation refuses duplicate
+PASS Complete payment reconciliation refuses wrong-amount
+PASS Complete payment reconciliation refuses wrong-command
+PASS Complete payment reconciliation refuses missing
+PASS Complete payment reconciliation refuses regressed
+PASS Complete payment reconciliation refuses sum
+PASS Complete payment reconciliation refuses duplicate-pi
+PASS A known PI allocation cannot move to another invoice under a new receipt ID
+PASS Payment metadata from another document cannot release its hold
+FAIL Credit in flight reduces collection once
+FAIL Credit receipt before ack reduces collection once
+PASS Refunds do not reopen gross paid collection capacity
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"name":"Exact paid allocation replaces one local hold with ack-first","status":"FAIL","error":"[Request ID: 230aa924ed7bb4ac] Server Error\nUncaught Error: outstanding permit cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:373:37)\n"},{"name":"Exact paid allocation replaces one local hold with receipt-first","status":"FAIL","error":"The input did not match the regular expression /remaining obligation/. Input:\n\n'Error: [Request ID: 33fc7f610e529b14] Server Error\\n' +\n  'Uncaught Error: outstanding permit cap\\n' +\n  '    at deny (../convex/harness.ts:7:58)\\n' +\n  '    at handler (../convex/harness.ts:373:37)\\n'\n"},{"name":"Credit in flight reduces collection once","status":"FAIL","error":"[Request ID: 007b8b4981439525] Server Error\nUncaught Error: outstanding permit cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:373:37)\n"},{"name":"Credit receipt before ack reduces collection once","status":"FAIL","error":"[Request ID: 4833365a082bd765] Server Error\nUncaught Error: outstanding permit cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:373:37)\n"}]
+
+4 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/collection-accounting-replay.mjs:53:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 4,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Owner batch · Stripe test merchant onboarding</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Owner batch · Stripe test merchant onboarding</h1>
+<div class="meta">2026-09-24 · sandbox only · leave for the next sign-in batch if automation remains blocked</div>
+
+<div class="decisions"><h2>Owner task</h2><p>Complete two distinct <strong>test-only</strong> Stripe merchant connections, D and E, using the supported test OAuth flow. Root has D's unsubmitted form open. No email or real identity details have been submitted by the builder. If the flow requires real identity, business verification or unclear legal consent, stop and have root review the exact screen.</p></div><div class="status"><h2>Already prepared</h2><ul><li>Isolated Remold sandbox <code>acct_1UJHeKJjT84hNemU</code>; live activation unchanged.</li><li>Test OAuth enabled by root. Exact registered redirect: <code>http://localhost:3492/stripe/return</code>.</li><li>Loopback receiver is running. It checks a random, expiring, single-use state and refuses a duplicate token exchange.</li><li>Private authorize URLs: <code>proofs/payments/private/oauth-authorize.json</code>. They must be renewed by the agent after the current pending flow has finished or been abandoned. Expired URLs should not be reused.</li></ul></div><h2>Finish sequence</h2><ol><li>Ask the agent to verify receiver readiness and current D flow state. Finish only the explicit test onboarding/skip path, then return to the clean local completion page.</li><li>The agent checks the resulting account ID, test-mode access, actual controller fields, payment capability and requirements. It must not assume activation from a browser success screen.</li><li>Repeat with E as a distinct second merchant. The agent verifies D and E differ and neither is the platform account.</li><li>The agent runs the existing sandbox lifecycle proof, including forged IDs, real callbacks, refunds, recurring failures, disputes and final authority checks.</li></ol><h2>What remains restricted</h2><p>Original A (<code>acct_1UJIbNJLMDiXZR1g</code>), B (<code>acct_1UJIbQQqpeNgm9OQ</code>) and C (<code>acct_1UJIefQv5HvapSBV</code>) are retained as restricted fixtures. The sandbox itself accepted test charges even when <code>charges_enabled=false</code>; the Remold proof adapter deliberately refuses such accounts. No account-health bypass, fake live identity or implied live approval is part of this task.</p><p>All live merchant, jurisdiction, tax/refund, readonly collection and retention choices stay in G-pay. No customer email delivery is required or claimed here.</p></body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "level": "SERVICE local Convex, synthetic observations; no provider calls",
+  "results": [
+    {
+      "scenario": "before-own-observe",
+      "staleAccepted": true,
+      "after": {
+        "paidMinor": 0,
+        "state": "open",
+        "complete": true
+      },
+      "voidAllowed": true,
+      "collectionAllowed": true,
+      "status": "FAIL",
+      "error": "Expected \"actual\" to be strictly unequal to: true"
+    },
+    {
+      "scenario": "after-own-observe",
+      "staleAccepted": true,
+      "after": {
+        "paidMinor": 100,
+        "state": "paid",
+        "complete": true
+      },
+      "voidAllowed": false,
+      "collectionAllowed": false,
+      "status": "FAIL",
+      "error": "Expected \"actual\" to be strictly unequal to: true"
+    },
+    {
+      "scenario": "lower-callback",
+      "after": {
+        "paidMinor": 0,
+        "state": "open",
+        "complete": true
+      },
+      "voidAllowed": true,
+      "collectionAllowed": true,
+      "status": "FAIL",
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "scenario": "renewal",
+      "staleAccepted": true,
+      "after": {
+        "paidMinor": 0,
+        "state": "open",
+        "complete": true
+      },
+      "voidAllowed": true,
+      "collectionAllowed": true,
+      "status": "FAIL",
+      "error": "Expected \"actual\" to be strictly unequal to: true"
+    },
+    {
+      "scenario": "first-unpaid-observation",
+      "voidBefore": true,
+      "status": "FAIL",
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- false\n"
+    },
+    {
+      "scenario": "never-observed-intent",
+      "collectionAllowed": true,
+      "status": "PASS"
+    }
+  ]
+}

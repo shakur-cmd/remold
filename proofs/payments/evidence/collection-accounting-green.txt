@@ -1,0 +1,19 @@
+PASS Exact paid allocation after ack leaves capacity20, request20
+PASS Exact paid allocation after ack leaves capacity20, request21
+PASS Receipt before acknowledgement retains hold, then exact acknowledgement permits20
+PASS Real loopback adapter dispatch binds the approved command hash to the PI receipt
+PASS Same provider PI cannot acknowledge two local holds
+PASS Complete payment reconciliation refuses duplicate
+PASS Complete payment reconciliation refuses wrong-amount
+PASS Complete payment reconciliation refuses wrong-command
+PASS Complete payment reconciliation refuses missing
+PASS Complete payment reconciliation refuses regressed
+PASS Complete payment reconciliation refuses sum
+PASS Complete payment reconciliation refuses duplicate-pi
+PASS A known PI allocation cannot move to another invoice under a new receipt ID
+PASS Payment metadata from another document cannot release its hold
+PASS Credit in flight leaves70, request70
+PASS Credit in flight leaves70, request71
+PASS Credit receipt before ack leaves70, request70
+PASS Credit receipt before ack leaves70, request71
+PASS Refunds do not reopen gross paid collection capacity

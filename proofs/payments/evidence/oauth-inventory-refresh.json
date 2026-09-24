@@ -1,0 +1,111 @@
+{
+  "level": "SANDBOX read only",
+  "capturedAt": "2026-09-24T20:56:48.369Z",
+  "apiVersion": "2025-05-28.basil",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "complete": true,
+  "accounts": [
+    {
+      "id": "acct_1UJIefQv5HvapSBV",
+      "type": "standard",
+      "controller": {
+        "fees": {
+          "payer": "account"
+        },
+        "is_controller": true,
+        "losses": {
+          "payments": "stripe"
+        },
+        "requirement_collection": "stripe",
+        "stripe_dashboard": {
+          "type": "full"
+        },
+        "type": "application"
+      },
+      "charges_enabled": false,
+      "payouts_enabled": false,
+      "capabilities": {},
+      "syntheticFixture": "C_restricted"
+    },
+    {
+      "id": "acct_1UJIbQQqpeNgm9OQ",
+      "type": "standard",
+      "controller": {
+        "fees": {
+          "payer": "account"
+        },
+        "is_controller": true,
+        "losses": {
+          "payments": "stripe"
+        },
+        "requirement_collection": "stripe",
+        "stripe_dashboard": {
+          "type": "full"
+        },
+        "type": "application"
+      },
+      "charges_enabled": false,
+      "payouts_enabled": false,
+      "capabilities": {},
+      "syntheticFixture": "B"
+    },
+    {
+      "id": "acct_1UJIbNJLMDiXZR1g",
+      "type": "standard",
+      "controller": {
+        "fees": {
+          "payer": "account"
+        },
+        "is_controller": true,
+        "losses": {
+          "payments": "stripe"
+        },
+        "requirement_collection": "stripe",
+        "stripe_dashboard": {
+          "type": "full"
+        },
+        "type": "application"
+      },
+      "charges_enabled": false,
+      "payouts_enabled": false,
+      "capabilities": {},
+      "syntheticFixture": "A"
+    }
+  ],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_8QRPfAemlLx4kh",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_EYpKJZqEMB6tRy",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_jeNBUHM8Dbym5S",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "inventoryScope": "Only accounts connected to this platform via /v1/accounts. Does not rule out unconnected standalone or partial hosted OAuth accounts."
+}

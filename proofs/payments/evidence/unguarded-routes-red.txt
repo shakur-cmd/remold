@@ -1,0 +1,20 @@
+[{"scenario":"invoice-pay-after-void","unguardedPosts":["/v1/invoices/in_route_synthetic/pay"],"status":"FAIL"},{"scenario":"subscription-after-full-held-collection","unguardedPosts":["/v1/subscriptions"],"status":"FAIL"}]
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+2 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/private/route-red.mjs:20:241
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

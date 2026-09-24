@@ -1,0 +1,30 @@
+PASS before-own-observe
+PASS after-own-observe
+PASS lower-callback
+PASS renewal
+PASS first-unpaid-observation
+PASS never-observed-intent
+FAIL pending-void
+FAIL voided
+FAIL outside-paid-plus-local
+FAIL unpaid-credit
+FAIL collection-before-void
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"scenario":"pending-void","collectionAllowed":true,"status":"FAIL","error":"Expected values to be strictly equal:\n\ntrue !== false\n"},{"scenario":"voided","collectionAllowed":true,"status":"FAIL","error":"Expected values to be strictly equal:\n\ntrue !== false\n"},{"scenario":"outside-paid-plus-local","firstLocal":true,"extraLocal":true,"totalPotential":110,"status":"FAIL","error":"Outside20 plus local60 leaves only20, not30\n\ntrue !== false\n"},{"scenario":"unpaid-credit","creditedMinor":30,"collectionAllowed":true,"status":"FAIL","error":"Unpaid100 less credit30 cannot collect100\n\ntrue !== false\n"},{"scenario":"collection-before-void","collectionAllowed":true,"voidAllowed":true,"status":"FAIL","error":"Pending local collection blocks void\n\ntrue !== false\n"}]
+
+5 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/paid-observation-replay.mjs:68:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 5,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

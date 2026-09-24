@@ -1,0 +1,88 @@
+{
+  "level": "SANDBOX",
+  "purpose": "Direct restricted account probe; app trusted adapter must still refuse unhealthy binding",
+  "apiVersion": "2025-05-28.basil",
+  "outcomes": [
+    {
+      "fixture": "A",
+      "account": "acct_1UJIbNJLMDiXZR1g",
+      "charges_enabled": false,
+      "status": "succeeded",
+      "providerId": "pi_3UJIeiJLMDiXZR1g0mWGI4LV",
+      "livemode": false
+    },
+    {
+      "fixture": "C",
+      "account": "acct_1UJIefQv5HvapSBV",
+      "charges_enabled": false,
+      "status": "succeeded",
+      "providerId": "pi_3UJIejQv5HvapSBV1rql1szn",
+      "livemode": false
+    }
+  ],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_iSvXhNOJXvddZr",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_FnNVQGTGonIhSy",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/accounts",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": "4be3d650a0979cb74c5dd779eff8a6e8cee00593c90e15ccd82fbf9de0496fdb",
+      "httpStatus": 200,
+      "requestId": "req_SdyDSKmLPi9Obz",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJIbNJLMDiXZR1g",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_VPucnOPMDIykPD",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/payment_intents",
+      "account": "acct_1UJIbNJLMDiXZR1g",
+      "idempotencyDigest": "0b66b13de039964b2598a3bdfe49bc8f4cdc1638e91ae421fd25a19dc447aea5",
+      "httpStatus": 200,
+      "requestId": "req_cwYKidKrVeMIQH",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJIefQv5HvapSBV",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_ledSZOUBc8Tlwo",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/payment_intents",
+      "account": "acct_1UJIefQv5HvapSBV",
+      "idempotencyDigest": "84407559e0cf42eeda935b87ed3d36c7520159e130ef2034bb3368c94327b0dc",
+      "httpStatus": 200,
+      "requestId": "req_VvxCHs6MHBn3GD",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ]
+}

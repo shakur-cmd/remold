@@ -1,0 +1,33 @@
+{
+  "level": "SERVICE / SIM only for repair",
+  "commands": [
+    {
+      "command": "pnpm --dir proofs/payments test",
+      "exitCode": 0,
+      "output": "local-tests-after-collection-repair.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exitCode": 0,
+      "output": "collection-repair-typecheck.txt"
+    }
+  ],
+  "sourceManifestSha256": "97cbec6399219e43bdf5d1e9c6d836490c645273afd103528cefe441d93052f6",
+  "sourceFiles": 41,
+  "changedSincePredecessor": [
+    "accounting-replay.mjs",
+    "adapter.mjs",
+    "adjustments.mjs",
+    "adjustments.test.mjs",
+    "collection-accounting-replay.mjs",
+    "collection-reconciliation.html",
+    "convex/payments.ts",
+    "convex/schema.ts",
+    "handover.html",
+    "package.json",
+    "paid-observation-replay.mjs",
+    "safety-replay.mjs"
+  ],
+  "review": "awaiting root and independent verification",
+  "priorSourceArchive": "private/frozen-before-paid-fence"
+}

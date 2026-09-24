@@ -1,0 +1,14 @@
+{
+  "name": "remold-payments-proof",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "test": "node --test stripe.test.mjs adjustments.test.mjs && node domain-replay.mjs && node public-payment-replay.mjs && node safety-replay.mjs && node lifecycle-replay.mjs && node collection-replay.mjs && node accounting-replay.mjs && node paid-observation-replay.mjs && node collection-accounting-replay.mjs",
+    "proof:sandbox": "node sandbox-replay.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "convex": "1.46.0"
+  }
+}

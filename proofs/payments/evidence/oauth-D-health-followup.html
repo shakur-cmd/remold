@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stripe D test health follow-up</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Stripe D test-account health</h1><p class="meta">Read-only check · 2026-09-24 22:24:26 UTC</p><div class="decisions"><h2>Current boundary</h2><p>D now has charges and payouts enabled in the sandbox. This clears its observed account-health prerequisite only. Financial lifecycle execution still waits for root and independent review; E is still being onboarded.</p></div><div class="status"><h2>Actual before and after</h2><p><a href="oauth-D-readback.json">Earlier readback</a>: requirements.pending_verification, charges and payouts disabled. <a href="oauth-D-health-followup.json">Fresh GET evidence</a>: charges_enabled and payouts_enabled true, card_payments and transfers active, disabled_reason null and empty due/pending-verification/errors arrays. Cartes Bancaires capability alone remains pending among the returned capabilities. Sandbox balance livemode is false.</p></div><p>The account is acct_1UJIndJL8hhTtG1o with standard/full Dashboard controller settings. Only GET account and balance requests were made. No lifecycle or account changes occurred, and the frozen 41-file source remains unchanged.</p><p><a href="https://docs.stripe.com/connect/testing.md">Stripe’s official testing guide</a> distinguishes immediate test verification values from asynchronous results, but does not establish a fixed completion time for this account. Its warning that sandboxes can permit some actions without active capabilities remains relevant. We did not use a successful charge to infer health.</p></body></html>

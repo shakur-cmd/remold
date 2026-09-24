@@ -1,0 +1,26 @@
+{
+  "level": "SERVICE local Convex; synthetic financial observations; no provider calls",
+  "cases": [
+    {
+      "name": "Older unpaid pull after independent paid callback",
+      "epoch": 1,
+      "afterCallback": {
+        "paidMinor": 100,
+        "state": "paid",
+        "epoch": 2
+      },
+      "afterStale": {
+        "paidMinor": 100,
+        "state": "paid",
+        "complete": false,
+        "epoch": 2
+      },
+      "staleError": "[Request ID: ffbdbcddb2887a86] Server Error\nUncaught Error: stale adjustment generation\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:129:168)\n",
+      "voidPermit": false,
+      "voidError": "[Request ID: fc4335c4c3e472a0] Server Error\nUncaught Error: payment reconciliation incomplete\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:388:45)\n",
+      "collectionReserved": false,
+      "collectionError": "[Request ID: 72828d893de2d97d] Server Error\nUncaught Error: payment reconciliation incomplete\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:410:82)\n",
+      "status": "PASS"
+    }
+  ]
+}

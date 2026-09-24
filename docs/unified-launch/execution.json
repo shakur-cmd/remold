@@ -101,7 +101,7 @@
       "id": "P4",
       "state": "dispatched",
       "builder": "/root/i2_release",
-      "independentVerifier": "/root/c0_verifier scheduled after frozen proof",
+      "independentVerifier": "/root/c0_verifier, bounded local financial slice",
       "costCap": 0,
       "externalAllowance": "Test-mode API only, no live charges/emails/real customerdata; no paidproducts",
       "depends": [
@@ -113,7 +113,10 @@
         "proofs/payments/**"
       ],
       "environment": "Stripe test sandboxacct_1UJHeKJjT84hNemU, two synthetic merchants; optional loopback3490/3491",
-      "scopeNote": "Full required job; account/live policy gates remain open. Measurement addendum applies to later product integration."
+      "scopeNote": "Root and fresh independent local financial regression pass. Actual Stripe lifecycle not run. Bound-first-pull driver and non-PI collection route coverage remain open; D enabled in sandbox, E onboarding. No whole P4 or I1/I7 completion.",
+      "evidence": "proofs/payments/verification-checkpoint.html",
+      "independentEvidence": "evidence/2026-09-24-unified-build/payments-iv/r2/review.html",
+      "frozenManifest": "97cbec6399219e43bdf5d1e9c6d836490c645273afd103528cefe441d93052f6"
     },
     {
       "id": "P5",

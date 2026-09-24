@@ -1,0 +1,20 @@
+import assert from'node:assert/strict';import{randomUUID}from'node:crypto';import{writeFileSync}from'node:fs';import{ConvexHttpClient}from'convex/browser';import{api}from'./convex/_generated/api.js';import{withPayments}from'./local.mjs';
+const results=[];
+await withPayments(async({url,run})=>{
+ const c=new ConvexHttpClient(url,{logger:false}),f=run('harness:seed',{run:randomUUID(),tokens:Array.from({length:10},()=>randomUUID())});const m=(n,a)=>c.mutation(api.payments[n],a),h=(n,a)=>c.mutation(api.harness[n],a);
+ const customer=run('paymentFixture:customer',{org:f.A.org,binding:f.A.binding,name:'Lifecycle synthetic'}),owner=f.A.sessions.owner;
+ run('paymentFixture:role',{actor:f.A.actors.owner,role:'finance'});
+ const doc=await m('prepareInvoice',{token:owner,customer,amountMinor:999,currency:'usd',kind:'invoice'});await m('attachProvider',{token:f.A.adapter,id:doc,externalId:'in_synthetic_lifecycle'});
+ const epoch=await m('reconcileAdjustments',{token:f.A.adapter,binding:f.A.binding,externalId:'in_synthetic_lifecycle',complete:false,refundedMinor:0,creditedMinor:0,receipts:[]});await m('reconcileAdjustments',{token:f.A.adapter,binding:f.A.binding,externalId:'in_synthetic_lifecycle',complete:true,epoch,refundedMinor:0,creditedMinor:0,receipts:[]});
+ const id=await m('prepareLifecycle',{token:owner,document:doc,action:'credit',amountMinor:99});await h('control',{token:owner,readonly:true});
+ await assert.rejects(m('permitLifecycle',{token:f.A.adapter,id}),/readonly/);results.push('Readonly checked at final credit permit');
+ await h('control',{token:owner,readonly:false});
+ await assert.rejects(m('prepareLifecycle',{token:f.A.sessions.manager,document:doc,action:'credit',amountMinor:99}),/human finance authority/);
+ await assert.rejects(m('permitLifecycle',{token:f.B.adapter,id}),/adapter account denied/);
+ const permit=await m('permitLifecycle',{token:f.A.adapter,id});assert.equal(permit.invoice,'in_synthetic_lifecycle');assert.equal(permit.action,'credit');assert.equal(permit.amountMinor,99);assert.equal(permit.account,f.A.key.account);
+ await assert.rejects(m('permitLifecycle',{token:f.A.adapter,id}),/already dispatched/);
+ assert.equal(await m('settleLifecycle',{token:f.A.adapter,id,providerRef:'cn_synthetic',receipt:{kind:'credit',receiptId:'cn_synthetic',sourceRef:'in_synthetic_lifecycle',operationId:id,amountMinor:99,status:'succeeded'}}),true);assert.equal(await m('settleLifecycle',{token:f.A.adapter,id,providerRef:'cn_synthetic'}),false);
+ const value=await c.query(api.payments.getDocument,{token:owner,id:doc});assert.equal(value.amountMinor,999);assert.equal(value.creditedMinor,99);results.push('Exact immutable lifecycle payload and one-use credit receipt');
+ const overflow=await m('prepareLifecycle',{token:owner,document:doc,action:'credit',amountMinor:901});await assert.rejects(m('permitLifecycle',{token:f.A.adapter,id:overflow}),/remaining obligation/);results.push('Credit cannot exceed outstanding uncredited obligation');
+});
+writeFileSync(new URL('./evidence/lifecycle.json',import.meta.url),JSON.stringify({level:'SERVICE/SIM; proposed C1 mapping pending D0P/I1/I7 review',results},null,2)+'\n');console.log(JSON.stringify({passed:results.length}));

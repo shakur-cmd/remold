@@ -1,0 +1,62 @@
+{
+  "level": "SERVICE local Convex; SIM identity/provider observations",
+  "results": [
+    {
+      "name": "Human creates integer-minor quote in own workspace",
+      "status": "PASS"
+    },
+    {
+      "name": "Cross-tenant customer/account IDs and actor injection cannot create obligations",
+      "status": "PASS"
+    },
+    {
+      "name": "Acceptance is bound to immutable version and secret, with duplicate clicks atomic",
+      "status": "PASS"
+    },
+    {
+      "name": "Expired public acceptance is refused",
+      "status": "PASS"
+    },
+    {
+      "name": "Deposit intent is created once; currency and amount changes are refused",
+      "status": "PASS"
+    },
+    {
+      "name": "Browser paid forgery and wrong-account adapter cannot settle an invoice",
+      "status": "PASS"
+    },
+    {
+      "name": "Authenticated replay settles once and changed callback bytes are refused",
+      "status": "PASS"
+    },
+    {
+      "name": "Deposit allocation is once-only and exact integer arithmetic preserves total",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent financial commands emit one attributed event per obligation",
+      "status": "PASS"
+    },
+    {
+      "name": "Readonly refuses new issuance but incoming reconciliation and export continue",
+      "status": "PASS"
+    },
+    {
+      "name": "Removing customer preserves issued snapshot and retained financial attribution",
+      "status": "PASS"
+    },
+    {
+      "name": "Restricted/disconnected merchant refuses new issuance while history remains",
+      "status": "PASS"
+    },
+    {
+      "name": "Tenant B canonical finance export stays unchanged",
+      "status": "PASS"
+    }
+  ],
+  "limitations": [
+    "Provider observations in this suite are synthetic and do not certify Stripe settlement.",
+    "One-year retained synthetic document policy requires commercial confirmation.",
+    "Frozen H0 general refund refusal remains intentional; additive safety is separately tested and pending production/IV/G-pay."
+  ]
+}

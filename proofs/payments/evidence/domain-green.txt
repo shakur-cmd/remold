@@ -1,0 +1,14 @@
+PASS Human creates integer-minor quote in own workspace
+PASS Cross-tenant customer/account IDs and actor injection cannot create obligations
+PASS Acceptance is bound to immutable version and secret, with duplicate clicks atomic
+PASS Expired public acceptance is refused
+PASS Deposit intent is created once; currency and amount changes are refused
+PASS Browser paid forgery and wrong-account adapter cannot settle an invoice
+PASS Authenticated replay settles once and changed callback bytes are refused
+PASS Deposit allocation is once-only and exact integer arithmetic preserves total
+PASS Concurrent financial commands emit one attributed event per obligation
+PASS Readonly refuses new issuance but incoming reconciliation and export continue
+PASS Removing customer preserves issued snapshot and retained financial attribution
+PASS Restricted/disconnected merchant refuses new issuance while history remains
+PASS Tenant B canonical finance export stays unchanged
+{"passed":13}

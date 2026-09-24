@@ -1,0 +1,31 @@
+PASS Human creates integer-minor quote in own workspace
+PASS Cross-tenant customer/account IDs and actor injection cannot create obligations
+PASS Acceptance is bound to immutable version and secret, with duplicate clicks atomic
+PASS Expired public acceptance is refused
+PASS Deposit intent is created once; currency and amount changes are refused
+PASS Browser paid forgery and wrong-account adapter cannot settle an invoice
+PASS Authenticated replay settles once and changed callback bytes are refused
+PASS Deposit allocation is once-only and exact integer arithmetic preserves total
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/domain-replay.mjs:63:281
+    at check (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/domain-replay.mjs:12:37)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/domain-replay.mjs:63:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withPayments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:22:10)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/domain-replay.mjs:8:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

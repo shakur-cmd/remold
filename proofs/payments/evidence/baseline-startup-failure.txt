@@ -1,0 +1,9 @@
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:18
+  while(!log.includes('Convex functions ready')){if(backend.exitCode!==null||Date.now()>deadline)throw new Error('Payment backend failed; private backend log retained');await new Promise(r=>setTimeout(r,200));}
+                                                                                                       ^
+
+Error: Payment backend failed; private backend log retained
+    at withPayments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:18:104)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/red.mjs:2:1
+
+Node.js v24.18.0

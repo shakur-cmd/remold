@@ -1,0 +1,22 @@
+FAIL Two accepted refund receipts cannot reuse one aggregate observation to restore capacity
+FAIL Credit is counted once with callback-first
+PASS Credit is counted once with receipt-first
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"name":"Two accepted refund receipts cannot reuse one aggregate observation to restore capacity","status":"FAIL","error":"Missing expected rejection."},{"name":"Credit is counted once with callback-first","status":"FAIL","error":"Expected values to be strictly equal:\n\n100 !== 50\n"}]
+
+2 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/accounting-replay.mjs:43:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0
