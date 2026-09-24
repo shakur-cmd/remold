@@ -65,18 +65,14 @@
     },
     {
       "id": "P2",
-      "state": "dispatched",
-      "builder": "/root/i2_release",
-      "independentVerifier": "separate reviewer required after source freeze",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
       "costCap": 0,
-      "externalAllowance": "Source/container downloads and isolated synthetic sink only; no paid services or real sends",
+      "externalAllowance": "none",
       "depends": [
         "H0"
-      ],
-      "allowedPaths": [
-        "proofs/marketing/**"
-      ],
-      "environment": "isolated source/container proofs; no live mail"
+      ]
     },
     {
       "id": "P3",
@@ -109,18 +105,14 @@
     },
     {
       "id": "P5",
-      "state": "dispatched",
-      "builder": "/root/c0_verifier",
-      "independentVerifier": "separate reviewer required after source freeze",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
       "costCap": 0,
-      "externalAllowance": "Authorized mailbox OAuth and Purelymail counterpart; reciprocal sends only between named addresses, at most five/mailbox/day with persistent quota. Calendar unspecified; no historical import.",
+      "externalAllowance": "none",
       "depends": [
         "H0"
-      ],
-      "allowedPaths": [
-        "proofs/communications/**"
-      ],
-      "environment": "isolated loopback3520/3521, OAuth callback3522, Google staging app only"
+      ]
     },
     {
       "id": "P6",
@@ -131,8 +123,7 @@
       "externalAllowance": "none",
       "depends": [
         "H0"
-      ],
-      "scopeNote": "First owner route: official subscription CLI connected/external worker. Managed hosted model execution remains unproven; requires every-call and continuation fencing/stream cancellation or explicit mode decision. No API funding or fallback authorized."
+      ]
     },
     {
       "id": "D0A",
@@ -469,7 +460,7 @@
       "id": "accounts-and-subscriptions",
       "source": "direct user steering 2026-09-24",
       "path": "docs/unified-launch/accounts-and-subscriptions-addendum.html",
-      "state": "required; prior independent scope review and Opus conditional guidance; subsequent owner approved50/month infrastructure and reciprocal5/mailbox/day; implementation verification pending",
+      "state": "required; Opus and independent scope review pending",
       "jobs": [
         "P3",
         "P5",

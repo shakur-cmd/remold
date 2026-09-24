@@ -8,17 +8,7 @@
     ],
     "status": "open",
     "needed": "WorkOS admin/Google sign-in configuration; isolated previews; backup and alert account; platform Stripe sandbox; real price and commercial policy. No production cutover authorized.",
-    "accessUpdate": "Verified Remold WorkOS Staging configured; real Google/AuthKit local login, logout, refresh, deep invite, valid-JWT issuer rejection and membership isolation tested. AuthKit commit3932963 passedCI36045807967. Separate hosted previews/production, email-password, managedbackup/restore and deliveredalerts still required. Stripe isolated test sandbox created and read-only account/mode verified.",
-    "spendAllowance": {
-      "monthlyUSD": 50,
-      "approvedBy": "Shakur explicit chat",
-      "scope": "initial hosting and recovery infrastructure",
-      "excludes": [
-        "existing AI subscriptions",
-        "later marketing/social services"
-      ],
-      "providerHardCapVerified": false
-    }
+    "accessUpdate": "Verified Remold WorkOS Staging configured; real Google/AuthKit local login, logout, refresh, deep invite, valid-JWT issuer rejection and membership isolation tested. AuthKit commit3932963 passedCI36045807967. Separate hosted previews/production, email-password, managedbackup/restore and deliveredalerts still required. Stripe isolated test sandbox created and read-only account/mode verified."
   },
   {
     "id": "G-pay",
@@ -42,8 +32,8 @@
       "I8"
     ],
     "status": "open",
-    "needed": "Mailbox connection and calendar selection. Reciprocal test sends explicitly authorized only shakur@envoylogic.com and reply@repliedfor.com, maximum five from each per day. No customer sends or broad historical import.",
-    "accessUpdate": "Google staging redirect saved. shakur@envoylogic.com accepted as test user; reply@repliedfor.com rejected as Google test user, DNS points to Purelymail. Existing exact Purelymail credentials located privately for test counterpart. Connection proof pending."
+    "needed": "OAuth connection for shakur@envoylogic.com and reply@repliedfor.com; calendar selection remains open. Reciprocal test messages only, builder ceiling five per mailbox per day. No customer sends or broad historical import.",
+    "accessUpdate": "Owner named both mailboxes in chat. Isolated Google staging OAuth project/client already created; mailbox OAuth sign-ins and P5 proof pending. See accounts-and-subscriptions-addendum.html."
   },
   {
     "id": "G-social",
@@ -53,8 +43,7 @@
       "I6"
     ],
     "status": "open",
-    "needed": "Required launch channels confirmed: TikTok, Instagram, LinkedIn, Facebook, X. Test accounts, developer approvals, exact publication content/visibility allowance still needed. Other channels optional pending demand.",
-    "accessUpdate": "Owner authorized troubleshoot TikTok signup, create an X account, take care of Facebook (inspect existing Page first), and connect his signed-in LinkedIn profile. Instagram identity still unspecified. No publication content/visibility approved."
+    "needed": "Required launch channels confirmed: TikTok, Instagram, LinkedIn, Facebook, X. Test accounts, developer approvals, exact publication content/visibility allowance still needed. Other channels optional pending demand."
   },
   {
     "id": "G-runtime",
