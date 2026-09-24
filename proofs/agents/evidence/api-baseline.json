@@ -1,0 +1,92 @@
+{
+  "stage": "candidate baseline",
+  "results": [
+    {
+      "name": "Pinned authenticated service responds",
+      "pass": true,
+      "commit": "e006c18f2036d95d47ca8f7eb068670f3c54942d"
+    },
+    {
+      "name": "A agent cannot list B agents",
+      "pass": true,
+      "status": 403
+    },
+    {
+      "name": "Actual process adapter execution",
+      "status": "succeeded",
+      "result": {
+        "stderr": "",
+        "stdout": "{\"bFileReadable\":true,\"authSecretInherited\":true,\"hostHomeMounted\":false,\"apiTokenPresent\":true}\n",
+        "stopReason": "completed",
+        "timeoutFired": false,
+        "timeoutSource": "config",
+        "configFreshness": {
+          "session": {
+            "reset": false,
+            "categories": [
+              "adapter",
+              "adapterConfig",
+              "agentRuntimeConfig",
+              "instructions",
+              "issueOverrides",
+              "workspaceConfig",
+              "environment",
+              "envBindings",
+              "secrets",
+              "runtimeSkills"
+            ],
+            "resetReasons": [],
+            "nextFingerprint": "v1:sha256:6fffe9280e26cb3fd62d66a3f4462e5ea6f81a10112092029d24f19dc8556d01",
+            "changedCategories": [],
+            "taskSessionReused": false,
+            "fingerprintVersion": 1,
+            "taskSessionAvailable": false,
+            "storedFingerprintPresent": false
+          },
+          "version": 1,
+          "workspace": {
+            "action": "create",
+            "reasons": [],
+            "categories": [
+              "mode",
+              "projectWorkspace",
+              "strategy",
+              "repo",
+              "lifecycleCommands",
+              "runtimeServices",
+              "environment",
+              "realization"
+            ],
+            "reuseRequested": false,
+            "nextFingerprint": "v1:sha256:0339fb873f385b5383a95f8f6c64a9d63cea486abacc9a0599b85ee325e93af9",
+            "workspaceReused": false,
+            "activeWorkspaceId": null,
+            "changedCategories": [],
+            "storedFingerprint": null,
+            "fingerprintVersion": 1,
+            "inferredFingerprint": null,
+            "previousWorkspaceId": null,
+            "configSnapshotRefreshed": false,
+            "storedFingerprintPresent": false
+          }
+        },
+        "timeoutConfigured": true,
+        "effectiveTimeoutSec": 15,
+        "presentationDecision": {
+          "schema": "paperclip.run_presentation_decision.v1",
+          "commentId": null,
+          "reasonCodes": [
+            "no_user_facing_response"
+          ],
+          "chosenSource": "none",
+          "commentAction": "none",
+          "sourceEventId": null,
+          "resolverVersion": "1",
+          "activityDisposition": "collapse"
+        }
+      },
+      "error": null
+    }
+  ],
+  "candidateAccepted": false
+}

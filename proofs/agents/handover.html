@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Paperclip candidate findings</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Paperclip candidate findings</h1><div class="meta">2026-09-24 · P1 bounded service proof · Whole P1 and D0A remain open</div>
+<div class="decisions"><h2>Decision</h2><p>Reject the tested shared-process execution setup for Remold. Keep the independently proven native candidate in the comparison. No complete engine selection has been made, and no owner decision is needed for this bounded rejection.</p></div>
+<div class="status"><h2>Proven, with independent checks</h2><p>Root and c0_verifier exercised the pinned disposable Paperclip service. Company API boundaries worked in the tested calls, while shared-process filesystem and environment separation failed. Narrow task-bridge read credentials and the HTTP runtime capability passed their bounded positive and negative checks. These results do not certify hosted execution.</p></div>
+<h2>Before and after checks</h2><table><tr><th>Initial observation</th><th>Independent result</th><th>Meaning</th></tr>
+<tr><td>Process A could see the synthetic B sentinel and server-secret presence.</td><td>A fresh random sentinel was fully read; disposable auth-secret presence remained true.</td><td>Reject this shared-process setup; a read-only container root does not separate tenant reads.</td></tr>
+<tr><td>A was refused B company API data.</td><td>Fresh A credentials also received 403.</td><td>Tested company API boundary passes.</td></tr>
+<tr><td>Ordinary agent credentials did not establish assigned-record scope.</td><td>Ordinary engineer key read another assigned issue. Task-bridge credential read its own issue and refused other tested records.</td><td>Do not equate ordinary keys with every credential mode.</td></tr>
+<tr><td>HTTP receiver accepted without work using 202.</td><td>Paperclip reported succeeded. Body bearer was useful while the task-bound run was active and refused after it ended.</td><td>Transport acceptance is not proof of completed work. No asynchronous completion protocol certified.</td></tr></table>
+<h2>Exact candidate</h2><p>Source <a href="https://github.com/paperclipai/paperclip/tree/e006c18f2036d95d47ca8f7eb068670f3c54942d">e006c18f2036d95d47ca8f7eb068670f3c54942d</a>, MIT. Image digest <code>52510c246809a1c0978e67e39a855bff6c9cfdfe2114f115791ab0add15d1411</code>. The small Dockerfile prepares the upstream embedded-Postgres native runtime before enforcing a read-only root. This is provenance, not a reproducible-binary claim.</p>
+<p>Disposable Docker context <code>colima-remold-proof</code>, internal network, no published host port, UID 1000, dropped capabilities, no-new-privileges, 2 GiB memory and 1.5 CPU limit. No host home, model account or real provider secret was mounted. Synthetic fixture data and disposable credentials stay in its private container volume.</p>
+<h2>Evidence and limits</h2><p><a href="../../evidence/2026-09-24-unified-build/paperclip-iv/report.html">Independent process and credential report</a> · <a href="../../evidence/2026-09-24-unified-build/paperclip-iv/runtime-token-report.html">Independent HTTP capability report</a> · <a href="evidence/api-baseline.json">Root baseline</a> · <a href="evidence/http-probe.json">Root HTTP observation</a> · <a href="evidence/candidate.json">Environment record</a> · <a href="native/handover.html">Native candidate</a></p>
+<p>The independent reports contain before/after fixtures and runnable commands. No further runtime calls were made for this documentation checkpoint. Broader credential modes, isolated executor behavior, provider tools, hosted subscription terms, runtime usage ceilings, full firing/reassignment integration, upgrades/restore and campaign/social ownership remain unverified. The historical upstream advisory was not reproduced. Do not infer a universal Paperclip defect or full P1 completion.</p>
+<p>Root built the initial probe, read the authored scripts and exercised the original service. c0_verifier independently repeated and expanded the bounded checks. h0_builder completed a documentation-only check against the retained independent reports and root evidence: the bounded accepted/rejected conclusions and all relative links agree. No runtime probe, authorization audit, implementation review or provider action was performed for this check; P1 and D0A remain open.</p></body></html>

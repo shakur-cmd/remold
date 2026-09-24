@@ -1,0 +1,26 @@
+{
+  "verifier": "/root/c0_verifier",
+  "verdict": "REJECT_TESTED_DEFAULT_TOPOLOGY",
+  "level": "SERVICE",
+  "commit": "e006c18f2036d95d47ca8f7eb068670f3c54942d",
+  "scope": "Early P1 independent isolation and ordinary agent-key record-scope checks only",
+  "runtimeProbeCompleted": true,
+  "runtimeIsolationAccepted": false,
+  "ordinaryKeyRecordScopeAccepted": false,
+  "companyApiBoundaryObserved": true,
+  "exactAdvisoryReproduction": "NOT_TESTED",
+  "P1Complete": false,
+  "D0ASelection": "OPEN",
+  "sourceManifest": "source-manifest.json",
+  "report": "report.html",
+  "taskBridgeBoundedReadScopeAccepted": true,
+  "qualification": "Task-bridge key passes tested record-read boundaries; ordinary key failure does not reject all API credential topologies.",
+  "httpCapabilityFollowup": {
+    "scope": "connection_intents",
+    "liveOwnMetadata": true,
+    "foreignMetadataDenied": true,
+    "endedRunTokenDenied": true,
+    "executorOsIsolationVerified": false,
+    "report": "runtime-token-report.html"
+  }
+}

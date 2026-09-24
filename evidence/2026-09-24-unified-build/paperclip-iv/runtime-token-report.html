@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Paperclip HTTP runtime capability review</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Paperclip HTTP runtime capability review</h1><div class="meta">2026-09-24 · Independent reviewer /root/c0_verifier · SERVICE capability and transport; SIM receiver</div>
+<div class="decisions"><h2>Corrected conclusion</h2><p><strong>The HTTP payload does carry a useful scoped credential.</strong> Absence of an Authorization header does not mean absence of a bearer token. The body contains a connection-intents capability. The tested capability enforces company, task and live-run boundaries. This does not prove executor operating-system isolation or select Paperclip.</p></div>
+<div class="status"><h2>Done and proven</h2><p>A fresh, real task-bound heartbeat delivered the token to the local trusted receiver. While that request was open, the token successfully used MCP and searched synthetic connector metadata in A. After HTTP 202, the run became succeeded and the same token was denied. The independent probe exited 0. No token values, real credentials, raw request bodies or provider responses appear in evidence.</p></div>
+<table><tr><th>Probe</th><th>Observed</th></tr>
+<tr><td>Credential location</td><td>Body paperclipRuntimeTools.bearerToken present; Authorization header absent</td></tr>
+<tr><td>Signed claim relationship</td><td>connection_intents scope; company, agent and run match; exp−iat=3600 seconds</td></tr>
+<tr><td>Live task capability</td><td>MCP GET 200 and connection search 200</td></tr>
+<tr><td>Real A/B synthetic metadata</td><td>Disabled A connection included in search; B excluded. A connection request 422 because disabled; B request 404.</td></tr>
+<tr><td>Broad API authentication</td><td>The token received 401 for A’s ordinary company-agent API</td></tr>
+<tr><td>Tampered company claim</td><td>Modified company claim with unchanged signature received 401</td></tr>
+<tr><td>After acceptance</td><td>Receiver returned 202 without performing work. Paperclip status succeeded. Same token MCP and search received 403, despite its cryptographic TTL.</td></tr>
+<tr><td>Earlier root token</td><td>Also denied 403 after its run ended</td></tr></table>
+<h2>Source assessment</h2>
+<p>Exact commit remains <code>e006c18f2036d95d47ca8f7eb068670f3c54942d</code>. <a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/server/src/runtime-tools-token.ts">Token construction and verification</a> bind company, agent, run, responsible user, instance, scope and expiration with HMAC. The connection-intents token has a one-hour TTL. A separate GitHub-credentials scope exists and was not exercised.</p>
+<p><a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/server/src/routes/connection-intents.ts">Runtime routes</a> validate before MCP initialization, tool listing and calls. <a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/server/src/services/connection-intents.ts#L136">Run-context validation</a> requires the bound running heartbeat, current responsible identity/membership, a task in the same company, current assignee ownership and an open task. Search inventory uses the bound company and checks configured connection grants before exposing indexed metadata. The runtime tools are connection discovery and connection requests, not general access to every connector’s executable tools.</p>
+<h2>Practical implication</h2><p>The earlier claim that HTTP forwards no credential is incorrect. A trusted remote receiver can use the narrow capability while the task-bound HTTP call remains active. Returning 202 ends this demonstrated capability window because Paperclip treats the response as success. This is not a demonstrated asynchronous completion protocol; longer-lived job callbacks, fencing, crash recovery and outcome reconciliation remain separate proof requirements. Holding HTTP open could retain the run temporarily, but its lifecycle and failure handling have not been certified.</p>
+<h2>Fixture and limits</h2><p>Container <code>remold-paperclip-proof-http</code> uses the same pinned prepared image/volume with the private receiver origin allowlisted at 127.0.0.1:3555. The receiver and server share a container. This proves transport and API capability behavior only. The fixture created disabled draft A/B connections with no credentials, using inert endpoint metadata; it did not enable them, call connector tools, authorize an account or send any external message. A disabled same-company request is deliberately rejected before it could create a user connection request.</p>
+<p>Live search, disabled-request rejection, foreign lookup denial, tampered signature and ended-run denial were exercised. Live membership removal, reassignment, token expiration after one hour, GitHub capability, tool-grant variations, every MCP method, task-bridge writes, actual provider tools and hostile remote executor isolation were not exercised. These are not implicitly accepted.</p>
+<h2>Evidence and verification correction</h2><p><a href="runtime-token-service.json">Independent results</a> · <a href="runtime-token-probe.mjs">Reproducible probe</a> · <a href="source-manifest.json">Hashes</a> · <a href="report.html">Earlier process and task-bridge findings</a></p>
+<p>The first verifier attempt incorrectly prefixed public runtime routes with <code>/api</code> and got 401. It is preserved as <a href="runtime-token-wrong-prefix.json">a verifier setup error</a>, not a product failure baseline. Inspection of the advertised URLs and app mount corrected the probe; proper runtime routes are mounted directly at <code>/mcp/runtime-tools</code> and <code>/runtime-tools/...</code>.</p>
+<pre>docker --context colima-remold-proof exec -i remold-paperclip-proof-http node --input-type=module &lt; evidence/2026-09-24-unified-build/paperclip-iv/runtime-token-probe.mjs</pre>
+<p>Root was notified of the credential correction and scoped positive evidence. The default co-resident process executor remains rejected on its separately demonstrated filesystem/environment boundary. P1 comparison and D0A selection remain open. Port 3555 and container use are released.</p></body></html>
