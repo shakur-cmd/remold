@@ -1,0 +1,60 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; deliberately unexplained synthetic remaining balance, NOT a claim Stripe produces this invoice",
+  "results": [
+    {
+      "obligation": 137,
+      "paid": 0,
+      "credits": 0,
+      "providerRemaining": 50,
+      "attempts": [
+        {
+          "n": 1,
+          "refused": true,
+          "error": "Unexplained invoice remaining\n\n50 !== 137\n"
+        },
+        {
+          "n": 2,
+          "refused": true,
+          "error": "Unexplained invoice remaining\n\n50 !== 137\n"
+        }
+      ],
+      "writes": [],
+      "totalDispatched": 0,
+      "expectedWrites": 0,
+      "storedComplete": false,
+      "status": "PASS"
+    },
+    {
+      "obligation": 137,
+      "paid": 0,
+      "credits": 0,
+      "providerRemaining": 137,
+      "attempts": [
+        {
+          "n": 1,
+          "refused": false,
+          "error": null
+        },
+        {
+          "n": 2,
+          "refused": false,
+          "error": null
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "totalDispatched": 74,
+      "expectedWrites": 2,
+      "storedComplete": true,
+      "status": "PASS"
+    }
+  ]
+}

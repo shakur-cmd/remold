@@ -1,0 +1,44 @@
+{
+  "predecessorAggregate": "7f59d351e8b89b965d4e237bb42ebb09192a9f4baf7332233801fff6754d4056",
+  "candidateAggregate": "6a44ac5016ae2146491aa322055bf7eeddad09e6ee2abcb2148d0594135c4529",
+  "files": 46,
+  "checks": [
+    {
+      "command": "node proofs/payments/private/remaining-predecessor-replay.mjs",
+      "exit": 1,
+      "result": "Same finalized20 cases:10 unsafe cases fail against preserved prior adapter; valid controls pass",
+      "evidence": "remaining-predecessor-red.json"
+    },
+    {
+      "command": "node proofs/payments/remaining-replay.mjs",
+      "exit": 0,
+      "result": "20 cases pass",
+      "evidence": "remaining.json"
+    },
+    {
+      "command": "pnpm --dir proofs/payments test",
+      "exit": 0,
+      "evidence": "remaining-full-tests.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exit": 0,
+      "evidence": "remaining-typecheck.txt"
+    }
+  ],
+  "scope": "SERVICE local Convex/loopback HTTP, simulated provider objects; no provider financial calls; builder proof awaiting independent verification",
+  "changedPredecessorFiles": [
+    "adapter.mjs",
+    "adjustments.mjs",
+    "adjustments.test.mjs",
+    "handover.html",
+    "package.json",
+    "route-closure.html",
+    "route-policy-replay.mjs",
+    "route-success-replay.mjs",
+    "sandbox-replay.mjs"
+  ],
+  "newFiles": [
+    "remaining-replay.mjs"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "at": "2026-09-24T22:58:40.310466+00:00",
+  "reviewer": "root",
+  "source": "7f59d351e8b89b965d4e237bb42ebb09192a9f4baf7332233801fff6754d4056",
+  "command": "node evidence/2026-09-24-unified-build/payments-root/r3/unexplained-remaining-probe.mjs",
+  "exitCode": 1,
+  "result": "REVISE",
+  "observed": {
+    "inconsistentRemaining50": {
+      "dispatched": 74,
+      "expected": 0,
+      "status": "FAIL"
+    },
+    "consistentRemaining137": {
+      "dispatched": 74,
+      "expected": 74,
+      "status": "PASS"
+    }
+  },
+  "scope": "Synthetic Stripe responses over actual loopback HTTP and local Convex; not a real Stripe invoice claim",
+  "after": "Awaiting repair and identical replay"
+}

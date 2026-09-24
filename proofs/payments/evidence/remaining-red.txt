@@ -1,0 +1,38 @@
+FAIL Unexplained remaining50 refuses both37
+FAIL Unexplained due50 refuses both37
+FAIL Consistent137 permits37+37+63 and refuses64
+PASS Partial paid40 permits97 and refuses98
+PASS Pre-credit30 on unpaid100 permits70 and refuses71
+PASS Pre-credit30 and paid40 permit30 and refuse31
+PASS Post-credit30 after paid100 preserves observation and refuses collection
+PASS Refund30 after paid100 never reopens collection
+FAIL Negative starting balance refused
+FAIL Positive starting balance refused
+FAIL Overpaid shape refused
+PASS Malformed remaining 0
+FAIL Malformed remaining 1
+FAIL Malformed remaining 2
+PASS Malformed remaining 3
+FAIL Missing starting balance refused
+FAIL Missing overpaid refused
+PASS Explained first read but final changed credits refuses
+FAIL Attachment refuses newly unexplained balance
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+11 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/remaining-replay.mjs:66:205
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 11,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

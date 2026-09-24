@@ -1,0 +1,33 @@
+{
+  "level": "SERVICE / SIM only for repair; account health separately SANDBOX read-only",
+  "commands": [
+    {
+      "command": "pnpm --dir proofs/payments test",
+      "exitCode": 0,
+      "output": "local-tests-after-route-repair.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exitCode": 0,
+      "output": "route-repair-typecheck.txt"
+    }
+  ],
+  "sourceManifestSha256": "7f59d351e8b89b965d4e237bb42ebb09192a9f4baf7332233801fff6754d4056",
+  "sourceFiles": 45,
+  "changedSincePredecessor": [
+    "adapter.mjs",
+    "adjustments.mjs",
+    "collection-accounting-replay.mjs",
+    "convex/payments.ts",
+    "handover.html",
+    "package.json",
+    "recurring.mjs",
+    "repeated-pull-replay.mjs",
+    "route-closure.html",
+    "route-policy-replay.mjs",
+    "route-success-replay.mjs",
+    "sandbox-replay.mjs"
+  ],
+  "review": "awaiting root and independent verification",
+  "priorSourceArchive": "private/frozen-before-route-guard"
+}

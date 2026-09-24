@@ -1,0 +1,60 @@
+{
+  "verdict": "APPROVE bounded local supported-adapter route and collection eligibility repair",
+  "reviewer": "c0_verifier, independent of payment implementation",
+  "date": "2026-09-24T23:13:14.509747+00:00",
+  "sourceAggregate": "6a44ac5016ae2146491aa322055bf7eeddad09e6ee2abcb2148d0594135c4529",
+  "sourceFiles": 46,
+  "sourceUnchanged": true,
+  "checks": [
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/r3/unexplained-remaining-complete-predecessor.mjs",
+      "exit": 1,
+      "expected": 1,
+      "evidence": "unexplained-remaining-complete-predecessor.txt"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/r3/observed-shape-probe.mjs",
+      "exit": 0,
+      "groups": 5,
+      "evidence": "observed-shape-final.txt"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/r3/unexplained-remaining-probe.mjs",
+      "exit": 0,
+      "groups": 2,
+      "evidence": "unexplained-remaining-final.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments test",
+      "exit": 0,
+      "evidence": "final-regressions.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exit": 0,
+      "evidence": "final-typecheck.txt"
+    }
+  ],
+  "before": {
+    "unexplained50": 74,
+    "consistent137": 74
+  },
+  "after": {
+    "unexplained50": 0,
+    "consistent137": 74
+  },
+  "fixtureAmendment": "Both original negative and positive fixtures add starting_balance:0 and amount_overpaid:0. Exact completed fixture reproduced predecessor failure and successor pass. Earlier fixtures/reds preserved.",
+  "level": "SERVICE local Convex and loopback HTTP; simulated provider objects",
+  "deskReview": {
+    "report": "../../payments-root/r3/report.html",
+    "verdict": "Accurate bounded claims and all12 local links resolve; independent pending text was accurate at review time."
+  },
+  "limits": [
+    "No Stripe financial writes or provider API verification",
+    "No core balance eligibility flag certification; checks belong to supported collection/attachment adapter",
+    "General observations may retain unsupported facts; completeness alone does not authorize execution",
+    "No I1 authorization audit",
+    "Recurring remains required and BLOCKED; full P4/I7/production integration open",
+    "External changes after final provider read remain a separate limitation"
+  ]
+}

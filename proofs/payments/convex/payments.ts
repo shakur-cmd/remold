@@ -130,6 +130,7 @@ export const observe = mutation({ args: { token: v.string(), binding: v.id('bind
         deny('refund exceeds paid'); const old = await ctx.db.query('payCallbacks').withIndex('event', q => q.eq('binding', a.binding).eq('eventId', a.eventId)).unique(); if (old) {
         if (old.digest !== a.digest)
             deny('event integrity mismatch');
+        if(a.reconciliationEpoch!==undefined)await ctx.db.patch(d._id,{adjustmentsComplete:false,adjustmentEpoch:(d.adjustmentEpoch??0)+1});
         return false;
     } const normalized = await adjustmentTotal(ctx, d, 'refund'); await ctx.db.insert('payCallbacks', { binding: a.binding, eventId: a.eventId, digest: a.digest, document: d._id }); await ctx.db.patch(d._id, { state: a.state, paidMinor: a.paidMinor, refundedMinor: Math.max(a.refundedMinor, normalized), ...(a.refundedMinor !== normalized || a.paidMinor !== d.paidMinor || a.state !== d.state ? {adjustmentsComplete:false,...(a.reconciliationEpoch === undefined ? {adjustmentEpoch:(d.adjustmentEpoch??0)+1} : {})} : {}) }); await audit(ctx, d.org, 'trusted-stripe-adapter', 'payment.observed', d._id); return true; } });
 export const removeCustomer = mutation({ args: { token: v.string(), id: v.id('payCustomers') }, handler: async (ctx, a) => { await human(ctx, a.token); const { row: c } = await own(ctx, a.token, await ctx.db.get(a.id)); await ctx.db.patch(c._id, { name: 'Deleted synthetic customer', deleted: true }); await audit(ctx,c.org,(await human(ctx,a.token))._id,'customer.redacted',c._id); } });
@@ -418,4 +419,11 @@ export const recordCollection=mutation({args:{token:v.string(),id:v.id('collecti
  const collision=await ctx.db.query('collections').withIndex('receipt',q=>q.eq('binding',row.binding).eq('providerRef',a.providerRef)).unique();if(collision&&collision._id!==row._id)deny('collection receipt already bound');
  if(row.providerRef){if(row.providerRef!==a.providerRef)deny('collection receipt collision');return false;}
  await ctx.db.patch(row._id,{providerRef:a.providerRef});await audit(ctx,row.org,'trusted-stripe-adapter','collection.observed',row._id);return true;
+}});
+
+export const collectionForAttachment=query({args:{token:v.string(),document:v.id('documents'),providerRef:v.string()},handler:async(ctx,a)=>{
+ const d=await ctx.db.get(a.document);if(!d)deny('document missing');await adapter(ctx,a.token,d.binding);
+ const held=await ctx.db.query('collections').withIndex('receipt',q=>q.eq('binding',d.binding).eq('providerRef',a.providerRef)).unique();if(!held||held.document!==d._id)deny('payment is not reserved for this document');
+ const op=await ctx.db.get(held.operation);if(!op||op.org!==d.org||op.binding!==d.binding)deny('collection operation mismatch');
+ return{amountMinor:held.amountMinor,command:await hash(op.logical)};
 }});

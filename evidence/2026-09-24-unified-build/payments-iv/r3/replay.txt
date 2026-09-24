@@ -1,0 +1,134 @@
+$ node --test stripe.test.mjs adjustments.test.mjs && node domain-replay.mjs && node public-payment-replay.mjs && node safety-replay.mjs && node lifecycle-replay.mjs && node collection-replay.mjs && node accounting-replay.mjs && node paid-observation-replay.mjs && node collection-accounting-replay.mjs && node route-policy-replay.mjs && node route-success-replay.mjs && node repeated-pull-replay.mjs
+✔ Complete cursor traversal normalizes every distinct refund and credit receipt (36.665167ms)
+✔ No complete result after canceled-inflight (5.378791ms)
+✔ No complete result after open-payment (3.19325ms)
+✔ No complete result after partial-payment (3.110083ms)
+✔ No complete result after failure (7.192833ms)
+✔ No complete result after bound (10.941833ms)
+✔ No complete result after empty (5.29025ms)
+✔ No complete result after repeat (7.666834ms)
+✔ No complete result after unknown (8.211875ms)
+✔ No complete result after link (16.185958ms)
+✔ No complete result after foreign (7.183625ms)
+✔ No complete result after mismatch (18.183334ms)
+✔ Outside pending refund is normalized as held, not silently omitted (17.577334ms)
+✔ provider refuses live or malformed credentials without revealing them (0.458167ms)
+✔ Stripe raw-payload verifier rejects modified bytes, expired signatures and live events (0.356333ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 192.281709
+PASS Human creates integer-minor quote in own workspace
+PASS Cross-tenant customer/account IDs and actor injection cannot create obligations
+PASS Acceptance is bound to immutable version and secret, with duplicate clicks atomic
+PASS Expired public acceptance is refused
+PASS Deposit intent is created once; currency and amount changes are refused
+PASS Browser paid forgery and wrong-account adapter cannot settle an invoice
+PASS Authenticated replay settles once and changed callback bytes are refused
+PASS Deposit allocation is once-only and exact integer arithmetic preserves total
+PASS Concurrent financial commands emit one attributed event per obligation
+PASS Readonly refuses new issuance but incoming reconciliation and export continue
+PASS Removing customer preserves issued snapshot and retained financial attribution
+PASS Restricted/disconnected merchant refuses new issuance while history remains
+PASS Tenant B canonical finance export stays unchanged
+{"passed":13}
+PASS public payment capability
+PASS Current role is checked again at final permit
+PASS Readonly permits one bounded human refund and records its actor
+PASS In-flight reservations prevent concurrent over-refunds
+PASS Tenant, account, binding and agent authority cannot enter the safety path
+PASS Incoming truth settles a late refund after removal without granting new authority
+PASS Cancellation is a zero-value client lifecycle operation; disconnected bindings fail
+{"passed":3}
+{"passed":2}
+PASS Two accepted refund receipts cannot reuse one aggregate observation to restore capacity
+PASS Credit is counted once with callback-first
+PASS Credit is counted once with receipt-first
+PASS Pre-existing refunds, unknown holds and distinct receipts all retain their capacity
+PASS Concurrent credits cannot share a receipt or lose accepted value to an older aggregate
+PASS Outside refund racing a local receipt has distinct identity and blocks excess capacity
+PASS Partial reconciliation blocks permits and retains unknown reservations
+PASS A real HTTP read failure closes adapter reconciliation before the request
+PASS General collection adapter cannot dispatch refunds or cancellation under any capability
+PASS Receipt identities are account scoped, immutable and cannot move between documents
+PASS Newer target generation refuses an older issued snapshot after a credit void
+PASS Callback before a pull observation cannot be overwritten by that pull
+PASS Callback after a pull observation cannot be overwritten by that pull
+PASS A complete adapter HTTP pull observes newly paid and refunded value without invalidating itself
+PASS A refund callback during a pull invalidates its older completion
+PASS A credit callback during a pull invalidates its older completion
+PASS Outside pending refunds stay held until an authoritative terminal refetch
+PASS Refund dispatch refuses disputed value with status needs_response
+PASS Refund dispatch refuses disputed value with status under_review
+PASS Refund dispatch refuses disputed value with status warning_needs_response
+PASS Refund dispatch refuses disputed value with status warning_under_review
+PASS Refund dispatch refuses disputed value with status lost
+PASS Refund dispatch refuses disputed value with status unrecognized
+PASS Refund dispatch refuses disputed value with status null
+PASS Refund dispatch remains available after no dispute
+PASS Refund dispatch remains available after won
+PASS Refund dispatch remains available after warning_closed
+PASS Binding a pending receipt replaces its exact local hold and rejects unrelated metadata
+PASS before-own-observe
+PASS after-own-observe
+PASS lower-callback
+PASS renewal
+PASS first-unpaid-observation
+PASS never-observed-intent
+PASS pending-void
+PASS voided
+PASS outside-paid-plus-local
+PASS unpaid-credit
+PASS collection-before-void
+PASS bound-never-pulled
+PASS collection-before-credit
+PASS Exact paid allocation after ack leaves capacity20, request20
+PASS Exact paid allocation after ack leaves capacity20, request21
+PASS Receipt before acknowledgement retains hold, then exact acknowledgement permits20
+PASS Same provider PI cannot acknowledge two local holds
+PASS Complete payment reconciliation refuses duplicate
+PASS Complete payment reconciliation refuses wrong-amount
+PASS Complete payment reconciliation refuses wrong-command
+PASS Complete payment reconciliation refuses missing
+PASS Complete payment reconciliation refuses regressed
+PASS Complete payment reconciliation refuses sum
+PASS Complete payment reconciliation refuses duplicate-pi
+PASS A known PI allocation cannot move to another invoice under a new receipt ID
+PASS Payment metadata from another document cannot release its hold
+PASS Credit in flight leaves70, request70
+PASS Credit in flight leaves70, request71
+PASS Credit receipt before ack leaves70, request70
+PASS Credit receipt before ack leaves70, request71
+PASS Refunds do not reopen gross paid collection capacity
+PASS invoice-pay
+PASS subscription-create
+PASS unsafe-invoice-0
+PASS unsafe-invoice-1
+PASS unsafe-invoice-2
+PASS unsafe-invoice-3
+PASS unsafe-invoice-4
+PASS unsafe-invoice-5
+PASS unsafe-invoice-6
+PASS under-item
+PASS price-item
+PASS unbound-item
+PASS second-item
+PASS auto-finalize
+PASS wrong-total-finalize
+PASS unreserved-attachment
+PASS inactive-card
+PASS requirements-due
+PASS automatic-collection
+PASS subscription-invoice
+PASS shape-drift
+PASS last-read-shape-drift
+PASS remaining-drift
+PASS platform-fee
+PASS off-session
+PASS transfer
+{"passed":3}
+{"level":"SERVICE actual loopback HTTP and local Convex, simulated provider state; no Stripe calls","actualRead":"void","repeatedObservationRefused":true,"storedState":"open","reconciliationComplete":false,"collectionAccepted":false,"freshState":"void","coreCompletionRefused":true}

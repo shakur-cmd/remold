@@ -1,0 +1,353 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; synthetic provider states, no Stripe calls",
+  "results": [
+    {
+      "name": "Unexplained remaining50 refuses both37",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37,\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Unexplained due50 refuses both37",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37,\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Consistent137 permits37+37+63 and refuses64",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 64,
+          "accepted": false,
+          "reason": "[Request ID: 420b905868cb46e5] Server Error\nUncaught Error: collection exceeds remaining obligation\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:413:55)\n"
+        },
+        {
+          "amount": 63,
+          "accepted": false,
+          "reason": "[Request ID: ded59f4ec07f5849] Server Error\nUncaught Error: outstanding permit cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:373:37)\n"
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    37,\n    37,\n-   63\n  ]\n"
+    },
+    {
+      "name": "Partial paid40 permits97 and refuses98",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 98,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        },
+        {
+          "amount": 97,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 97
+        }
+      ]
+    },
+    {
+      "name": "Pre-credit30 on unpaid100 permits70 and refuses71",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 71,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        },
+        {
+          "amount": 70,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 70
+        }
+      ]
+    },
+    {
+      "name": "Pre-credit30 and paid40 permit30 and refuse31",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 31,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        },
+        {
+          "amount": 30,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 30
+        }
+      ]
+    },
+    {
+      "name": "Post-credit30 after paid100 preserves observation and refuses collection",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 1,
+          "accepted": false,
+          "reason": "Expected values to be strictly equal:\n\n'paid' !== 'open'\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Refund30 after paid100 never reopens collection",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 1,
+          "accepted": false,
+          "reason": "Expected values to be strictly equal:\n\n'paid' !== 'open'\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Negative starting balance refused",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Positive starting balance refused",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Overpaid shape refused",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Malformed remaining 0",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Malformed remaining 1",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Malformed remaining 2",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Malformed remaining 3",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Missing starting balance refused",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Missing overpaid refused",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   37\n+ ]\n- []\n"
+    },
+    {
+      "name": "Explained first read but final changed credits refuses",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Credit traversal changed or incomplete\n\n0 !== 1\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Attachment refuses newly unexplained balance",
+      "status": "FAIL",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/invoices/in_827dd85098cb40fcb11b72429e1da4e3/attach_payment",
+          "amount": 0
+        }
+      ],
+      "error": "Missing expected rejection."
+    }
+  ]
+}

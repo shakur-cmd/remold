@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import {createHash,randomUUID} from 'node:crypto';
-import {createServer} from 'node:http';
-import {trustedAdapter} from './adapter.mjs';
 import {writeFileSync} from 'node:fs';
 import {ConvexHttpClient} from 'convex/browser';
 import {api} from './convex/_generated/api.js';
@@ -40,18 +38,6 @@ await withPayments(async({url,run})=>{
  await check('Receipt before acknowledgement retains hold, then exact acknowledgement permits20',async({d,pay,pull,collect,ack,retry})=>{
   const outside=pay('outside_'+d.id,20);await pull([outside]);const local=await collect(60);await pull([outside,pay(local.id,60,local)]);
   await assert.rejects(collect(20),/remaining obligation/);await ack(local);await retry();
- });
- await check('Real loopback adapter dispatch binds the approved command hash to the PI receipt',async({f,owner,d,pay,pull,collect})=>{
-  const outside=pay('outside_'+d.id,20);await pull([outside]);let sent;
-  const server=createServer(async(req,res)=>{res.setHeader('content-type','application/json');if(req.method==='GET'){res.end(JSON.stringify({charges_enabled:true}));return;}let body='';for await(const chunk of req)body+=chunk;sent={path:req.url,params:Object.fromEntries(new URLSearchParams(body)),account:req.headers['stripe-account']};res.end(JSON.stringify({id:'pi_loopback',livemode:false}));});
-  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-  const stripe={request:async(method,path,params={},account)=>{const response=await fetch('http://127.0.0.1:'+server.address().port+path,{method,headers:{'Stripe-Account':account??''},...(method==='POST'?{body:new URLSearchParams(params)}:{})});assert.equal(response.status,200);return response.json();}};
-  try{const params={amount:60,currency:'usd'},stage='synthetic-partial-1';const result=await trustedAdapter(stripe,c,f).execute('A',d.id,params,'POST','/v1/payment_intents',{stage});
-   const operation=await c.query(api.harness.operation,{token:owner,id:result.operation}),command=createHash('sha256').update(operation.logical).digest('hex');
-   assert.equal(sent.path,'/v1/payment_intents');assert.equal(sent.account,f.A.key.account);assert.equal(sent.params['metadata[remold_command]'],command);
-   assert.equal(operation.payload.content,createHash('sha256').update(JSON.stringify({...params,'metadata[remold_command]':command})).digest('hex'));
-   await pull([outside,pay(result.operation,60,{pi:result.result.id,command})]);await collect(20);
-  }finally{await new Promise(resolve=>server.close(resolve));}
  });
  await check('Same provider PI cannot acknowledge two local holds',async({pull,collect,ack})=>{await pull();const a=await collect(30),b=await collect(30);await ack(a);await assert.rejects(ack({...b,pi:a.pi}),/receipt already bound/);});
  for(const defect of ['duplicate','wrong-amount','wrong-command','missing','regressed','sum','duplicate-pi'])await check('Complete payment reconciliation refuses '+defect,async({d,pay,pull,collect,ack})=>{

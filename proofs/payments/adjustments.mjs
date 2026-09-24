@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 // Only complete authenticated traversals can authorize further financial capacity.
 // Bounds are proof limits; reaching one blocks reconciliation, never truncates it.
-export async function pullAdjustments(stripe, invoice, account) {
+export async function pullAdjustments(stripe, invoice, account, validateInvoice) {
  assert.ok(Number.isSafeInteger(invoice.total)&&invoice.total>=0,'Invalid invoice total');
  let requests=0;
  const get=async(path,params={})=>{if(++requests>30)throw Error('Adjustment request bound reached');return stripe.request('GET',path,params,account);};
@@ -51,6 +51,8 @@ export async function pullAdjustments(stripe, invoice, account) {
   for(const link of note.refunds??[]){const id=typeof link.refund==='string'?link.refund:link.refund.id;const refund=receipts.find(r=>r.kind==='refund'&&r.receiptId===id);const linked=(linkedRefundAmounts.get(id)??0)+link.amount_refunded;assert.ok(refund&&Number.isSafeInteger(link.amount_refunded)&&link.amount_refunded>0&&linked<=refund.amountMinor,'Credit-note refund link requires exact normalized refund');linkedRefundAmounts.set(id,linked);}
  }
  const current=await get('/v1/invoices/'+invoice.id);
+ validateInvoice?.(current);
+ for(const key of ['amount_due','amount_remaining','starting_balance','amount_overpaid','pre_payment_credit_notes_amount','post_payment_credit_notes_amount'])assert.equal(current[key],invoice[key],'Invoice balance changed during traversal: '+key);
  assert.equal(current.livemode,false);assert.equal(current.currency,invoice.currency);assert.equal(current.total,invoice.total,'Invoice total changed during traversal');assert.equal(current.status,invoice.status,'Invoice state changed during traversal');
  assert.equal(receipts.filter(r=>r.kind==='payment').reduce((n,r)=>n+r.amountMinor,0),current.amount_paid,'Payment traversal changed or incomplete');assert.equal(current.amount_paid,invoice.amount_paid,'Invoice changed during traversal');
  const refundedMinor=receipts.filter(r=>r.kind==='refund'&&r.status==='succeeded').reduce((n,r)=>n+r.amountMinor,0);

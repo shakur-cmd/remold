@@ -1,0 +1,323 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; synthetic provider states, no Stripe calls",
+  "results": [
+    {
+      "name": "Unexplained remaining50 refuses both37",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Unexplained invoice remaining\n\n50 !== 137\n"
+        },
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Unexplained invoice remaining\n\n50 !== 137\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Unexplained due50 is observed but refuses both37",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Unexplained invoice amount due\n\n50 !== 137\n"
+        },
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Unexplained invoice amount due\n\n50 !== 137\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Consistent137 permits37+37+63",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 63,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 63
+        }
+      ]
+    },
+    {
+      "name": "Consistent137 with37+37 held refuses64",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 37,
+          "accepted": true
+        },
+        {
+          "amount": 64,
+          "accepted": false,
+          "reason": "[Request ID: 77077e43372ec3d5] Server Error\nUncaught Error: collection exceeds remaining obligation\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:413:55)\n"
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        },
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ]
+    },
+    {
+      "name": "Partial paid40 permits97 and refuses98",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 98,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        },
+        {
+          "amount": 97,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 97
+        }
+      ]
+    },
+    {
+      "name": "Pre-credit30 on unpaid100 permits70 and refuses71",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 71,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        },
+        {
+          "amount": 70,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 70
+        }
+      ]
+    },
+    {
+      "name": "Pre-credit30 and paid40 permit30 and refuse31",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 31,
+          "accepted": false,
+          "reason": "Invoice no longer has collection capacity"
+        },
+        {
+          "amount": 30,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 30
+        }
+      ]
+    },
+    {
+      "name": "Post-credit30 after paid100 preserves observation and refuses collection",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 1,
+          "accepted": false,
+          "reason": "Expected values to be strictly equal:\n\n'paid' !== 'open'\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Refund30 after paid100 never reopens collection",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 1,
+          "accepted": false,
+          "reason": "Expected values to be strictly equal:\n\n'paid' !== 'open'\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Negative starting balance refused",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Customer balance route unsupported\n\n-20 !== 0\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Positive starting balance refused",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Customer balance route unsupported\n\n20 !== 0\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Overpaid shape refused",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Overpaid invoice route unsupported\n\n1 !== 0\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Malformed remaining 0",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invalid invoice balance field: amount_remaining"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Malformed remaining 1",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invalid invoice balance field: amount_remaining"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Malformed remaining 2",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invalid invoice balance field: amount_remaining"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Malformed remaining 3",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invalid invoice balance field: amount_remaining"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Missing starting balance refused",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invalid invoice balance field: starting_balance"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Missing overpaid refused",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invalid invoice balance field: amount_overpaid"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Explained first read but final changed credits refuses",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": false,
+          "reason": "Invoice balance changed during traversal: amount_due\n\n136 !== 137\n"
+        }
+      ],
+      "writes": []
+    },
+    {
+      "name": "Attachment refuses newly unexplained balance",
+      "status": "PASS",
+      "attempts": [
+        {
+          "amount": 37,
+          "accepted": true
+        }
+      ],
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ]
+    }
+  ]
+}

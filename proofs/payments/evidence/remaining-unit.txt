@@ -1,0 +1,53 @@
+✔ Complete cursor traversal normalizes every distinct refund and credit receipt (33.404416ms)
+✔ No complete result after canceled-inflight (5.439875ms)
+✔ No complete result after open-payment (3.117292ms)
+✔ No complete result after partial-payment (2.604083ms)
+✔ No complete result after failure (7.01225ms)
+✔ No complete result after bound (11.540542ms)
+✔ No complete result after empty (5.601625ms)
+✔ No complete result after repeat (7.899792ms)
+✔ No complete result after unknown (8.748792ms)
+✔ No complete result after link (15.77025ms)
+✔ No complete result after foreign (8.749458ms)
+✖ No complete result after mismatch (19.007667ms)
+✔ Outside pending refund is normalized as held, not silently omitted (20.358ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.005792
+
+✖ failing tests:
+
+test at proofs/payments/adjustments.test.mjs:47:2
+✖ No complete result after mismatch (19.007667ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Credit traversal/. Input:
+  
+  'AssertionError [ERR_ASSERTION]: Invoice balance changed during traversal: pre_payment_credit_notes_amount\n' +
+    '\n' +
+    '31 !== 30\n'
+  
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async fixture (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/adjustments.test.mjs:39:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: AssertionError [ERR_ASSERTION]: Invoice balance changed during traversal: pre_payment_credit_notes_amount
+    
+    31 !== 30
+    
+        at pullAdjustments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/adjustments.mjs:55:166)
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async waitForActual (node:assert:646:5)
+        at async strict.rejects (node:assert:769:25)
+        at async fixture (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/adjustments.test.mjs:39:6)
+        at async Test.run (node:internal/test_runner/test:1332:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:911:7),
+    expected: /Credit traversal/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

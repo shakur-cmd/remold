@@ -43,7 +43,7 @@ test('Complete cursor traversal normalizes every distinct refund and credit rece
  assert.equal(result.refundedMinor,30);assert.equal(result.creditedMinor,30);assert.deepEqual(result.receipts.map(r=>r.receiptId),['inpay_synthetic','re_1','re_2','cn_1','cn_2']);
  assert.ok(requests.some(r=>r.includes('starting_after=re_1')));assert.ok(requests.some(r=>r.includes('starting_after=cn_1')));
 }));
-for(const [mode,reason]of [['canceled-inflight',/Unresolved provider payment/],['open-payment',/Unresolved provider payment/],['partial-payment',/Partial payment allocation/],['failure',/Provider read failed/],['bound',/page bound/],['empty',/Empty incomplete/],['repeat',/Repeated provider/],['unknown',/Unknown provider refund status/],['link',/Credit-note refund link/],['foreign',/ch_foreign/],['mismatch',/Credit traversal/]]){
+for(const [mode,reason]of [['canceled-inflight',/Unresolved provider payment/],['open-payment',/Unresolved provider payment/],['partial-payment',/Partial payment allocation/],['failure',/Provider read failed/],['bound',/page bound/],['empty',/Empty incomplete/],['repeat',/Repeated provider/],['unknown',/Unknown provider refund status/],['link',/Credit-note refund link/],['foreign',/ch_foreign/],['mismatch',/Invoice balance changed during traversal/]]){
  test('No complete result after '+mode,()=>fixture(mode,(stripe)=>assert.rejects(pullAdjustments(stripe,invoice,'acct_synthetic_a'),reason)));
 }
 

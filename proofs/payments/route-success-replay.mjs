@@ -1,0 +1,34 @@
+import assert from'node:assert/strict';import{randomUUID,createHash}from'node:crypto';import{createServer}from'node:http';import{writeFileSync}from'node:fs';import{ConvexHttpClient}from'convex/browser';import{api}from'./convex/_generated/api.js';import{withPayments}from'./local.mjs';import{trustedAdapter}from'./adapter.mjs';
+const results=[];
+await withPayments(async({url,run})=>{
+ const c=new ConvexHttpClient(url,{logger:false}),m=(n,a)=>c.mutation(api.payments[n],a),f=run('harness:seed',{run:randomUUID(),tokens:Array.from({length:10},()=>randomUUID())}),owner=f.A.sessions.owner,token=f.A.adapter,customerId='cus_synthetic';const customer=await m('registerCustomer',{token,binding:f.A.binding,externalId:customerId,name:'Supported route synthetic'}),doc=await m('prepareInvoice',{token:owner,customer,amountMinor:100,currency:'usd',kind:'invoice'});
+ const invoice={id:'in_synthetic',livemode:false,customer:customerId,currency:'usd',status:'draft',collection_method:'send_invoice',auto_advance:false,application_fee_amount:null,total:0,amount_due:0,amount_paid:0,amount_remaining:0,pre_payment_credit_notes_amount:0,post_payment_credit_notes_amount:0,starting_balance:0,amount_overpaid:0,lines:{data:[],has_more:false}};let pi,paid=false,wrongAmount=false;const posts=[];
+ const payment=()=>({id:'inpay_synthetic',invoice:invoice.id,currency:'usd',livemode:false,status:'paid',amount_paid:100,payment:{type:'payment_intent',payment_intent:pi.id}});
+ const server=createServer(async(req,res)=>{const path=new URL(req.url,'http://localhost').pathname;let body='';for await(const chunk of req)body+=chunk;const params=Object.fromEntries(new URLSearchParams(body));let out;
+  if(req.method==='POST'){posts.push({path,params});if(path==='/v1/invoiceitems'){invoice.total=invoice.amount_due=invoice.amount_remaining=Number(params.amount);invoice.lines.data=[{amount:100}];out={id:'ii_synthetic'};}
+   else if(path.endsWith('/finalize')){invoice.status='open';out=invoice;}
+   else if(path==='/v1/payment_intents'){pi={id:'pi_synthetic',livemode:false,status:'succeeded',customer:customerId,currency:'usd',amount:100,amount_received:100,latest_charge:'ch_synthetic',metadata:{remold_command:params['metadata[remold_command]']}};out=pi;}
+   else if(path.endsWith('/attach_payment')){paid=true;invoice.amount_paid=100;invoice.amount_remaining=0;invoice.status='paid';out=invoice;}else out=invoice;
+  }else if(path.startsWith('/v1/accounts/'))out={charges_enabled:true,capabilities:{card_payments:'active'},requirements:{disabled_reason:null,currently_due:[]}};
+  else if(path==='/v1/invoices/'+invoice.id)out=invoice;
+  else if(path==='/v1/invoice_payments')out={data:paid?[payment()]:[],has_more:false};
+  else if(path==='/v1/invoice_payments/inpay_synthetic')out=payment();
+  else if(path==='/v1/payment_intents/pi_synthetic')out={...pi,amount:wrongAmount?99:100};
+  else if(path==='/v1/charges/ch_synthetic')out={id:'ch_synthetic',payment_intent:pi.id,currency:'usd',livemode:false,amount:100,amount_refunded:0};
+  else if(path==='/v1/refunds'||path==='/v1/credit_notes')out={data:[],has_more:false};
+  else{res.writeHead(404).end('{}');return;}res.setHeader('Content-Type','application/json');res.end(JSON.stringify(out));
+ });await new Promise(r=>server.listen(0,'127.0.0.1',r));const stripe={request:async(method,path,params={},account)=>{if(account)assert.equal(account,f.A.key.account);const u=new URL(path,'http://127.0.0.1:'+server.address().port);if(method==='GET')u.search=new URLSearchParams(params);const response=await fetch(u,{method,...(method==='POST'?{body:new URLSearchParams(params)}:{})});assert.equal(response.status,200);return response.json();}};
+ try{const a=trustedAdapter(stripe,c,f),execute=(params,path,stage)=>a.execute('A',doc,params,'POST',path,{stage});
+  const created=await execute({customer:customerId,collection_method:'send_invoice',days_until_due:30,auto_advance:false,pending_invoice_items_behavior:'exclude'},'/v1/invoices','create');await m('attachProvider',{token,id:doc,externalId:created.result.id});
+  await execute({customer:customerId,invoice:invoice.id,amount:100,currency:'usd',description:'Synthetic'},'/v1/invoiceitems','item');await execute({auto_advance:false},'/v1/invoices/'+invoice.id+'/finalize','finalize');
+  const params={customer:customerId,amount:100,currency:'usd',payment_method:'pm_synthetic','payment_method_types[]':'card',confirm:true};const collection=await execute(params,'/v1/payment_intents','collect');
+  const operation=await c.query(api.harness.operation,{token:owner,id:collection.operation}),command=createHash('sha256').update(operation.logical).digest('hex');assert.equal(pi.metadata.remold_command,command);assert.equal(operation.payload.content,createHash('sha256').update(JSON.stringify({...params,'metadata[remold_command]':command})).digest('hex'));
+  results.push('Exact supported create/item/finalize and fresh bound collection succeed; PI command hash matches H0-approved content');
+  const before=posts.length;await assert.rejects(execute({payment_intent:'pi_unreserved'},'/v1/invoices/'+invoice.id+'/attach_payment','unreserved'),/not reserved/);
+  const other=await m('prepareInvoice',{token:owner,customer,amountMinor:100,currency:'usd',kind:'invoice'});await m('attachProvider',{token,id:other,externalId:'in_other'});await assert.rejects(a.execute('A',other,{payment_intent:pi.id},'POST','/v1/invoices/in_other/attach_payment'),/not reserved/);
+  wrongAmount=true;await assert.rejects(execute({payment_intent:pi.id},'/v1/invoices/'+invoice.id+'/attach_payment','wrong-amount'));wrongAmount=false;assert.equal(posts.length,before);
+  results.push('Unreserved, foreign-document and wrong-amount attachments produce zero provider writes');
+  await execute({payment_intent:pi.id},'/v1/invoices/'+invoice.id+'/attach_payment','attach');await a.observe('A',invoice.id,randomUUID(),randomUUID());const stored=await c.query(api.payments.getDocument,{token:owner,id:doc});assert.equal(stored.paidMinor,100);assert.equal(stored.adjustmentsComplete,true);
+  const after=posts.length;await assert.rejects(execute({...params,amount:1},'/v1/payment_intents','excess'));await assert.rejects(execute({payment_intent:pi.id},'/v1/invoices/'+invoice.id+'/attach_payment','repeat'));assert.equal(posts.length,after);results.push('Exact receipt reconciles paid100 and repeat collection/attachment cannot create another provider write');
+ }finally{await new Promise(r=>server.close(r));}
+});writeFileSync(new URL('./evidence/route-success.json',import.meta.url),JSON.stringify({level:'SERVICE real loopback HTTP/local Convex, simulated Stripe objects',results},null,2)+'\n');console.log(JSON.stringify({passed:results.length}));

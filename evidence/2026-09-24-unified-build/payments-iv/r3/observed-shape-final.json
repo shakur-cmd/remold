@@ -1,0 +1,170 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; synthetic invoice snapshots, no Stripe calls",
+  "source": {
+    "adapter.mjs": "e65498cf1ba8205717f797a4834f2231f032d76e0b4c731a84b38ffb20b49eab",
+    "adjustments.mjs": "19804b480dbf2728ad7294d7e56ab5c03b9d6ada653f7991865d6de9f07a255c",
+    "convex/payments.ts": "2b8610f90c9eaca68986659e5dd2286d433065018d9ca2e8cbd40f899ea5f276"
+  },
+  "results": [
+    {
+      "scenario": "second-auto",
+      "expectedWrites": 0,
+      "writes": [],
+      "refused": true,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'charge_automatically'\n- 'send_invoice'\n",
+      "snapshots": [
+        {
+          "read": 1,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        },
+        {
+          "read": 2,
+          "collection": "charge_automatically",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        }
+      ],
+      "stored": {
+        "state": "issued",
+        "paid": 0,
+        "complete": false
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "final-subscription",
+      "expectedWrites": 0,
+      "writes": [],
+      "refused": true,
+      "error": "Subscription invoice route unsupported",
+      "snapshots": [
+        {
+          "read": 1,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        },
+        {
+          "read": 2,
+          "collection": "send_invoice",
+          "parentType": "subscription_details",
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        }
+      ],
+      "stored": {
+        "state": "issued",
+        "paid": 0,
+        "complete": false
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "final-remaining",
+      "expectedWrites": 0,
+      "writes": [],
+      "refused": true,
+      "error": "Unexplained invoice amount due\n\n26 !== 137\n",
+      "snapshots": [
+        {
+          "read": 1,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        },
+        {
+          "read": 2,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 26,
+          "remaining": 26
+        }
+      ],
+      "stored": {
+        "state": "issued",
+        "paid": 0,
+        "complete": false
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "final-paid",
+      "expectedWrites": 0,
+      "writes": [],
+      "refused": true,
+      "error": "Invoice no longer has collection capacity",
+      "snapshots": [
+        {
+          "read": 1,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        },
+        {
+          "read": 2,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 109,
+          "due": 137,
+          "remaining": 28
+        }
+      ],
+      "stored": {
+        "state": "issued",
+        "paid": 0,
+        "complete": false
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "stable",
+      "expectedWrites": 1,
+      "writes": [
+        {
+          "path": "/v1/payment_intents",
+          "amount": 37
+        }
+      ],
+      "refused": false,
+      "error": null,
+      "snapshots": [
+        {
+          "read": 1,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        },
+        {
+          "read": 2,
+          "collection": "send_invoice",
+          "parentType": null,
+          "paid": 0,
+          "due": 137,
+          "remaining": 137
+        }
+      ],
+      "stored": {
+        "state": "open",
+        "paid": 0,
+        "complete": true
+      },
+      "status": "PASS"
+    }
+  ]
+}
