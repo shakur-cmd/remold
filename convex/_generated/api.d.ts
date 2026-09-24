@@ -28,6 +28,7 @@ import type * as lib_standard from "../lib/standard.js";
 import type * as lib_values from "../lib/values.js";
 import type * as objects from "../objects.js";
 import type * as orgs from "../orgs.js";
+import type * as rateLimit from "../rateLimit.js";
 import type * as records from "../records.js";
 import type * as seed from "../seed.js";
 import type * as suggestions from "../suggestions.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "lib/values": typeof lib_values;
   objects: typeof objects;
   orgs: typeof orgs;
+  rateLimit: typeof rateLimit;
   records: typeof records;
   seed: typeof seed;
   suggestions: typeof suggestions;
@@ -94,4 +96,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

@@ -26,14 +26,22 @@
     },
     {
       "id": "H0",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "/root/h0_builder",
+      "independentVerifier": "/root/c0_verifier (scheduled replay); root/Fable/Opus shape review additionally required",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
         "C0"
-      ]
+      ],
+      "base": "bedff74949da7a36b711d4ab22b2238633f7a096",
+      "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+      "allowedPaths": [
+        "proofs/contract/**"
+      ],
+      "environment": "isolated local Convex backend, fake providers, no customer env",
+      "selection": "not applicable",
+      "scopeNote": "Full H0 contract; gate exact shape approval before I1"
     },
     {
       "id": "P1",
@@ -170,14 +178,23 @@
     },
     {
       "id": "I2",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "/root/i2_release",
+      "independentVerifier": "/root/c0_verifier (scheduled replay)",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
         "C0"
-      ]
+      ],
+      "base": "bedff74949da7a36b711d4ab22b2238633f7a096",
+      "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+      "allowedPaths": [
+        "ops/release/**",
+        ".github/workflows/**"
+      ],
+      "environment": "local release checks; no cloud deploy",
+      "selection": "not applicable",
+      "scopeNote": "Account-independent portion only; other I2 rows remain required and open"
     },
     {
       "id": "I3",

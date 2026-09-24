@@ -17,6 +17,8 @@ async function auth(request: Request) {
 
 async function dispatch(ctx: any, request: Request) {
   const keyHash = await auth(request), url = new URL(request.url), path = url.pathname.replace(/^\/api\/v1\/?/, "").split("/").filter(Boolean), q = url.searchParams;
+  const limit = request.method === "POST" ? await ctx.runMutation(internal.rateLimit.take, { keyHash }) : { allowed: true, retryAfter: 0 };
+  if (!limit.allowed) return new Response(JSON.stringify({ error: { code: "RATE_LIMITED", message: "Agent write limit reached. Retry after the indicated delay.", retryAfter: limit.retryAfter } }), { status: 429, headers: { "content-type": "application/json", "retry-after": String(limit.retryAfter) } });
   const body = request.method === "POST" ? request.headers.get("content-type")?.includes("application/json") ? await request.json().catch(() => { throw { data: { code: "VALIDATION", message: "Expected JSON body" } }; }) : {} : undefined;
   // keyHash goes last so nothing in a request body can replace the identity the header proved.
   const query = (reference: any, args: any) => ctx.runQuery(reference, { ...args, keyHash });

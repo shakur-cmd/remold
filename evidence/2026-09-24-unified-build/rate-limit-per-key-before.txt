@@ -1,0 +1,33 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ convex/rateLimit.test.ts (2 tests | 1 failed) 191ms
+   × limits writes per key without starving reads or other agents 161ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/rateLimit.test.ts > limits writes per key without starving reads or other agents
+AssertionError: expected 429 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 429
+
+ ❯ convex/rateLimit.test.ts:13:52
+     11|   const call = rest(t, a.key);
+     12|   for (let i = 0; i < 120; i++) expect((await call("POST", "/api/v1/in…
+     13|   expect((await call("GET", "/api/v1/me")).status).toBe(200);
+       |                                                    ^
+     14|   expect((await rest(t, second.key)("POST", "/api/v1/inbox", { text: "…
+     15|   const before = await t.run(async (ctx) => ({ inbox: await ctx.db.que…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  13:59:10
+   Duration  331ms (tests 75%, transform 16%, import 8%, worker 1%)
+

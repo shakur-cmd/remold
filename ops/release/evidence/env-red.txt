@@ -1,0 +1,38 @@
+✔ unchanged release verifies only for its full commit and pinned manifest digest (4.628417ms)
+✔ changed, missing and injected artifact bytes are refused (1.458167ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (0.810375ms)
+✔ version metadata must name the artifact commit (0.590208ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.702542ms)
+✔ failed real process halts checks before a later process can run (21.575541ms)
+✔ successful real processes run in order (40.121167ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.384917ms)
+✔ missing metadata and destructive contraction are refused (0.098666ms)
+✔ a rollback to a schema without the expanded fields is refused (0.12125ms)
+✔ persisted changes remain blocked even when a caller supplies a synthetic passing restore claim (0.061542ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.55575ms)
+✖ verification subprocesses receive fixture config and cannot inherit provider secrets (19.326875ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.387209
+
+✖ failing tests:
+
+test at ops/release/release.test.mjs:95:1
+✖ verification subprocesses receive fixture config and cannot inherit provider secrets (19.326875ms)
+  Error: Verification failed: /Users/urkel/.nvm/versions/node/v24.18.0/bin/node -e 
+        if (process.env.REMOLD_TEST_SECRET) process.exit(11);
+        if (process.env.VITE_CONVEX_URL !== 'https://release-fixture.invalid') process.exit(12);
+      
+      at runChecks (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/release/release.mjs:48:52)
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/release/release.test.mjs:101:5)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 release rails handover</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>I2 release rails: local candidate verification</h1>
+<div class="meta">2026-09-24 · Baseline bedff74949da7a36b711d4ab22b2238633f7a096 · SIM/local build evidence · Independent verification pending</div>
+<div class="decisions"><h2>Your calls</h2><p>Existing G-platform account/sign-in bundle still applies: WorkOS, isolated hosting, backup and delivered-alert access. No additional account decision is needed for these local changes. This work does not authorize deployment, spending or production identity changes.</p></div>
+<div class="status"><h2>Implemented and locally checked</h2><p>Fourteen behavior tests pass. Real failing child processes stop the check sequence; artifact bytes, full commit SHA and an externally pinned manifest digest are checked. Subprocesses receive fixture URLs through an allowlisted environment, never inherited provider variables. The actual frontend build is isolated from tracked dist.</p><p><strong>I2 is not integrated or complete.</strong> No hosted CI run, signed-in preview, restored snapshot, actual migration rollback or delivered alert is claimed. The final committed clean-checkout build remains for the integrator and independent verifier.</p></div>
+<h2>Before and after</h2>
+<table><tr><th>Before at C0</th><th>After in this patch</th><th>Evidence</th></tr>
+<tr><td>No release CLI or workflow</td><td>Verification-only workflow with exact checkout SHA, serialized checks, public metadata-only upload and no deployment commands or credentials</td><td>../.. / .github/workflows/verify.yml; hosted execution pending</td></tr>
+<tr><td>No artifact tamper check</td><td>Inventory rejects changed, missing or injected bytes; separately pinned manifest digest rejects rewritten checksums</td><td>release.test.mjs, evidence/green.txt. Removing byte verification in a temporary copy makes the test fail: evidence/mutation-red.txt</td></tr>
+<tr><td>No release metadata policy</td><td>Full rollback commit required; destructive contraction rejected; unknown/potentially persisted changes cannot claim cosmetic exemption</td><td>Behavior tests in evidence/green.txt</td></tr>
+<tr><td>Subprocess environment initially inherited host values</td><td>Explicit allowlist and fixed non-live public fixture configuration</td><td>Real child process failed before fix: evidence/env-red.txt; same check passes afterward</td></tr>
+<tr><td>No snapshot runner</td><td>Persisted release preflight remains blocked. A synthetic passed flag cannot substitute for actual restored-snapshot validation</td><td>Behavior test proves refusal, not a successful restore</td></tr></table>
+<h2>Independent review correction</h2><p>The independent C0 verifier caught that a PR target tip may advance past a feature branch. The initial workflow wrongly required that tip to be an ancestor. A real temporary Git graph now reproduces the failure (evidence/merge-base-red.txt). The workflow resolves a PR diff baseline through its single common ancestor, preserving exact feature-head checkout. Push events still use the original before commit and reject non-ancestor history. The same graph test passes after correction and proves unrelated target-branch changes do not enter the PR diff. Ambiguous merge bases fail closed.</p><h2>Files and commands</h2>
+<p><code>release.mjs</code> builds and verifies local candidates. <code>release.test.mjs</code> uses Node's built-in test runner and temporary real files/processes. <code>notes.json</code> declares expand class and the C0 rollback target; it is candidate metadata, not a compatibility certificate. A later schema expansion must name its actual compatible expanded target.</p>
+<pre>pnpm verify:release
+node ops/release/release.mjs build /tmp/new-candidate FULL_HEAD_SHA FULL_BASE_SHA ops/release/notes.json
+node ops/release/release.mjs verify /tmp/new-candidate FULL_HEAD_SHA TRUSTED_MANIFEST_SHA256
+node ops/release/release.mjs preflight /tmp/new-candidate FULL_HEAD_SHA TRUSTED_MANIFEST_SHA256</pre>
+<p>Build requires a clean checkout, no local environment files, a base ancestor, valid notes and a previously nonexistent output directory outside the repository. It runs pnpm test, pnpm typecheck, release behavior tests, MCP tests/build and Vite build sequentially. It checks cleanliness again, writes <code>version.json</code>, inventories build files, seals and verifies the manifest. A failed check produces no sealed release. The CLI provides no deploy operation.</p>
+<p>The manifest digest must come from the trusted build invocation or trusted CI metadata, separately from the artifact being inspected. This is integrity verification, not cryptographic provenance signing or independent certification. <code>/version.json</code> is a static artifact proposal; the required deployed <code>/version</code> route and Worker version routing are still open.</p>
+<p><code>preflight</code> refuses an undeclared rollback target or different schema digest. Persisted changes always remain blocked until a real restored-snapshot runner and its independent evidence are integrated. Cosmetic CSS/assets/docs can skip snapshot validation; TS/TSX changes conservatively require persisted classification. No generic schema compatibility inference is attempted.</p>
+<h2>Observed checks and replay</h2>
+<p>On the shared working tree: pnpm test passed 51 tests in 20 files; typecheck passed; MCP tests passed 2; MCP build and isolated frontend build passed. Exact command results are in evidence/commands.json and check-1.txt through check-5.txt. These are working-tree results, not final-SHA release proof. The same sequence was rerun using the restricted child environment in evidence/sanitized-checks.txt.</p>
+<p>The first absent-feature check failed because release.mjs did not exist (evidence/red.txt). This is not misrepresented as a behavioral regression. The later environment red/green and deliberate integrity mutation show the behavior checks can actually fail. Fixture source and hashes are in evidence/fixture-manifest.json. Fixtures are generated inside temporary directories by the test file; no customer data or exports are involved.</p>
+<p>Fresh verifier: inspect the diff, run the tests independently, alter the fixture bytes or expected SHA, then run build from a clean checkout of the final integrated commit. Confirm failed checks prevent a manifest, the two artifact pins reject alteration, and persisted preflight stays blocked. Inspect the workflow for credentials, deployment steps and broad uploads. Independently run the live I2 drills only when their access gates are satisfied.</p>
+<h2>Remaining I2 rows</h2>
+<table><tr><th>Required row</th><th>Status</th></tr>
+<tr><td>AuthKit email/Google, identity module replacement, current live-data inventory, temporary production hostname and written go-live boundary</td><td>Blocked on accounts/rehearsal; existing Clerk/live data preserved</td></tr>
+<tr><td>Exact-SHA serialized deploy, deployed /version, pinned REST contract validation and actual restored-backup schema check</td><td>Local candidate building and integrity checks implemented; deployment path, full contract certification and snapshot integration still open</td></tr>
+<tr><td>Two simultaneous signed-in previews with fixture seed, callback auth, isolation and cleanup on PR close</td><td>Not implemented or exercised; requires configured non-production services</td></tr>
+<tr><td>At least 1,000 records migrated while old browser/MCP write; rollback preserves new writes and clients</td><td>No real migration/rollback evidence. Earlier schema rollback refusal has a local policy test only</td></tr>
+<tr><td>Background exception, caught REST 500 and stall each deliver an operator alert; content-safe logs and measured retention</td><td>Not implemented or delivered; destination/provider setup gated</td></tr>
+<tr><td>Restore backend, identity and currently deployed services to scratch; compare canonical data</td><td>Blocked on real snapshot and scratch access. No passing surrogate</td></tr>
+<tr><td>Per-org operator flags and rate-limit burst yields 429 without partial effects</td><td>Flags open. Root owns the separate rate-limit implementation and its evidence</td></tr>
+<tr><td>Independent rerun of failure, rollback and preview drills</td><td>Pending. Builder is not the certifier</td></tr></table>
+<h2>Recovery and publication</h2>
+<p>There are no deployed changes to undo. Temporary fixture directories are removed by tests. Frontend verification outputs live only in temporary directories. Remove/revert this code through normal review if it is rejected; retain the before/after evidence. Workflow upload paths name only release-manifest.json, version.json and a digest file; no customer archives, credentials or general workspace upload is configured. Retention is configured for seven days, not measured.</p>
+<p>Official sources consulted for workflow syntax and minimum permissions: <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax">GitHub workflow syntax</a>, <a href="https://docs.github.com/en/actions/reference/security/secure-use">secure use</a>, <a href="https://docs.github.com/en/actions/tutorials/store-and-share-data">artifact storage</a>. Action commit pins were resolved from official repository version tags using git ls-remote on 2026-09-24.</p>
+</body></html>
