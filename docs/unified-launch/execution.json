@@ -1,0 +1,377 @@
+{
+  "base": "96259e4cd0dd23be5934962b71098ec950c4b640",
+  "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+  "jobs": [
+    {
+      "id": "C0",
+      "state": "complete",
+      "builder": "root",
+      "independentVerifier": "/root/c0_verifier",
+      "costCap": 0,
+      "externalAllowance": "Read-only existing Convex inventory; no provider effects",
+      "depends": [],
+      "base": "96259e4cd0dd23be5934962b71098ec950c4b640",
+      "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+      "allowedPaths": [
+        "AGENTS.md",
+        "docs/unified-launch/build-status.html",
+        "docs/unified-launch/execution.json",
+        "docs/unified-launch/gate-register.json",
+        "evidence/2026-09-24-unified-build",
+        "messages-to-client"
+      ],
+      "environment": "mac-mini, documentation/local verification and read-only gallant-pika-581 inventory",
+      "selection": "not applicable",
+      "evidence": "evidence/2026-09-24-unified-build/c0-verdict.json"
+    },
+    {
+      "id": "H0",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "C0"
+      ]
+    },
+    {
+      "id": "P1",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "P2",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "P3",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "P4",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "P5",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "P6",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "D0A",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P1",
+        "P6"
+      ]
+    },
+    {
+      "id": "D0M",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P2"
+      ]
+    },
+    {
+      "id": "D0S",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P3"
+      ]
+    },
+    {
+      "id": "D0P",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P4"
+      ]
+    },
+    {
+      "id": "D0C",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P5"
+      ]
+    },
+    {
+      "id": "I1",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ]
+    },
+    {
+      "id": "I2",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "C0"
+      ]
+    },
+    {
+      "id": "I3",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2"
+      ]
+    },
+    {
+      "id": "I4",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0A"
+      ]
+    },
+    {
+      "id": "I5",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0M"
+      ]
+    },
+    {
+      "id": "I6",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0S"
+      ]
+    },
+    {
+      "id": "I7",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0P"
+      ]
+    },
+    {
+      "id": "I8",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0C"
+      ]
+    },
+    {
+      "id": "I9",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I3",
+        "I4",
+        "I5",
+        "I8"
+      ]
+    },
+    {
+      "id": "I10",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I3",
+        "I5",
+        "I6",
+        "I7",
+        "I8"
+      ]
+    },
+    {
+      "id": "I11",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2"
+      ]
+    },
+    {
+      "id": "I12",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I3",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I11"
+      ]
+    },
+    {
+      "id": "I13",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I11"
+      ]
+    },
+    {
+      "id": "I14",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I2",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I13"
+      ]
+    },
+    {
+      "id": "V0",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I9",
+        "I10",
+        "I12",
+        "I13",
+        "I14"
+      ]
+    },
+    {
+      "id": "L0",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "V0"
+      ]
+    }
+  ]
+}

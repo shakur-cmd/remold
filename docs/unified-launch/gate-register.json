@@ -1,0 +1,66 @@
+[
+  {
+    "id": "G-platform",
+    "blocks": [
+      "I2",
+      "I11",
+      "L0"
+    ],
+    "status": "open",
+    "needed": "WorkOS admin/Google sign-in configuration; isolated previews; backup and alert account; platform Stripe sandbox; real price and commercial policy. No production cutover authorized."
+  },
+  {
+    "id": "G-pay",
+    "blocks": [
+      "P4",
+      "D0P",
+      "I7",
+      "L0"
+    ],
+    "status": "open",
+    "needed": "Stripe Connect sandbox with two merchants; merchant country/legal configuration and retention/readonly collection policy. Live charges/refunds need exact allowance."
+  },
+  {
+    "id": "G-mail",
+    "blocks": [
+      "P2",
+      "P5",
+      "D0C",
+      "I5",
+      "I8"
+    ],
+    "status": "open",
+    "needed": "Google Cloud OAuth project and two controlled mailboxes/calendar; approved sending identity/domain, recipients and quota. Gmail connector for owner email is not app OAuth credential."
+  },
+  {
+    "id": "G-social",
+    "blocks": [
+      "P3",
+      "D0S",
+      "I6"
+    ],
+    "status": "open",
+    "needed": "Required launch channels, test accounts, developer approvals, exact publication content/visibility allowance."
+  },
+  {
+    "id": "G-runtime",
+    "blocks": [
+      "P6",
+      "D0A",
+      "I4"
+    ],
+    "status": "open",
+    "needed": "Hosted model funding account and numeric per-run/workspace/global caps; zero paid usage until supplied."
+  },
+  {
+    "id": "G-private",
+    "blocks": [
+      "I3",
+      "I13",
+      "I14"
+    ],
+    "status": "open",
+    "needed": "Verify existing records before any cutover; optional EspoCRM/Microsoft/Jev inputs remain separate. No real data deletion.",
+    "blockingScope": "Only named private-data migration/deletion and optional Microsoft/Jev rows; synthetic and provider-independent work in these jobs continues."
+  }
+]
