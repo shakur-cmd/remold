@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router";
-import { UserButton } from "@clerk/clerk-react";
+import { useIdentity } from "@/lib/identity";
 import { SearchDialog } from "@/components/SearchDialog";
 import { CalendarCheck, Menu, Plus, Settings, Sparkles } from "lucide-react";
 import { useQuery } from "convex/react";
@@ -21,6 +21,7 @@ type Props = {
 export function AppShell({ org, orgs, objects, children }: Props) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const identity = useIdentity();
   const nav = <Nav org={org} objects={objects} onNavigate={() => setOpen(false)} />;
   return (
     <div className="min-h-dvh w-full max-w-full overflow-x-hidden md:grid md:grid-cols-[14rem_minmax(0,1fr)]">
@@ -55,7 +56,7 @@ export function AppShell({ org, orgs, objects, children }: Props) {
           </Select>
           <div className="ml-auto flex items-center gap-2">
             <SearchDialog orgId={org._id} />
-            <UserButton />
+            <Button variant="ghost" size="sm" onClick={() => identity.signOut()} title={identity.user?.email}>Sign out</Button>
           </div>
         </header>
         <main className="min-w-0 flex-1 px-3 py-4 md:px-6 md:py-6">{children}</main>

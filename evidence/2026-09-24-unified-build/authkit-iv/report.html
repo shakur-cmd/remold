@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 AuthKit independent source review</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>I2 AuthKit independent source review</h1><div class="meta">2026-09-24 · reviewer /root/c0_verifier · bounded approval, hosted behavior still awaiting evidence</div>
+<div class="decisions"><h2>Decision</h2><p>Approve the reviewed source, unit and SDK slice. No new blocking source defect was found. This is not approval of full I2, production cutover or all browser journeys. No owner input is needed for this bounded review.</p></div>
+<div class="status"><h2>Independently verified</h2><p>58 app tests, strict app/backend typecheck, 14 release tests and two installed SDK tests passed. Two additional independent tests passed: an attack corpus against the return-route boundary and a same-email, same-subject/different-issuer identity isolation scenario.</p><p>No browser automation, running backend access or live environment mutation was performed by this reviewer. The active root browser and ports were left untouched.</p></div>
+<h2>Before and after</h2><table><tr><th>Before</th><th>Reviewed after state</th></tr><tr><td>Four Clerk frontend seams and Clerk JWT issuer config.</td><td>One AuthKit identity module and official Convex bridge; four frontend consumers use that boundary. Source and direct package dependency no longer import Clerk.</td></tr><tr><td>New hosted return path had builder-recorded red evidence for unsafe return state.</td><td>Existing three route tests plus an independent corpus reject external origins, credentials, malformed schemes, backslashes, controls and normalized callback routes while preserving deep destinations.</td></tr><tr><td>Existing identities and memberships are keyed by tokenIdentifier.</td><td>Unaffected. Independent fixture creates same-email Clerk and WorkOS identities, proves distinct user IDs, no inherited memberships, and rejects unauthorized workspace read and admin invite creation.</td></tr></table>
+<h2>Security and configuration review</h2><p>The generic WorkOS issuer enforces applicationID, while the client-specific issuer is scoped in its issuer URL. The two-provider configuration matches <a href="https://docs.convex.dev/auth/authkit/add-to-app">official Convex AuthKit instructions</a>. <a href="https://docs.convex.dev/auth/advanced/custom-jwt">Convex custom JWT guidance</a> explains why the shared issuer needs audience enforcement and a dedicated issuer may omit it. Source matching is not a real signed-token mismatch test.</p><p>Profile fields remain display data. Authorization still uses verified tokenIdentifier and database membership; no email-based relinking was added. The SDK handles exchange and refresh. Two replayed SDK checks use the installed library, forbid provider network calls and verify PKCE setup and unsolicited callback refusal.</p><p>The launcher copies source into a new temporary directory, starts anonymous local Convex, validates the loopback URL before setting the public client ID, and restores JWT verification only in that scratch copy. Its subprocess environment omits deployment credentials and WorkOS API keys. Root .env.local is checked by hash. This launcher's safeguards were read, not rerun here; browser/backend services were already owned.</p><p>The lockfile still contains Clerk through Convex optional-peer resolution. This is not an active frontend import or a direct app dependency, and does not block this review. Generated lockfile provenance was reviewed through dependency/version changes, not claimed as a line-by-line audit.</p>
+<h2>Remaining evidence</h2><p>Root reports successful Google login through WorkOS Staging, JWT acceptance and synthetic workspace creation. This reviewer has not independently witnessed that browser evidence. Preserve the root browser record and complete refresh/logout, deep invite return, signup/error recovery, second-user access refusal and valid issuer/client mismatch tests. Unsigned or mutated tokens prove signature refusal only. Production data/identity migration, simultaneous hosted previews and managed backups remain separate gates.</p>
+<h2>Evidence and reproducibility</h2><p><a href="source-manifest.json">Reviewed source hashes</a> · <a href="verdict.json">Verdict</a> · <a href="tests.txt">58 tests</a> · <a href="typecheck.txt">Typecheck</a> · <a href="release.txt">14 release tests</a> · <a href="sdk.txt">Two SDK tests</a> · <a href="independent-tests.txt">Independent scenarios</a> · <a href="independent.test.ts">Independent test source</a>.</p><pre>pnpm test
+pnpm typecheck
+pnpm verify:release
+node --test ops/identity/sdk-contract.test.mjs
+pnpm exec vitest run --config evidence/2026-09-24-unified-build/authkit-iv/vitest.config.ts</pre><p>All commands exited zero. The additional tests are SIM via convex-test and route parsing, not SERVICE authentication proof. Builder baseline is retained in ops/identity/evidence/before.json and return-target-red.txt.</p></body></html>

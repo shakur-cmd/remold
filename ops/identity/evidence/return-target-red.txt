@@ -1,0 +1,61 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ src/lib/identity-route.test.ts (3 tests | 3 failed) 4ms
+   × returns to an invite or workspace route after hosted sign-in 2ms
+   × cannot redirect the callback to another origin, script or browser-normalized host 0ms
+   × drops missing or malformed state and callback/login loops 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/identity-route.test.ts > returns to an invite or workspace route after hosted sign-in
+AssertionError: expected 'http://localhost:5173/invite/fixture-…' to be '/invite/fixture-token' // Object.is equality
+
+Expected: "/invite/fixture-token"
+Received: "http://localhost:5173/invite/fixture-token"
+
+ ❯ src/lib/identity-route.test.ts:9:70
+      7|     expect(authReturnTarget(path, origin)).toBe(path);
+      8|   }
+      9|   expect(authReturnTarget(`${origin}/invite/fixture-token`, origin)).t…
+       |                                                                      ^
+     10| });
+     11| it("cannot redirect the callback to another origin, script or browser-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/lib/identity-route.test.ts > cannot redirect the callback to another origin, script or browser-normalized host
+AssertionError: https://attacker.invalid/: expected 'https://attacker.invalid/' to be '/' // Object.is equality
+
+Expected: "/"
+Received: "https://attacker.invalid/"
+
+ ❯ src/lib/identity-route.test.ts:13:52
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/lib/identity-route.test.ts > drops missing or malformed state and callback/login loops
+AssertionError: expected '' to be '/' // Object.is equality
+
+- Expected
++ Received
+
+- /
+
+ ❯ src/lib/identity-route.test.ts:19:45
+     17| it("drops missing or malformed state and callback/login loops", () => {
+     18|   for (const value of [null, undefined, {}, ["/invite/test"], 42, "", …
+     19|     expect(authReturnTarget(value, origin)).toBe("/");
+       |                                             ^
+     20|   }
+     21| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  14:30:38
+   Duration  79ms (transform 57%, import 19%, tests 17%, worker 7%)
+

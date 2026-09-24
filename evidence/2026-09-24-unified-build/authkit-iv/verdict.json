@@ -1,0 +1,28 @@
+{
+  "verdict": "APPROVE bounded source/unit/SDK slice; hosted behavior pending evidence",
+  "reviewer": "independent /root/c0_verifier",
+  "counts": {
+    "app": 58,
+    "release": 14,
+    "sdk": 2,
+    "additionalIndependent": 2
+  },
+  "typecheckExitCode": 0,
+  "evidenceLevel": "SIM in-process Convex tests and real installed SDK with network forbidden; source review",
+  "findings": [],
+  "observations": [
+    "No remaining Clerk source imports or direct dependency; optional Convex peer resolution retains Clerk in lockfile.",
+    "Issuer/applicationID config matches current official Convex guidance.",
+    "Same-email identity migration does not auto-link memberships.",
+    "Scratch launcher uses anonymous local configuration and public client ID only; reviewed but not launched by verifier because ports are owned."
+  ],
+  "openProofs": [
+    "Root hosted-login evidence is not independently witnessed here.",
+    "Actual mismatched valid issuer/client JWT refusal, second-user membership isolation, refresh/logout, invite return, signup/error journeys need their own evidence.",
+    "Production identity/data migration, two simultaneous hosted previews, backups and full I2 remain open."
+  ],
+  "sources": [
+    "https://docs.convex.dev/auth/authkit/add-to-app",
+    "https://docs.convex.dev/auth/advanced/custom-jwt"
+  ]
+}

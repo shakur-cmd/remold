@@ -48,7 +48,7 @@ export function runChecks(commands, cwd) {
     if (process.env[key] !== undefined) env[key] = process.env[key];
   }
   env.VITE_CONVEX_URL = 'https://release-fixture.invalid';
-  env.VITE_CLERK_PUBLISHABLE_KEY = 'pk_test_cmVsZWFzZS1maXh0dXJlLmludmFsaWQk';
+  env.VITE_WORKOS_CLIENT_ID = 'client_releasefixture';
   for (const [command, ...args] of commands) {
     const result = spawnSync(command, args, { cwd, stdio: 'inherit', env });
     if (result.error || result.status !== 0) throw new Error(`Verification failed: ${command} ${args.join(' ')}`);
