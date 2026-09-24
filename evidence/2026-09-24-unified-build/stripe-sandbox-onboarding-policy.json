@@ -1,0 +1,27 @@
+{
+  "task": "remold-stripe-synthetic-onboarding",
+  "outcome": "Enable only synthetic sandbox merchants A and B for sandbox payment proof; one account per run",
+  "origins": [
+    "https://dashboard.stripe.com",
+    "https://connect.stripe.com",
+    "http://localhost:3492",
+    "https://connect-js.stripe.com"
+  ],
+  "accountLabel": "Shakur Remold integration Stripe sandbox",
+  "targets": {
+    "A": "acct_1UJIbNJLMDiXZR1g",
+    "B": "acct_1UJIbQQqpeNgm9OQ"
+  },
+  "risk": "sandbox account configuration only; no live merchant identity/real money",
+  "authorization": "User build all integrations; test sandbox scope explicitly established; no live activation",
+  "singleCommitPerRun": true,
+  "testOAuth": {
+    "client": "ca_VJwFj4FcjohaD0wjZKB5vJcllH0TPDnD",
+    "redirect": "http://localhost:3492/stripe/return",
+    "fixtures": [
+      "D",
+      "E"
+    ],
+    "reason": "Original A/B Standard Account Link asks new email. Test OAuth current signed-in account offers creating synthetic test account; visible embedded UI states using a test account with test data. Original A/B/C preserved."
+  }
+}
