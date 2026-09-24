@@ -1,0 +1,176 @@
+{
+  "sourceRootSha": "149a4e60e766c0cd14cd898be29edda4080cf9c6",
+  "sourceRootDirty": true,
+  "result": "PASS",
+  "level": "SERVICE-local; synthetic fixture",
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-XVnAhL",
+  "checks": {
+    "wrapperRefusedEarlierTarget": true,
+    "rollbackWhilePartiallyMigrated": true,
+    "idempotentRepeat": true,
+    "originalFixtureRecordsPreserved": true,
+    "recordCreatedMidMigrationRetained": true,
+    "recordsAndKeyRetained": true,
+    "actualBackendRejectedOldSchemaWithoutDataLoss": true
+  },
+  "limitations": [
+    "Managed backup snapshot restore is not tested",
+    "Actual old browser and production identities are not tested",
+    "No production deployment or release authorization"
+  ],
+  "baseline": {
+    "sourceHash": "8842b9ee8c935ff2e78031da6e4a6b45950f20a401dad85a99eb24b4fff0b0f0",
+    "records": 1100,
+    "canonicalHash": "4eb24f15bc041f25f2b8da69d25df693b906c04a36f6b24188d58562072f5ca2",
+    "schemaHash": "7d0212667d8d032d178bae0014078812709f28db0797d32741f85b8e26f86435"
+  },
+  "oldMcpSourceHash": "5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e",
+  "expand": {
+    "sourceHash": "6840d73c8db02095a1150f910be232bd7b325cef689550e366458b47ba3a78c8",
+    "schemaHash": "046446f07d9dba3fcf96b7eef74e177af06ec83ea6350fbd85cf31eeec7edeab"
+  },
+  "interruption": {
+    "cursor": "[1790274572462.9373,\"k972gk64vn6m7pbdqda95dgmrh8f0gqx\"]",
+    "error": "Uncaught Error: REHEARSAL_INTERRUPTED_400\n    at migrateOne (../convex/migrationBackfill.ts:11:100)\n    at async doOne (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:483:24)\n    at async handler (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:498:14)\n",
+    "isDone": false,
+    "latestStart": 1790274575846,
+    "name": "migrationBackfill:markRecords",
+    "processed": 400,
+    "state": "failed",
+    "markedRecords": 400,
+    "canonicalHash": "664591b6d92e540d780dfa15ebc49c1d3d88a3eaeb8f15e35699adedbc037ae6"
+  },
+  "behavior": {
+    "expand": {
+      "effectiveRevision": 0,
+      "title": "Migration fixture 0000"
+    },
+    "migrate": {
+      "effectiveRevision": 1,
+      "title": "Migration fixture 0000"
+    },
+    "pending": {
+      "effectiveRevision": 0,
+      "title": "Migration fixture 0900"
+    },
+    "rollback": {
+      "effectiveRevision": 0,
+      "title": "Migration fixture 0000"
+    }
+  },
+  "migrate": {
+    "sourceHash": "919a8e7937c7a5fce700d888832e8e7371d690cf502b175906bc9c88ffa9906b",
+    "schemaHash": "046446f07d9dba3fcf96b7eef74e177af06ec83ea6350fbd85cf31eeec7edeab"
+  },
+  "resumed": {
+    "cursor": null,
+    "isDone": true,
+    "latestEnd": 1790274587723,
+    "latestStart": 1790274575846,
+    "name": "migrationBackfill:markRecords",
+    "processed": 1103,
+    "state": "success"
+  },
+  "final": {
+    "canonicalHash": "cbf6d5b7f452d7b0f48acd550ab89b37995a0b44d015c03c760ac667d95f578c",
+    "records": 1103,
+    "migration": {
+      "cursor": null,
+      "isDone": true,
+      "latestEnd": 1790274587723,
+      "latestStart": 1790274575846,
+      "name": "migrationBackfill:markRecords",
+      "processed": 1103,
+      "state": "success"
+    }
+  },
+  "negativeSchema": {
+    "refused": true,
+    "diagnostic": "- Preparing Convex functions...\n\n✖ Schema validation failed.\nDocument with ID \"k9700cevdbm0zjzzhxrehb25gx8f1fhm\" in table \"records\" does not match the schema: Object contains extra field `migrationRevision` that is not in the validator.\n\nObject: {createdBy: \"kh7dwf3kz23vtbwn4a5mhfr4v98f0jb8\", migrationRevision: 1.0, objectId: \"k170qt05smaakm1detk657q8px8f0r5e\", orgId: \"kn75kq7epmxxf17vrxez4qxawh8f15rb\", title: \"Migration fixture 0134\", updatedAt: 0.0, values: {jh7exhfh2241k0zmj1x92c0ebh8f08sc: \"Migration fixture 0134\"}}\nValidator: v.object({b0: v.optional(v.boolean()), b1: v.optional(v.boolean()), b2: v.optional(v.boolean()), b3: v.optional(v.boolean()), createdBy: v.union(v.id(\"users\"), v.id(\"agents\")), d0: v.optional(v.float64()), d1: v.optional(v.float64()), d2: v.optional(v.float64()), d3: v.optional(v.float64()), n0: v.optional(v.float64()), n1: v.optional(v.float64()), n2: v.optional(v.float64()), n3: v.optional(v.float64()), n4: v.optional(v.float64()), n5: v.optional(v.float64()), n6: v.optional(v.float64()), n7: v.optional(v.float64()), objectId: v.id(\"objects\"), orgId: v.id(\"orgs\"), ref: v.optional(v.string()), s0: v.optional(v.string()), s1: v.optional(v.string()), s2: v.optional(v.string()), s3: v.optional(v.string()), s4: v.optional(v.string()), s5: v.optional(v.string()), s6: v.optional(v.string()), s7: v.optional(v.string()), title: v.string(), updatedAt: v.float64(), values: v.record(v.string(), v.any())})\n"
+  },
+  "clientObservations": [
+    {
+      "phase": "baseline",
+      "iteration": 0,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "interrupted-migration",
+      "iteration": 1,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "migrate",
+      "iteration": 2,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "migrate",
+      "iteration": 3,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "rollback",
+      "iteration": 4,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "rollback",
+      "iteration": 5,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 6,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 467,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 7,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 610,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 8,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 764,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 9,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 935,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 10,
+      "migrationState": "success",
+      "processedBeforeWrite": 1103,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    }
+  ],
+  "fixtureSourceHashes": {
+    "fixture.ts": "f7abdd3ecc52addc009a302ea8228913cc0b09ea72ce85d9bd6c4627ca0bcea1",
+    "backfill.ts": "269d37b9d6ec10067646457c8c8fd03c0406ba0ae8c4f8c15de20651f5e6725e",
+    "rehearse.mjs": "185907b1028cda97b2f945a29674e2233c981e3b0b2911b88f3362c8e15e85f4",
+    "rollback.mjs": "4e7cc40cfa06d036ab6c8370c9c7cac646dd7b836871de68837bad21f48ce304"
+  },
+  "rootDeploymentConfigUnchanged": true
+}

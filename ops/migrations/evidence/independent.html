@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 migration independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>I2 migration rehearsal: independent verification</h1><div class="meta">2026-09-24 · reviewer: h0_builder, independent of i2_release author · PASS for the bounded local SERVICE slice</div>
+<div class="decisions"><h2>Release boundary</h2><p>No owner decision is needed for this synthetic rehearsal. This approval covers the inspected migration slice only. Full I2, managed backup restore, real browser/AuthKit identities and production release remain unverified or separately gated.</p></div>
+<div class="status"><h2>Done and independently proven</h2><p>I read fixture.ts, backfill.ts, rollback.mjs, rollback.test.mjs and rehearse.mjs, then changed the fixture from the author's 1000 records to 1100. The unchanged source replay exited 0. I separately recomputed saved snapshot/source hashes, compared all 1100 original records individually, and verified final code exactly equals the declared expanded rollback source.</p><p>Commands: <code>node --test ops/migrations/rollback.test.mjs</code> (1 pass, exit 0), and <code>node ops/migrations/rehearse.mjs ops/migrations/evidence/independent.json 1100</code> (PASS, exit 0).</p></div>
+<h2>Before and after, side by side</h2><table><tr><th>Behavior</th><th>Author/root baseline run</th><th>Independent changed-fixture replay</th></tr>
+<tr><td>Original persisted records before expansion</td><td>1000, no new field</td><td>1100, no new field</td></tr>
+<tr><td>Actual component interruption</td><td>400 marked, failed at injected fixture0400</td><td>400 marked, same component failure and durable cursor</td></tr>
+<tr><td>Consumer behavior through code changes</td><td>Expanded read 0 → migrated read 1 → rolled-back read 0</td><td>Same behavior; pending record remained 0; stored migrated marker remained 1 after rollback</td></tr>
+<tr><td>Completion after resume</td><td>1003 records marked</td><td>1103 records marked, including three client-created records</td></tr>
+<tr><td>Old clients during in-progress component work</td><td>3 recorded REST/MCP read-write cycles</td><td>4 recorded REST/MCP read-write cycles</td></tr>
+<tr><td>Incompatible old schema</td><td>Real backend refusal; snapshot unchanged</td><td>Real backend refusal for migrationRevision; snapshot unchanged, then expanded schema restored</td></tr>
+</table><h2>Independent checks and limits</h2><ul>
+<li>The actual pinned @convex-dev/migrations 0.3.6 component ran on a fresh anonymous Convex backend at 127.0.0.1:3440. It persisted failed progress at 400, retained the cursor through rollback, resumed to 1103 and treated a repeated completed migration as a no-op.</li>
+<li>A retained pre-expansion MCP stdio process and the same REST driver continued to create, read and update records. The original agent ID/key hash and a record created during partial migration survived. The observation captures component progress immediately before each client-write cycle; this is local compatibility evidence, not a browser or concurrency benchmark.</li>
+<li>The consumer is a synthetic internal backend query that actually reads migrationRevision. Its migrated branch returns the stored value with a zero fallback, while the expanded rollback branch returns zero. The reader was exercised against both a migrated record and a still-pending record, so this check can catch a constant or ignored marker. It does not prove a browser consumer.</li>
+<li>The rollback helper rejects both an undeclared source hash and an incompatible schema hash. The replay additionally deploys the exact saved expanded source and checks the full tree hash. Independently hashing the final scratch source produced the same declared expanded hash.</li>
+<li>The obsolete schema was really attempted against persisted expanded documents. Convex rejected it; the canonical before/after snapshot stayed equal. This is a schema compatibility check, not restoration from a managed backup.</li>
+<li>Every original record was compared after excluding only the newly added migrationRevision field. All IDs, values, title and existing metadata matched. Agent identity and key hash matched exactly. The three new records were retained and marked.</li>
+<li>Safety inspection found fresh scratch copying, an environment allowlist, anonymous mode, fixed loopback REST/MCP URLs and no real auth provider. Root .env.local hash was unchanged. The scratch source and raw snapshots remain available for review; no production data was modified.</li>
+</ul><h2>Source identity</h2><p>The independent run and root1000 run used the same baseline, expanded and migrated source hashes. The migration author manifest still exactly matches current files, including its pinned package and lockfile. The root repository was intentionally dirty during both runs; exact copied-source tree hashes below identify what was actually tested.</p><pre>{
+  &quot;baselineTree&quot;: &quot;8842b9ee8c935ff2e78031da6e4a6b45950f20a401dad85a99eb24b4fff0b0f0&quot;,
+  &quot;expandedTree&quot;: &quot;6840d73c8db02095a1150f910be232bd7b325cef689550e366458b47ba3a78c8&quot;,
+  &quot;migrateTree&quot;: &quot;919a8e7937c7a5fce700d888832e8e7371d690cf502b175906bc9c88ffa9906b&quot;,
+  &quot;migrationSourceFiles&quot;: {
+    &quot;fixture.ts&quot;: &quot;f7abdd3ecc52addc009a302ea8228913cc0b09ea72ce85d9bd6c4627ca0bcea1&quot;,
+    &quot;backfill.ts&quot;: &quot;269d37b9d6ec10067646457c8c8fd03c0406ba0ae8c4f8c15de20651f5e6725e&quot;,
+    &quot;rehearse.mjs&quot;: &quot;185907b1028cda97b2f945a29674e2233c981e3b0b2911b88f3362c8e15e85f4&quot;,
+    &quot;rollback.mjs&quot;: &quot;4e7cc40cfa06d036ab6c8370c9c7cac646dd7b836871de68837bad21f48ce304&quot;
+  }
+}</pre><h2>Actual engine rejection</h2><pre>- Preparing Convex functions...
+
+✖ Schema validation failed.
+Document with ID &quot;k9700cevdbm0zjzzhxrehb25gx8f1fhm&quot; in table &quot;records&quot; does not match the schema: Object contains extra field `migrationRevision` that is not in the validator.
+
+Object: {createdBy: &quot;kh7dwf3kz23vtbwn4a5mhfr4v98f0jb8&quot;, migrationRevision: 1.0, objectId: &quot;k170qt05smaakm1detk657q8px8f0r5e&quot;, orgId: &quot;kn75kq7epmxxf17vrxez4qxawh8f15rb&quot;, title: &quot;Migration fixture 0134&quot;, updatedAt: 0.0, values: {jh7exhfh2241k0zmj1x92c0ebh8f08sc: &quot;Migration fixture 0134&quot;}}
+Validator: v.object({b0: v.optional(v.boolean()), b1: v.optional(v.boolean()), b2: v.optional(v.boolean()), b3: v.optional(v.boolean()), createdBy: v.union(v.id(&quot;users&quot;), v.id(&quot;agents&quot;)), d0: v.optional(v.float64()), d1: v.optional(v.float64()), d2: v.optional(v.float64()), d3: v.optional(v.float64()), n0: v.optional(v.float64()), n1: v.optional(v.float64()), n2: v.optional(v.float64()), n3: v.optional(v.float64()), n4: v.optional(v.float64()), n5: v.optional(v.float64()), n6: v.optional(v.float64()), n7: v.optional(v.float64()), objectId: v.id(&quot;objects&quot;), orgId: v.id(&quot;orgs&quot;), ref: v.optional(v.string()), s0: v.optional(v.string()), s1: v.optional(v.string()), s2: v.optional(v.string()), s3: v.optional(v.string()), s4: v.optional(v.string()), s5: v.optional(v.string()), s6: v.optional(v.string()), s7: v.optional(v.string()), title: v.string(), updatedAt: v.float64(), values: v.record(v.string(), v.any())})
+</pre><h2>Independent in-progress client observations</h2><pre>[
+  {
+    &quot;phase&quot;: &quot;resumed-migration&quot;,
+    &quot;iteration&quot;: 6,
+    &quot;migrationState&quot;: &quot;inProgress&quot;,
+    &quot;processedBeforeWrite&quot;: 467,
+    &quot;rest&quot;: &quot;read/write pass&quot;,
+    &quot;mcp&quot;: &quot;read/write pass&quot;
+  },
+  {
+    &quot;phase&quot;: &quot;resumed-migration&quot;,
+    &quot;iteration&quot;: 7,
+    &quot;migrationState&quot;: &quot;inProgress&quot;,
+    &quot;processedBeforeWrite&quot;: 610,
+    &quot;rest&quot;: &quot;read/write pass&quot;,
+    &quot;mcp&quot;: &quot;read/write pass&quot;
+  },
+  {
+    &quot;phase&quot;: &quot;resumed-migration&quot;,
+    &quot;iteration&quot;: 8,
+    &quot;migrationState&quot;: &quot;inProgress&quot;,
+    &quot;processedBeforeWrite&quot;: 764,
+    &quot;rest&quot;: &quot;read/write pass&quot;,
+    &quot;mcp&quot;: &quot;read/write pass&quot;
+  },
+  {
+    &quot;phase&quot;: &quot;resumed-migration&quot;,
+    &quot;iteration&quot;: 9,
+    &quot;migrationState&quot;: &quot;inProgress&quot;,
+    &quot;processedBeforeWrite&quot;: 935,
+    &quot;rest&quot;: &quot;read/write pass&quot;,
+    &quot;mcp&quot;: &quot;read/write pass&quot;
+  }
+]</pre><h2>Raw replay and audit evidence</h2><details><summary>Independent replay JSON</summary><pre>{
+  &quot;sourceRootSha&quot;: &quot;149a4e60e766c0cd14cd898be29edda4080cf9c6&quot;,
+  &quot;sourceRootDirty&quot;: true,
+  &quot;result&quot;: &quot;PASS&quot;,
+  &quot;level&quot;: &quot;SERVICE-local; synthetic fixture&quot;,
+  &quot;scratch&quot;: &quot;/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-XVnAhL&quot;,
+  &quot;checks&quot;: {
+    &quot;wrapperRefusedEarlierTarget&quot;: true,
+    &quot;rollbackWhilePartiallyMigrated&quot;: true,
+    &quot;idempotentRepeat&quot;: true,
+    &quot;originalFixtureRecordsPreserved&quot;: true,
+    &quot;recordCreatedMidMigrationRetained&quot;: true,
+    &quot;recordsAndKeyRetained&quot;: true,
+    &quot;actualBackendRejectedOldSchemaWithoutDataLoss&quot;: true
+  },
+  &quot;limitations&quot;: [
+    &quot;Managed backup snapshot restore is not tested&quot;,
+    &quot;Actual old browser and production identities are not tested&quot;,
+    &quot;No production deployment or release authorization&quot;
+  ],
+  &quot;baseline&quot;: {
+    &quot;sourceHash&quot;: &quot;8842b9ee8c935ff2e78031da6e4a6b45950f20a401dad85a99eb24b4fff0b0f0&quot;,
+    &quot;records&quot;: 1100,
+    &quot;canonicalHash&quot;: &quot;4eb24f15bc041f25f2b8da69d25df693b906c04a36f6b24188d58562072f5ca2&quot;,
+    &quot;schemaHash&quot;: &quot;7d0212667d8d032d178bae0014078812709f28db0797d32741f85b8e26f86435&quot;
+  },
+  &quot;oldMcpSourceHash&quot;: &quot;5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e&quot;,
+  &quot;expand&quot;: {
+    &quot;sourceHash&quot;: &quot;6840d73c8db02095a1150f910be232bd7b325cef689550e366458b47ba3a78c8&quot;,
+    &quot;schemaHash&quot;: &quot;046446f07d9dba3fcf96b7eef74e177af06ec83ea6350fbd85cf31eeec7edeab&quot;
+  },
+  &quot;interruption&quot;: {
+    &quot;cursor&quot;: &quot;[1790274572462.9373,\&quot;k972gk64vn6m7pbdqda95dgmrh8f0gqx\&quot;]&quot;,
+    &quot;error&quot;: &quot;Uncaught Error: REHEARSAL_INTERRUPTED_400\n    at migrateOne (../convex/migrationBackfill.ts:11:100)\n    at async doOne (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:483:24)\n    at async handler (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:498:14)\n&quot;,
+    &quot;isDone&quot;: false,
+    &quot;latestStart&quot;: 1790274575846,
+    &quot;name&quot;: &quot;migrationBackfill:markRecords&quot;,
+    &quot;processed&quot;: 400,
+    &quot;state&quot;: &quot;failed&quot;,
+    &quot;markedRecords&quot;: 400,
+    &quot;canonicalHash&quot;: &quot;664591b6d92e540d780dfa15ebc49c1d3d88a3eaeb8f15e35699adedbc037ae6&quot;
+  },
+  &quot;behavior&quot;: {
+    &quot;expand&quot;: {
+      &quot;effectiveRevision&quot;: 0,
+      &quot;title&quot;: &quot;Migration fixture 0000&quot;
+    },
+    &quot;migrate&quot;: {
+      &quot;effectiveRevision&quot;: 1,
+      &quot;title&quot;: &quot;Migration fixture 0000&quot;
+    },
+    &quot;pending&quot;: {
+      &quot;effectiveRevision&quot;: 0,
+      &quot;title&quot;: &quot;Migration fixture 0900&quot;
+    },
+    &quot;rollback&quot;: {
+      &quot;effectiveRevision&quot;: 0,
+      &quot;title&quot;: &quot;Migration fixture 0000&quot;
+    }
+  },
+  &quot;migrate&quot;: {
+    &quot;sourceHash&quot;: &quot;919a8e7937c7a5fce700d888832e8e7371d690cf502b175906bc9c88ffa9906b&quot;,
+    &quot;schemaHash&quot;: &quot;046446f07d9dba3fcf96b7eef74e177af06ec83ea6350fbd85cf31eeec7edeab&quot;
+  },
+  &quot;resumed&quot;: {
+    &quot;cursor&quot;: null,
+    &quot;isDone&quot;: true,
+    &quot;latestEnd&quot;: 1790274587723,
+    &quot;latestStart&quot;: 1790274575846,
+    &quot;name&quot;: &quot;migrationBackfill:markRecords&quot;,
+    &quot;processed&quot;: 1103,
+    &quot;state&quot;: &quot;success&quot;
+  },
+  &quot;final&quot;: {
+    &quot;canonicalHash&quot;: &quot;cbf6d5b7f452d7b0f48acd550ab89b37995a0b44d015c03c760ac667d95f578c&quot;,
+    &quot;records&quot;: 1103,
+    &quot;migration&quot;: {
+      &quot;cursor&quot;: null,
+      &quot;isDone&quot;: true,
+      &quot;latestEnd&quot;: 1790274587723,
+      &quot;latestStart&quot;: 1790274575846,
+      &quot;name&quot;: &quot;migrationBackfill:markRecords&quot;,
+      &quot;processed&quot;: 1103,
+      &quot;state&quot;: &quot;success&quot;
+    }
+  },
+  &quot;negativeSchema&quot;: {
+    &quot;refused&quot;: true,
+    &quot;diagnostic&quot;: &quot;- Preparing Convex functions...\n\n\u2716 Schema validation failed.\nDocument with ID \&quot;k9700cevdbm0zjzzhxrehb25gx8f1fhm\&quot; in table \&quot;records\&quot; does not match the schema: Object contains extra field `migrationRevision` that is not in the validator.\n\nObject: {createdBy: \&quot;kh7dwf3kz23vtbwn4a5mhfr4v98f0jb8\&quot;, migrationRevision: 1.0, objectId: \&quot;k170qt05smaakm1detk657q8px8f0r5e\&quot;, orgId: \&quot;kn75kq7epmxxf17vrxez4qxawh8f15rb\&quot;, title: \&quot;Migration fixture 0134\&quot;, updatedAt: 0.0, values: {jh7exhfh2241k0zmj1x92c0ebh8f08sc: \&quot;Migration fixture 0134\&quot;}}\nValidator: v.object({b0: v.optional(v.boolean()), b1: v.optional(v.boolean()), b2: v.optional(v.boolean()), b3: v.optional(v.boolean()), createdBy: v.union(v.id(\&quot;users\&quot;), v.id(\&quot;agents\&quot;)), d0: v.optional(v.float64()), d1: v.optional(v.float64()), d2: v.optional(v.float64()), d3: v.optional(v.float64()), n0: v.optional(v.float64()), n1: v.optional(v.float64()), n2: v.optional(v.float64()), n3: v.optional(v.float64()), n4: v.optional(v.float64()), n5: v.optional(v.float64()), n6: v.optional(v.float64()), n7: v.optional(v.float64()), objectId: v.id(\&quot;objects\&quot;), orgId: v.id(\&quot;orgs\&quot;), ref: v.optional(v.string()), s0: v.optional(v.string()), s1: v.optional(v.string()), s2: v.optional(v.string()), s3: v.optional(v.string()), s4: v.optional(v.string()), s5: v.optional(v.string()), s6: v.optional(v.string()), s7: v.optional(v.string()), title: v.string(), updatedAt: v.float64(), values: v.record(v.string(), v.any())})\n&quot;
+  },
+  &quot;clientObservations&quot;: [
+    {
+      &quot;phase&quot;: &quot;baseline&quot;,
+      &quot;iteration&quot;: 0,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;interrupted-migration&quot;,
+      &quot;iteration&quot;: 1,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;migrate&quot;,
+      &quot;iteration&quot;: 2,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;migrate&quot;,
+      &quot;iteration&quot;: 3,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;rollback&quot;,
+      &quot;iteration&quot;: 4,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;rollback&quot;,
+      &quot;iteration&quot;: 5,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 6,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 467,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 7,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 610,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 8,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 764,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 9,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 935,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 10,
+      &quot;migrationState&quot;: &quot;success&quot;,
+      &quot;processedBeforeWrite&quot;: 1103,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    }
+  ],
+  &quot;fixtureSourceHashes&quot;: {
+    &quot;fixture.ts&quot;: &quot;f7abdd3ecc52addc009a302ea8228913cc0b09ea72ce85d9bd6c4627ca0bcea1&quot;,
+    &quot;backfill.ts&quot;: &quot;269d37b9d6ec10067646457c8c8fd03c0406ba0ae8c4f8c15de20651f5e6725e&quot;,
+    &quot;rehearse.mjs&quot;: &quot;185907b1028cda97b2f945a29674e2233c981e3b0b2911b88f3362c8e15e85f4&quot;,
+    &quot;rollback.mjs&quot;: &quot;4e7cc40cfa06d036ab6c8370c9c7cac646dd7b836871de68837bad21f48ce304&quot;
+  },
+  &quot;rootDeploymentConfigUnchanged&quot;: true
+}</pre></details><details><summary>Independent saved-data/source audit JSON</summary><pre>{
+  &quot;verdict&quot;: &quot;PASS bounded I2 migration SERVICE slice&quot;,
+  &quot;reviewer&quot;: &quot;h0_builder (independent of i2_release author)&quot;,
+  &quot;baselineRecords&quot;: 1100,
+  &quot;partialMarked&quot;: 400,
+  &quot;finalRecords&quot;: 1103,
+  &quot;canonicalSnapshotsRecomputed&quot;: true,
+  &quot;originalRecordsComparedIndividually&quot;: 1100,
+  &quot;agentKeyHashAndIdentityRetained&quot;: true,
+  &quot;exactExpandedSourceAfterFinalRecovery&quot;: true,
+  &quot;authorManifestMatches&quot;: true,
+  &quot;retainedClientInProgressObservations&quot;: [
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 6,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 467,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 7,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 610,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 8,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 764,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    },
+    {
+      &quot;phase&quot;: &quot;resumed-migration&quot;,
+      &quot;iteration&quot;: 9,
+      &quot;migrationState&quot;: &quot;inProgress&quot;,
+      &quot;processedBeforeWrite&quot;: 935,
+      &quot;rest&quot;: &quot;read/write pass&quot;,
+      &quot;mcp&quot;: &quot;read/write pass&quot;
+    }
+  ],
+  &quot;sourceHashes&quot;: {
+    &quot;fixture.ts&quot;: &quot;f7abdd3ecc52addc009a302ea8228913cc0b09ea72ce85d9bd6c4627ca0bcea1&quot;,
+    &quot;backfill.ts&quot;: &quot;269d37b9d6ec10067646457c8c8fd03c0406ba0ae8c4f8c15de20651f5e6725e&quot;,
+    &quot;rehearse.mjs&quot;: &quot;185907b1028cda97b2f945a29674e2233c981e3b0b2911b88f3362c8e15e85f4&quot;,
+    &quot;rollback.mjs&quot;: &quot;4e7cc40cfa06d036ab6c8370c9c7cac646dd7b836871de68837bad21f48ce304&quot;
+  },
+  &quot;baselineTree&quot;: &quot;8842b9ee8c935ff2e78031da6e4a6b45950f20a401dad85a99eb24b4fff0b0f0&quot;,
+  &quot;expandedTree&quot;: &quot;6840d73c8db02095a1150f910be232bd7b325cef689550e366458b47ba3a78c8&quot;,
+  &quot;migrateTree&quot;: &quot;919a8e7937c7a5fce700d888832e8e7371d690cf502b175906bc9c88ffa9906b&quot;,
+  &quot;consumerRevision&quot;: [
+    0,
+    1,
+    0,
+    0
+  ],
+  &quot;limitations&quot;: [
+    &quot;Managed backup snapshot restore is not tested&quot;,
+    &quot;Actual old browser and production identities are not tested&quot;,
+    &quot;No production deployment or release authorization&quot;
+  ]
+}</pre></details><p>Raw synthetic snapshots and saved code trees: <code>/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-XVnAhL</code>. Public evidence: independent.json, independent-audit.json and independent-run.log beside this report. Report structure checked; rendered visual layout has not been independently inspected.</p><p><strong>Verdict: APPROVE this bounded local migration/recovery compatibility slice.</strong> Do not mark full I2, managed snapshots, actual old browsers, production identity continuity or production rollout complete on this evidence.</p></body></html>
