@@ -116,7 +116,7 @@
         "proofs/payments/**"
       ],
       "environment": "Stripe test sandboxacct_1UJHeKJjT84hNemU, two synthetic merchants; optional loopback3490/3491",
-      "scopeNote": "Root and fresh independent route/accounting checks pass, including before/after unexplained balance, observed snapshot changes, valid partial/credit capacity, refused unsupported routes and repeated pulls. D/E enabled test merchants. Actual manual Stripe lifecycle/webhooks not run; recurring required BLOCKED. Full P4/I1/I7 remains open.",
+      "scopeNote": "Root and fresh independent supported-route/accounting checks pass on46files. First actual manual Stripe run created2synthetic customers and stopped at invoicecreate400 missingemail. Root and independent exactcustomer GETs confirm zero invoices/PaymentIntents/charges both. Reviewed continuation pending; no financial effects accepted. Recurring required BLOCKED, fullP4/I1/I7 open.",
       "evidence": "evidence/2026-09-24-unified-build/payments-root/r3/report.html",
       "independentEvidence": "evidence/2026-09-24-unified-build/payments-iv/r3/review.html",
       "frozenManifest": "6a44ac5016ae2146491aa322055bf7eeddad09e6ee2abcb2148d0594135c4529"
