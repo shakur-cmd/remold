@@ -1,0 +1,47 @@
+✔ a stripped plain-text reply matches verified account, recipient and conversation without body quoting (0.4185ms)
+✔ a foreign mailbox, unknown address or wrong conversation never invents a match (0.080333ms)
+✔ ambiguous ownership between personal and marketing sequences fails closed (0.057333ms)
+✖ unreleased test run and absent calendar authorization cannot be bypassed by a token or recipient (0.444208ms)
+✔ forged or account-switched notifications cannot invoke the authenticated pull (0.413208ms)
+✔ interrupted traversal never advances cursor; replay deduplicates; expired history does not trigger broad import (0.238917ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 53.186458
+
+✖ failing tests:
+
+test at proofs/communications/adapter.test.mjs:15:1
+✖ unreleased test run and absent calendar authorization cannot be bypassed by a token or recipient (0.444208ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /TEST_NOT_RELEASED/. Input:
+  
+  'Error: LIVE_SEND_ALLOWANCE_ZERO'
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/adapter.test.mjs:16:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: LIVE_SEND_ALLOWANCE_ZERO
+        at authorizeLiveSend (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/adapter.mjs:20:45)
+        at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/adapter.test.mjs:16:21
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/adapter.test.mjs:16:10)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1325:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+        at Test.postRun (node:internal/test_runner/test:1465:19)
+        at Test.run (node:internal/test_runner/test:1390:12),
+    expected: /TEST_NOT_RELEASED/,
+    operator: 'throws',
+    diff: 'simple'
+  }

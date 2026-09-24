@@ -1,0 +1,30 @@
+$ node --test *.test.mjs
+✔ a stripped plain-text reply matches verified account, recipient and conversation without body quoting (0.530292ms)
+✔ a foreign mailbox, unknown address or wrong conversation never invents a match (0.207083ms)
+✔ ambiguous ownership between personal and marketing sequences fails closed (0.095167ms)
+✔ unreleased test run and absent calendar authorization cannot be bypassed by a token or recipient (0.46425ms)
+✔ forged or account-switched notifications cannot invoke the authenticated pull (0.329125ms)
+✔ interrupted traversal never advances cursor; replay deduplicates; expired history does not trigger broad import (0.313292ms)
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.324417ms)
+✔ concurrent callback replay only exchanges one code (0.238917ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.708458ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (1.404291ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.246083ms)
+✔ nonce and email verification are checked independently of a correct email address (0.269958ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.239542ms)
+✔ mailbox A refuses a partial grant missing send permission (0.195541ms)
+✔ the exact planned plain-text reply is transport-valid before any provider connection (51.968916ms)
+✔ unplanned reply subject, extra header, foreign recipient and wrong reference fail offline (127.021541ms)
+✔ five uncertain attempts consume a mailbox allowance across restart (65.080833ms)
+✔ same attempt never dispatches again, and cannot change its recipient or content (8.542ms)
+✔ concurrent independent ledgers cannot reserve more than five (26.747042ms)
+✔ rolling window expires reservations; a backwards clock refuses new sends (28.639375ms)
+✔ missing or corrupt durable state fails closed (4.801333ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 233.592208

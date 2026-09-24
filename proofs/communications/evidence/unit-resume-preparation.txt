@@ -1,0 +1,34 @@
+$ node --test *.test.mjs
+✔ a stripped plain-text reply matches verified account, recipient and conversation without body quoting (0.412667ms)
+✔ a foreign mailbox, unknown address or wrong conversation never invents a match (0.080375ms)
+✔ ambiguous ownership between personal and marketing sequences fails closed (0.061333ms)
+✔ unreleased test run and absent calendar authorization cannot be bypassed by a token or recipient (0.281542ms)
+✔ forged or account-switched notifications cannot invoke the authenticated pull (0.384042ms)
+✔ interrupted traversal never advances cursor; replay deduplicates; expired history does not trigger broad import (0.894916ms)
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.615042ms)
+✔ concurrent callback replay only exchanges one code (0.514417ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.4125ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (1.222041ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.235708ms)
+✔ nonce and email verification are checked independently of a correct email address (0.22725ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.144167ms)
+✔ mailbox A refuses a partial grant missing send permission (0.103083ms)
+✔ profile failure retains a verified private candidate and read-only retry does not exchange again (0.15275ms)
+✔ the exact planned plain-text reply is transport-valid before any provider connection (36.503625ms)
+✔ unplanned reply subject, extra header, foreign recipient and wrong reference fail offline (127.401417ms)
+✔ resume accepts only the verified provider reference for P reply and leaves Q references unchanged (74.222ms)
+✔ provider-rewritten Message-ID becomes the reference only for the exact accepted owned message (1.049584ms)
+✔ actual reply matches corrected context; original generated reference and unrelated Q stay unmatched (0.1555ms)
+✔ five uncertain attempts consume a mailbox allowance across restart (52.5655ms)
+✔ same attempt never dispatches again, and cannot change its recipient or content (9.051583ms)
+✔ concurrent independent ledgers cannot reserve more than five (25.688583ms)
+✔ rolling window expires reservations; a backwards clock refuses new sends (27.560917ms)
+✔ missing or corrupt durable state fails closed (5.367667ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 304.291709

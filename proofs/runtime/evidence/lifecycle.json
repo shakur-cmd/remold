@@ -1,0 +1,430 @@
+{
+  "scope": "owner-local subscription CLI feasibility only",
+  "cliVersion": "0.156.1",
+  "startedAt": "2026-09-24T21:48:10.044Z",
+  "live": true,
+  "marginalDollarCost": "unknown",
+  "environmentKeys": [
+    "PATH",
+    "HOME",
+    "USER",
+    "TMPDIR"
+  ],
+  "limits": {
+    "concurrentTurns": 1,
+    "maximumTurns": 2,
+    "processWallMs": 100000,
+    "successTurnMs": 60000,
+    "interruptAfterFirstTextOrMs": 5000,
+    "interruptedCompletionMs": 10000
+  },
+  "events": [
+    {
+      "ms": 2,
+      "kind": "request",
+      "id": 1,
+      "method": "account/read"
+    },
+    {
+      "ms": 35,
+      "kind": "response",
+      "id": 1,
+      "ok": false,
+      "error": {
+        "code": -32600,
+        "message": "Not initialized"
+      }
+    },
+    {
+      "ms": 35,
+      "kind": "request",
+      "id": 2,
+      "method": "initialize"
+    },
+    {
+      "ms": 35,
+      "kind": "response",
+      "id": 2,
+      "ok": true
+    },
+    {
+      "ms": 35,
+      "kind": "request",
+      "id": 3,
+      "method": "account/read"
+    },
+    {
+      "ms": 35,
+      "kind": "notification",
+      "method": "remoteControl/status/changed"
+    },
+    {
+      "ms": 474,
+      "kind": "notification",
+      "method": "account/updated"
+    },
+    {
+      "ms": 474,
+      "kind": "response",
+      "id": 3,
+      "ok": true
+    },
+    {
+      "ms": 474,
+      "kind": "request",
+      "id": 4,
+      "method": "config/read"
+    },
+    {
+      "ms": 489,
+      "kind": "response",
+      "id": 4,
+      "ok": true
+    },
+    {
+      "ms": 489,
+      "kind": "request",
+      "id": 5,
+      "method": "thread/start"
+    },
+    {
+      "ms": 591,
+      "kind": "response",
+      "id": 5,
+      "ok": true
+    },
+    {
+      "ms": 591,
+      "kind": "request",
+      "id": 6,
+      "method": "turn/start"
+    },
+    {
+      "ms": 591,
+      "kind": "notification",
+      "method": "thread/started"
+    },
+    {
+      "ms": 596,
+      "kind": "notification",
+      "method": "warning",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0"
+    },
+    {
+      "ms": 597,
+      "kind": "notification",
+      "method": "thread/status/changed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0"
+    },
+    {
+      "ms": 597,
+      "kind": "notification",
+      "method": "turn/started",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "status": "inProgress"
+    },
+    {
+      "ms": 598,
+      "kind": "response",
+      "id": 6,
+      "ok": true
+    },
+    {
+      "ms": 1688,
+      "kind": "notification",
+      "method": "item/started",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "itemType": "userMessage"
+    },
+    {
+      "ms": 1688,
+      "kind": "notification",
+      "method": "item/completed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "itemType": "userMessage"
+    },
+    {
+      "ms": 2657,
+      "kind": "notification",
+      "method": "item/started",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "itemType": "agentMessage"
+    },
+    {
+      "ms": 2658,
+      "kind": "notification",
+      "method": "item/agentMessage/delta",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "text": "R"
+    },
+    {
+      "ms": 2658,
+      "kind": "notification",
+      "method": "item/agentMessage/delta",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "text": "UNTIME"
+    },
+    {
+      "ms": 2658,
+      "kind": "notification",
+      "method": "item/agentMessage/delta",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "text": "_OK"
+    },
+    {
+      "ms": 2761,
+      "kind": "notification",
+      "method": "item/completed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "itemType": "agentMessage"
+    },
+    {
+      "ms": 2771,
+      "kind": "notification",
+      "method": "thread/tokenUsage/updated",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "tokenUsage": {
+        "total": {
+          "totalTokens": 8030,
+          "inputTokens": 8023,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 7,
+          "reasoningOutputTokens": 0
+        },
+        "last": {
+          "totalTokens": 8030,
+          "inputTokens": 8023,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 7,
+          "reasoningOutputTokens": 0
+        },
+        "modelContextWindow": 258400
+      }
+    },
+    {
+      "ms": 2771,
+      "kind": "notification",
+      "method": "account/rateLimits/updated"
+    },
+    {
+      "ms": 2774,
+      "kind": "notification",
+      "method": "thread/status/changed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0"
+    },
+    {
+      "ms": 2774,
+      "kind": "notification",
+      "method": "turn/completed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+      "status": "completed"
+    },
+    {
+      "ms": 2775,
+      "kind": "request",
+      "id": 7,
+      "method": "turn/start"
+    },
+    {
+      "ms": 2781,
+      "kind": "response",
+      "id": 7,
+      "ok": true
+    },
+    {
+      "ms": 2782,
+      "kind": "notification",
+      "method": "thread/status/changed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0"
+    },
+    {
+      "ms": 2782,
+      "kind": "notification",
+      "method": "turn/started",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+      "status": "inProgress"
+    },
+    {
+      "ms": 2787,
+      "kind": "notification",
+      "method": "item/started",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+      "itemType": "userMessage"
+    },
+    {
+      "ms": 2787,
+      "kind": "notification",
+      "method": "item/completed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+      "itemType": "userMessage"
+    },
+    {
+      "ms": 3886,
+      "kind": "notification",
+      "method": "item/started",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+      "itemType": "reasoning"
+    },
+    {
+      "ms": 7783,
+      "kind": "request",
+      "id": 8,
+      "method": "turn/interrupt"
+    },
+    {
+      "ms": 7785,
+      "kind": "notification",
+      "method": "thread/tokenUsage/updated",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+      "tokenUsage": {
+        "total": {
+          "totalTokens": 8030,
+          "inputTokens": 8023,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 7,
+          "reasoningOutputTokens": 0
+        },
+        "last": {
+          "totalTokens": 8030,
+          "inputTokens": 8023,
+          "cachedInputTokens": 0,
+          "cacheWriteInputTokens": 0,
+          "outputTokens": 7,
+          "reasoningOutputTokens": 0
+        },
+        "modelContextWindow": 258400
+      }
+    },
+    {
+      "ms": 7785,
+      "kind": "notification",
+      "method": "account/rateLimits/updated"
+    },
+    {
+      "ms": 7786,
+      "kind": "response",
+      "id": 8,
+      "ok": true
+    },
+    {
+      "ms": 7787,
+      "kind": "notification",
+      "method": "thread/status/changed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0"
+    },
+    {
+      "ms": 7787,
+      "kind": "notification",
+      "method": "turn/completed",
+      "threadId": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+      "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+      "status": "interrupted"
+    },
+    {
+      "ms": 7809,
+      "kind": "exit",
+      "code": 0,
+      "signal": null
+    }
+  ],
+  "preHandshakeRefused": true,
+  "handshake": {
+    "userAgent": "remold_runtime_feasibility/0.156.1 (Mac OS 26.6.2; arm64) unknown (remold_runtime_feasibility; 0.1.0)",
+    "platformFamily": "unix",
+    "platformOs": "macos"
+  },
+  "account": {
+    "type": "chatgpt",
+    "planType": "prolite",
+    "requiresOpenaiAuth": true
+  },
+  "configured": {
+    "model": "gpt-6-luna",
+    "provider": null,
+    "effort": "high",
+    "serviceTier": "default"
+  },
+  "disabledMcpCount": 4,
+  "thread": {
+    "id": "01a0d563-ebb5-7200-87e5-f037faa2dcd0",
+    "ephemeral": true,
+    "model": "gpt-6-luna",
+    "provider": "openai",
+    "reasoningEffort": "high",
+    "sandbox": {
+      "type": "readOnly",
+      "networkAccess": false
+    },
+    "approvalPolicy": "never"
+  },
+  "completion": {
+    "turnId": "01a0d563-ec0e-7650-bab5-cd58cb7115c8",
+    "status": "completed",
+    "output": "RUNTIME_OK",
+    "usage": {
+      "total": {
+        "totalTokens": 8030,
+        "inputTokens": 8023,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 7,
+        "reasoningOutputTokens": 0
+      },
+      "last": {
+        "totalTokens": 8030,
+        "inputTokens": 8023,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 7,
+        "reasoningOutputTokens": 0
+      },
+      "modelContextWindow": 258400
+    }
+  },
+  "interruption": {
+    "turnId": "01a0d563-f495-7560-9602-3719104b6f9e",
+    "streamObserved": false,
+    "status": "interrupted",
+    "acknowledgementToTerminalMs": 4,
+    "usage": {
+      "total": {
+        "totalTokens": 8030,
+        "inputTokens": 8023,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 7,
+        "reasoningOutputTokens": 0
+      },
+      "last": {
+        "totalTokens": 8030,
+        "inputTokens": 8023,
+        "cachedInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 7,
+        "reasoningOutputTokens": 0
+      },
+      "modelContextWindow": 258400
+    }
+  },
+  "toolItems": 0,
+  "status": "local text lifecycle passed; full P6 remains blocked",
+  "durationMs": 7809
+}

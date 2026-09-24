@@ -1,0 +1,34 @@
+{
+  "result": "I've finished reading the proof files; one schema surface the report doesn't mention needs flagging. Here is the review.\n\n# Opus review: can a subscription runtime gate each model call?\n\n**Short answer: No. The installed 0.156.1 schema has no documented, synchronous check before each model call or continuation. There are two budget surfaces the report didn't mention. Neither is proven to be that check.**\n\n## 1. Did we miss a per-call gate?\n\n- **`ServerRequest.json` (the requests the server sends to the client):** only tool, file-change and permission approvals, user input, MCP elicitation, dynamic tool calls, ChatGPT token refresh and attestation. There is no \"may I run the next inference?\" request. The report's finding here is accurate.\n- **Missed surface 1:** `thread/goal/set` takes a `tokenBudget` (int64), and `ThreadGoalStatus` includes `budgetLimited` and `usageLimited` (`ClientRequest.json:4391-4434`).\n- **Missed surface 2:** `CodexErrorInfo` includes `sessionBudgetExceeded` (`ServerNotification.json:662`).\n- **Also available:** `account/usage/read` and `account/rateLimits/read` client requests.\n\nWhat the two budget surfaces don't tell us:\n- The schema doesn't say when the budget is checked: before each call, after each call, or at turn boundaries.\n- It doesn't say whether the budget is enforced by the provider or by the local process.\n- It doesn't bound how many tokens can run past the budget.\n\nSo they are possible token ceilings, not a permit, and they can't satisfy \"permit before every new model call and continuation.\" The report should name them and mark them \"schema-present, semantics unverified, not a C3 gate.\" Checking whether they're documented would take the docs pages only, no inference. Its current line, \"exposes \u2026 but no synchronous pre-model-call permit request,\" stays true.\n\n## 2. Evidence claims\n\nThese are consistent with `lifecycle.json`:\n- The pre-handshake call was refused.\n- The account is `chatgpt`/`prolite`.\n- The thread was ephemeral, `readOnly`, with `networkAccess:false` and `never` approvals.\n- `RUNTIME_OK` came back, 8,023 input and 7 output tokens.\n- The interrupt went to `interrupted` 4 ms after the request, with `streamObserved:false`.\n- The cumulative usage counters didn't change after the interrupt.\n- There were zero tool items, and the process exited with code 0 at 7,809 ms.\n\nTwo small corrections:\n- **\"Four milliseconds after the interruption request\":** the request went out at 7,783 ms and the terminal event came at 7,787 ms. That matches. But the second turn was in `reasoning` for about 3.9 s before the interrupt, so the unchanged counters most likely mean usage hadn't been reported yet, not that it was zero. The report already says \"no incremental interruption usage was established.\" Keep it that way and don't strengthen it.\n- **A `warning` notification arrived at 596 ms.** The report already says warning payloads weren't kept. Fine as is.\n\n## 3. Smallest honest launch mode\n\n**Owner-connected external worker (a connected/external agent), not hosted.**\n- Unmodified official CLI, on the owner's machine, under the owner's own sign-in, used only for the owner's own tenant.\n- Remold checks an execution permit immediately before it launches the process.\n- Every Remold MCP tool call is checked against current authority.\n- A local cap on turns, concurrency and wall-clock time.\n- Interrupt and kill on revoke.\n- When quota is limited, it pauses and reports. It never buys credits.\n- The product shows when the worker is unavailable, and queued tasks are kept.\n- Stated limits:\n  - A turn can make several model calls that Remold can't gate.\n  - Usage after a revoke isn't bounded.\n  - Cancelling a stream while it's actively emitting is unproven.\n  - Marginal cost is unknown.\n\nThe addendum already specifies this route (`addendum:42-48`): \"The first user-owned CLI worker is a connected/external agent proof only\u2026 launch fencing alone does not satisfy hosted C3.\"\n\n## 4. Can work continue without asking the owner again?\n\n**Yes, for connected mode.** The owner already chose existing subscriptions, and the addendum approves the user-owned worker as the first proof. Don't re-ask the subscription question. The remaining connected-mode work needs no new product decision:\n- MCP allowed and refused tool calls\n- The permit before process launch\n- Pausing on quota\n- Late-result and restart handling on this runtime\n- Independent verification\n\nEach item still needs its own evidence.\n\n## 5. Owner decision needed only to replace the hosted P6 contract\n\nThe addendum says to \"explicitly lower its mode through P6 and D0A.\" If the hosted contract is to be replaced rather than left blocked, the owner decision is:\n\n> \"For launch, Remold's agent execution is owner/customer-connected external workers only: each user runs the official CLI on their own machine with their own subscription. Remold gates process launch and every tool call, but cannot gate individual model calls inside a turn. Hosted/managed agent execution is deferred and remains blocked, not equivalent. Approve? (yes / no, keep hosted as a launch requirement)\"\n\nThis doesn't need to go out now. Connected-mode work can continue while hosted stays blocked. Ask only once hosted execution becomes the thing blocking launch (it is D0A's call). Managed hosting and continuation controls stay open either way.\n\n## 6. Not verified by me\n\n- I didn't read the live docs pages (hooks, app-server, goals). The schema alone can't prove a gate is absent from the docs or present in them.\n- I didn't run `check-evidence.mjs` or the preflight. The claims that they exit 0 are root's, not mine.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1850,
+      "outputTokens": 15,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001925,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 12,
+      "outputTokens": 3821,
+      "cacheReadInputTokens": 119205,
+      "cacheCreationInputTokens": 31699,
+      "webSearchRequests": 0,
+      "costUSD": 0.353901,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 340,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "session_id": "7bf33339-b7ee-4e58-a22f-228343fc1653"
+}

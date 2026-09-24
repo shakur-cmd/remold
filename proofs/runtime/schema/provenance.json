@@ -1,0 +1,25 @@
+{
+  "cli": "codex-cli 0.156.1",
+  "command": "codex app-server generate-json-schema --out proofs/runtime/schema",
+  "generatedAt": "2026-09-24T21:48:58.325Z",
+  "files": {
+    "ServerRequest.json": "f339be472737a0003efa25fba2e6e6c9237e621cd065b6d6995c51256e9dc1fb",
+    "ClientRequest.json": "8e5a1b6a7103fea63a53ef96d7ab1062decbd6571701542f5a969953e23a64f5",
+    "ServerNotification.json": "df70f8f8ded90d8da63c744ccfef7018223d99e918e5e0aefa0d90856a7f67cc"
+  },
+  "budgetSurfaceDocsReview": {
+    "date": "2026-09-24",
+    "sources": [
+      "https://learn.chatgpt.com/docs/app-server#manage-a-thread-goal",
+      "https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex"
+    ],
+    "surfaces": [
+      "thread/goal/set.tokenBudget",
+      "budgetLimited",
+      "usageLimited",
+      "CodexErrorInfo.sessionBudgetExceeded"
+    ],
+    "finding": "Schema-present; enforcement and overrun semantics unverified; not a synchronous C3 permit gate. No new inference.",
+    "sessionBudgetExceeded": "Not explained by fetched app-server page."
+  }
+}

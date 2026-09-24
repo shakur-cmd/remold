@@ -1,0 +1,57 @@
+✖ the exact planned plain-text reply is transport-valid before any provider connection (38.980375ms)
+✔ unplanned reply subject, extra header, foreign recipient and wrong reference fail offline (122.300791ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 204.649875
+
+✖ failing tests:
+
+test at proofs/communications/payload.test.mjs:9:1
+✖ the exact planned plain-text reply is transport-valid before any provider connection (38.980375ms)
+  AssertionError [ERR_ASSERTION]: Got unwanted exception.
+  Actual message: "Command failed: python3 -c import json,sys; from purelymail_payload import validate_send; validate_send(json.load(sys.stdin))
+  Traceback (most recent call last):
+    File "<string>", line 1, in <module>
+      import json,sys; from purelymail_payload import validate_send; validate_send(json.load(sys.stdin))
+                                                                     ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+    File "/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/purelymail_payload.py", line 12, in validate_send
+      assert message['subject'].startswith('Remold P5 test ')
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  AssertionError
+  "
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/payload.test.mjs:9:105)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: Error: Command failed: python3 -c import json,sys; from purelymail_payload import validate_send; validate_send(json.load(sys.stdin))
+    Traceback (most recent call last):
+      File "<string>", line 1, in <module>
+        import json,sys; from purelymail_payload import validate_send; validate_send(json.load(sys.stdin))
+                                                                       ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+      File "/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/purelymail_payload.py", line 12, in validate_send
+        assert message['subject'].startswith('Remold P5 test ')
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+    AssertionError
+    
+        at genericNodeError (node:internal/errors:985:15)
+        at wrappedFn (node:internal/errors:539:14)
+        at checkExecSyncError (node:child_process:925:11)
+        at execFileSync (node:child_process:961:15)
+        at validate (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/payload.test.mjs:8:35)
+        at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/payload.test.mjs:9:122
+        at getActual (node:assert:611:5)
+        at strict.doesNotThrow (node:assert:779:32)
+        at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/payload.test.mjs:9:105)
+        at Test.runInAsyncScope (node:async_hooks:227:14),
+    expected: undefined,
+    operator: 'doesNotThrow',
+    diff: 'simple'
+  }

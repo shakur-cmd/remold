@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P6: Owner subscription runtime feasibility</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Owner subscription runtime feasibility</h1>
+<div class="meta">2026-09-24 · P6 bounded feasibility · LIVE subscription calls; local CLI · Root verified no-inference route and retained evidence</div>
+<div class="decisions"><h2>Decision for the build</h2><p><strong>Keep hosted execution blocked.</strong> This proves the owner’s official CLI can complete and interrupt a text-only turn. It does not complete P6, connect Remold tools, or establish a hosted tenant boundary. No new owner sign-in is needed for this narrow route. The authorized two-turn allowance is consumed; this runner refuses an accidental repeat.</p></div>
+<div class="status"><h2>Observed and recorded</h2><ul>
+<li>Unmodified <code>codex-cli 0.156.1</code> completed the stdio handshake using existing ChatGPT-managed sign-in. The reported plan was <code>prolite</code>. Credentials were neither read nor copied.</li>
+<li>Configured model <code>gpt-6-luna</code>, reasoning <code>high</code>, service tier <code>default</code> stayed unchanged. The first turn returned exactly <code>RUNTIME_OK</code>.</li>
+<li>The second turn entered reasoning, then ended <code>interrupted</code> four milliseconds after the interruption request. No output text had arrived, so active text-stream cancellation is unproven.</li>
+<li>No tool items or server-initiated tool requests appeared. The server confirmed an ephemeral thread, read-only sandbox, network access disabled for model tools, and approval policy <code>never</code>. The process exited after 7,809 milliseconds.</li>
+</ul></div>
+<h2>Before and after</h2>
+<table><tr><th>Baseline / negative check</th><th>Observed result</th></tr>
+<tr><td>Account request before initialization</td><td>Actual server returned “Not initialized.” The same account request succeeded after initialization.</td></tr>
+<tr><td>Subscription invocation was unproven</td><td>One successful real subscribed turn, with streamed RUNTIME_OK and terminal completed event.</td></tr>
+<tr><td>Cancellation was unproven</td><td>One real interrupted terminal event before first output. Active-output cancellation and residual provider usage remain unproven.</td></tr>
+<tr><td>Evidence checker could miss a missing terminal event</td><td>Removing either completed or interrupted terminal event from captured data makes the checker fail. These are evidence-integrity checks, not additional provider tests.</td></tr></table>
+<h2>Usage and exact limits</h2>
+<p>The CLI reported <strong>8,023 input tokens and 7 output tokens</strong> for the completed turn, 8,030 total, no cached input or reasoning-output tokens reported. These are runtime telemetry, not an invoice. The interruption emitted the same cumulative and last-turn counters; no incremental interruption usage was established. <strong>Interrupted usage and subscription marginal dollar cost remain unknown.</strong></p>
+<p>The runner allows one concurrent turn, two turn starts in total, a 60-second completion wait, interruption after first text or five seconds, a ten-second interrupted-terminal wait, and a 100-second process watchdog. It kills its child process on exit. These are local execution controls, not a provider-enforced token, dollar, or internal-model-call ceiling. A turn can contain multiple model calls. The two prompts requested only synthetic text. There were no customer records, messages, deployments, or paid API keys.</p>
+<h2>Contract gap: per-continuation authorization</h2>
+<p>The generated installed <a href="schema/ServerRequest.json">server-request schema</a> exposes tool approvals, dynamic tool requests, account-token refresh and attestation, but no synchronous pre-model-call permit request. The documented <a href="https://learn.chatgpt.com/docs/hooks">hooks</a> cover tool, prompt, compaction, session and interruption events; those do not establish a gate before every internal inference. A client can control turn starts and request cancellation; neither observation establishes hosted C3. This is a documented-surface finding, not proof that no future runtime version could provide the missing mechanism.</p>
+<h2>Budget surfaces, still unverified</h2>
+<p>The installed schema includes <code>thread/goal/set.tokenBudget</code>, goal statuses <code>budgetLimited</code> and <code>usageLimited</code>, and the <code>sessionBudgetExceeded</code> error variant. These are <strong>schema-present, enforcement semantics unverified, not a C3 permit gate</strong>. <a href="https://learn.chatgpt.com/docs/app-server#manage-a-thread-goal">The official app-server page</a> documents setting and tracking a goal budget. <a href="https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex">The official Goals guide</a> describes continuation decisions at idle turn boundaries and stopping substantive work on budget exhaustion. Neither fetched page establishes a provider-enforced ceiling or bounds overrun within an active model call. The app-server page does not explain <code>sessionBudgetExceeded</code>. No new goal, budget experiment or inference was run.</p>
+<h2>What remains blocked</h2>
+<ul><li>Hosted adoption, per-model-call and continuation permits, an enforceable residual-usage bound, and cancellation of an actively emitting stream.</li>
+<li>Actual scoped Remold MCP integration with allowed and refused tool calls. This task deliberately did not retry the separately blocked I1 authorization audit.</li>
+<li>Cross-tenant filesystem/environment/network isolation, budgets across concurrent jobs, kill-switch propagation, restart recovery, late results and delegated descendants on this runtime.</li>
+<li>Customer-owned supported authentication and hosting terms. This owner-local CLI naturally retains access to the owner’s existing CLI auth store; it is not a customer execution sandbox. No home directory or subscription credential was copied into a hosted environment.</li>
+<li>Remaining behavioral independent verification, review of a concrete runtime-selection decision, and D0A approval.</li></ul>
+<h2>Reproduce without more inference</h2>
+<pre>node proofs/runtime/check-evidence.mjs
+node proofs/runtime/subscription.mjs</pre>
+<p>Both exit 0. The first checks retained evidence and exact generated-schema hashes without contacting a model. The second repeats account/handshake preflight only. The live command was <code>node proofs/runtime/subscription.mjs --run-authorized-smoke</code>, exit 0; do not rerun it under the consumed allowance. An exclusive creation guard in <code>evidence/inference-started.json</code> refuses repeats.</p>
+<p><a href="evidence/lifecycle.json">Sanitized lifecycle evidence</a> · <a href="evidence/preflight.json">Preflight</a> · <a href="subscription.mjs">Runner</a> · <a href="check-evidence.mjs">Evidence checker</a> · <a href="schema/provenance.json">Installed schema provenance</a> · <a href="manifest.json">Artifact hashes</a></p>
+<h2>Official sources and scope</h2>
+<p><a href="https://learn.chatgpt.com/docs/app-server">Official app-server documentation</a> describes initialization, account status, turns, events and interruption. <a href="https://learn.chatgpt.com/docs/auth">Official authentication documentation</a> distinguishes subscription and API-key sign-in. <a href="https://learn.chatgpt.com/docs/config-file/config-basic">Configuration basics</a> and <a href="https://learn.chatgpt.com/docs/config-file/config-advanced">advanced configuration</a> document invocation overrides. Sources were fetched on 2026-09-24; installed protocol artifacts were generated directly by version 0.156.1.</p>
+<p>The child inherited only PATH, HOME, USER and TMPDIR; no API/provider credentials or endpoint overrides were inherited. Configured MCP servers, plugins, shell, browser and agent-spawn facilities were disabled for this invocation; no global settings were changed. Evidence stores only selected account/config fields, synthetic text and protocol event metadata, not raw account email, credentials, complete config, or reasoning text. Warning payloads were not retained, so this does not claim a warning-free run.</p>
+<p>Builder: h0_builder. Root independently read the runner/checker and reran the no-inference preflight and evidence checker, both exit 0. Root did not execute a second LIVE completion. Opus 5.5 reviewed the retained code/schema/evidence and requested the budget-surface clarification above; it did not rerun the commands or browse the live docs. Full P6 remains incomplete. The earlier I1 automatic approval-review block remains in force; this distinct feasibility job did not change or recheck I1.</p>
+</body></html>

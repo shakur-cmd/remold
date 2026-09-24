@@ -1,0 +1,26 @@
+{
+  "level": "local review and test; no live sends yet",
+  "reviewer": "root",
+  "testCommand": "pnpm --dir proofs/communications test",
+  "exitCode": 0,
+  "testsPassed": 21,
+  "reviewed": [
+    "send-ledger.mjs",
+    "send-ledger.test.mjs",
+    "oauth.mjs",
+    "adapter.mjs",
+    "live-replay.mjs",
+    "purelymail-message.py",
+    "purelymail_payload.py"
+  ],
+  "planSha256": "732c26535a86b4d7e0265a81d53f7043d106d414785829d14e8f9166e41b2c8c",
+  "counts": {
+    "shakur@envoylogic.com": 1,
+    "reply@repliedfor.com": 4
+  },
+  "release": "Ready only after actual Gmail OAuth and root final source check",
+  "calendar": false,
+  "originalTwoGoogleProof": false,
+  "foundAndFixed": "SMTP reply subject rejected by original validator, before live dispatch",
+  "at": "2026-09-24T20:48:10.263092+00:00"
+}

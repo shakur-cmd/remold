@@ -69,7 +69,7 @@
     {
       "id": "P2",
       "state": "dispatched",
-      "builder": "/root/i2_release",
+      "builder": "/root/i2_release; /root/c0_verifier reliability repair",
       "independentVerifier": "separate reviewer required after source freeze",
       "costCap": 0,
       "externalAllowance": "Source/container downloads and isolated synthetic sink only; no paid services or real sends",
@@ -79,7 +79,8 @@
       "allowedPaths": [
         "proofs/marketing/**"
       ],
-      "environment": "isolated source/container proofs; no live mail"
+      "environment": "isolated source/container proofs; no live mail",
+      "scopeNote": "Original seven synthetic Mautic groups independently repeated; late approval, swallowed sink failure and lost-receipt reconciliation reds captured. Reliability repair under verification. Full P2 open."
     },
     {
       "id": "P3",
@@ -118,28 +119,34 @@
       "id": "P5",
       "state": "dispatched",
       "builder": "/root/c0_verifier",
-      "independentVerifier": "separate reviewer required after source freeze",
+      "independentVerifier": "/root/h0_builder, bounded code/offline/evidence review and exact calendar GET",
       "costCap": 0,
-      "externalAllowance": "Authorized mailbox OAuth and Purelymail counterpart; reciprocal sends only between named addresses, at most five/mailbox/day with persistent quota. Calendar unspecified; no historical import.",
+      "externalAllowance": "Only reciprocal sends between shakur@envoylogic.com and reply@repliedfor.com, five/from mailbox/day. One labeled no-guest primary Envoylogic calendar create/reschedule/delete. Allowance consumed by retained live proof, do not replay sends/calendar writes.",
       "depends": [
         "H0"
       ],
       "allowedPaths": [
         "proofs/communications/**"
       ],
-      "environment": "isolated loopback3520/3521, OAuth callback3522, Google staging app only"
+      "environment": "isolated loopback3520/3521, OAuth callback3522, Google staging app only",
+      "scopeNote": "LIVE bounded proof PASS: A1/B4 accepted and observed; reply suppression; one event created/rescheduled/deleted. Fresh independent 29 offline checks and cancelled exact-ID witness. Whole P5 remains open: second Google mailbox, CRM integration, restart/watch/history and two-browser proof.",
+      "evidence": "proofs/communications/handover.html",
+      "independentEvidence": "evidence/2026-09-24-unified-build/communications-iv/report.html",
+      "frozenManifest": "bdca8e23ecf927ed4e183ef0c2ae379f63009c99e4839c8a8ab9cc25dac9e069"
     },
     {
       "id": "P6",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "/root/h0_builder",
+      "independentVerifier": "root no-inference replay/evidence review; Opus 5.5 desk review only",
       "costCap": 0,
-      "externalAllowance": "none",
+      "externalAllowance": "Owner-local official subscription CLI feasibility only; no API billing. Two bounded turns consumed; no repeated inference under original allowance.",
       "depends": [
         "H0"
       ],
-      "scopeNote": "First owner route: official subscription CLI connected/external worker. Managed hosted model execution remains unproven; requires every-call and continuation fencing/stream cancellation or explicit mode decision. No API funding or fallback authorized."
+      "scopeNote": "Owner-local ChatGPT subscription completion and pre-output interruption recorded. Root repeated no-inference preflight/checker. No actual Remold MCP runtime integration, hosted adoption, per-call permit or active-stream/residual usage bound; full P6 open.",
+      "evidence": "proofs/runtime/report.html",
+      "frozenManifest": "c53f4bfd778d850e171b1e803fe33dc20e2cb7ad3ce6d2b71833782598473e1d"
     },
     {
       "id": "D0A",
@@ -201,7 +208,7 @@
       "id": "I1",
       "state": "dispatched",
       "builder": "/root/h0_builder",
-      "independentVerifier": "/root/c0_verifier scheduled after frozen proof",
+      "independentVerifier": "Blocked: automatic approval review rejected authorization audit; not retried",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
@@ -216,7 +223,7 @@
         "src/** only necessary identity/authority consumers coordinated with root"
       ],
       "environment": "isolated anonymous local Convex3480/3481, synthetic migration fixtures only",
-      "scopeNote": "Full required job; account/live policy gates remain open. Measurement addendum applies to later product integration."
+      "scopeNote": "Builder WIP retained uncommitted. Automatic approval review rejected independent authorization testing as potentially enabling cybersecurity abuse; user notified, no certification and no dependent completion claim."
     },
     {
       "id": "I2",

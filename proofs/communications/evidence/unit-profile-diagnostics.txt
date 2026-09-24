@@ -1,0 +1,31 @@
+$ node --test *.test.mjs
+✔ a stripped plain-text reply matches verified account, recipient and conversation without body quoting (1.90775ms)
+✔ a foreign mailbox, unknown address or wrong conversation never invents a match (0.092042ms)
+✔ ambiguous ownership between personal and marketing sequences fails closed (0.064792ms)
+✔ unreleased test run and absent calendar authorization cannot be bypassed by a token or recipient (0.383375ms)
+✔ forged or account-switched notifications cannot invoke the authenticated pull (0.435792ms)
+✔ interrupted traversal never advances cursor; replay deduplicates; expired history does not trigger broad import (0.169583ms)
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.479083ms)
+✔ concurrent callback replay only exchanges one code (0.263542ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.355708ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (3.243917ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (1.125042ms)
+✔ nonce and email verification are checked independently of a correct email address (0.30075ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.162208ms)
+✔ mailbox A refuses a partial grant missing send permission (0.121417ms)
+✔ profile failure retains a verified private candidate and read-only retry does not exchange again (0.170667ms)
+✔ the exact planned plain-text reply is transport-valid before any provider connection (33.987625ms)
+✔ unplanned reply subject, extra header, foreign recipient and wrong reference fail offline (163.888708ms)
+✔ five uncertain attempts consume a mailbox allowance across restart (61.867125ms)
+✔ same attempt never dispatches again, and cannot change its recipient or content (11.917416ms)
+✔ concurrent independent ledgers cannot reserve more than five (30.314625ms)
+✔ rolling window expires reservations; a backwards clock refuses new sends (33.461834ms)
+✔ missing or corrupt durable state fails closed (7.743458ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 257.150917

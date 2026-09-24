@@ -1,0 +1,17 @@
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.192042ms)
+✔ concurrent callback replay only exchanges one code (0.183417ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.246541ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (0.799625ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.203291ms)
+✔ nonce and email verification are checked independently of a correct email address (0.196875ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.120208ms)
+✔ mailbox A refuses a partial grant missing send permission (0.088125ms)
+✔ profile failure retains a verified private candidate and read-only retry does not exchange again (0.147708ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 48.05925

@@ -1,0 +1,53 @@
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.601292ms)
+✔ concurrent callback replay only exchanges one code (0.298583ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.292792ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (1.111333ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.219291ms)
+✔ nonce and email verification are checked independently of a correct email address (0.191583ms)
+✖ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (2.3095ms)
+✖ mailbox A refuses a partial grant missing send permission (0.1835ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 50.898542
+
+✖ failing tests:
+
+test at proofs/communications/oauth.test.mjs:47:1
+✖ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (2.3095ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(u.searchParams.get('scope').includes('gmail.send'))
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/oauth.test.mjs:50:69)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at proofs/communications/oauth.test.mjs:53:1
+✖ mailbox A refuses a partial grant missing send permission (0.1835ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/oauth.test.mjs:53:257)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /MAIL_SCOPE_MISSING/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

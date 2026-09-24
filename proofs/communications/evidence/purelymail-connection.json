@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-24T20:37:20.709526+00:00",
+  "level": "LIVE counterpart connectivity only",
+  "mailbox": "reply@repliedfor.com",
+  "actualMailSent": 0,
+  "messageBodiesFetched": 0,
+  "calendarCalls": 0,
+  "twoGoogleMailboxesProven": false,
+  "credentialValuesRecorded": false,
+  "sourceSha256": "17b75df3acbfe301482779eb69c1a9d8daf39bbbd2a816fbb76dba57defb01a4",
+  "primarySource": "https://support.purelymail.com/support/solutions/articles/159000430778-server-settings-imap-smtp-and-pop3",
+  "imap": {
+    "authenticated": true,
+    "tls": "TLSv1.3",
+    "certificateVerified": true,
+    "readOnly": true,
+    "baseline": {
+      "uidvalidity": 1917479811,
+      "uidnext": 28
+    },
+    "commands": [
+      "CAPABILITY",
+      "LOGIN",
+      "EXAMINE",
+      "LOGOUT"
+    ]
+  },
+  "smtp": {
+    "authenticated": true,
+    "tls": "TLSv1.3",
+    "certificateVerified": true,
+    "authCode": 235,
+    "commands": [
+      "EHLO",
+      "AUTH",
+      "QUIT"
+    ],
+    "mailCommands": 0
+  },
+  "status": "PASS"
+}

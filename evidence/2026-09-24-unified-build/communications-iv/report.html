@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P5 independent bounded verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>P5 independent bounded verification</h1><div class="meta">2026-09-24 · h0_builder, independent of communications author c0_verifier · Root operated the historical LIVE fixtures</div>
+<div class="decisions"><h2>Verdict</h2><p><strong>APPROVE the bounded evidence and exact-event cleanup.</strong> All 29 offline tests passed. A fresh independent GET of the exact authorized test event returned HTTP200 with its cancelled tombstone. The stored mail ledger and receipts are consistent with A1/B4. This is not a second LIVE mail-delivery test, full P5 completion or production adoption.</p></div>
+<div class="status"><h2>What I independently checked</h2><ul><li>Read the handover, reviewed mail/Calendar drivers, durable send ledger, payload/reference checks, and exact-event reader. Recomputed all 30 frozen file hashes before and after.</li><li>Ran <code>pnpm --dir proofs/communications test</code>: 29 pass, zero failures, exit 0. Tests use local fixtures; no live runner was invoked.</li><li>Read existing ledger/attempt records without printing credentials or message bodies. Verified five unique reservations, five accepted outcomes, matching planned content hashes, reciprocal addresses, A1/B4 totals and preserved start markers.</li><li>Ran a scoped copy of the GET-only calendar reader. The copy names this reviewer and writes separate evidence; the original author’s read witness is unchanged.</li></ul></div>
+<h2>Before and after</h2><table><tr><th>Before</th><th>Fresh check</th></tr>
+<tr><td>Root had run 29 offline tests.</td><td>I independently reran all 29 on the same code; every test passed.</td></tr>
+<tr><td>Root’s one-event lifecycle and author’s read witness reported deletion.</td><td>Independent GET at 2026-09-24T22:04:31.750Z returned the exact event <code>remold62659d16b91b4059834ee280e01edde8</code> with cancelled status. Zero Calendar/mail writes.</td></tr>
+<tr><td>Stored mail evidence reported five messages and P reply cutoff.</td><td>Five unique ledger attempts match the approved plan and five receipt/observation entries. P reply thread matches P1; Q is distinct. Both later P claims were recorded refused. No independent new delivery or mailbox-history read was performed.</td></tr>
+<tr><td>Manifest said calendarCalls 0 beside completed lifecycle evidence.</td><td>Root changed only that metadata to 6 and clarified its scope. My integrity check initially rejected the changed manifest; I verified the preserved original and the exact two-field correction, then accepted the successor. No executable source changed or runtime was repeated.</td></tr></table>
+<h2>Mail evidence limits</h2><p>The five retained receipt names are P1, Q1, reply-P, Q2 and Q3. The stored Q1→Q2 accepted interval is 573631ms and Q2→Q3 is 120516ms, both above two minutes. Resume observation lasted 540003 ms. Gmail changed P1’s supplied Message-ID; the retained Gmail metadata and exact IMAP receipt agree on the actual provider Message-ID. The resume plan used that verified reference and only three previously unsent B→A messages.</p>
+<p>These records and driver checks plausibly substantiate root’s bounded LIVE result. I did not resend messages, refetch mailbox receipts or independently observe delivery in real time. The first failed run and resumed proof do not establish recovery of the original engine workflow: the unsent effects used a fresh H0 fixture. Unknown attempts consume the local allowance, and crashed ledger locks need explicit inspection.</p>
+<h2>Calendar evidence limits</h2><p>The retained attempt ledger contains one create intent and six lifecycle records for the same event. The historical driver made six Calendar API calls: create, read, patch, read, delete, read. Its result records one create/reschedule/delete, no guests and sendUpdates none. My separate exact-ID GET confirms the final cancelled state; it does not independently reproduce creation or rescheduling. No event list or broad calendar history was fetched.</p>
+<h2>Exact revision</h2><p>Original manifest raw SHA256 <code>e4ac4503a0dca6be3d11f506b8d0cccf89ddbc3b182e85ec2d565afb628dea00</code> is retained by root. Corrected final manifest raw SHA256 <code>d245915fed6bcc2420d29f7c4329b0bafb08835432d9e52106180c974065d887</code>. All 30 file hashes are identical. Mail plans, send ledger, calendar attempt ledger, start markers and original read witness remained byte-identical during this review.</p>
+<h2>Whole P5 remains open</h2><p>The counterpart is Purelymail, so the two-Google-mailbox and same-source/two-contact rows are unmet. Product membership/authority integration, both-browser timelines, durable ingestion/history/cursor recovery, actual reconnect/revocation, verified provider watch notifications, unsubscribe path and full UI remain open. Calendar is an owner-driven fixture, not a product adapter or invented H0 capability. Optional Microsoft is unproved. No I1 audit was resumed.</p>
+<h2>Evidence</h2><p><a href="offline.log">29-test run</a> · <a href="result.json">Independent result</a> · <a href="check.log">Consistency check output</a> · <a href="check.mjs">Read-only checker</a> · <a href="calendar-get.json">Independent exact-event witness</a> · <a href="read-copy-provenance.json">Reader-copy provenance</a> · <a href="before.json">Before hashes</a> · <a href="manifest.json">Evidence hashes</a></p><p>Commands: <code>pnpm --dir proofs/communications test</code>; <code>node evidence/2026-09-24-unified-build/communications-iv/calendar-get.mjs</code>; <code>node evidence/2026-09-24-unified-build/communications-iv/check.mjs</code>. All exited0. No mail/Calendar write command, live replay, or broad import was executed.</p></body></html>
