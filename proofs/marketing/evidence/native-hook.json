@@ -1,0 +1,97 @@
+{
+  "level": "SERVICE, native Mautic + durable Doctrine queue + null transport; no mail delivery",
+  "nativeEvents": [
+    {
+      "id": 5,
+      "type": "email.send",
+      "parent": null
+    },
+    {
+      "id": 6,
+      "type": "email.open",
+      "parent": {
+        "id": 5,
+        "name": "Native first send",
+        "description": null,
+        "type": "email.send",
+        "eventType": "action",
+        "channel": "email",
+        "channelId": "3",
+        "order": 1,
+        "properties": {
+          "email": 3,
+          "email_type": "transactional",
+          "attempts": 3
+        },
+        "triggerDate": null,
+        "triggerInterval": 0,
+        "triggerIntervalUnit": null,
+        "triggerHour": null,
+        "triggerRestrictedStartHour": null,
+        "triggerRestrictedStopHour": null,
+        "triggerRestrictedDaysOfWeek": [],
+        "triggerMode": "immediate",
+        "decisionPath": null,
+        "parent": null,
+        "children": []
+      }
+    }
+  ],
+  "records": [
+    {
+      "kind": "native-log",
+      "instance": "synthetic-a",
+      "event": 5,
+      "lead": 3,
+      "rotation": 1,
+      "log": 3,
+      "intent": "696de6163b542d1221da259e84b6d3407a164b789e002c058b61cf48b1122d7b"
+    },
+    {
+      "kind": "message-stamped",
+      "instance": "synthetic-a",
+      "event": 5,
+      "lead": 3,
+      "rotation": 1,
+      "log": 3,
+      "intent": "696de6163b542d1221da259e84b6d3407a164b789e002c058b61cf48b1122d7b"
+    },
+    {
+      "kind": "queue-observed",
+      "intent": "696de6163b542d1221da259e84b6d3407a164b789e002c058b61cf48b1122d7b",
+      "recipients": 1
+    },
+    {
+      "kind": "transport-observed",
+      "intent": "696de6163b542d1221da259e84b6d3407a164b789e002c058b61cf48b1122d7b",
+      "recipients": 1
+    }
+  ],
+  "apiResult": {
+    "success": true
+  },
+  "apiRecords": [
+    {
+      "kind": "queue-observed",
+      "intent": null,
+      "recipients": 1
+    },
+    {
+      "kind": "transport-observed",
+      "intent": null,
+      "recipients": 1
+    }
+  ],
+  "checks": {
+    "persistedNativeLog": true,
+    "sameIntentAfterQueueDeserialization": true,
+    "oneRecipient": true,
+    "nativeOpenParentRetained": true
+  },
+  "limitations": [
+    "No final H0 permit guard yet",
+    "Null transport discards messages; no sink or real mailbox delivered",
+    "Re-entry rotation and native open tracking branch execution not yet tested",
+    "Frequency queue, API/test/broadcast refusal remain open"
+  ]
+}

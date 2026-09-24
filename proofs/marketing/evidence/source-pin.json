@@ -1,0 +1,72 @@
+{
+  "level": "SOURCE inspection only; no runtime selection proof",
+  "capturedAt": "2026-09-24T20:56:08.089355+00:00",
+  "candidate": {
+    "repository": "https://github.com/mautic/mautic",
+    "tag": "7.2.1",
+    "commit": "8cbb7ef874d52a411ae5a884f979acf6cc320181",
+    "license": "GPL-3.0-or-later per LICENSE.txt grant; composer legacy identifier GPL-3.0"
+  },
+  "fileSha256": {
+    "LICENSE.txt": "7f2d9f57ab32b85d31936b9fb6cdfd3fedbfa5cc099558a5bbd0feb65d76b5af",
+    "composer.json": "69480afa22949daeef94fcd2ca50861fedd6a49533ad23b5f72d49a2a52ab28e",
+    "composer.lock": "5a4b1b8cc8c6cef8874cfb6673c2fa59efff793d80289aafbddaa418908efba8",
+    "app/config/config.php": "55ca38d3a2ea50e5edb040eb3019ceb6eea0b2d72c48c3f97065b5caf1b4108d",
+    "app/bundles/EmailBundle/Helper/MailHelper.php": "7997906eadba5ab23bc76bf3006c7cbffedd737ce71c43091f624428333b8b70",
+    "app/bundles/EmailBundle/Mailer/Message/MauticMessage.php": "6f24c4b4fd0d2c449e6a9dbd53002c6290ba7e8c7a36c4a4af647695d74fa460",
+    "app/bundles/EmailBundle/EventListener/MessageQueueSubscriber.php": "55fb6670580d4a01426613f2dc4eac383367dfa9cbc843609faea073bd026afe",
+    "app/bundles/EmailBundle/EventListener/CampaignSubscriber.php": "c72a3535c919828212d8f18cc7b2ad4722a4bf26b364bde842257c5815882b3b",
+    "app/bundles/EmailBundle/Model/SendEmailToContact.php": "8d1cc423da88dd387cda09ac13ebcf157c951c8f549f816b56c3c0c043e04c4b",
+    "app/bundles/CampaignBundle/Controller/Api/CampaignApiController.php": "ed82457d775215c8c9f3a1a55b39eea68d896acb1bb72b9a0e440e22d1fe5636",
+    "app/bundles/CampaignBundle/Tests/Controller/Api/CampaignApiControllerFunctionalTest.php": "cff61e1af3b16c42f6c88ff5f4777c3b1693dcf6dcda8b25b44d3b2a1dcd7efb",
+    "app/bundles/FormBundle/Controller/Api/FormApiController.php": "fcd8d8b68b4bf53094a96db13fc33937dd36f48a4d56ff29f3c4f36da30a7f6a",
+    "app/bundles/FormBundle/Controller/Api/SubmissionApiController.php": "733404fd8fdde5c4f5044c9d4379f03080609a163cd6165679cca174d6184f1f",
+    "app/bundles/PageBundle/Controller/Api/PageApiController.php": "70c1cc2e8f184d01e7d04fb2fb27c04036e6d89bcddf45e485ab3c242a2779fd",
+    "app/bundles/EmailBundle/Controller/Api/EmailApiController.php": "ac1dbf32f2667a7e4b7da3f78ae245b8e764979602c86d8e20a9a060a118a234",
+    "app/bundles/CampaignBundle/Event/PendingEvent.php": "3991898792f8f0ee9506b7039c2353e3b0d169328e095380d883e0e8537b9213",
+    "app/bundles/CampaignBundle/Entity/LeadEventLog.php": "7f7ae1e77cab1111ea3a75999f5bcc976baa5db033533d67cf49c1fd5afca8ba",
+    "app/bundles/CampaignBundle/Event/CampaignBuilderEvent.php": "0713b278b116572bc022c377ef0c23b8e9bf4ceb9aa6bada57cdea946d22388b",
+    "app/bundles/CampaignBundle/Executioner/Dispatcher/ActionDispatcher.php": "c484d8bd2cddb65d8c5e5c1187103d37417ea857eaa9f670e6285f8cc50ec713"
+  },
+  "lockedPackages": {
+    "symfony/framework-bundle": {
+      "version": "v7.4.14",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/framework-bundle.git",
+        "reference": "4d11fd50d0a3d2c43b400154ad7ec35b84ea3e5b"
+      }
+    },
+    "symfony/mailer": {
+      "version": "v7.4.12",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/mailer.git",
+        "reference": "5cefb712a25f320579615ba9e1942abaeade7dff"
+      }
+    },
+    "symfony/messenger": {
+      "version": "v7.4.12",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/messenger.git",
+        "reference": "906387986caecc10b2ad2e85f715d834e5133a04"
+      }
+    }
+  },
+  "dockerRecipe": {
+    "repository": "https://github.com/mautic/docker-mautic",
+    "commit": "2707c46b950d6e0f861680a5f42bcc7bbb8572aa",
+    "image": "mautic/mautic:7.2.1-apache",
+    "linuxArm64Manifest": "sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+    "runtimeSourceNotYetVerified": true
+  },
+  "runtime": {
+    "started": false,
+    "realEmailsSent": 0,
+    "providerPosts": 0,
+    "context": "colima-remold-proof",
+    "existingPaperclipUntouched": true
+  },
+  "openArchitecture": "Stable native campaign occurrence identity across frequency queue retry requires bounded plugin investigation; transport hook alone insufficient"
+}

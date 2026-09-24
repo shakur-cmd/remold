@@ -1,0 +1,95 @@
+{
+  "level": "SERVICE Mautic Doctrine workers, H0, SQLite hash-reported synthetic sink; no MIME or external mail proof",
+  "results": [
+    {
+      "scenario": "late-approval",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "sealed",
+        "deliveries": 0,
+        "transportAccepted": 0
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "sink-refused",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "consumed",
+        "deliveries": 0,
+        "transportAccepted": 0
+      },
+      "after": {
+        "state": "consumed",
+        "deliveries": 0,
+        "operation": "outcomeUnknown",
+        "h0Receipts": 0,
+        "transportAccepted": 0
+      },
+      "workersSimultaneous": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "sink-busy",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 1
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "lost-response",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 1
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "status": "PASS"
+    },
+    {
+      "scenario": "concurrent-workers",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 1
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 2,
+      "status": "PASS"
+    }
+  ]
+}

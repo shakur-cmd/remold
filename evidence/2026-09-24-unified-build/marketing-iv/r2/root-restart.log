@@ -1,0 +1,43 @@
+{
+  "scope": "Synthetic lost-response recovery across bridge restart only",
+  "startedAt": "2026-09-24T22:35:54.820Z",
+  "native": {
+    "contact": 71,
+    "campaign": 71,
+    "log": 89,
+    "intent": "38496d5231d14d17b041107b41e890bac41962ee2c3f0f61964523381e811734"
+  },
+  "beforeRestart": {
+    "bridgeState": "delivered",
+    "deliveries": 1,
+    "operationState": "dispatching",
+    "h0Receipts": 0,
+    "transportAccepted": 0,
+    "transportFailures": 1
+  },
+  "afterRestartBeforeRetry": {
+    "bridgeState": "delivered",
+    "deliveries": 1,
+    "operationState": "outcomeUnknown",
+    "h0Receipts": 0,
+    "transportAccepted": 0,
+    "transportFailures": 1
+  },
+  "afterRecovery": {
+    "bridgeState": "delivered",
+    "deliveries": 1,
+    "operationState": "confirmed",
+    "h0Receipts": 1,
+    "transportAccepted": 1,
+    "transportFailures": 1
+  },
+  "afterExtraWorkers": {
+    "bridgeState": "delivered",
+    "deliveries": 1,
+    "operationState": "confirmed",
+    "h0Receipts": 1,
+    "transportAccepted": 1,
+    "transportFailures": 1
+  },
+  "status": "PASS"
+}

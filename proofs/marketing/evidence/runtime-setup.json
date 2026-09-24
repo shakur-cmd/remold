@@ -1,0 +1,21 @@
+{
+  "level": "SERVICE setup only",
+  "images": {
+    "mautic": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+    "mysql": "mysql@sha256:64a9d35fe6fed01159499be26c3279ac5ee16006c2ebb1f480d634bd5c61a053",
+    "convex": "ghcr.io/get-convex/convex-backend@sha256:b1f3b36e87142a043b9a9f2dcb5b3df4512b67e066a822933002388c44bf580a"
+  },
+  "network": "remold-marketing-proof",
+  "internalNetwork": true,
+  "ports": {
+    "web": 3540,
+    "authority": 3545,
+    "site": 3546
+  },
+  "containers": [
+    "remold-marketing-proof-db-a",
+    "remold-marketing-proof-authority",
+    "remold-marketing-proof-web-a"
+  ],
+  "sourceHash": "52e80f700255324f7395fc5e1fac9a742cdfe74979706a0bec17ad037713e51a"
+}

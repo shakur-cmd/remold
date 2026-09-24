@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {docker,directory,prefix} from './runtime.mjs';
+import {mautic} from './api.mjs';
+const cli=(...args)=>docker(['exec','--user','www-data',prefix+'-web-a','php','/var/www/html/bin/console',...args]);
+const logs=()=>docker(['exec',prefix+'-web-a','cat','/var/www/html/var/logs/remold-capture.jsonl']).trim().split('\n').filter(Boolean).map(JSON.parse);
+const before=logs().length;
+execFileSync(process.execPath,[directory+'native-fixture.mjs'],{stdio:'pipe'});
+const f=JSON.parse(readFileSync(directory+'private/native-fixture.json'));
+cli('mautic:campaigns:update','-i',String(f.campaign));cli('mautic:campaigns:trigger','-i',String(f.campaign));
+cli('messenger:consume','email','--limit=1','--time-limit=5','--no-interaction');
+const records=logs().slice(before),native=records.filter(r=>r.kind==='native-log'),stamped=records.filter(r=>r.kind==='message-stamped'),queued=records.filter(r=>r.kind==='queue-observed'),transport=records.filter(r=>r.kind==='transport-observed');
+assert.equal(native.length,1);assert.ok(native[0].log>0);assert.equal(native[0].lead,f.contact);assert.equal(native[0].rotation,1);
+for(const rows of [stamped,queued,transport]){assert.equal(rows.length,1);assert.equal(rows[0].intent,native[0].intent);}
+assert.equal(transport[0].recipients,1);
+const apiBefore=logs().length;
+const apiResult=await mautic('/emails/'+f.email+'/contact/'+f.contact+'/send','POST',{});
+cli('messenger:consume','email','--limit=1','--time-limit=5','--no-interaction');
+const apiRecords=logs().slice(apiBefore);
+const evidence={level:'SERVICE, native Mautic + durable Doctrine queue + null transport; no mail delivery',nativeEvents:f.events,records,apiResult,apiRecords,checks:{persistedNativeLog:true,sameIntentAfterQueueDeserialization:true,oneRecipient:true,nativeOpenParentRetained:f.events.find(e=>e.type==='email.open')?.parent?.type==='email.send'},limitations:['No final H0 permit guard yet','Null transport discards messages; no sink or real mailbox delivered','Re-entry rotation and native open tracking branch execution not yet tested','Frequency queue, API/test/broadcast refusal remain open']};
+assert.equal(evidence.checks.nativeOpenParentRetained,true);
+writeFileSync(directory+'evidence/native-hook.json',JSON.stringify(evidence,null,2)+'\n');
+console.log('PASS native persisted occurrence and queue identity; API still reaches unguarded null transport (recorded baseline).');

@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {docker,directory,prefix} from './runtime.mjs';
+import {authority} from './authority.mjs';
+execFileSync(process.execPath,[directory+'native-fixture.mjs','--branch'],{stdio:'pipe'});
+execFileSync(process.execPath,[directory+'setup-bridge.mjs','--rearm'],{stdio:'pipe'});
+const f=JSON.parse(readFileSync(directory+'private/native-fixture.json')),config=JSON.parse(readFileSync(directory+'private/bridge-config.json'));
+const cli=(...args)=>docker(['exec','--user','www-data',prefix+'-web-a','php','/var/www/html/bin/console',...args]);
+const sql=query=>docker(['exec',prefix+'-db-a','sh','-c','MYSQL_PWD="$MYSQL_PASSWORD" mysql -u "$MYSQL_USER" "$MYSQL_DATABASE" -NB -e "$1"','--',query]).trim();
+const call=async(path,body,key=config.bridgeKey)=>fetch('http://127.0.0.1:3542'+path,{method:'POST',headers:{'x-remold-key':key},body:JSON.stringify(body)});
+const status=async()=>{const r=await call('/status',{});assert.equal(r.status,200);const v=await r.json();return {...v,intents:v.intents.filter(x=>x.occurrence.lead===f.contact)};};
+for(let n=0;n<20;n++){try{await status();break;}catch(e){if(n===19)throw e;await new Promise(r=>setTimeout(r,100));}}
+cli('mautic:campaigns:update','-i',String(f.campaign));cli('mautic:campaigns:trigger','-i',String(f.campaign));
+let current=await status();assert.equal(current.intents.length,1);
+const first=current.intents[0];assert.equal(first.state,'sealed');
+authority('harness:approve',{token:config.fixture.A.sessions.owner,id:first.operation,expires:Date.now()+3600000});
+const payload={intent:first.intent,hash:first.hash,recipient:config.recipient,recipients:1};
+for(const changed of [{...payload,hash:'0'.repeat(64)},{...payload,intent:'f'.repeat(64)},{...payload,recipient:'foreign@example.invalid'},{...payload,recipients:2}])assert.equal((await call('/authorize',changed)).status,409);
+assert.equal((await call('/capture',{...first.occurrence,instance:'synthetic-b'})).status,409);
+assert.equal((await call('/authorize',payload,'wrong-key')).status,403);
+assert.equal((await status()).intents[0].state,'sealed','Refused substitutions cannot consume an approved occurrence');
+const worker=()=>cli('messenger:consume','email','--limit=10','--time-limit=3','--no-interaction');
+worker();current=await status();assert.equal(current.deliveries.filter(x=>x.id===first.intent).length,1);
+const tracking=sql('SELECT tracking_hash FROM email_stats WHERE lead_id='+f.contact+' AND email_id='+f.email+' LIMIT 1');assert.match(tracking,/^[a-zA-Z0-9]+$/);
+const before=Number(sql('SELECT is_read FROM email_stats WHERE lead_id='+f.contact+' AND email_id='+f.email+' LIMIT 1'));assert.equal(before,0);
+const open=await fetch('http://127.0.0.1:3540/email/'+tracking+'.gif',{headers:{'User-Agent':'Mozilla/5.0 RemoldSyntheticOpenProof'},redirect:'manual'});assert.equal(open.status,200);
+cli('mautic:campaigns:trigger','-i',String(f.campaign));
+const after=Number(sql('SELECT is_read FROM email_stats WHERE lead_id='+f.contact+' AND email_id='+f.email+' LIMIT 1'));assert.equal(after,1);
+current=await status();assert.equal(current.intents.length,2,'A native open must reach its second native send');
+const second=current.intents.find(x=>x.intent!==first.intent);assert.equal(second.state,'sealed');assert.notEqual(second.occurrence.event,first.occurrence.event);
+authority('harness:approve',{token:config.fixture.A.sessions.owner,id:second.operation,expires:Date.now()+3600000});worker();
+for(let n=0;n<3;n++){cli('mautic:campaigns:trigger','-i',String(f.campaign));worker();}
+current=await status();const ids=new Set(current.intents.map(x=>x.intent)),delivered=current.deliveries.filter(x=>ids.has(x.id));assert.equal(delivered.length,2);
+const states=current.intents.map(x=>authority('harness:operation',{token:config.fixture.A.sessions.owner,id:x.operation}).state);assert.deepEqual(states,['confirmed','confirmed']);
+const evidence={level:'SERVICE real Mautic open pixel and native branch; synthetic recipient/local HTTP sink, no mailbox delivery',checks:{firstDelivered:1,readBefore:before,readAfter:after,secondNativeSendQueued:true,finalDeliveries:delivered.length,extraCronPasses:3,payloadRecipientIntentAndInstanceSubstitutionsRefused:true,wrongBridgeCredentialRefused:true},occurrences:current.intents.map(x=>({event:x.occurrence.event,lead:x.occurrence.lead,rotation:x.occurrence.rotation,log:x.occurrence.log,state:x.state})),authorityStates:states,limits:['Only native open branch proved; click/reply branches remain open','Fixture email_type is transactional; marketing frequency and dedup behavior remain open','Every exact queued intent approved explicitly by the test driver; automated campaign approval mapping remains open']};
+writeFileSync(directory+'evidence/native-branch.json',JSON.stringify(evidence,null,2)+'\n');console.log('PASS native send → actual local open pixel → second native send; exactly two sink receipts.');

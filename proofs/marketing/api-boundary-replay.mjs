@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {docker,directory,prefix} from './runtime.mjs';
+import {mautic} from './api.mjs';
+const f=JSON.parse(readFileSync(directory+'private/native-fixture.json'));
+const logs=()=>docker(['exec',prefix+'-web-a','cat','/var/www/html/var/logs/remold-capture.jsonl']).trim().split('\n').filter(Boolean).map(JSON.parse);
+const before=logs().length;
+await mautic('/emails/'+f.email+'/contact/'+f.contact+'/send','POST',{});
+const output=docker(['exec','--user','www-data',prefix+'-web-a','php','/var/www/html/bin/console','messenger:consume','email','--limit=1','--time-limit=5','--no-interaction','-vv']);
+writeFileSync(directory+'private/api-boundary-worker.log',output,{mode:0o600});
+const records=logs().slice(before),accepted=records.filter(r=>r.kind==='transport-accepted');
+const stage=process.argv.includes('--baseline')?'red':'green';
+writeFileSync(directory+'evidence/api-boundary-'+stage+'.json',JSON.stringify({level:'SERVICE local Mautic transport acceptance; no external mail',records,unapprovedAccepted:accepted.length,expected:0},null,2)+'\n');
+assert.equal(accepted.length,0,'Ordinary API email must not be accepted by the final transport without a Remold intent');
+console.log('PASS ordinary API cannot reach accepted final transport without an intent.');

@@ -1,0 +1,14 @@
+{
+  "name": "remold-marketing-proof",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "test": "node verify-runtime.mjs && node install-plugin.mjs && node safety-replay.mjs && node branch-replay.mjs && node reentry-replay.mjs && node api-boundary-replay.mjs",
+    "typecheck": "tsc --noEmit",
+    "proof:reliability": "node reliability-replay.mjs"
+  },
+  "dependencies": {
+    "convex": "1.46.0"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "level": "SERVICE Mautic Doctrine workers, H0, SQLite hash-reported synthetic sink; no MIME or external mail proof",
+  "results": [
+    {
+      "scenario": "sink-refused",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "consumed",
+        "deliveries": 0,
+        "transportAccepted": 1
+      },
+      "after": {
+        "state": "consumed",
+        "deliveries": 0,
+        "operation": "outcomeUnknown",
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "status": "FAIL",
+      "error": "A refused sink must not count as transport accepted\n\n1 !== 0\n"
+    }
+  ]
+}
