@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>H0 contract harness evidence</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>H0 disposable shared-contract harness</h1><div class="meta">2026-09-24T18:25:39.766Z · SERVICE local Convex / SIM identity, surfaces and providers · builder evidence, awaiting independent verification</div>
+<div class="decisions"><h2>Decisions and gates</h2><p>No owner account, spending or sign-in is needed for this disposable harness. The typed shapes are ready for root, Fable and Opus review. I1 remains blocked until the exact manifest below is approved and H0 independently replayed. This report is not certification or production approval.</p><p><strong>Manifest SHA256:</strong> <code>da267c64f6eb02fe5938e1c0c66217d92f4614fa51385dd1f6a9158eb4309d22</code></p></div>
+<div class="status"><h2>Built and exercised</h2><p><code>pnpm --dir proofs/contract proof</code> exited 0 with 21 passing behavioral groups against a real anonymous Convex backend at 127.0.0.1:3410. A and B share that database. Concurrent claims/reservations are real backend transactions. Identity sessions, provider effects and read surfaces are SIM fixtures.</p><p><code>pnpm --dir proofs/contract typecheck</code> exited 0. The final proof passed with inherited synthetic production deployment/key/provider variables present; the launcher discarded them. A separate negative check rejected a remote .env.production before starting Convex. The missing local node_modules symlink was recreated successfully on a prior full passing replay.</p></div>
+<h2>Before and after</h2><table><tr><th>Captured failure</th><th>Current behavior, same seam rechecked</th></tr>
+<tr><td>Opus draft review identified unscoped masks, ineffective downgrade, unrelated delegation, string destination scopes, global adapter access and no direct action. Six behavior assertions failed on the previous running backend.</td><td>Grant-chain object/record/field masks, scope-specific revocation, explicit manage ceilings, binding-ID/currency scopes, scoped adapter sessions, and direct-grant immutable snapshots pass.</td></tr>
+<tr><td>Missing-usage mutation allowed cheaper new spending. The assertion failed.</td><td>Unsettled usage keeps its reservation and pauses new org spending; authoritative settlement clears the pause.</td></tr>
+<tr><td>Model continuation first run lost already-used units when firing released the remaining reservation. Actual spent was 0 where the fixture oracle required 1.</td><td>Firing settles accumulated prior-step usage while releasing unspent exposure.</td></tr>
+<tr><td>Consumed-crash mutation returned queued after expiry. The assertion expected outcomeUnknown and failed.</td><td>Only unconsumed expired permits can return to a current-authority retry. Consumed crashes reconcile as unknown.</td></tr>
+<tr><td>An explicit manage list could target the grantor's ancestor. A negative test failed.</td><td>Historical grant ancestry forbids firing or regranting ancestors even when an explicit list names them.</td></tr>
+<tr><td>An author could read raw operation content through status and bypass masked suggestions. A test exposed the payload.</td><td>Agent operation status contains only safe ownership/state metadata. Unstructured payload and approval content are owner-human-only; scoped SIM draft reads use the shared projector.</td></tr></table>
+<h2>Behavior evidence</h2><table><tr><th>Check</th><th>Result</th></tr><tr><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Per-run/global spend and global concurrency caps bound both tenants</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Provisioning durable intents preserve delete-before/create-before races</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr><tr><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td>PASS by builder · SERVICE backend / SIM provider and identity</td></tr></table><h2>Contract boundaries</h2><ul>
+<li><code>convex/contract.ts</code> contains discriminated record/binding/model/agent scopes, payload and outcome types, delegation subset comparison and the shared deny-first field projector. Direct action still requires a current scoped grant and a payload/version snapshot; human-approved propose mode is separate.</li>
+<li>Every operation has attributed author/actor/owner, immutable approval, distinct money-minor amount and reservation units, step/maxSteps, lease/fence, exact binding and one-use short permit. Idempotency includes the step; provider fixture keys include the binding namespace. Revocation before permit denies; a previously issued permit may produce one bounded late result.</li>
+<li>Expired, failed and unknown states have bounded exits. Authoritative absence permits a new currently authorized attempt, never blind resend. Three total attempts, five maximum declared steps, eight per-run fixture units, tenant/global budget and concurrency limits are synthetic bounds, not commercial prices or provider capacity claims.</li>
+<li>Adapter sessions are scoped to provider/environment/account. Bind derives tenant from a durable provisioning intent. Fixture sessions use independently random tokens, and exports omit those tokens. The dump is internal-only.</li>
+<li>The fake inbound adapter authenticates HMAC over the actual event/body and retrieves separate authoritative fake state. Backend callback dedup and state effects are transactional, suppression cannot be erased by a later provider subscription/re-import observation, and completed cursor checkpoints never regress.</li>
+<li>Distinct SIM history, suggestion, report, export, file, provider, REST, MCP, subscription and record shapes contain leakable synthetic values. All apply grant-chain record/object/field masks; filtering, sorting and grouping denied fields refuse. These are not claims that future product surfaces already exist.</li>
+</ul><h2>Scope left to later jobs</h2><p>Real Clerk/AuthKit authentication, production roles, actual callback signature protocols, provider account setup, model token/duration bounds and stream cancellation, dynamically derived management trees, dynamic audiences, global outstanding-permit policy, and actual product UI/API surfaces are not certified here. P4/I7/I11 own real platform-versus-merchant finance and G-pay policy. C5 here proves readonly cancellation, export and truthful inbound reconciliation with fixtures. I1 must reuse the projector and rerun these cases on every real read surface. No real email, social post, payment or model call occurred.</p>
+<h2>Run and independent handover</h2><p>From a repository with root pnpm dependencies installed: <code>pnpm --dir proofs/contract proof</code>. Proposed root script: <code>"proof:contract": "pnpm --dir proofs/contract proof"</code>. The proof uses its own package, schema, env and anonymous local database; it never runs the main app's Convex project. The wrapper validates every local .env file, uses an OS-variable allowlist, pins Convex CLI dependency 1.46.0 and ports 3410/3411, terminates its own process group after replay, and times out after three minutes.</p><p>The backend binary used was <code>precompiled-2026-09-21-0cf49cb</code>. The local .convex database and before-review snapshots are ignored; exports are retained in evidence. Stop only this disposable process group before cleanup. Do not touch real deployment data.</p><p>Independent verifier: add a new binding collision and repeat concurrent budget/claim, before/after-permit firing, continuation and unknown-outcome probes. Change a fixture value to prove the oracle is not hardcoded. Inspect the before and after exports, raw logs and exact hashes. Final verification is not the builder's.</p>
+<h2>Typed API examples</h2><pre>grant({target, capability:'read',
+  scope:{kind:'records',object:'person',records:[personId],fields:['public']},
+  mode:'propose',delegate:false,expires})
+grant({target, capability:'marketing.send',
+  scope:{kind:'bindings',bindings:[bindingId],maxAmountMinor:1000,
+         currency:'USD',maxRecipients:1},mode:'direct',delegate:false,expires})
+claim({id,worker}) → {fence,step}
+permit({id,worker,fence,step}) → {id,version,binding,fence,step,worker,expires}
+consume(exactPermit) → {providerKey,keyIncludingStep,account,payload}
+reconcile({id,fence,step,providerRef,usage,continue?})
+resolveUnknown({id,fence,step,absent:true})</pre>
+<h2>Source and fixture integrity</h2><pre>{
+  &quot;convex/contract.ts&quot;: &quot;242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59&quot;,
+  &quot;convex/schema.ts&quot;: &quot;e149dcddf813e36943a460b42dc3ce6e3f71cff7a5c2de76c351dc702b58aeba&quot;,
+  &quot;convex/harness.ts&quot;: &quot;8f0a8faf4589ba81c57839206a5ff8f5fa2fa5ecc82b933b8c58d6feb4178edf&quot;,
+  &quot;replay.mjs&quot;: &quot;a76449868a604ced2bd14f422ccd610aab71a9b8d92b3ca2bfe049c5290f3429&quot;,
+  &quot;run.mjs&quot;: &quot;3f55cded8f049b79839a1f6c4cabe9ac0264b2eebce211eaddbd03bf96510354&quot;
+}
+fixture-export SHA256 123919706ac12d0e20fe7c8870927a311d947ef8dfc4a7b4446117c97254bea1</pre><details><summary>Pre-review red</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:09:02 Convex functions ready! (705.41ms)
+RED B1 ungranted child cannot read secret AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   {
++     public: &#x27;visible A&#x27;,
++     secret: &#x27;SECRET-A&#x27;
++   }
++ ]
+- []
+
+RED B2 downgrade removes direct authority from future new operations AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B3 delegate cannot grant to unrelated peer AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B4 owner cannot grant foreign binding/account AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B5 A adapter cannot reconcile B callback AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B6 bounded grant can authorize direct action without human approval Error: [Request ID: 173909c0253eef01] Server Error
+Uncaught Error: not claimable
+    at deny (../convex/harness.ts:6:54)
+    at handler (../convex/harness.ts:119:41)
+
+B7/B8 baseline gap: continuation, expiry and unknown-absence APIs do not exist; no contrived missing-function red claimed. Mutation probes required after implementation.
+6 genuine behavior assertions failed on pre-review implementation
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Missing usage red</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+Could not find project with name anonymous-agent!
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ Added table indexes:
+  [+] bindings.key   provider, environment, account, kind, externalId, _creationTime
+  [+] callbacks.key   binding, eventId, _creationTime
+  [+] consent.recipient   org, recipient, purpose, channel, _creationTime
+  [+] operations.logical   org, logical, _creationTime
+  [+] sessions.token   token, _creationTime
+✔ 14:02:45 Convex functions ready! (727.13ms)
+PASS A/B share database; propose-only default and known-ID isolation
+PASS Delegated queued/model authority fails after manager fire; human grant survives
+PASS Before-permit revocation refuses; after-permit revocation preserves late result
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async rejects (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:15:43)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:69:72
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:64:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:144:5 {
+  generatedMessage: false,
+  code: &#x27;ERR_ASSERTION&#x27;,
+  actual: undefined,
+  expected: /usage unresolved/,
+  operator: &#x27;rejects&#x27;,
+  diff: &#x27;simple&#x27;
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Model residual red</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+Could not find project with name anonymous-agent!
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ Added table indexes:
+  [+] bindings.key   provider, environment, account, kind, externalId, _creationTime
+  [+] callbacks.key   binding, eventId, _creationTime
+  [+] consent.recipient   org, recipient, purpose, channel, _creationTime
+  [+] operations.logical   org, logical, _creationTime
+  [+] sessions.token   token, _creationTime
+✔ 14:18:52 Convex functions ready! (783.71ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:107:280
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:105:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:142:5 {
+  generatedMessage: true,
+  code: &#x27;ERR_ASSERTION&#x27;,
+  actual: 0,
+  expected: 1,
+  operator: &#x27;strictEqual&#x27;,
+  diff: &#x27;simple&#x27;
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Consumed crash red</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:21:25 Convex functions ready! (758.64ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+PASS Model continuation rechecks authority, step/fence and remaining exposure
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;queued&#x27;
+- &#x27;outcomeUnknown&#x27;
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:115:529
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:114:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:147:5 {
+  generatedMessage: true,
+  code: &#x27;ERR_ASSERTION&#x27;,
+  actual: &#x27;queued&#x27;,
+  expected: &#x27;outcomeUnknown&#x27;,
+  operator: &#x27;strictEqual&#x27;,
+  diff: &#x27;simple&#x27;
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Ancestor management red</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:20:25 Convex functions ready! (737.19ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async reject (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:15:42)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:58:39
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:56:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:147:5 {
+  generatedMessage: false,
+  code: &#x27;ERR_ASSERTION&#x27;,
+  actual: undefined,
+  expected: /ancestor manage denied/,
+  operator: &#x27;rejects&#x27;,
+  diff: &#x27;simple&#x27;
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Operation payload red</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:24:41 Convex functions ready! (740.96ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+AssertionError [ERR_ASSERTION]: agent status must not bypass masked suggestion reads
++ actual - expected
+
++ {
++   amountMinor: 100,
++   audience: [
++     &#x27;recipient&#x27;
++   ],
++   audienceVersion: 1,
++   content: &#x27;SECRET-derived suggestion&#x27;,
++   currency: &#x27;USD&#x27;,
++   destination: &#x27;A&#x27;,
++   schedule: 0,
++   workflowVersion: 1
++ }
+- undefined
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:151:85
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:16:33)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:134:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:445:5 {
+  generatedMessage: false,
+  code: &#x27;ERR_ASSERTION&#x27;,
+  actual: [Object],
+  expected: undefined,
+  operator: &#x27;strictEqual&#x27;,
+  diff: &#x27;simple&#x27;
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Final green</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:25:14 Convex functions ready! (708.45ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+PASS Model continuation rechecks authority, step/fence and remaining exposure
+PASS Expired unconsumed permits retry safely; consumed crash becomes unknown
+PASS Unknown authoritative absence never resends after firing; terminal rejection releases reservation
+PASS Authoritative absence and retryable rejection preserve logical key and revalidate new permits
+PASS Material edits, audience, currency and approval expiry invalidate immutable snapshot
+PASS Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly
+PASS Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship
+PASS Provisioning durable intents preserve delete-before/create-before races
+PASS Partial traversal commits only full checkpoints and later traversal resumes without regression
+H0 SERVICE replay: 21 behavioral groups PASS; fixture SHA256 123919706ac12d0e20fe7c8870927a311d947ef8dfc4a7b4446117c97254bea1
+</pre></details><p>Checked by H0 builder. Root review, Fable/Opus exact-hash approval, independent replay and rendered HTML inspection are pending. No job is marked integrated or complete by this report.</p></body></html>

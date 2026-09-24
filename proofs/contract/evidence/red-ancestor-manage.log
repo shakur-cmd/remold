@@ -1,0 +1,27 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:20:25 Convex functions ready! (737.19ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async reject (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:15:42)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:58:39
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:56:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:147:5 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: /ancestor manage denied/,
+  operator: 'rejects',
+  diff: 'simple'
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

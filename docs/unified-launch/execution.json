@@ -26,7 +26,7 @@
     },
     {
       "id": "H0",
-      "state": "dispatched",
+      "state": "complete",
       "builder": "/root/h0_builder",
       "independentVerifier": "/root/c0_verifier (scheduled replay); root/Fable/Opus shape review additionally required",
       "costCap": 0,
@@ -41,7 +41,10 @@
       ],
       "environment": "isolated local Convex backend, fake providers, no customer env",
       "selection": "not applicable",
-      "scopeNote": "r3 manifest68a793 passed39builder+31IV and conditionalmodelapprovals, but focusedIV stale-step-finality probe failed; r4repair pending exact-hashreview. I1/Pjobs remainundispatched."
+      "scopeNote": "43 root groups and 43+36 independent groups PASS; exact root/Fable/Opus r4 approval. Prior blocked candidates preserved. No real providers/production certified.",
+      "frozenManifest": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "evidence": "evidence/2026-09-24-unified-build/h0-root-r4/verdict.json",
+      "independentEvidence": "evidence/2026-09-24-unified-build/h0-iv-r4/report.html"
     },
     {
       "id": "P1",

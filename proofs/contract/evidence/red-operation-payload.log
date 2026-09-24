@@ -1,0 +1,45 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:24:41 Convex functions ready! (740.96ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+AssertionError [ERR_ASSERTION]: agent status must not bypass masked suggestion reads
++ actual - expected
+
++ {
++   amountMinor: 100,
++   audience: [
++     'recipient'
++   ],
++   audienceVersion: 1,
++   content: 'SECRET-derived suggestion',
++   currency: 'USD',
++   destination: 'A',
++   schedule: 0,
++   workflowVersion: 1
++ }
+- undefined
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:151:85
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:16:33)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:134:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:445:5 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [Object],
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

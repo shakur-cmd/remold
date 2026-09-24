@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>H0 contract harness repair evidence</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>H0 contract harness: third review candidate</h1><div class="meta">2026-09-24T19:05:33.349Z · SERVICE local Convex / SIM provider, identity and read surfaces</div>
+<div class="decisions"><h2>Review gate</h2><p>No owner sign-in, spend or account decision is needed for this candidate. Root, Fable, Opus and the independent verifier must review this exact source. Prior approvals do not certify the revised manifest. H0 remains awaiting verification; dependent I1/provider jobs are not authorized by this builder report.</p><p><strong>Manifest:</strong> <code>68a793519593ef5125272232653a34f857c7e033acf4d42be4274567065cc4ef</code></p></div>
+<div class="status"><h2>Built and exercised</h2><p><code>pnpm --dir proofs/contract proof</code> exited 0: <strong>39 behavioral groups passed</strong> on the isolated anonymous Convex backend, including actual concurrent claims and budget mutations. <code>pnpm --dir proofs/contract typecheck</code> exited 0. Ten focused assertions failed against frozen 9a316 before repairs, then the same cases passed in the complete replay.</p><p>Backend state, scheduler and transactional concurrency are SERVICE evidence. Provider acceptance, provider credentials/finality, identity sessions and read facades remain SIM. No live provider calls occurred.</p></div>
+<h2>Before and after</h2><table><tr><th>Blocked 9a316 behavior</th><th>Revised behavior and exercised evidence</th></tr><tr><td>E1: sweep, expiry and terminal failure freed a consumed attempt’s unresolved exposure.</td><td>Shared unresolved(op) detects any consumed step without a receipt or final absence. All three paths remain outcomeUnknown with tenant/global reservation and active slot held. A B claim above remaining global headroom is refused. Late p1 acceptance records 7 units once, confirms late without anomaly, releases exactly once, and permits B’s 8-unit reservation within the shared cap of 15. The expiry case uses a health hold without invoking sweep.</td></tr><tr><td>E2: owner cancellation released a confirmed receipt whose usage was still missing.</td><td>Shared release refuses unresolved outcomes and receipts with missing usage. Cancellation retains 8 units and the active slot; B cannot claim 8 against the 15-unit global cap. Authoritative usage of 7 settles once, clears missingUsage and allows B.</td></tr><tr><td>E3: unknown before consume stranded an operation that was never sent.</td><td>unknown is a no-op for an unconsumed current permit. Autonomous scheduler returns it to queued, or cancelled after owner cancellation. Both paths retain empty consumed-permit and receipt arrays.</td></tr><tr><td>E4: accepted one-step overrun incorrectly changed confirmed to paused.</td><td>Single-step acceptance and delayed usage remain confirmed, with full actual usage, overrun flag and operator-cleared anomaly hold. A genuinely continuing model run still pauses on overrun.</td></tr><tr><td>Exhausted successful continuation kept an active slot forever.</td><td>When total usage reaches the reservation, continuation is refused, accepted work is confirmed and the slot is released. claim independently rejects a released operation.</td></tr><tr><td>Suppression without an existing purpose/channel consent row disappeared.</td><td>Callback inserts the exact recipient/purpose/channel suppression row. A new SMS suppression persists while existing email consent stays unchanged.</td></tr></table><h2>Failure, settlement and finality contract</h2><p>A plain adapter fail report, whether retryable or nonretryable, does not establish that a consumed provider attempt incurred no cost. If any consumed step has no receipt and no authoritative final absence, fail leaves outcomeUnknown and preserves its reservation and active slot. A subsequent receipt or explicit final absence settles once. The cancelled consumed-failure case exercises duplicate fail and duplicate final-absence calls without a dead end or double release.</p><p>Provisional absence permits an authorized same-key retry but does not release unknown exposure. Final absence forbids retry and releases once only when no known receipt still lacks usage. A later unexpected acceptance still records truth and cost and raises an anomaly without double-decrementing reserved/active. No elapsed-time rule invents finality. Real provider jobs must prove their finality and idempotency assumptions.</p><p>Operations retain their original maximum in reserved and cumulative usage separately. Tenant/global reserved totals represent remaining exposure; spent changes once per accepted step receipt. Release is idempotent and additionally refuses unresolved consumed attempts or any receipt with missing usage. Accepted overruns record actual cost and hold new org spend until operator review.</p>
+<h2>API and state semantics for adopters</h2><pre>fail({token,id,fence,step,retryable})
+  unconsumed rejection → queued, refused or cancelled
+  any unresolved consumed attempt → outcomeUnknown; reservation held
+unknown({token,id,fence,step})
+  unconsumed current permit → no-op; scheduled expiry recovers it
+resolveUnknown({token,id,fence,step,absent:true,
+                finality:'provisional'|'final'})
+reconcile({token,id,fence,step,providerRef,usage?,continue?})
+  accepted one-step overrun → confirmed + overrun + anomaly hold
+  continuing overrun → paused + overrun + anomaly hold
+  accepted exhausted continuation → confirmed + continuationRefused
+adapterStatus({token,id,fence,step}) → {state,cancel}
+permit/consume return current maxUnits and maxRecipients
+callback suppression resolves binding.local + purpose + channel</pre>
+<h2>Scope and remaining gates</h2><p>C1–C5 typed fixture scopes, bounded ancestry, server-derived actor sessions, immutable approvals, one-use permits, callbacks, lifecycle, cursor checkpoints and masked read facades remain the previously exercised H0 contract. The prior D1–D5/T1–T2 repairs remain in the 29 existing replay groups.</p><ul><li>Full I1 and real product/UI/REST/MCP read surfaces are not implemented by the SIM facades. Adoption must preserve the shared projector and repeat adversarial checks against real surfaces.</li><li>Real authentication, provider signature verification, provider idempotency/finality, lease renewal, duration limits and physical model-stream cancellation remain named jobs.</li><li>Readonly G-pay refunds remain deferred to I7 and the commercial gate. No live payment, email, social post or model call is claimed.</li><li>Fable’s notes on refused-to-cancelled display and conflicting duplicate usage reports remain recorded for later production work; first authoritative usage settles once. Neither was an Opus r2 blocker.</li></ul>
+<h2>Reproduce and integrity</h2><p>Run <code>pnpm --dir proofs/contract proof</code> with root pnpm dependencies installed. The runner restricts env to anonymous loopback, ports 3410/3411, Convex 1.46.0, its own schema/database and a three-minute bound. It terminates its backend process group after replay. The main application’s deployment is not used.</p><p>Exact blocked 9a316 source, hashes, fixture export, results and handover are preserved in <code>evidence/blocked-review2/</code>; its manifest was recomputed and matched. The earlier da267 candidate is in <code>evidence/blocked-da267/</code>. Current raw evidence: <code>red-review3.log</code>, <code>red-review3.mjs</code>, <code>green-review3.log</code>, <code>typecheck-review3.log</code>, <code>results.json</code> and <code>fixture-export.json</code>. Source manifest hashes sorted entries of path + NUL + source SHA256 + newline.</p><pre>{
+  &quot;manifestSha256&quot;: &quot;68a793519593ef5125272232653a34f857c7e033acf4d42be4274567065cc4ef&quot;,
+  &quot;sources&quot;: {
+    &quot;convex/contract.ts&quot;: &quot;242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59&quot;,
+    &quot;convex/schema.ts&quot;: &quot;61275c1bfae3661f7dfa4e9079ec8f1cefce17fb42f1f068bbaefa03d29cd3f8&quot;,
+    &quot;convex/harness.ts&quot;: &quot;8110b74537c304b3b23c546b095a4e5020524f0d78a83ff5363f31fd89818d75&quot;,
+    &quot;replay.mjs&quot;: &quot;efaef24c088dc01ef1d47ff8595f9dcc202c00eb2fc9181e39d778f136a2c70d&quot;,
+    &quot;run.mjs&quot;: &quot;eef5a7f4c92e3f101868b2d6ac5e586fc2caaf69d7589862263d0ab79413ae65&quot;,
+    &quot;package.json&quot;: &quot;9c1eb499a14dd5461924f662250b146bb51f12f170cf269be8422214172a00d2&quot;
+  }
+}
+fixture-export SHA256 d30fa826edae43d900ff9cd9fad67e86c3f906381a078c08eb8e3f2524252eb1</pre><h2>Passing behavior groups</h2><table><tr><th>Behavior</th><th>Evidence</th></tr><tr><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Per-run/global spend and global concurrency caps bound both tenants</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Provisioning durable intents preserve delete-before/create-before races</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Durable cancellation survives rejection, absence, expiry and model continuation</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Scoped adapter sees cancellation signal and records one late accepted tail</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Late consumed outcome settles once after provisional or final absent lookup</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Per-call remaining exposure, missing usage and actual overruns fence final dispatch</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Conflicting provider reference refuses durably and holds spend without rolling back anomaly</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Per-recipient and per-purpose suppression never changes another contact or tenant</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Server scheduler recovers adapter crashes without a callback or manual expiry call</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Unresolved consumed attempt survives sweep and holds global exposure</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Unresolved consumed attempt survives expiry and holds global exposure</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Unresolved consumed attempt survives failure and holds global exposure</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Cancellation cannot release confirmed work with missing usage</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Unconsumed unknown is ignored and scheduler recovers false</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Unconsumed unknown is ignored and scheduler recovers true</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Single-step accepted overrun remains confirmed false</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Single-step accepted overrun remains confirmed true</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Exhausted successful continuation settles and releases its slot</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr><tr><td>Suppression without an existing purpose/channel row is durable</td><td>Builder PASS · SERVICE/SIM as labeled</td></tr></table><details><summary>Before: ten actual old-code reds</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 15:03:32 Convex functions ready! (761.15ms)
+EXPECTED RED Unresolved consumed attempt survives sweep and holds global exposure AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;paused&#x27;
+- &#x27;outcomeUnknown&#x27;
+
+EXPECTED RED Unresolved consumed attempt survives expiry and holds global exposure AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;paused&#x27;
+- &#x27;outcomeUnknown&#x27;
+
+EXPECTED RED Unresolved consumed attempt survives failure and holds global exposure AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;refused&#x27;
+- &#x27;outcomeUnknown&#x27;
+
+EXPECTED RED Cancellation cannot release confirmed work with missing usage AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 8
+
+EXPECTED RED Unconsumed unknown is ignored and scheduler recovers false AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;outcomeUnknown&#x27;
+- &#x27;queued&#x27;
+
+EXPECTED RED Unconsumed unknown is ignored and scheduler recovers true AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;outcomeUnknown&#x27;
+- &#x27;cancelled&#x27;
+
+EXPECTED RED Single-step accepted overrun remains confirmed false AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;paused&#x27;
+- &#x27;confirmed&#x27;
+
+EXPECTED RED Single-step accepted overrun remains confirmed true AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;paused&#x27;
+- &#x27;confirmed&#x27;
+
+EXPECTED RED Exhausted successful continuation settles and releases its slot AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+EXPECTED RED Suppression without an existing purpose/channel row is durable AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+TEN REAL OLD-CODE REDS
+</pre></details><details><summary>After: complete 39-group replay</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 15:03:55 Convex functions ready! (818ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+PASS Model continuation rechecks authority, step/fence and remaining exposure
+PASS Expired unconsumed permits retry safely; consumed crash becomes unknown
+PASS Unknown authoritative absence never resends after firing; terminal rejection releases reservation
+PASS Authoritative absence and retryable rejection preserve logical key and revalidate new permits
+PASS Material edits, audience, currency and approval expiry invalidate immutable snapshot
+PASS Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly
+PASS Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship
+PASS Provisioning durable intents preserve delete-before/create-before races
+PASS Partial traversal commits only full checkpoints and later traversal resumes without regression
+PASS Durable cancellation survives rejection, absence, expiry and model continuation
+PASS Scoped adapter sees cancellation signal and records one late accepted tail
+PASS Late consumed outcome settles once after provisional or final absent lookup
+PASS Per-call remaining exposure, missing usage and actual overruns fence final dispatch
+PASS Conflicting provider reference refuses durably and holds spend without rolling back anomaly
+PASS Per-recipient and per-purpose suppression never changes another contact or tenant
+PASS Server scheduler recovers adapter crashes without a callback or manual expiry call
+PASS Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives
+PASS Unresolved consumed attempt survives sweep and holds global exposure
+PASS Unresolved consumed attempt survives expiry and holds global exposure
+PASS Unresolved consumed attempt survives failure and holds global exposure
+PASS Cancellation cannot release confirmed work with missing usage
+PASS Unconsumed unknown is ignored and scheduler recovers false
+PASS Unconsumed unknown is ignored and scheduler recovers true
+PASS Single-step accepted overrun remains confirmed false
+PASS Single-step accepted overrun remains confirmed true
+PASS Exhausted successful continuation settles and releases its slot
+PASS Suppression without an existing purpose/channel row is durable
+H0 SERVICE replay: 39 behavioral groups PASS; fixture SHA256 d30fa826edae43d900ff9cd9fad67e86c3f906381a078c08eb8e3f2524252eb1
+</pre></details><details><summary>Strict typecheck</summary><pre>$ tsc --noEmit
+</pre></details><p>Checked by H0 builder. Exact-hash root/Fable/Opus approval and independent replay are pending. HTML structure checked; rendered layout has not been independently inspected.</p></body></html>

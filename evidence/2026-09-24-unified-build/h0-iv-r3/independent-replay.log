@@ -1,0 +1,44 @@
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 15:09:53 Convex functions ready! (731.2ms)
+PASS New external/event ID collisions remain separated by tenant account and resource kind
+PASS Delegated grant revoked on either side of permit produces refusal or one late result
+PASS Concurrent permits stay bounded and post-claim suppression blocks the losing dispatch
+PASS Old worker cannot permit or reconcile after lease expiry and new claim
+PASS Eight real concurrent claims keep both tenant and global caps
+CANCEL_OBSERVED rejection outcomeUnknown
+PASS Cancellation survives provider rejection without a new permit
+CANCEL_OBSERVED absence outcomeUnknown
+PASS Cancellation survives provider absence without a new permit
+CANCEL_OBSERVED unconsumed expiry cancelled
+PASS Cancellation survives unconsumed expiry without a new permit
+CANCEL_OBSERVED model continuation cancelled
+PASS Cancellation survives model continuation without a new permit
+CANCEL_TAIL_OBSERVED {"state":"confirmed","late":true,"events":[{"_creationTime":1790277001494.3062,"_id":"k57emd3bfqxyqc70tk7b5ff0xx8f10v8","actor":"js720nq12qa9qate4z9at4ttrn8f1m6j","at":1790277001494,"kind":"proposed","org":"kh73wkzzmxrhqk25hmqd3qpdr98f1wyy","resource":"jh7e5d6n5h8jjf41kq2ejy34818f0nm6"},{"_creationTime":1790277001498.895,"_id":"k578pz5w9q72vt29zx8pac26mh8f0cjy","actor":"js7bysfg86g9pqqwwqb0sdrqyn8f162v","at":1790277001498,"kind":"approved","org":"kh73wkzzmxrhqk25hmqd3qpdr98f1wyy","resource":"jh7e5d6n5h8jjf41kq2ejy34818f0nm6"},{"_creationTime":1790277001503.375,"_id":"k571yrdjpejh7aenzg8mm97gd58f05jr","actor":"js720nq12qa9qate4z9at4ttrn8f1m6j","at":1790277001503,"kind":"claimed","org":"kh73wkzzmxrhqk25hmqd3qpdr98f1wyy","resource":"jh7e5d6n5h8jjf41kq2ejy34818f0nm6"},{"_creationTime":1790277001510.635,"_id":"k5746rap9mmfsrh13512czr1b98f1w5m","actor":"trusted-adapter","at":1790277001510,"kind":"permit","org":"kh73wkzzmxrhqk25hmqd3qpdr98f1wyy","resource":"jh7e5d6n5h8jjf41kq2ejy34818f0nm6"},{"_creationTime":1790277001517.7,"_id":"k576h7fvqwj0w8gkwnnwy0wjk18f16fq","actor":"js7bysfg86g9pqqwwqb0sdrqyn8f162v","at":1790277001517,"kind":"cancellationRequested","org":"kh73wkzzmxrhqk25hmqd3qpdr98f1wyy","resource":"jh7e5d6n5h8jjf41kq2ejy34818f0nm6"},{"_creationTime":1790277001525.928,"_id":"k5789mf73kr13av7wz8cwtv1j18f0wtw","actor":"trusted-adapter","at":1790277001525,"kind":"completedAfterCancellation","org":"kh73wkzzmxrhqk25hmqd3qpdr98f1wyy","resource":"jh7e5d6n5h8jjf41kq2ejy34818f0nm6"}]}
+PASS Accepted pre-cancel permit tail is recorded as completed after cancellation
+PASS Exposure bounds, overrun truth and already-queued spend holds
+PASS Unknown usage prevents an already queued permit and resolves idempotently
+PASS Old consumed receipts survive provisional/final absence and conflicting receipt cannot double-charge
+PASS Recipient Y callback blocks only Y, purpose/channel and same external ID tenant collisions remain isolated
+PASS Adapter cancellation signal is current, fenced and account-scoped
+PASS Real server expiry frees permit slot without the crashed adapter and preserves consumed reservation
+PASS Object wildcard is still object-specific and manager grant downgrade strips child lineage only
+PASS Unresolved prior attempt retains shared exposure through grant-sweep
+PASS Unresolved prior attempt retains shared exposure through readonly-expiry
+PASS Unresolved prior attempt retains shared exposure through terminal-failure
+PASS Unresolved prior attempt retains shared exposure through retryable-failure
+PASS Cancelled confirmed missing usage retains global reservation until a concurrent duplicate settlement
+PASS Unconsumed unknown recovers autonomously with cancellation none
+PASS Unconsumed unknown recovers autonomously with cancellation before-unknown
+PASS Unconsumed unknown recovers autonomously with cancellation after-unknown
+PASS Accepted overrun remains confirmed for one-step
+PASS Accepted overrun remains confirmed for delayed-usage
+PASS Accepted overrun remains confirmed for cancelled-delayed
+PASS Exactly exhausted multi-step continuation refuses more work and releases capacity once
+PASS New binding recipient suppression persists without prior row and survives duplicate/out-of-order callback
+PASS Concurrent old receipt and retry failure preserve accepted truth and exact budget once

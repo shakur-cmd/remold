@@ -1,0 +1,32 @@
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:32:47 Convex functions ready! (748.39ms)
+PASS New external/event ID collisions remain separated by tenant account and resource kind
+PASS Delegated grant revoked on either side of permit produces refusal or one late result
+PASS Concurrent permits stay bounded and post-claim suppression blocks the losing dispatch
+PASS Model overrun rejects atomically and unknown usage keeps reservation until exact total settles
+PASS Old worker cannot permit or reconcile after lease expiry and new claim
+PASS Eight real concurrent claims keep both tenant and global caps
+CANCEL_OBSERVED rejection queued
+FAIL Cancellation survives provider rejection without a new permit AssertionError [ERR_ASSERTION]: Cancellation must never authorize another provider attempt; observed queued
+
+true !== false
+
+CANCEL_OBSERVED absence queued
+FAIL Cancellation survives provider absence without a new permit AssertionError [ERR_ASSERTION]: Cancellation must never authorize another provider attempt; observed queued
+
+true !== false
+
+FAIL C5 readonly permits explicitly authorized refund safety operation Error: [Request ID: 69b86b07eb905f01] Server Error
+Uncaught Error: readonly
+    at deny (../convex/harness.ts:6:58)
+    at writable (../convex/harness.ts:24:34)
+    at async checked (../convex/harness.ts:76:47)
+    at async handler (../convex/harness.ts:249:17)
+
+Command `node independent.mjs` exited with code 1

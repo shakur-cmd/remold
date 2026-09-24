@@ -1,0 +1,39 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:37:31 Convex functions ready! (688.57ms)
+RED D1 authoritative usage above reservation is recorded and pauses spend Error: [Request ID: ed3f024dc5835c30] Server Error
+Uncaught Error: usage exceeds reservation
+    at deny (../convex/harness.ts:6:58)
+    at handler (../convex/harness.ts:289:67)
+
+RED D1 missing usage blocks already-queued final permit AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED D1 remaining exposure exhausted blocks next model permit AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED D2 accepted consumed tail remains recordable after absence and firing Error: [Request ID: 2839e048bcc07320] Server Error
+Uncaught Error: stale/unpermitted outcome
+    at deny (../convex/harness.ts:6:58)
+    at handler (../convex/harness.ts:285:12)
+
+RED D3 callback on unrelated contact does not suppress literal fixture recipient AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+true !== false
+
+RED D5 server recovers consumed crash without adapter calling expire AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'dispatching'
+- 'outcomeUnknown'
+
+RED durable cancel rejection AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED durable cancel absence AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED durable cancel expiry AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED durable cancel continue AssertionError [ERR_ASSERTION]: Missing expected rejection.
+D4 status API is absent; no missing-function failure is counted as a behavior red. T1/T2 will get negative mutation controls.
+10 actual behavior reds
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

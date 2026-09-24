@@ -1,0 +1,121 @@
+[
+  {
+    "operation": {
+      "_creationTime": 1790274954096.276,
+      "_id": "jh7455ezr309c37zt96stngbv98f1w4n",
+      "actor": "js7cn3j9tkqwj0s4hn7pnzqa1s8f1d0c",
+      "actorEpoch": 1,
+      "approval": {
+        "actorEpoch": 1,
+        "approver": {
+          "actor": "js7ajfm43f8n81p48hw19ffa9d8f0pxn"
+        },
+        "expires": 1790275014098,
+        "snapshot": {
+          "amountMinor": 100,
+          "audience": [
+            "recipient"
+          ],
+          "audienceVersion": 1,
+          "content": "synthetic content",
+          "currency": "USD",
+          "destination": "A",
+          "schedule": 0,
+          "workflowVersion": 1
+        },
+        "version": 1
+      },
+      "attempts": 1,
+      "author": "js7cn3j9tkqwj0s4hn7pnzqa1s8f1d0c",
+      "binding": "j57d8ett95y8hyfgfj30jxbwqs8f0y2b",
+      "capability": "marketing.send",
+      "fence": 1,
+      "grant": "k97esxas5rcxwg8fck2mmby5f98f1e2m",
+      "late": false,
+      "leaseUntil": 1790274956104,
+      "logical": "iv-cancel-tail",
+      "maxSteps": 1,
+      "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+      "owner": "js7cn3j9tkqwj0s4hn7pnzqa1s8f1d0c",
+      "payload": {
+        "amountMinor": 100,
+        "audience": [
+          "recipient"
+        ],
+        "audienceVersion": 1,
+        "content": "synthetic content",
+        "currency": "USD",
+        "destination": "A",
+        "schedule": 0,
+        "workflowVersion": 1
+      },
+      "permitUntil": 1790274955112,
+      "permitUsed": true,
+      "providerRef": "fake-dedb7687-4eb3-40e5-9f2a-78ee997ff03e",
+      "reservationUnits": 1,
+      "reserved": 0,
+      "settled": true,
+      "state": "confirmed",
+      "step": 1,
+      "usage": 0,
+      "version": 1,
+      "worker": "worker-1"
+    },
+    "events": [
+      {
+        "_creationTime": 1790274954096.2761,
+        "_id": "k578qmg09c7svctyva66wkwzxh8f0egf",
+        "actor": "js7cn3j9tkqwj0s4hn7pnzqa1s8f1d0c",
+        "at": 1790274954096,
+        "kind": "proposed",
+        "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+        "resource": "jh7455ezr309c37zt96stngbv98f1w4n"
+      },
+      {
+        "_creationTime": 1790274954100.296,
+        "_id": "k57bfw2fkjx4ygfhqtmmzzct818f10f0",
+        "actor": "js7ajfm43f8n81p48hw19ffa9d8f0pxn",
+        "at": 1790274954100,
+        "kind": "approved",
+        "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+        "resource": "jh7455ezr309c37zt96stngbv98f1w4n"
+      },
+      {
+        "_creationTime": 1790274954104.742,
+        "_id": "k575bg60pgw64p024jfpek8pn18f1pe0",
+        "actor": "js7cn3j9tkqwj0s4hn7pnzqa1s8f1d0c",
+        "at": 1790274954104,
+        "kind": "claimed",
+        "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+        "resource": "jh7455ezr309c37zt96stngbv98f1w4n"
+      },
+      {
+        "_creationTime": 1790274954112.229,
+        "_id": "k57cshjgzqfz6nwkkcwg3kf53s8f0sz5",
+        "actor": "trusted-adapter",
+        "at": 1790274954112,
+        "kind": "permit",
+        "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+        "resource": "jh7455ezr309c37zt96stngbv98f1w4n"
+      },
+      {
+        "_creationTime": 1790274954118.429,
+        "_id": "k576cgmf0bq7862bmgs3g4jzk98f0fpk",
+        "actor": "js7ajfm43f8n81p48hw19ffa9d8f0pxn",
+        "at": 1790274954118,
+        "kind": "cancellationRequested",
+        "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+        "resource": "jh7455ezr309c37zt96stngbv98f1w4n"
+      },
+      {
+        "_creationTime": 1790274954125.223,
+        "_id": "k5757k4pwantqgzb2bd17vskj98f0xdn",
+        "actor": "trusted-adapter",
+        "at": 1790274954125,
+        "kind": "confirmed",
+        "org": "kh75p1p5pattekr9325pygm9rn8f0p44",
+        "resource": "jh7455ezr309c37zt96stngbv98f1w4n"
+      }
+    ]
+  }
+]

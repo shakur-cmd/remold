@@ -1,0 +1,130 @@
+{
+  "manifest": "68a793519593ef5125272232653a34f857c7e033acf4d42be4274567065cc4ef",
+  "level": "SERVICE backend / SIM identity and providers",
+  "results": [
+    {
+      "name": "New external/event ID collisions remain separated by tenant account and resource kind",
+      "status": "PASS"
+    },
+    {
+      "name": "Delegated grant revoked on either side of permit produces refusal or one late result",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent permits stay bounded and post-claim suppression blocks the losing dispatch",
+      "status": "PASS"
+    },
+    {
+      "name": "Old worker cannot permit or reconcile after lease expiry and new claim",
+      "status": "PASS"
+    },
+    {
+      "name": "Eight real concurrent claims keep both tenant and global caps",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancellation survives provider rejection without a new permit",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancellation survives provider absence without a new permit",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancellation survives unconsumed expiry without a new permit",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancellation survives model continuation without a new permit",
+      "status": "PASS"
+    },
+    {
+      "name": "Accepted pre-cancel permit tail is recorded as completed after cancellation",
+      "status": "PASS"
+    },
+    {
+      "name": "Exposure bounds, overrun truth and already-queued spend holds",
+      "status": "PASS"
+    },
+    {
+      "name": "Unknown usage prevents an already queued permit and resolves idempotently",
+      "status": "PASS"
+    },
+    {
+      "name": "Old consumed receipts survive provisional/final absence and conflicting receipt cannot double-charge",
+      "status": "PASS"
+    },
+    {
+      "name": "Recipient Y callback blocks only Y, purpose/channel and same external ID tenant collisions remain isolated",
+      "status": "PASS"
+    },
+    {
+      "name": "Adapter cancellation signal is current, fenced and account-scoped",
+      "status": "PASS"
+    },
+    {
+      "name": "Real server expiry frees permit slot without the crashed adapter and preserves consumed reservation",
+      "status": "PASS"
+    },
+    {
+      "name": "Object wildcard is still object-specific and manager grant downgrade strips child lineage only",
+      "status": "PASS"
+    },
+    {
+      "name": "Unresolved prior attempt retains shared exposure through grant-sweep",
+      "status": "PASS"
+    },
+    {
+      "name": "Unresolved prior attempt retains shared exposure through readonly-expiry",
+      "status": "PASS"
+    },
+    {
+      "name": "Unresolved prior attempt retains shared exposure through terminal-failure",
+      "status": "PASS"
+    },
+    {
+      "name": "Unresolved prior attempt retains shared exposure through retryable-failure",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancelled confirmed missing usage retains global reservation until a concurrent duplicate settlement",
+      "status": "PASS"
+    },
+    {
+      "name": "Unconsumed unknown recovers autonomously with cancellation none",
+      "status": "PASS"
+    },
+    {
+      "name": "Unconsumed unknown recovers autonomously with cancellation before-unknown",
+      "status": "PASS"
+    },
+    {
+      "name": "Unconsumed unknown recovers autonomously with cancellation after-unknown",
+      "status": "PASS"
+    },
+    {
+      "name": "Accepted overrun remains confirmed for one-step",
+      "status": "PASS"
+    },
+    {
+      "name": "Accepted overrun remains confirmed for delayed-usage",
+      "status": "PASS"
+    },
+    {
+      "name": "Accepted overrun remains confirmed for cancelled-delayed",
+      "status": "PASS"
+    },
+    {
+      "name": "Exactly exhausted multi-step continuation refuses more work and releases capacity once",
+      "status": "PASS"
+    },
+    {
+      "name": "New binding recipient suppression persists without prior row and survives duplicate/out-of-order callback",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent old receipt and retry failure preserve accepted truth and exact budget once",
+      "status": "PASS"
+    }
+  ]
+}

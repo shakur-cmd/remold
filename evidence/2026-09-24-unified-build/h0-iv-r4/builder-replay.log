@@ -1,0 +1,68 @@
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+✔ Configured a local deployment for http://127.0.0.1:3410 and saved its:
+    name as CONVEX_DEPLOYMENT
+    client URL as CONVEX_URL
+    HTTP actions URL as CONVEX_SITE_URL
+ to .env.local
+
+Write your Convex functions in convex
+Give us feedback at https://convex.dev/community or support@convex.dev
+View the Convex dashboard at null
+
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ Added table indexes:
+  [+] bindings.key   provider, environment, account, kind, externalId, _creationTime
+  [+] callbacks.key   binding, eventId, _creationTime
+  [+] consent.recipient   org, recipient, purpose, channel, _creationTime
+  [+] operations.logical   org, logical, _creationTime
+  [+] sessions.token   token, _creationTime
+✔ 15:17:20 Convex functions ready! (1.12s)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+PASS Model continuation rechecks authority, step/fence and remaining exposure
+PASS Expired unconsumed permits retry safely; consumed crash becomes unknown
+PASS Unknown authoritative absence never resends after firing; terminal rejection releases reservation
+PASS Authoritative absence and retryable rejection preserve logical key and revalidate new permits
+PASS Material edits, audience, currency and approval expiry invalidate immutable snapshot
+PASS Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly
+PASS Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship
+PASS Provisioning durable intents preserve delete-before/create-before races
+PASS Partial traversal commits only full checkpoints and later traversal resumes without regression
+PASS Durable cancellation survives rejection, absence, expiry and model continuation
+PASS Scoped adapter sees cancellation signal and records one late accepted tail
+PASS Late consumed outcome settles once after provisional or final absent lookup
+PASS Per-call remaining exposure, missing usage and actual overruns fence final dispatch
+PASS Conflicting provider reference refuses durably and holds spend without rolling back anomaly
+PASS Per-recipient and per-purpose suppression never changes another contact or tenant
+PASS Server scheduler recovers adapter crashes without a callback or manual expiry call
+PASS Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives
+PASS Unresolved consumed attempt survives sweep and holds global exposure
+PASS Unresolved consumed attempt survives expiry and holds global exposure
+PASS Unresolved consumed attempt survives failure and holds global exposure
+PASS Cancellation cannot release confirmed work with missing usage
+PASS Unconsumed unknown is ignored and scheduler recovers false
+PASS Unconsumed unknown is ignored and scheduler recovers true
+PASS Single-step accepted overrun remains confirmed false
+PASS Single-step accepted overrun remains confirmed true
+PASS Exhausted successful continuation settles and releases its slot
+PASS Suppression without an existing purpose/channel row is durable
+PASS Settled-step provisional absence cannot settle a later unresolved step
+PASS Settled-step final absence cannot settle a later unresolved step
+PASS Old consumed fence for the same unresolved step still supports provisional absence
+PASS Old consumed fence for the same unresolved step still supports final absence
+H0 SERVICE replay: 43 behavioral groups PASS; fixture SHA256 ff761ad3a53f4a3dd0ac511fce9f7c1d37b73423fd44419840c16abf4c447254

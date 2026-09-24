@@ -1,0 +1,68 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 15:03:32 Convex functions ready! (761.15ms)
+EXPECTED RED Unresolved consumed attempt survives sweep and holds global exposure AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'paused'
+- 'outcomeUnknown'
+
+EXPECTED RED Unresolved consumed attempt survives expiry and holds global exposure AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'paused'
+- 'outcomeUnknown'
+
+EXPECTED RED Unresolved consumed attempt survives failure and holds global exposure AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'refused'
+- 'outcomeUnknown'
+
+EXPECTED RED Cancellation cannot release confirmed work with missing usage AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 8
+
+EXPECTED RED Unconsumed unknown is ignored and scheduler recovers false AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'outcomeUnknown'
+- 'queued'
+
+EXPECTED RED Unconsumed unknown is ignored and scheduler recovers true AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'outcomeUnknown'
+- 'cancelled'
+
+EXPECTED RED Single-step accepted overrun remains confirmed false AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'paused'
+- 'confirmed'
+
+EXPECTED RED Single-step accepted overrun remains confirmed true AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'paused'
+- 'confirmed'
+
+EXPECTED RED Exhausted successful continuation settles and releases its slot AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+EXPECTED RED Suppression without an existing purpose/channel row is durable AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- true
+
+TEN REAL OLD-CODE REDS
