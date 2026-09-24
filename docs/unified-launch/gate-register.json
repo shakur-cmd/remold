@@ -8,7 +8,7 @@
     ],
     "status": "open",
     "needed": "WorkOS admin/Google sign-in configuration; isolated previews; backup and alert account; platform Stripe sandbox; real price and commercial policy. No production cutover authorized.",
-    "accessUpdate": "Shakur reports Stripe, WorkOS and Google Cloud signed in on Chrome; account scope/configuration not yet verified."
+    "accessUpdate": "Verified Remold WorkOS Staging configured; real Google/AuthKit local login, logout, refresh, deep invite, valid-JWT issuer rejection and membership isolation tested. AuthKit commit3932963 passedCI36045807967. Separate hosted previews/production, email-password, managedbackup/restore and deliveredalerts still required. Stripe isolated test sandbox created and read-only account/mode verified."
   },
   {
     "id": "G-pay",
@@ -20,7 +20,7 @@
     ],
     "status": "open",
     "needed": "Stripe Connect sandbox with two merchants; merchant country/legal configuration and retention/readonly collection policy. Live charges/refunds need exact allowance.",
-    "accessUpdate": "Shakur reports Stripe, WorkOS and Google Cloud signed in on Chrome; account scope/configuration not yet verified."
+    "accessUpdate": "Remold integration sandbox acct_1UJHeKJjT84hNemU created; APIaccountID matches and balance.livemode=false. Two connected merchants and full sandboxproof remain pendingH0. Live account unchanged."
   },
   {
     "id": "G-mail",
@@ -33,7 +33,7 @@
     ],
     "status": "open",
     "needed": "Google Cloud OAuth project and two controlled mailboxes/calendar; approved sending identity/domain, recipients and quota. Gmail connector for owner email is not app OAuth credential.",
-    "accessUpdate": "Shakur reports Stripe, WorkOS and Google Cloud signed in on Chrome; account scope/configuration not yet verified."
+    "accessUpdate": "Created isolated remold-integrations-staging GoogleCloud project1044475403749; Remold staging external OAuth app in Testing mode, webclient Remold staging integrations, secret stored ignoredmode0600. No testusers or scopes authorized; callbacks await P5fixture. Two controlled mailbox/calendar identities and exactsendallowance requested by confirmedemail1a0d4d6f9f6f1890."
   },
   {
     "id": "G-social",

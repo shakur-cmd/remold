@@ -1,0 +1,12 @@
+{
+  "task": "remold-stripe-sandbox-setup",
+  "outcome": "Prepare isolated Remold billing and Connect sandbox with two synthetic merchants",
+  "allowedOrigins": [
+    "https://dashboard.stripe.com"
+  ],
+  "accountLabel": "Shakur signed-in CodeMyVibe LLC Stripe account",
+  "risk": "test-only configuration; no live charges, paidservices, payoutchanges orproductionwebhooks",
+  "target": "2AC8FEB28DA4585BDB5326CD283D5166",
+  "maxIrreversibleCommitPerRun": 1,
+  "authorization": "Fullbuildrequest plus explicit Stripe Chromesignin report"
+}
