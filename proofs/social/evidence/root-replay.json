@@ -1,0 +1,41 @@
+{
+  "reviewer": "root, independent of P3 builder c0_verifier",
+  "at": "2026-09-24T21:50:28.046913+00:00",
+  "authoredSourceHashesVerified": true,
+  "commandsExit": 0,
+  "results": {
+    "baseline": {
+      "providerAcceptances": 2,
+      "failures": [
+        {
+          "timeoutType": 4,
+          "lastHeartbeatDetailsPresent": false
+        }
+      ],
+      "evidenceSha256": "81eb088c8c5d3aea05d015766898de912f300f9224c01d139a49afd1f1b72291"
+    },
+    "patched": {
+      "providerAcceptances": 1,
+      "failures": [
+        {
+          "timeoutType": 4,
+          "lastHeartbeatDetailsPresent": false
+        }
+      ],
+      "evidenceSha256": "c721abf0432287cee873b32f5da578b4f6231b7c2de8f0d44fe516aaa3ac4a29"
+    },
+    "permit-baseline": {
+      "providerAcceptances": 1,
+      "failures": [],
+      "evidenceSha256": "fd045f9c2f70b947a627e70506b62ac8a9856a22054c57a1e5d085f180c09d73"
+    },
+    "permit-patched": {
+      "providerAcceptances": 0,
+      "failures": [],
+      "evidenceSha256": "3b3fa08750171818436e19db73e7e47acd7f5423298cd7ddad0a65f1b59e505d"
+    }
+  },
+  "scope": "Actual Temporal1.28.1 with exact upstream workflow, synthetic provider/DB; H0 marketing.send boundary only, not social.publish or actual Postiz provider integration",
+  "wholeP3": "OPEN",
+  "manifestBeforeRootReplaySha256": "2eade4b7b99c339187d6ecb9d7c3ea7ae2a2617d82890517bdcf6c01bb308155"
+}

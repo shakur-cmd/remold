@@ -1,0 +1,168 @@
+{
+  "asOf": "2026-09-24",
+  "level": "DESK only; vendor documentation is not actual-channel proof",
+  "rows": [
+    {
+      "channel": "TikTok",
+      "required": true,
+      "accountAndReview": "Creator account + authorized developer app; audit governs public posting. HTTPS callback and verified media origin.",
+      "documentedMediaSubset": "Video or photo post; no text-only. Postiz caption limit2,000. Live creator-info duration/privacy limits must be queried.",
+      "metrics": "Views, likes, comments/shares where authorized.",
+      "accessState": "Root troubleshooting account; API consent absent.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://developers.tiktok.com/docs/en/content-sharing-guidelines",
+        "https://docs.postiz.com/self-host/providers/tiktok",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "Instagram",
+      "required": true,
+      "accountAndReview": "Professional Business/Creator. Standalone Instagram Login or linked Facebook Page flow; Meta review for users outside app roles.",
+      "documentedMediaSubset": "Media required; Postiz caption2,200. Story/reel/carousel limits differ. Story support depends account type.",
+      "metrics": "Reach, views, likes, comments/saves; scope and account dependent.",
+      "accessState": "Exact identity/account type still open.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api",
+        "https://docs.postiz.com/self-host/providers/instagram",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "LinkedIn",
+      "required": true,
+      "accountAndReview": "Personal member for current requested identity; organization/Page is a separate account. Direct w_member_social; Postiz asks wider organization/Advertising scopes too.",
+      "documentedMediaSubset": "Text, images/document carousel or video; Postiz caption3,000.",
+      "metrics": "Postiz personal-profile analytics unsupported. Direct memberCreatorPostAnalytics exists with r_member_postAnalytics; app approval and implementation unproven.",
+      "accessState": "Root reports /in/abdulshakur-abdullah signed in; API consent absent.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://learn.microsoft.com/en-us/linkedin/marketing/community-management/members/post-statistics?view=li-lms-2026-09",
+        "https://docs.postiz.com/self-host/providers/linkedin",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "Facebook Pages",
+      "required": true,
+      "accountAndReview": "Owned/administered Page + Meta app and Page permission/token. Personal profile login alone is insufficient.",
+      "documentedMediaSubset": "Text, photos or video; story attachments publish separately.",
+      "metrics": "Page impressions/engagement and post metrics where permissions allow.",
+      "accessState": "Root inspecting existing Page; final Page binding/API consent absent.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://docs.postiz.com/self-host/providers/facebook",
+        "https://docs.postiz.com/self-host/providers/facebook",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "X",
+      "required": true,
+      "accountAndReview": "X developer app plus user OAuth; Postiz uses OAuth1a read/write. API credits separate from browser login.",
+      "documentedMediaSubset": "Text; up to4 images or1 video in Postiz. Ordinary text280; paid long-form modes not assumed.",
+      "metrics": "Post metrics, impressions/engagement vary by access and billing.",
+      "accessState": "Root reports @abdullah_s3854; API consent/credits absent.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://docs.x.com/x-api/getting-started/pricing",
+        "https://docs.postiz.com/self-host/providers/x-twitter",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "YouTube",
+      "required": false,
+      "accountAndReview": "Google OAuth channel + YouTube API; unaudited upload projects restricted to private visibility.",
+      "documentedMediaSubset": "One video; official API maximum256GB, actual hosting/upload constraints lower and unmeasured.",
+      "metrics": "Views, watch time, subscribers; Analytics scope separate.",
+      "accessState": "Optional candidate only; no account selection.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://developers.google.com/youtube/v3/docs/videos/insert",
+        "https://docs.postiz.com/self-host/providers/youtube",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "Threads",
+      "required": false,
+      "accountAndReview": "Threads account + Meta developer app/OAuth review.",
+      "documentedMediaSubset": "Text/image/video; Postiz text500.",
+      "metrics": "Views, likes, replies, reposts/quotes where available.",
+      "accessState": "Optional candidate only.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://docs.postiz.com/self-host/providers/threads",
+        "https://docs.postiz.com/self-host/providers/threads",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "Pinterest",
+      "required": false,
+      "accountAndReview": "Pinterest developer app and authorized account/board; access level determines permitted use.",
+      "documentedMediaSubset": "Image or video pins; Postiz max5 images, video requires cover.",
+      "metrics": "Impressions, saves, pin/outbound clicks where authorized.",
+      "accessState": "Optional candidate only.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://developers.pinterest.com/docs/getting-started/connect-app/",
+        "https://docs.postiz.com/self-host/providers/pinterest",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    },
+    {
+      "channel": "Bluesky",
+      "required": false,
+      "accountAndReview": "Account/app password or chosen protocol OAuth path; Postiz documents credentials connection.",
+      "documentedMediaSubset": "Text300; up to4 images or1 video in Postiz.",
+      "metrics": "Post for Me schema offers likes/replies/reposts/quotes; Postiz analytics list excludes Bluesky.",
+      "accessState": "Optional candidate only.",
+      "apiConnected": false,
+      "publicationTested": false,
+      "cancelTested": false,
+      "metricsTested": false,
+      "sources": [
+        "https://bsky.network/docs/advanced-guides/posts/",
+        "https://docs.postiz.com/self-host/providers/bluesky",
+        "https://docs.postiz.com/general/platforms/overview",
+        "https://docs.postiz.com/general/analytics"
+      ]
+    }
+  ]
+}

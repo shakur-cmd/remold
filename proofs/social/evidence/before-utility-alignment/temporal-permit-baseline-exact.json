@@ -1,0 +1,64 @@
+{
+  "pass": true,
+  "contractManifest": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+  "authorityRevokedAfterActivityHandoff": true,
+  "serverVersion": "1.28.1",
+  "generatedSourceHashes": {
+    "workflow.cjs": "ca87959cad6335543c778e090270b068fd80b96b48b7f2192e55e33ef6793448",
+    "heartbeat.cjs": "abb95ddc09a9c02214056c44348bcecbe2dbe9075357568cbd4d535ff90e6309",
+    "make.cjs": "be47c34bb9e81ae2d96f8c0418b819f6ed3f0b544392d610caf9bf17e0f9f0b9",
+    "search.cjs": "d62d1bb30d4e592dc9da0f4bdd5b0686277f1d8957fd4ad748de360d54a6397e"
+  },
+  "importShims": [
+    {
+      "from": "@gitroom/nestjs-libraries/services/make.is",
+      "to": "./make.cjs",
+      "behavior": "exact source transpiled"
+    },
+    {
+      "from": "@gitroom/nestjs-libraries/temporal/temporal.search.attribute",
+      "to": "./search.cjs",
+      "behavior": "exact source transpiled"
+    }
+  ],
+  "level": "SERVICE real Temporal; exact upstream workflow and heartbeat; synthetic DB/provider",
+  "mode": "permit-baseline",
+  "sourceCommit": "bb5099a84aeed517cc164dc8599a6ccb903105b8",
+  "sourceHashes": {
+    "apps/orchestrator/src/workflows/post-workflows/post.workflow.v1.1.2.ts": "7047cf4c339320d56fea1d840769c75f86421e5276300896d7c35db59fd027a6",
+    "libraries/nestjs-libraries/src/temporal/temporal.heartbeat.ts": "cf9069996a4d05857f8c7bef0ab30ac2c11c42b7e64d5376f2cbb1a1c88ac684",
+    "libraries/nestjs-libraries/src/services/make.is.ts": "e799baf7dfb2597d639fd4bda3070061e61c18df09db43de6f1ab97e036a52e7",
+    "libraries/nestjs-libraries/src/temporal/temporal.search.attribute.ts": "8dbecc09961d38e8853d9adef456f10cda8b0314ccac6a51129dd99c3baf6ba3"
+  },
+  "sdkVersion": "1.15.0",
+  "serverRuntime": {
+    "kind": "native",
+    "release": "https://github.com/temporalio/temporal/releases/tag/v1.28.1",
+    "archiveSha256": "655e3052b9d04cab7bf569a33880bc01996a06f9b2b5d7c475ada9b296389531"
+  },
+  "sourceChange": "none beyond TS compilation/import alias resolution",
+  "providerActivityHook": "none",
+  "workerKilledAfterAcceptanceMs": 0,
+  "providerAcceptances": 1,
+  "failures": [],
+  "events": [
+    {
+      "at": 1790285166926,
+      "type": "providerAccepted"
+    },
+    {
+      "at": 1790285166932,
+      "type": "published"
+    },
+    {
+      "at": 1790285166938,
+      "type": "notification",
+      "unconfirmed": false
+    }
+  ],
+  "workflowResult": null,
+  "actualSocialProviderCalls": 0,
+  "fullPostizDeployment": false,
+  "independentlyVerified": false,
+  "scratch": "/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-social-permit-baseline-FjXETT"
+}

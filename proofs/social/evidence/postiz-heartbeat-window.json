@@ -1,0 +1,17 @@
+{
+  "level": "SIM exact upstream helper; synthetic context/timer/provider",
+  "sourceCommit": "bb5099a84aeed517cc164dc8599a6ccb903105b8",
+  "path": "libraries/nestjs-libraries/src/temporal/temporal.heartbeat.ts",
+  "sourceSha256": "cf9069996a4d05857f8c7bef0ab30ac2c11c42b7e64d5376f2cbb1a1c88ac684",
+  "beforeFirstTick": {
+    "providerAcceptances": 1,
+    "serverHeartbeatCalls": 0,
+    "intervalMs": 15000
+  },
+  "afterFirstTick": {
+    "serverHeartbeatCalls": 1
+  },
+  "finding": "Provider function executes before any heartbeat call. Worker death after acceptance before first heartbeat is not excluded by missing heartbeat details.",
+  "actualTemporalWorkerCrashTest": false,
+  "actualPublicPosts": 0
+}

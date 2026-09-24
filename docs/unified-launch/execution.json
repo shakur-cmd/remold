@@ -83,14 +83,18 @@
     },
     {
       "id": "P3",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "/root/c0_verifier",
+      "independentVerifier": "root, bounded four-case runtime replay only",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
         "H0"
-      ]
+      ],
+      "evidence": "proofs/social/handover.html",
+      "independentEvidence": "proofs/social/evidence/root-replay.json",
+      "frozenManifest": "c712d8a43699b2f5a2d781e46af5b926ebf3a2ac3bc17a7cdfdf4f045f5effef",
+      "scopeNote": "Exact-workflow Temporal SERVICE synthetic-provider crash2to1 and shared H0 boundary1to0 independently repeated. No full Postiz deployment, actual social.publish capability, OAuth/provider/media/metrics proof or D0S selection. Broader research independent review remains open."
     },
     {
       "id": "P4",
