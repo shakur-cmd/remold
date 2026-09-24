@@ -48,14 +48,20 @@
     },
     {
       "id": "P1",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "root",
+      "independentVerifier": "/root/c0_verifier scheduled",
       "costCap": 0,
-      "externalAllowance": "none",
+      "externalAllowance": "source/containerdownloads only, stubexecutors no paidmodel or messages",
       "depends": [
         "H0"
-      ]
+      ],
+      "base": "a5720711041cb67d56d0fdb15bee512100a07976",
+      "contract": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "allowedPaths": [
+        "proofs/agents/**"
+      ],
+      "environment": "isolated Docker contextcolima-remold-proof, nohosthome; optional local3500/3501 for nativebaseline"
     },
     {
       "id": "P2",
@@ -81,14 +87,21 @@
     },
     {
       "id": "P4",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "/root/i2_release",
+      "independentVerifier": "/root/c0_verifier scheduled after frozen proof",
       "costCap": 0,
-      "externalAllowance": "none",
+      "externalAllowance": "Test-mode API only, no live charges/emails/real customerdata; no paidproducts",
       "depends": [
         "H0"
-      ]
+      ],
+      "base": "a5720711041cb67d56d0fdb15bee512100a07976",
+      "contract": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "allowedPaths": [
+        "proofs/payments/**"
+      ],
+      "environment": "Stripe test sandboxacct_1UJHeKJjT84hNemU, two synthetic merchants; optional loopback3490/3491",
+      "scopeNote": "Full required job; account/live policy gates remain open. Measurement addendum applies to later product integration."
     },
     {
       "id": "P5",
@@ -170,14 +183,24 @@
     },
     {
       "id": "I1",
-      "state": "specified",
-      "builder": null,
-      "independentVerifier": null,
+      "state": "dispatched",
+      "builder": "/root/h0_builder",
+      "independentVerifier": "/root/c0_verifier scheduled after frozen proof",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
         "H0"
-      ]
+      ],
+      "base": "a5720711041cb67d56d0fdb15bee512100a07976",
+      "contract": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "allowedPaths": [
+        "convex/** except telemetry/crons/release files",
+        "packages/contracts/**",
+        "ops/authority/**",
+        "src/** only necessary identity/authority consumers coordinated with root"
+      ],
+      "environment": "isolated anonymous local Convex3480/3481, synthetic migration fixtures only",
+      "scopeNote": "Full required job; account/live policy gates remain open. Measurement addendum applies to later product integration."
     },
     {
       "id": "I2",
@@ -204,13 +227,15 @@
         "local operator flags and audited changes, independent SERVICE adversarial check",
         "local Workers /version JSON no-store routing, independent alternate-SHA replay",
         "local migration component interrupted/resumed over1000records, compatible exact-source rollback; root replay1000 and independent1100",
-        "AuthKit source/SDK reviewed independently; root hostedGooglelogin refreshlogout deepinvite, actualJWTissuer/memberisolation; independentmembershippostcondition and currentChrome witness; commit3932963 CI36045807967"
+        "AuthKit source/SDK reviewed independently; root hostedGooglelogin refreshlogout deepinvite, actualJWTissuer/memberisolation; independentmembershippostcondition and currentChrome witness; commit3932963 CI36045807967",
+        "Bounded internal REST telemetry: root50 and independent73 concurrent receipts, actualdelay/error and schedulerejection, real3minute transportgap/recovery,63app tests/typecheck; no publicdashboard/alerts orreleasecomparison"
       ],
       "evidence": "evidence/2026-09-24-unified-build/i2-slice-verdict.json",
       "remaining": "Email/password and separate-profile AuthKit journey, hosted previews/version, managed backups/restore, real old-browser migration/rollback, delivered alerts, named authenticated operator attribution, timed flag UI propagation, measurement foundation in progress",
       "additionalEvidence": "evidence/2026-09-24-unified-build/flags-version-verdict.json",
       "migrationEvidence": "ops/migrations/evidence/independent.html",
-      "authEvidence": "evidence/2026-09-24-unified-build/authkit-iv/invite-report.html"
+      "authEvidence": "evidence/2026-09-24-unified-build/authkit-iv/invite-report.html",
+      "telemetryEvidence": "evidence/2026-09-24-unified-build/telemetry-iv/report.html"
     },
     {
       "id": "I3",

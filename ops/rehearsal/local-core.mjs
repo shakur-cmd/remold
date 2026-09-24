@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-export async function withLocalCore(check) {
+export async function withLocalCore(check, { cloudPort = 3420, sitePort = 3421 } = {}) {
   const scratch = mkdtempSync(join(tmpdir(), "remold-core-service-"));
   const sha = (s) => createHash("sha256").update(s).digest("hex");
   const configHash = () => existsSync(join(root, ".env.local")) ? sha(readFileSync(join(root, ".env.local"))) : null;
@@ -20,7 +20,7 @@ export async function withLocalCore(check) {
   symlinkSync(join(root, "node_modules"), join(scratch, "node_modules"), "dir");
   const cli = join(root, "node_modules/convex/bin/main.js");
   let logs = "";
-  const backend = spawn(process.execPath, [cli, "dev", "--typecheck", "disable", "--tail-logs", "disable", "--local-cloud-port", "3420", "--local-site-port", "3421"], { cwd: scratch, env, detached: true, stdio: ["ignore", "pipe", "pipe"] });
+  const backend = spawn(process.execPath, [cli, "dev", "--typecheck", "disable", "--tail-logs", "disable", "--local-cloud-port", String(cloudPort), "--local-site-port", String(sitePort)], { cwd: scratch, env, detached: true, stdio: ["ignore", "pipe", "pipe"] });
   backend.stdout.on("data", (b) => { logs += b; });
   backend.stderr.on("data", (b) => { logs += b; });
   const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -35,9 +35,9 @@ export async function withLocalCore(check) {
       await pause(250);
     }
     const config = readFileSync(join(scratch, ".env.local"), "utf8");
-    const url = /^CONVEX_URL=(.+)$/m.exec(config)?.[1];
+    const url = /^(?:VITE_)?CONVEX_URL=(.+)$/m.exec(config)?.[1];
     assert.ok(url && ["127.0.0.1", "localhost"].includes(new URL(url).hostname), "Refusing non-loopback proof deployment");
-    const result = await check({ site: "http://127.0.0.1:3421", url, run, scratch, root, sha });
+    const result = await check({ site: `http://127.0.0.1:${sitePort}`, url, run, scratch, root, sha });
     assert.equal(configHash(), liveEnvHash, "Root deployment config changed");
     return { ...result, rootDeploymentConfigUnchanged: true, scratch };
   } finally {

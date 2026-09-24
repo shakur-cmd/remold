@@ -5,6 +5,8 @@ const slot = v.object({ kind: v.union(v.literal("n"), v.literal("s"), v.literal(
 const values = v.record(v.string(), v.any());
 
 export default defineSchema({
+  opsMetrics: defineTable({ minute:v.number(), route:v.union(v.literal("rest"),v.literal("probe")), status:v.string(), release:v.string(), count:v.number(), serverErrors:v.number(), clientErrors:v.number(), sumMs:v.number(), maxMs:v.number(), buckets:v.array(v.number()) }).index("by_minute",["minute"]),
+  opsProbes: defineTable({minute:v.number(),result:v.union(v.literal("sent"),v.literal("failed"),v.literal("unconfigured"))}).index("by_minute",["minute"]),
   users: defineTable({ tokenIdentifier: v.string(), name: v.string(), email: v.optional(v.string()), imageUrl: v.optional(v.string()) }).index("by_token", ["tokenIdentifier"]),
   orgs: defineTable({ name: v.string(), createdBy: v.id("users"), flags: v.optional(v.record(v.string(), v.boolean())) }),
   opsEvents: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.literal("operator"), id: v.literal("internal-admin") }), action: v.literal("featureFlagChanged"), flag: v.string(), before: v.boolean(), after: v.boolean(), reason: v.string() }).index("by_org", ["orgId"]),

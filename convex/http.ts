@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { recordResponse, validProbe } from "./telemetryHttp";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -16,6 +17,7 @@ async function auth(request: Request) {
 }
 
 async function dispatch(ctx: any, request: Request) {
+  if(request.method === "GET" && new URL(request.url).pathname === "/api/v1/_probe") return await validProbe(request) ? json({ok:true}) : bad("UNAUTHENTICATED", "Invalid probe", 401);
   const keyHash = await auth(request), url = new URL(request.url), path = url.pathname.replace(/^\/api\/v1\/?/, "").split("/").filter(Boolean), q = url.searchParams;
   const limit = request.method === "POST" ? await ctx.runMutation(internal.rateLimit.take, { keyHash }) : { allowed: true, retryAfter: 0 };
   if (!limit.allowed) return new Response(JSON.stringify({ error: { code: "RATE_LIMITED", message: "Agent write limit reached. Retry after the indicated delay.", retryAfter: limit.retryAfter } }), { status: 429, headers: { "content-type": "application/json", "retry-after": String(limit.retryAfter) } });
@@ -40,7 +42,7 @@ async function dispatch(ctx: any, request: Request) {
   return bad("NOT_FOUND", "Route not found", 404);
 }
 
-const route = httpAction(async (ctx, request) => {
+async function responseFor(ctx: any, request: Request) {
   try { return await dispatch(ctx, request); }
   catch (error) {
     const data = (error as any)?.data;
@@ -50,6 +52,12 @@ const route = httpAction(async (ctx, request) => {
     if (/ArgumentValidationError|Validator error/.test(message)) return bad("VALIDATION", message.split("\n").slice(0, 2).join(" ").trim());
     return bad("INTERNAL", "Something went wrong", 500);
   }
+}
+const route = httpAction(async (ctx,request) => {
+  const startedAt=Date.now();
+  const response=await responseFor(ctx,request);
+  await recordResponse(ctx,request,response,startedAt);
+  return response;
 });
 router.route({ pathPrefix: "/api/v1/", method: "GET", handler: route });
 router.route({ pathPrefix: "/api/v1/", method: "POST", handler: route });

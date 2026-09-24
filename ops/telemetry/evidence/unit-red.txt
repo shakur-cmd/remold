@@ -1,0 +1,71 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ convex/telemetry.test.ts (3 tests | 3 failed) 15ms
+   × counts concurrent delivered requests and exposes exact statuses and bounded latency 14ms
+   × shows gaps and null rates instead of claiming missing transport means zero errors 0ms
+   × bounds release cardinality, rejects customer-shaped fields and expires old rows 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/telemetry.test.ts > counts concurrent delivered requests and exposes exact statuses and bounded latency
+Error: Could not find module for: "telemetry"
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1468:19
+ ❯ resolveFunction node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2398:76
+ ❯ Object.mutationFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2131:40
+ ❯ mutation node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2181:41
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:80
+ ❯ Object.result.<computed> [as mutation] node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:56
+ ❯ convex/telemetry.test.ts:14:52
+     12|  vi.spyOn(Date,"now").mockReturnValue(now);
+     13|  const t=makeTest();
+     14|  await Promise.all(Array.from({length:50},(_,i)=>t.mutation(record,{mi…
+       |                                                    ^
+     15|  await t.mutation(probe,{minute,result:"sent"});
+     16|  await t.mutation(record,{minute,route:"probe",status:200,durationMs:1…
+ ❯ convex/telemetry.test.ts:14:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  convex/telemetry.test.ts > shows gaps and null rates instead of claiming missing transport means zero errors
+Error: Could not find module for: "telemetry"
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1468:19
+ ❯ resolveFunction node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2398:76
+ ❯ Object.mutationFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2131:40
+ ❯ mutation node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2181:41
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:80
+ ❯ Object.result.<computed> [as mutation] node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:56
+ ❯ convex/telemetry.test.ts:28:10
+     26|  vi.spyOn(Date,"now").mockReturnValue(now);
+     27|  const t=makeTest();
+     28|  await t.mutation(probe,{minute:minute-4,result:"sent"});
+       |          ^
+     29|  const data:any=await t.query(report,{minutes:5,asOfMinute:minute});
+     30|  expect(data.coverage.find((m:any)=>m.minute===minute-4).state).toBe("…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  convex/telemetry.test.ts > bounds release cardinality, rejects customer-shaped fields and expires old rows
+Error: Could not find module for: "telemetry"
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1468:19
+ ❯ resolveFunction node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2398:76
+ ❯ Object.mutationFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2131:40
+ ❯ mutation node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2181:41
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:80
+ ❯ Object.result.<computed> [as mutation] node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:56
+ ❯ convex/telemetry.test.ts:40:32
+     38|  const clock=vi.spyOn(Date,"now").mockReturnValue(now);
+     39|  const t=makeTest();
+     40|  for(let i=0;i<10;i++) await t.mutation(record,{minute,route:"rest",st…
+       |                                ^
+     41|  await expect(t.mutation(record,{minute,route:"rest",status:200,durati…
+     42|  const data:any=await t.query(report,{minutes:1,asOfMinute:minute});
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  15:04:40
+   Duration  161ms (transform 55%, import 28%, tests 16%, worker 2%)
+

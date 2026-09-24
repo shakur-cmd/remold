@@ -1,0 +1,158 @@
+{
+  "status": "SUPERSEDED diagnostic rehearsal; not final source verification",
+  "level": "SERVICE disposable local Convex; synthetic HTTP fault injection",
+  "before": {
+    "httpStatus": 500,
+    "clientMs": 309.1085409999996,
+    "metric": {
+      "buckets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clientErrors": 0,
+      "count": 1,
+      "maxMs": 302,
+      "meanMs": 302,
+      "overflowAboveMs": 10000,
+      "p50UpperMs": 500,
+      "p95UpperMs": 500,
+      "rateLimited": 0,
+      "serverErrorRate": 1,
+      "serverErrors": 1,
+      "statusCounts": {
+        "500": 1
+      }
+    }
+  },
+  "after": {
+    "httpStatus": 200,
+    "clientMs": 5.247166000000107,
+    "metric": {
+      "buckets": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clientErrors": 0,
+      "count": 1,
+      "maxMs": 0,
+      "meanMs": 0,
+      "overflowAboveMs": 10000,
+      "p50UpperMs": 10,
+      "p95UpperMs": 10,
+      "rateLimited": 0,
+      "serverErrorRate": 0,
+      "serverErrors": 0,
+      "statusCounts": {
+        "200": 1
+      }
+    }
+  },
+  "concurrent": {
+    "requests": 50,
+    "successfulHttpResponses": 50,
+    "recordedDelta": 50
+  },
+  "operatorReadAndWriteRefusedPublicly": true,
+  "noRequestContentPersisted": true,
+  "overhead": {
+    "enabled": {
+      "n": 20,
+      "meanMs": 4.568535350000184,
+      "maxMs": 7.703875000001062,
+      "samplesMs": [
+        6.982333000001745,
+        4.074040999999852,
+        4.16162500000064,
+        4.592790999999124,
+        4.325291000001016,
+        4.245500000000902,
+        4.295874999999796,
+        4.019291999999041,
+        3.8285830000004353,
+        3.283665999999357,
+        7.703875000001062,
+        4.4192910000001575,
+        5.384124999998676,
+        4.041124999999738,
+        3.71295900000041,
+        4.213333000001512,
+        4.220709000001079,
+        4.211083999998664,
+        4.932499999998981,
+        4.722709000001487
+      ]
+    },
+    "disabled": {
+      "n": 20,
+      "meanMs": 3.554502050000065,
+      "maxMs": 6.120042000000467,
+      "samplesMs": [
+        5.528874999999971,
+        3.3591660000001866,
+        3.1532919999990554,
+        3.655791000001045,
+        3.324125000001004,
+        3.05816699999923,
+        2.869124999999258,
+        3.77654099999927,
+        3.145667000000685,
+        3.2195000000010623,
+        6.120042000000467,
+        3.3774580000008427,
+        3.6501250000001164,
+        2.977666999999201,
+        3.4836249999989377,
+        1.9984999999996944,
+        3.114666000001307,
+        3.2463750000006257,
+        4.493083999999726,
+        3.538249999999607
+      ]
+    },
+    "note": "Observed local alternating blocks; excludes neither noise nor drift; no causal performance claim."
+  },
+  "probe": {
+    "coveredBefore": [
+      {
+        "minute": 29837948,
+        "probeResult": "sent",
+        "state": "covered"
+      }
+    ],
+    "gapMinute": 29837949,
+    "gap": {
+      "minute": 29837949,
+      "probeResult": "sent",
+      "state": "transport-gap"
+    },
+    "restored": true,
+    "unauthorizedStatus": 401
+  },
+  "release": "unknown: artifact SHA pinning not implemented",
+  "limitations": [
+    "No delivered alerts, hosted dashboard, provider traffic or production deployment.",
+    "Canary does not detect partial loss or crashes before response completion.",
+    "No true release before/after comparison while backend release is unknown."
+  ],
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-JI0wSb",
+  "supersededReason": "Builder hardened status classification and types while this isolated copy ran. Retained observations only; final frozen-source replay required."
+}
