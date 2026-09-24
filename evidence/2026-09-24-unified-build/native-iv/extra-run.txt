@@ -1,0 +1,23 @@
+▌ Developing against deployment:
+▌ [Local] Port 3500 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3500
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 17:35:17 Convex functions ready! (1.01s)
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/browser/http_client.js:297
+        throw new Error(respJSON.errorMessage);
+              ^
+
+Error: [Request ID: 725fcbcce8e8c5aa] Server Error
+Uncaught Error: outside manage scope
+    at deny (../convex/harness.ts:7:58)
+    at manage (../convex/harness.ts:92:0)
+    at async handler (../convex/harness.ts:248:12)
+
+    at ConvexHttpClient.mutationInner (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/browser/http_client.js:297:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async ConvexHttpClient.processMutationQueue (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/browser/http_client.js:310:24)
+
+Node.js v24.18.0
+Command `node ../../../evidence/2026-09-24-unified-build/native-iv/replay-extra.mjs` exited with code 1

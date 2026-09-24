@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P5 communications preparation</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Native agent proof: repaired lifecycle review</h1><div class="decisions"><h2>APPROVE bounded SERVICE slice</h2><p>c0_verifier independently replayed all10 groups and typecheck, then exercised two fresh additional interleavings. The previous lost-result-after-firing defect is repaired. Source hashes stayed unchanged during review. This is not whole P1, executor isolation, hosted-agent or I1 certification.</p></div><div class="status"><h2>Before and after</h2><table><tr><th>Original revision</th><th>Repaired revision</th></tr><tr><td>One accepted effect, task paused by firing, outcomeUnknown unrecoverable; owner recover refused.</td><td>Owner lookup records artifact and one late receipt; operation confirmed, task stays paused. One effect and one budget charge only.</td></tr></table></div><p>A new hired/delegated descendant had three planned occurrences. It lost its first accepted response, then its manager was fired. Recovery produced one receipt with late=true, usage1, and org spent0→1. Three further recover requests did not add effects, receipts or charges. The dependent remained paused with zero attempts. Recurrence stayed at occurrence1 with all three remaining metadata intact; reassignment refused to repeat the accepted effect.</p><p>A second fresh fixture captured the actual internal lookup context before firing, then delivered reconcile/recovered after firing. It preserved the same invariants. This is a staged interleaving of real backend functions, not a claim that a particular scheduler ordering was forced. The first staged driver parsed a void CLI return as JSON and stopped after the internal call; that fixture-only error is preserved, and the corrected driver passed on fresh data.</p><p><a href="../lost-then-fired.json">Before</a> · <a href="lost-then-fired.json">Fresh after</a> · <a href="lookup-before-fire.json">Staged late receipt</a> · <a href="replay-results.json">10 independent replay groups</a> · <a href="typecheck.txt">Typecheck</a> · <a href="verdict.json">Exact bounded verdict</a>.</p><p>Confirmed paused work intentionally remains paused. A future human accept/close disposition is still needed for product lifecycle completion; this proof does not silently advance dependents or repeat effects. Provider responses, credentials and orgs are synthetic; real model execution and host sandbox boundaries remain separate gates.</p></body></html>

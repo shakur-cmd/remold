@@ -1,0 +1,40 @@
+{
+  "results": [
+    {
+      "name": "Owner assigns work; foreign tenant cannot read known task ID",
+      "pass": true
+    },
+    {
+      "name": "External MCP client reads and starts assigned work; other assigned and foreign tasks remain unavailable",
+      "pass": true
+    },
+    {
+      "name": "Scheduled retry preserves one effect; dependent work waits and returns attributed artifact",
+      "pass": true
+    },
+    {
+      "name": "Three scheduled recurrence occurrences each produce one logical effect",
+      "pass": true
+    },
+    {
+      "name": "Lost accepted response stays unknown and does not blindly retry",
+      "pass": true
+    },
+    {
+      "name": "Provider lookup resolves an unknown result without a new execution or duplicate effect",
+      "pass": true
+    },
+    {
+      "name": "Human hires a default-unprivileged worker with tenant-bound reporting line",
+      "pass": true
+    },
+    {
+      "name": "Manager firing pauses descendant work; explicit reassignment executes under the new owner and generation",
+      "pass": true
+    },
+    {
+      "name": "Delegated task executes; manager firing stops one active and two queued descendant tasks before any further effect",
+      "pass": true
+    }
+  ]
+}
