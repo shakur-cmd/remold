@@ -1,0 +1,21 @@
+{
+  "verdict": "APPROVE scope capture only",
+  "reviewer": "c0_verifier independent DESK",
+  "planSha256": "c740cd7bad33f2ecdfc13e97cb1835217e87d875aa1c41107a6c204fdf8f85a7",
+  "pin": "f0cd4a7c92438420f3290b7d18391bededa1f8de",
+  "checks": {
+    "sixPinnedFileHashesMatch": true,
+    "liveGithubCommentMatchesPinAndFiveMetrics": true,
+    "ciWritesEvidenceBeforeBudgetAssertion": true,
+    "artifactUploadRunsOnFailedTestWhenResultExists": true,
+    "trustedPublisherUsesDefaultBranchAndParsesValidatedJsonOnly": true,
+    "timingNotClaimedAsT3Gate": true,
+    "scheduledAfterCompleteVerifiedBuild": true,
+    "existing29JobsAndDashboardRetained": true
+  },
+  "limits": [
+    "No T3 test execution",
+    "No Remold tracker implementation or performance result",
+    "T3 missing/incompatible baseline gets explanatory report; Remold proposed stricter fail-closed rule is a new acceptance requirement, not a claim about T3"
+  ]
+}
