@@ -116,12 +116,13 @@
         "proofs/payments/**"
       ],
       "environment": "Stripe test sandboxacct_1UJHeKJjT84hNemU, two synthetic merchants; optional loopback3490/3491",
-      "scopeNote": "Root and fresh independent supported-route/accounting checks pass on46files. First actual manual Stripe run created2synthetic customers and stopped at invoicecreate400 missingemail. Root and independent exactcustomer GETs confirm zero invoices/PaymentIntents/charges both. Reviewed continuation pending; no financial effects accepted. Recurring required BLOCKED, fullP4/I1/I7 open. Fixed49-file continuation driver now passes root and independent7checks plus independent real lost-response/key-retention probe. Actual continuation pending; financial core/adapter unchanged from46-file predecessor.",
+      "scopeNote": "Root and fresh independent supported-route/accounting checks pass on46files;49-file one-shot continuation independently reviewed. Original provider run created2customers, then missing-email400. Continuation1 updated synthetic emails and recovered exactlyone emptydraft after deliberate response loss; stopped before item/charge on absent Basil invoice fee field. Root and c0 fresh GETs confirm sole D draft and empty other scoped financial inventories, including E. Reviewed existing-draft recovery in preparation; no payment accepted. Recurring required BLOCKED, fullP4/I1/I7 open.",
       "evidence": "evidence/2026-09-24-unified-build/payments-root/r3/report.html",
       "independentEvidence": "evidence/2026-09-24-unified-build/payments-iv/r3/review.html",
       "frozenManifest": "3f2328e9e2c936b9258d47edbc7b1047c16a9f0acd2dd6df2402762efbceb7dd",
       "financialPredecessorManifest": "6a44ac5016ae2146491aa322055bf7eeddad09e6ee2abcb2148d0594135c4529",
-      "continuationEvidence": "evidence/2026-09-24-unified-build/payments-iv/continuation/review.html"
+      "continuationEvidence": "evidence/2026-09-24-unified-build/payments-iv/continuation/review.html",
+      "providerCheckpoint": "evidence/2026-09-24-unified-build/payments-iv/continuation-provider/review.html"
     },
     {
       "id": "P5",

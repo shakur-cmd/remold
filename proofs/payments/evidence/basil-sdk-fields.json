@@ -1,0 +1,59 @@
+{
+  "src/apiVersion.ts": {
+    "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/src/apiVersion.ts",
+    "sha256": "17885e18875d1760970daa8184303597e10c2a917c471cd46f096ff101a9683e",
+    "fields": {
+      "application_fee_amount": [],
+      "transfer_data": [],
+      "application_fee": [],
+      "application": []
+    },
+    "content": "// File generated from our OpenAPI spec\n\nexport const ApiVersion = '2025-05-28.basil';\n"
+  },
+  "types/Invoices.d.ts": {
+    "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/Invoices.d.ts",
+    "sha256": "0e3717b5da7975bb9a75140df57c9ea3d725b3c9dd13c7cf50bc53748798aa0b",
+    "fields": {
+      "application_fee_amount": [],
+      "transfer_data": [],
+      "application_fee": [],
+      "application": [
+        "application:"
+      ]
+    }
+  },
+  "types/PaymentIntents.d.ts": {
+    "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/PaymentIntents.d.ts",
+    "sha256": "0d9d95cda69ab20748991c4c17b7049bccb379cdfffa8bbcb6606761dad0df30",
+    "fields": {
+      "application_fee_amount": [
+        "application_fee_amount: number | null;"
+      ],
+      "transfer_data": [
+        "transfer_data: PaymentIntent.TransferData | null;"
+      ],
+      "application_fee": [],
+      "application": [
+        "application: string | Stripe.Application | null;"
+      ]
+    }
+  },
+  "types/Charges.d.ts": {
+    "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/Charges.d.ts",
+    "sha256": "9d24525d6ee7ef4330f7bd31f69fb1e3fd563dee43b069faf9cad01fccb33b9e",
+    "fields": {
+      "application_fee_amount": [
+        "application_fee_amount: number | null;"
+      ],
+      "transfer_data": [
+        "transfer_data: Charge.TransferData | null;"
+      ],
+      "application_fee": [
+        "application_fee: string | Stripe.ApplicationFee | null;"
+      ],
+      "application": [
+        "application: string | Stripe.Application | null;"
+      ]
+    }
+  }
+}
