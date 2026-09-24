@@ -1,0 +1,29 @@
+{
+  "candidateAggregate": "3f2328e9e2c936b9258d47edbc7b1047c16a9f0acd2dd6df2402762efbceb7dd",
+  "files": 49,
+  "predecessorAggregate": "6a44ac5016ae2146491aa322055bf7eeddad09e6ee2abcb2148d0594135c4529",
+  "checks": [
+    {
+      "command": "node --test proofs/payments/continuation.test.mjs",
+      "exit": 0,
+      "passed": 7
+    },
+    {
+      "command": "node --test proofs/payments/stripe.test.mjs proofs/payments/adjustments.test.mjs proofs/payments/continuation.test.mjs",
+      "exit": 0,
+      "passed": 22,
+      "output": "continuation-local.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exit": 0,
+      "output": "continuation-typecheck.txt"
+    },
+    {
+      "command": "node --check proofs/payments/sandbox-replay.mjs",
+      "exit": 0,
+      "output": "continuation-syntax.txt"
+    }
+  ],
+  "scope": "SERVICE loopback HTTP/filesystem only; no provider calls, no core/adapter/schema/financial replay changes; independent review pending"
+}

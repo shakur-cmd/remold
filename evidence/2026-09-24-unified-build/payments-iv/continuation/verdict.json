@@ -1,0 +1,45 @@
+{
+  "verdict": "APPROVE bounded fixed sandbox continuation driver; provider execution remains root-owned",
+  "reviewer": "c0_verifier, independent of implementation",
+  "at": "2026-09-24T23:29:37.584619+00:00",
+  "sourceAggregate": "3f2328e9e2c936b9258d47edbc7b1047c16a9f0acd2dd6df2402762efbceb7dd",
+  "sourceFiles": 49,
+  "sourceUnchanged": true,
+  "checks": [
+    {
+      "command": "node --test proofs/payments/continuation.test.mjs",
+      "exit": 0,
+      "tests": 7,
+      "output": "tests.txt"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/continuation/key-retention.mjs",
+      "exit": 0,
+      "output": "key-retention.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exit": 0,
+      "output": "typecheck.txt"
+    },
+    {
+      "command": "node --check proofs/payments/sandbox-replay.mjs",
+      "exit": 0,
+      "output": "syntax.txt"
+    }
+  ],
+  "observations": [
+    "Exact existing D/E customer IDs and original attempt digest bound before continuation",
+    "Complete zero-state guard on both customers precedes email-only mutations; readback preserves name/metadata/balance",
+    "Exclusive-create0600 fsynced journal prevents restart; attempt exists before HTTP dispatch",
+    "Own real socket-loss probe proves exact HTTP idempotency key retained, unknown recorded, only one dispatch and restart refused",
+    "Fixed new local namespace does not mutate old rows; namespace is not a tenant-isolation boundary",
+    "Financial core/H0/schema/adapter/normalizer unchanged from independently accepted predecessor46"
+  ],
+  "limits": [
+    "No provider API calls or customer updates by this verification",
+    "No actual continuation execution, .invalid acceptance, universal email suppression or full manual lifecycle proved",
+    "No I1 audit or full P4/recurring/production certification",
+    "No power-loss fault injection; observed filesystem/fsync behavior and real socket loss only"
+  ]
+}

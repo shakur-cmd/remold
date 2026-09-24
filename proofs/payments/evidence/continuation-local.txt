@@ -1,0 +1,30 @@
+✔ Complete cursor traversal normalizes every distinct refund and credit receipt (50.658792ms)
+✔ No complete result after canceled-inflight (15.452708ms)
+✔ No complete result after open-payment (5.085417ms)
+✔ No complete result after partial-payment (4.822375ms)
+✔ No complete result after failure (7.996584ms)
+✔ No complete result after bound (11.956ms)
+✔ No complete result after empty (5.163916ms)
+✔ No complete result after repeat (11.105458ms)
+✔ No complete result after unknown (11.254917ms)
+✔ No complete result after link (21.509166ms)
+✔ No complete result after foreign (11.215542ms)
+✔ No complete result after mismatch (20.990833ms)
+✔ Outside pending refund is normalized as held, not silently omitted (17.895667ms)
+✔ Continuation reuses both exact customers with email-only updates and durable receipts (117.545458ms)
+✔ Continuation refuses wrong-scope before any provider write (14.239375ms)
+✔ Continuation refuses nonempty before any provider write (19.219167ms)
+✔ Continuation refuses incomplete before any provider write (16.293666ms)
+✔ An existing one-shot latch refuses a second start before a provider call (10.90425ms)
+✔ Lost response retains the attempted update and refuses restart (48.808916ms)
+✔ A changed email readback stops before updating the second customer (42.647792ms)
+✔ provider refuses live or malformed credentials without revealing them (0.564958ms)
+✔ Stripe raw-payload verifier rejects modified bytes, expired signatures and live events (0.417542ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 365.521291

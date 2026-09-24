@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {ConvexHttpClient} from 'convex/browser';
 import {api} from './convex/_generated/api.js';
@@ -9,16 +10,26 @@ import {trustedAdapter} from './adapter.mjs';
 import {listen} from './webhooks.mjs';
 import {recurring} from './recurring.mjs';
 import {boundary} from './boundary.mjs';
-const stripe=provider(credentials()),guard=await stripe.verify(),runId=randomUUID();
+import {claimContinuation,checkCustomers,setCustomerEmails,CUSTOMERS,CONTINUATION_ID,FIRST_RUN,FIRST_ATTEMPT_SHA} from './continuation.mjs';
+const args=process.argv.slice(2);assert.ok(args.length===0||(args.length===1&&args[0]==='--continue-first-enabled-attempt'),'Unsupported sandbox invocation');
+const continuing=args.length===1;
+let journal;
+if(continuing){
+ const manifest=JSON.parse(readFileSync(new URL('./evidence/source-manifest.json',import.meta.url)));
+ for(const[file,hash]of Object.entries(manifest.files))assert.equal(createHash('sha256').update(readFileSync(new URL(file,import.meta.url))).digest('hex'),hash,'Unfrozen continuation source');
+ journal=claimContinuation({privateDirectory:fileURLToPath(new URL('./private/',import.meta.url)),evidenceDirectory:fileURLToPath(new URL('./evidence/',import.meta.url)),sourceAggregate:manifest.aggregateSha256});
+}
+const rawStripe=provider(credentials()),stripe=journal?journal.wrap(rawStripe):rawStripe,guard=await stripe.verify(),runId=continuing?CONTINUATION_ID:randomUUID();
 const merchantFixtures=Object.fromEntries(Object.entries({A:'D',B:'E'}).map(([tenant,label])=>{
  const receipt=JSON.parse(readFileSync(new URL('./evidence/oauth-'+label+'.json',import.meta.url)));
  assert.equal(receipt.fixture,label);assert.equal(receipt.oauthLivemode,false);assert.equal(receipt.scope,'read_write');assert.match(receipt.account,/^acct_[A-Za-z0-9]+$/);
  return[tenant,{fixture:label,account:receipt.account}];
 }));
 assert.notEqual(merchantFixtures.A.account,merchantFixtures.B.account,'Two distinct OAuth test merchants required');
+if(continuing)for(const name of ['A','B'])assert.equal(merchantFixtures[name].account,CUSTOMERS[name].account,'Continuation merchant mismatch');
 const results=[],objects=[],webhookReceipts=[];
-const proof={level:'SANDBOX Stripe, SERVICE disposable local Convex, SIM identities/prices/jurisdiction',runId,apiVersion:API_VERSION,guard,merchantFixtures,results,objects,receipts:stripe.receipts,webhookReceipts};
-const save=()=>writeFileSync(new URL('./evidence/sandbox.json',import.meta.url),JSON.stringify(proof,null,2)+'\n');
+const proof={...(continuing?{continuationOf:FIRST_RUN,firstAttemptSha:FIRST_ATTEMPT_SHA}:{}),level:'SANDBOX Stripe, SERVICE disposable local Convex, SIM identities/prices/jurisdiction',runId,apiVersion:API_VERSION,guard,merchantFixtures,results,objects,receipts:stripe.receipts,webhookReceipts};
+const save=()=>writeFileSync(new URL(continuing?'./evidence/sandbox-'+CONTINUATION_ID+'.json':'./evidence/sandbox.json',import.meta.url),JSON.stringify(proof,null,2)+'\n');
 const check=async(name,fn)=>{await fn();results.push({name,status:'PASS'});save();console.log('PASS '+name);};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 try{
@@ -35,6 +46,7 @@ try{
    run('payments:configureFixture',{binding:f[name].binding,adapterToken:f[name].adapter,account:account.id,environment:'SANDBOX',healthy:true});f[name].key={provider:'stripe',environment:'SANDBOX',account:account.id};
    run('paymentFixture:role',{actor:f[name].actors.owner,role:'finance'});
   }
+  journal?.append({kind:'local-fixture',fixture:f});
   const adapter=trustedAdapter(stripe,client,f),owner=f.A.sessions.owner;
   // Each provider read is a new reconciliation attempt, separate from webhook deduplication.
   const pull=(invoice,label)=>adapter.observe('A',invoice,runId+':pull:'+label+':'+randomUUID(),randomUUID());
@@ -44,8 +56,10 @@ try{
    const account=f[name];await m('ingest',{token:account.adapter,binding:account.binding,eventId:event.id,type:event.type,externalId:event.data.object.id,digest});
   });
   try{
+   if(continuing){const snapshot=await checkCustomers(stripe,journal);await setCustomerEmails(stripe,journal,snapshot);}
    for(const name of ['A','B']){
-    const c=await stripe.request('POST','/v1/customers',{name:'Synthetic P4 customer '+name,'metadata[remold_fixture]':runId},f[name].key.account,runId+'-customer-'+name);
+    if(continuing)assert.equal(f[name].key.account,CUSTOMERS[name].account);
+    const c=continuing?{id:CUSTOMERS[name].customer}:await stripe.request('POST','/v1/customers',{name:'Synthetic P4 customer '+name,'metadata[remold_fixture]':runId},f[name].key.account,runId+'-customer-'+name);
     f[name].customer=c.id;f[name].localCustomer=await m('registerCustomer',{token:f[name].adapter,binding:f[name].binding,externalId:c.id,name:'Synthetic P4 customer '+name});objects.push({kind:'customer',account:f[name].key.account,id:c.id});
    }
    const bBefore=await q('exportFinance',{token:f.B.sessions.owner});
@@ -138,4 +152,4 @@ try{
    webhookReceipts.push(...listener.receipts);proof.status=results.some(r=>r.status!=='PASS')?'INCOMPLETE: required recurring activation/retry proof remains blocked':'Builder SANDBOX replay passed; production integration, IV and G-pay remain pending';if(results.some(r=>r.status!=='PASS'))process.exitCode=1;save();
   }finally{webhookReceipts.push(...listener.receipts.filter(x=>!webhookReceipts.some(y=>y.id===x.id)));await listener.stop();}
  });
-}catch(error){proof.status='FAILED or BLOCKED';proof.failure={message:error.message,status:error.status??null,code:error.code??null,providerMessage:error.providerMessage?String(error.providerMessage).replace(/(?:sk_test_|rk_test_|whsec_|ac_)[A-Za-z0-9]+/g,'[redacted]'):null};save();console.error(JSON.stringify(proof.failure));process.exitCode=1;}finally{save();}
+}catch(error){proof.status='FAILED or BLOCKED';proof.failure={message:error.message,status:error.status??null,code:error.code??null,providerMessage:error.providerMessage?String(error.providerMessage).replace(/(?:sk_test_|rk_test_|whsec_|ac_)[A-Za-z0-9]+/g,'[redacted]'):null};save();console.error(JSON.stringify(proof.failure));process.exitCode=1;}finally{save();journal?.append({kind:'stopped',status:proof.status??'stopped-review',evidence:'sandbox-'+CONTINUATION_ID+'.json'});}
