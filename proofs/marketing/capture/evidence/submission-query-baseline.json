@@ -1,0 +1,129 @@
+{
+  "capturedAt": "2026-09-25T06:27:45.068Z",
+  "rows": [
+    {
+      "tenant": "a",
+      "query": "limit=1",
+      "status": 200,
+      "total": "3",
+      "firstKeys": [
+        "id",
+        "ipAddress",
+        "form",
+        "lead",
+        "trackingId",
+        "dateSubmitted",
+        "referer",
+        "page",
+        "results"
+      ],
+      "firstId": 1
+    },
+    {
+      "tenant": "a",
+      "query": "limit=1&orderBy=id&orderByDir=ASC",
+      "status": 500,
+      "errors": [
+        {
+          "message": "Looks like I encountered an error (error #500). If I do it again, please report me to the system administrator!",
+          "code": 500,
+          "type": null
+        }
+      ],
+      "firstKeys": []
+    },
+    {
+      "tenant": "a",
+      "query": "limit=1&orderBy=s.id&orderByDir=ASC",
+      "status": 200,
+      "total": "3",
+      "firstKeys": [
+        "id",
+        "ipAddress",
+        "form",
+        "lead",
+        "trackingId",
+        "dateSubmitted",
+        "referer",
+        "page",
+        "results"
+      ],
+      "firstId": 1
+    },
+    {
+      "tenant": "a",
+      "query": "limit=1&orderBy=dateSubmitted&orderByDir=ASC",
+      "status": 500,
+      "errors": [
+        {
+          "message": "Looks like I encountered an error (error #500). If I do it again, please report me to the system administrator!",
+          "code": 500,
+          "type": null
+        }
+      ],
+      "firstKeys": []
+    },
+    {
+      "tenant": "b",
+      "query": "limit=1",
+      "status": 200,
+      "total": "3",
+      "firstKeys": [
+        "id",
+        "ipAddress",
+        "form",
+        "lead",
+        "trackingId",
+        "dateSubmitted",
+        "referer",
+        "page",
+        "results"
+      ],
+      "firstId": 1
+    },
+    {
+      "tenant": "b",
+      "query": "limit=1&orderBy=id&orderByDir=ASC",
+      "status": 500,
+      "errors": [
+        {
+          "message": "Looks like I encountered an error (error #500). If I do it again, please report me to the system administrator!",
+          "code": 500,
+          "type": null
+        }
+      ],
+      "firstKeys": []
+    },
+    {
+      "tenant": "b",
+      "query": "limit=1&orderBy=s.id&orderByDir=ASC",
+      "status": 200,
+      "total": "3",
+      "firstKeys": [
+        "id",
+        "ipAddress",
+        "form",
+        "lead",
+        "trackingId",
+        "dateSubmitted",
+        "referer",
+        "page",
+        "results"
+      ],
+      "firstId": 1
+    },
+    {
+      "tenant": "b",
+      "query": "limit=1&orderBy=dateSubmitted&orderByDir=ASC",
+      "status": 500,
+      "errors": [
+        {
+          "message": "Looks like I encountered an error (error #500). If I do it again, please report me to the system administrator!",
+          "code": 500,
+          "type": null
+        }
+      ],
+      "firstKeys": []
+    }
+  ]
+}

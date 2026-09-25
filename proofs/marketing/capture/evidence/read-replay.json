@@ -1,0 +1,233 @@
+{
+  "capturedAt": "2026-09-25T06:36:36.720Z",
+  "status": "PASS",
+  "level": "SERVICE native read-only pagination and current suppression lookup; no durable import/callback proof",
+  "rows": [
+    {
+      "tenant": "a",
+      "upper": 4,
+      "pages": [
+        {
+          "after": 0,
+          "next": 1,
+          "complete": false,
+          "ids": [
+            1
+          ]
+        },
+        {
+          "after": 1,
+          "next": 2,
+          "complete": false,
+          "ids": [
+            2
+          ]
+        },
+        {
+          "after": 2,
+          "next": 3,
+          "complete": false,
+          "ids": [
+            3
+          ]
+        },
+        {
+          "after": 3,
+          "next": 4,
+          "complete": true,
+          "ids": [
+            4
+          ]
+        }
+      ],
+      "items": [
+        {
+          "tenant": "a",
+          "formId": 1,
+          "submissionId": 1,
+          "contactId": 150,
+          "dateSubmitted": "2026-09-25T06:18:22+00:00",
+          "results": {
+            "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+            "firstname": "Route A"
+          },
+          "sha256": "43963367aec3b1b904a3ac62a469bd8b90e51ac42e612ea25d4844067eb67206"
+        },
+        {
+          "tenant": "a",
+          "formId": 1,
+          "submissionId": 2,
+          "contactId": 155,
+          "dateSubmitted": "2026-09-25T06:20:30+00:00",
+          "results": {
+            "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+            "firstname": "Route A"
+          },
+          "sha256": "7a0c6d17db1a9aeb5d131618601387ad117cdd30656c69fd8c231c3f8133587f"
+        },
+        {
+          "tenant": "a",
+          "formId": 1,
+          "submissionId": 3,
+          "contactId": 160,
+          "dateSubmitted": "2026-09-25T06:24:12+00:00",
+          "results": {
+            "email": "edge-e0b0db0f-515a-4ccb-b0a2-98f41881ab5a@example.invalid",
+            "firstname": "Route A"
+          },
+          "sha256": "3e5892c9dc0b12c113a7f1b31cc5c793255bd504fe55c1f3faf66665b0d9cf86"
+        },
+        {
+          "tenant": "a",
+          "formId": 1,
+          "submissionId": 4,
+          "contactId": 163,
+          "dateSubmitted": "2026-09-25T06:31:30+00:00",
+          "results": {
+            "email": "edge-e6200b2f-1510-4482-8f92-cd747a3bd0ab@example.invalid",
+            "firstname": "Route A"
+          },
+          "sha256": "b2141a5445d1869722a1cf191f074248de8bd8395f784b1fb4d7fe8ec9956d7d"
+        }
+      ],
+      "suppressed": [
+        {
+          "contactId": 150,
+          "status": "present",
+          "suppressed": false
+        },
+        {
+          "contactId": 155,
+          "status": "present",
+          "suppressed": false
+        },
+        {
+          "contactId": 160,
+          "status": "present",
+          "suppressed": false
+        },
+        {
+          "contactId": 163,
+          "status": "present",
+          "suppressed": false
+        }
+      ]
+    },
+    {
+      "tenant": "b",
+      "upper": 4,
+      "pages": [
+        {
+          "after": 0,
+          "next": 1,
+          "complete": false,
+          "ids": [
+            1
+          ]
+        },
+        {
+          "after": 1,
+          "next": 2,
+          "complete": false,
+          "ids": [
+            2
+          ]
+        },
+        {
+          "after": 2,
+          "next": 3,
+          "complete": false,
+          "ids": [
+            3
+          ]
+        },
+        {
+          "after": 3,
+          "next": 4,
+          "complete": true,
+          "ids": [
+            4
+          ]
+        }
+      ],
+      "items": [
+        {
+          "tenant": "b",
+          "formId": 1,
+          "submissionId": 1,
+          "contactId": 11,
+          "dateSubmitted": "2026-09-25T06:18:25+00:00",
+          "results": {
+            "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+            "firstname": "Route B"
+          },
+          "sha256": "46828c442cb649fdbd55251204b182b73ccaf7ffd3c3a114dfcf9edafc3bc53c"
+        },
+        {
+          "tenant": "b",
+          "formId": 1,
+          "submissionId": 2,
+          "contactId": 16,
+          "dateSubmitted": "2026-09-25T06:20:33+00:00",
+          "results": {
+            "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+            "firstname": "Route B"
+          },
+          "sha256": "c4d1c2282048b794fdc2be1af3fae8f5e78b21c5b1a335a3cd12647ba824dace"
+        },
+        {
+          "tenant": "b",
+          "formId": 1,
+          "submissionId": 3,
+          "contactId": 21,
+          "dateSubmitted": "2026-09-25T06:24:15+00:00",
+          "results": {
+            "email": "edge-e0b0db0f-515a-4ccb-b0a2-98f41881ab5a@example.invalid",
+            "firstname": "Route B"
+          },
+          "sha256": "d47de9eaa19f512b530320c0710a91e00294347ff6ac64e92ff22cca2a5d6ad3"
+        },
+        {
+          "tenant": "b",
+          "formId": 1,
+          "submissionId": 4,
+          "contactId": 24,
+          "dateSubmitted": "2026-09-25T06:31:33+00:00",
+          "results": {
+            "email": "edge-e6200b2f-1510-4482-8f92-cd747a3bd0ab@example.invalid",
+            "firstname": "Route B"
+          },
+          "sha256": "9b70362ecd254573b878950f22b20b7513715894442c745c7f6a43b1436446ef"
+        }
+      ],
+      "suppressed": [
+        {
+          "contactId": 11,
+          "status": "present",
+          "suppressed": false
+        },
+        {
+          "contactId": 16,
+          "status": "present",
+          "suppressed": false
+        },
+        {
+          "contactId": 21,
+          "status": "present",
+          "suppressed": false
+        },
+        {
+          "contactId": 24,
+          "status": "present",
+          "suppressed": false
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No callbacks configured",
+    "No checkpoint persistence or Convex import yet",
+    "No concurrent delete/append or consent flip exercised",
+    "DNC absence does not establish marketing opt-in"
+  ]
+}

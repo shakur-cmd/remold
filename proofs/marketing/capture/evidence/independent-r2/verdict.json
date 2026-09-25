@@ -1,0 +1,23 @@
+{
+  "verdict": "PASS",
+  "scope": "Bounded P2 capture/callback SERVICE slice, exact 16-file source aggregate ed85fc277d0b41f23a4ae239d5001d15898388160795fd335be6a6f334a09af1. Not P2 completion, I1, CRM applyChange, engine selection, production or LIVE.",
+  "checkedBy": "Same independent Claude Opus 5.5 verifier session as round 1 (resumed), not the builder. No delegation.",
+  "checkedAt": "2026-09-25",
+  "sourceDelta": {"from": "85863e6c5e1b2af65f211dc70b2db546760cf11bd97289901c3062d5d7419e80", "to": "ed85fc277d0b41f23a4ae239d5001d15898388160795fd335be6a6f334a09af1", "changedFiles": ["capture/receiver.test.mjs", "capture/callback-replay.mjs"], "r1ArchiveMatchesOldHashes": true, "runtimeFilesUnchanged": true},
+  "commands": [
+    {"cmd": "node --test capture/receiver.test.mjs", "exit": 0, "result": "3/3"},
+    {"cmd": "node --test capture/receiver.test.mjs mime.test.mjs mime-oracle.test.mjs mime-sink.test.mjs publishing/server.test.mjs", "exit": 0, "result": "20/20"},
+    {"cmd": "python3 <new scratch>/rmut/run.py (9 receiver mutants)", "result": "8 meaningful mutants fail the suite; duplicate-signature-header-count mutant passes the suite but raw-socket probe still 401, 0 rows (regex refuses joined header)"},
+    {"cmd": "node proofs/marketing/capture/callback-replay.mjs independent-r2", "exit": 0, "result": "PASS both tenants"}
+  ],
+  "observed": {
+    "receivers": {"a": {"receipts": [4, 5], "allRowsTenant": "a"}, "b": {"receipts": [2, 3], "allRowsTenant": "b"}, "restarts": "one SIGKILL/restart each"},
+    "nativeTenantsAB": "counts, DNC, max IDs, domain digests, hooks, web config sha unchanged",
+    "sources": "capture16, prior 10/7/57 identical before and after",
+    "priorEvidence": "71 earlier evidence files unchanged except root's builder report.html, which changed during this run (not written by this verifier)"
+  },
+  "importerHarness": "Round-1 28-case isolated Convex harness and 5 mutants exist under evidence/independent/importer-mutants; not rerun this round; currently untracked in git and not wired to CI.",
+  "actualBugsInBoundedSlice": [],
+  "openProductionLimits": ["late-ID concurrency skip (analysis only)", "stale consent read/finalize race can overwrite suppression", "100-capture cap wedges instance", "non-ASCII result keys refused (fails closed)", "no scheduler, callback consumer or CRM applyChange integration", "provider-history rollback, native identity overwrite, deletion/redelivery, prod auth, rate limits, LIVE"],
+  "notCertified": "Root's own native effects, resource declarations and receipts added before this run are not certified beyond what this run observed."
+}

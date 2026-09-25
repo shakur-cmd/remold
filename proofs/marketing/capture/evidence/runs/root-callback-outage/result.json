@@ -1,0 +1,1459 @@
+{
+  "status": "PASS",
+  "level": "SERVICE actual native read-only pages plus isolated local Convex; identities are synthetic; no CRM integration",
+  "results": [
+    {
+      "name": "Actual backend restart preserves partial native page without advancing cursor or exposing captures",
+      "staged": {
+        "captures": [],
+        "cursor": 0,
+        "events": [],
+        "formId": 1,
+        "last": null,
+        "pending": {
+          "finished": false,
+          "from": 0,
+          "items": [
+            {
+              "contactId": 150,
+              "dateSubmitted": "2026-09-25T06:18:22+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "43963367aec3b1b904a3ac62a469bd8b90e51ac42e612ea25d4844067eb67206",
+              "submissionId": 1,
+              "tenant": "a"
+            }
+          ],
+          "next": 1,
+          "receipts": [
+            {
+              "after": 0,
+              "fingerprint": "0bc5230b6402f0d48306f5b1b948c9f3f69c0289f3db8730254df8c0f995ce98"
+            }
+          ],
+          "scan": "capture-2ec1bbb4-d68b-4262-a35b-fecd009f14dc",
+          "upper": 7
+        },
+        "suppression": [],
+        "tenant": "a"
+      }
+    },
+    {
+      "name": "Native a traversal commits capture, suppression and attributed events atomically; repeat finish has no effects",
+      "result": {
+        "added": 7,
+        "cursor": 7,
+        "duplicate": false,
+        "suppressionChanges": 7
+      },
+      "snapshot": {
+        "captures": [
+          {
+            "_creationTime": 1790319874250.709,
+            "_id": "j5718yq9qy0nap9t5ac3d0mj9h8f25vh",
+            "data": {
+              "contactId": 150,
+              "dateSubmitted": "2026-09-25T06:18:22+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "43963367aec3b1b904a3ac62a469bd8b90e51ac42e612ea25d4844067eb67206",
+              "submissionId": 1,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7095,
+            "_id": "j57df34zbg6nreex9v15ke2zkx8f2727",
+            "data": {
+              "contactId": 155,
+              "dateSubmitted": "2026-09-25T06:20:30+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "7a0c6d17db1a9aeb5d131618601387ad117cdd30656c69fd8c231c3f8133587f",
+              "submissionId": 2,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.71,
+            "_id": "j57fv4pxxpsgjqz97tjcaz68t98f2eh8",
+            "data": {
+              "contactId": 160,
+              "dateSubmitted": "2026-09-25T06:24:12+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-e0b0db0f-515a-4ccb-b0a2-98f41881ab5a@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "3e5892c9dc0b12c113a7f1b31cc5c793255bd504fe55c1f3faf66665b0d9cf86",
+              "submissionId": 3,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7104,
+            "_id": "j57arwqrcfra7gp3xd9c9m1ey18f383c",
+            "data": {
+              "contactId": 163,
+              "dateSubmitted": "2026-09-25T06:31:30+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-e6200b2f-1510-4482-8f92-cd747a3bd0ab@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "b2141a5445d1869722a1cf191f074248de8bd8395f784b1fb4d7fe8ec9956d7d",
+              "submissionId": 4,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.711,
+            "_id": "j5793agjkvn6y4f9pwfd4pk7jx8f2q9a",
+            "data": {
+              "contactId": 164,
+              "dateSubmitted": "2026-09-25T06:36:48+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "64ba22f741853a4b9e5fb127f18ac62107bf3950a06e6f4393a997d401c26e64",
+              "submissionId": 5,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7114,
+            "_id": "j575eh63gnc3g49wt36093schd8f3hjy",
+            "data": {
+              "contactId": 165,
+              "dateSubmitted": "2026-09-25T07:01:49+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-8308419d-66c3-4a2e-923e-31f0718aca20@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "bb164aea8cd0c851f811c6a08772992eed17e727a2efbed3d641bf3a639d07a7",
+              "submissionId": 6,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.712,
+            "_id": "j576c5748eq3afhfkyerv8n6158f2atc",
+            "data": {
+              "contactId": 166,
+              "dateSubmitted": "2026-09-25T07:03:06+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-16a254d1-ed31-4527-bb15-90a3d1acfc3b@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "9a47d77aaf2fe3ba594b9560dc5413065eb92641d27411ac72ca804ea9a991d8",
+              "submissionId": 7,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          }
+        ],
+        "cursor": 7,
+        "events": [
+          {
+            "_creationTime": 1790319874250.7092,
+            "_id": "j9792aqtsv5nyypqy6xnc4vgd18f234q",
+            "actor": "marketing-poller:a",
+            "fingerprint": "43963367aec3b1b904a3ac62a469bd8b90e51ac42e612ea25d4844067eb67206",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 1
+          },
+          {
+            "_creationTime": 1790319874250.7097,
+            "_id": "j9761enmp61qhwf3431z77rmfs8f2xjv",
+            "actor": "marketing-poller:a",
+            "fingerprint": "7a0c6d17db1a9aeb5d131618601387ad117cdd30656c69fd8c231c3f8133587f",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 2
+          },
+          {
+            "_creationTime": 1790319874250.7102,
+            "_id": "j975kyf326qga78j9nsbnz3cz58f2909",
+            "actor": "marketing-poller:a",
+            "fingerprint": "3e5892c9dc0b12c113a7f1b31cc5c793255bd504fe55c1f3faf66665b0d9cf86",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 3
+          },
+          {
+            "_creationTime": 1790319874250.7107,
+            "_id": "j97e31vkehvfrwpj766pyd95q18f2vay",
+            "actor": "marketing-poller:a",
+            "fingerprint": "b2141a5445d1869722a1cf191f074248de8bd8395f784b1fb4d7fe8ec9956d7d",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 4
+          },
+          {
+            "_creationTime": 1790319874250.7112,
+            "_id": "j9735f8kgq7q265jmaf1zh8nk18f30yk",
+            "actor": "marketing-poller:a",
+            "fingerprint": "64ba22f741853a4b9e5fb127f18ac62107bf3950a06e6f4393a997d401c26e64",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 5
+          },
+          {
+            "_creationTime": 1790319874250.7117,
+            "_id": "j9722mv5hvczbxvr81zet5ac6x8f223v",
+            "actor": "marketing-poller:a",
+            "fingerprint": "bb164aea8cd0c851f811c6a08772992eed17e727a2efbed3d641bf3a639d07a7",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 6
+          },
+          {
+            "_creationTime": 1790319874250.7122,
+            "_id": "j973gbv9qf1j44r5m83zmzkpxh8f2b1n",
+            "actor": "marketing-poller:a",
+            "fingerprint": "9a47d77aaf2fe3ba594b9560dc5413065eb92641d27411ac72ca804ea9a991d8",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 7
+          },
+          {
+            "_creationTime": 1790319874250.7126,
+            "_id": "j9707j3642pbdjendke37jf88h8f3rj7",
+            "actor": "marketing-poller:a",
+            "fingerprint": "8ea4e938d7edb6dc44964c71c799cf5d9aab12eb1e4f27d6e2024a09163ccb32",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 150
+          },
+          {
+            "_creationTime": 1790319874250.7131,
+            "_id": "j977e7we78za7pcwpzczzwettd8f20gg",
+            "actor": "marketing-poller:a",
+            "fingerprint": "cf63692b442d130df06482cea3ae48a6475a332631d2226cb57043a3e2c1d040",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 155
+          },
+          {
+            "_creationTime": 1790319874250.7136,
+            "_id": "j97673ytnzwzpsydn82r9tdbxd8f2xmr",
+            "actor": "marketing-poller:a",
+            "fingerprint": "3903150bbb54fddec311ab492cce1090272c42b78658ab90d622ed01fb2910b7",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 160
+          },
+          {
+            "_creationTime": 1790319874250.714,
+            "_id": "j97d6nmbgvyh08gj7s1hm33cah8f20vg",
+            "actor": "marketing-poller:a",
+            "fingerprint": "e370ef8d4e38d88c9ac5d29344f89048d89d63dd39fc4ecbbd3eeddaad779c8f",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 163
+          },
+          {
+            "_creationTime": 1790319874250.7146,
+            "_id": "j97495rm5a5dphavhaz9ht9d798f2vrx",
+            "actor": "marketing-poller:a",
+            "fingerprint": "9b55669d697357ec9d5808bb7f339b6966cd6fab720165627132da99fd1c64c8",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 164
+          },
+          {
+            "_creationTime": 1790319874250.715,
+            "_id": "j97b9pd7nypw2stnsh4q999w718f3m2h",
+            "actor": "marketing-poller:a",
+            "fingerprint": "c38c854e0b70bc8fd02a7fb462fae297436c7382c005d17e66f2162c346ae945",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 165
+          },
+          {
+            "_creationTime": 1790319874250.7156,
+            "_id": "j970z8100cffjebc3md9a69dn98f2tx6",
+            "actor": "marketing-poller:a",
+            "fingerprint": "e0898774a69902fc4a55bdd3af5b21a59e20e359b4819f396dcedb35f49b6a4d",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 166
+          }
+        ],
+        "formId": 1,
+        "last": {
+          "receipts": [
+            {
+              "after": 0,
+              "fingerprint": "0bc5230b6402f0d48306f5b1b948c9f3f69c0289f3db8730254df8c0f995ce98"
+            },
+            {
+              "after": 1,
+              "fingerprint": "be05613dc63d232f2dc57dd5e68e27099a3c9bfdae52a06dd9e1b7de99f5cd29"
+            },
+            {
+              "after": 2,
+              "fingerprint": "1afd31945332449eb150e481b8b7ce8460a812227e61fdb3cb3679e0d4c16f79"
+            },
+            {
+              "after": 3,
+              "fingerprint": "3d18609c34b2740cd64bacf530291a394f4ec506f0a1b665d3299dc25635d714"
+            },
+            {
+              "after": 4,
+              "fingerprint": "914f7d6817edfd8ac2ce00287025c852a5b28a387d9aacd3d56e4bed82832297"
+            },
+            {
+              "after": 5,
+              "fingerprint": "7024f23f68747d946dded2e3c494cf8683b0557559ca1b257935dbd161d93a71"
+            },
+            {
+              "after": 6,
+              "fingerprint": "a116a1584c4d71d43591f41415251d8b4f9fd47a6a021bde8b1f7ca269436788"
+            }
+          ],
+          "result": {
+            "added": 7,
+            "cursor": 7,
+            "suppressionChanges": 7
+          },
+          "scan": "capture-2ec1bbb4-d68b-4262-a35b-fecd009f14dc"
+        },
+        "pending": null,
+        "suppression": [
+          {
+            "_creationTime": 1790319874250.7124,
+            "_id": "jh77fa05sz0m44kp73bd7d5pa18f2f6c",
+            "data": {
+              "contactId": 150,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.713,
+            "_id": "jh7cw283dmfmn6223bvd8a7a6x8f3pnw",
+            "data": {
+              "contactId": 155,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7134,
+            "_id": "jh7dp044n5rkzfxmakjf831hbx8f25h0",
+            "data": {
+              "contactId": 160,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7139,
+            "_id": "jh77ps3kn7astjxeej4qqsnrcx8f21hd",
+            "data": {
+              "contactId": 163,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7144,
+            "_id": "jh74kybf5k565nwbwbgf2yns8n8f3eby",
+            "data": {
+              "contactId": 164,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7148,
+            "_id": "jh7dt5p8kwfe4fk7z70hejhxg58f3yzf",
+            "data": {
+              "contactId": 165,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7153,
+            "_id": "jh735yvyv3g65vegymb29b8p618f3hw3",
+            "data": {
+              "contactId": 166,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          }
+        ],
+        "tenant": "a"
+      }
+    },
+    {
+      "name": "Native b traversal commits capture, suppression and attributed events atomically; repeat finish has no effects",
+      "result": {
+        "added": 7,
+        "cursor": 7,
+        "duplicate": false,
+        "suppressionChanges": 7
+      },
+      "snapshot": {
+        "captures": [
+          {
+            "_creationTime": 1790319881432.888,
+            "_id": "j57fjv1q18tgdprqfkker3nhax8f2nsn",
+            "data": {
+              "contactId": 11,
+              "dateSubmitted": "2026-09-25T06:18:25+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+                "firstname": "Route B"
+              },
+              "sha256": "46828c442cb649fdbd55251204b182b73ccaf7ffd3c3a114dfcf9edafc3bc53c",
+              "submissionId": 1,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8884,
+            "_id": "j579k68263zenx3mt8f0yszj818f2v6x",
+            "data": {
+              "contactId": 16,
+              "dateSubmitted": "2026-09-25T06:20:33+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+                "firstname": "Route B"
+              },
+              "sha256": "c4d1c2282048b794fdc2be1af3fae8f5e78b21c5b1a335a3cd12647ba824dace",
+              "submissionId": 2,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.889,
+            "_id": "j57amsh9ders1kanjd96t5hrtx8f37qa",
+            "data": {
+              "contactId": 21,
+              "dateSubmitted": "2026-09-25T06:24:15+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-e0b0db0f-515a-4ccb-b0a2-98f41881ab5a@example.invalid",
+                "firstname": "Route B"
+              },
+              "sha256": "d47de9eaa19f512b530320c0710a91e00294347ff6ac64e92ff22cca2a5d6ad3",
+              "submissionId": 3,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8894,
+            "_id": "j57eg9y6g60yatc3dfb0cm635h8f2kh9",
+            "data": {
+              "contactId": 24,
+              "dateSubmitted": "2026-09-25T06:31:33+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-e6200b2f-1510-4482-8f92-cd747a3bd0ab@example.invalid",
+                "firstname": "Route B"
+              },
+              "sha256": "9b70362ecd254573b878950f22b20b7513715894442c745c7f6a43b1436446ef",
+              "submissionId": 4,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.89,
+            "_id": "j57ayrqvdypv9hc0sfkfbfnd4x8f2ya5",
+            "data": {
+              "contactId": 25,
+              "dateSubmitted": "2026-09-25T06:36:51+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+                "firstname": "Route B"
+              },
+              "sha256": "5ea901235eb858c322eced034a1b856b9596934a849248f5debd4795ebaae2d7",
+              "submissionId": 5,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8904,
+            "_id": "j57006b4xjkpwxjfat12nc723s8f25as",
+            "data": {
+              "contactId": 26,
+              "dateSubmitted": "2026-09-25T07:01:50+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-e8993ce7-01c2-4cec-bfc2-519c2cf281bb@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "8594735072ef0114c314871c1a4e690ee5dcb6bb30ac36cc38c7b43aacf0b9dc",
+              "submissionId": 6,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8909,
+            "_id": "j57ctf31qxwxkbkhfcm72jdmb58f2978",
+            "data": {
+              "contactId": 27,
+              "dateSubmitted": "2026-09-25T07:03:11+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-c9d7176a-d77b-425b-9fef-881bd7ebeee8@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "6290cb54ceb6e1c6ddaaa49a3c946229a7dec895b505899960856e1431bb31e6",
+              "submissionId": 7,
+              "tenant": "b"
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          }
+        ],
+        "cursor": 7,
+        "events": [
+          {
+            "_creationTime": 1790319881432.8882,
+            "_id": "j9764dpfqnv13fkxsjw28sj7b98f3dnm",
+            "actor": "marketing-poller:b",
+            "fingerprint": "46828c442cb649fdbd55251204b182b73ccaf7ffd3c3a114dfcf9edafc3bc53c",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 1
+          },
+          {
+            "_creationTime": 1790319881432.8887,
+            "_id": "j97585ns54wrcgthjbke3tk3j98f3y4s",
+            "actor": "marketing-poller:b",
+            "fingerprint": "c4d1c2282048b794fdc2be1af3fae8f5e78b21c5b1a335a3cd12647ba824dace",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 2
+          },
+          {
+            "_creationTime": 1790319881432.8892,
+            "_id": "j97ccm5ws8swmn8stm1x4ek1pn8f28jg",
+            "actor": "marketing-poller:b",
+            "fingerprint": "d47de9eaa19f512b530320c0710a91e00294347ff6ac64e92ff22cca2a5d6ad3",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 3
+          },
+          {
+            "_creationTime": 1790319881432.8896,
+            "_id": "j972cmtdvxw2hqecc22rpw34258f2s67",
+            "actor": "marketing-poller:b",
+            "fingerprint": "9b70362ecd254573b878950f22b20b7513715894442c745c7f6a43b1436446ef",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 4
+          },
+          {
+            "_creationTime": 1790319881432.8901,
+            "_id": "j97911wm77qjfjbnr24pw15zed8f2hkx",
+            "actor": "marketing-poller:b",
+            "fingerprint": "5ea901235eb858c322eced034a1b856b9596934a849248f5debd4795ebaae2d7",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 5
+          },
+          {
+            "_creationTime": 1790319881432.8906,
+            "_id": "j974jejfxp45rhy0cshvsw7p3d8f2mam",
+            "actor": "marketing-poller:b",
+            "fingerprint": "8594735072ef0114c314871c1a4e690ee5dcb6bb30ac36cc38c7b43aacf0b9dc",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 6
+          },
+          {
+            "_creationTime": 1790319881432.891,
+            "_id": "j978fgq16f5sq002bsh66kd00x8f2zfv",
+            "actor": "marketing-poller:b",
+            "fingerprint": "6290cb54ceb6e1c6ddaaa49a3c946229a7dec895b505899960856e1431bb31e6",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "capture",
+            "subject": 7
+          },
+          {
+            "_creationTime": 1790319881432.8916,
+            "_id": "j97f0sxj18cab7h36xyqg5bs2x8f30vd",
+            "actor": "marketing-poller:b",
+            "fingerprint": "29568de3dd74c0408b9cec008d6511916140c7aedfb777d9ded3e969bcd3215b",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 11
+          },
+          {
+            "_creationTime": 1790319881432.892,
+            "_id": "j974ef3nja5hb4dxdwzafk3ng98f3c7b",
+            "actor": "marketing-poller:b",
+            "fingerprint": "2c070969200530311d7dbd18d6f980f772c16445c1c8e6809f7cd1fb96c56fcf",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 16
+          },
+          {
+            "_creationTime": 1790319881432.8926,
+            "_id": "j979enawhebs2dnn1nx9ccd7b98f2nhe",
+            "actor": "marketing-poller:b",
+            "fingerprint": "b63040308f099bebd78acdaad6924032c63feb526e11739cc4462d8157bdebf5",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 21
+          },
+          {
+            "_creationTime": 1790319881432.893,
+            "_id": "j971z75b2s28tmpyw9jfme86as8f2wxf",
+            "actor": "marketing-poller:b",
+            "fingerprint": "46f2bcd719e9f59a9b019bf7f4e3a33969349bfb04a90550712c021802617a18",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 24
+          },
+          {
+            "_creationTime": 1790319881432.8936,
+            "_id": "j97baeam10tnet48m334w8n4vs8f2fyd",
+            "actor": "marketing-poller:b",
+            "fingerprint": "20370c788e07ecad5213d00af83a4ff63532cac7fbca1e0aac7b618622317642",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 25
+          },
+          {
+            "_creationTime": 1790319881432.894,
+            "_id": "j97d4tvv51hmttdrdt28tnp4518f34sz",
+            "actor": "marketing-poller:b",
+            "fingerprint": "9674326bf1ec5dc0bcb4e97a0c6dbfceb8d2623e2eb40ebd69becf1afc27f4bd",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 26
+          },
+          {
+            "_creationTime": 1790319881432.8945,
+            "_id": "j97c6gw4mkvcbq91ykd8hqa7s18f2jg1",
+            "actor": "marketing-poller:b",
+            "fingerprint": "65fd9fcf855abced8e6c5307b5d0ed615b61fae49810f95a5e117ba19f06e256",
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1",
+            "kind": "suppression",
+            "subject": 27
+          }
+        ],
+        "formId": 1,
+        "last": {
+          "receipts": [
+            {
+              "after": 0,
+              "fingerprint": "146e1a9e8755f543f35f940e1db10fffc63b0318541112007443571b312bb1da"
+            },
+            {
+              "after": 1,
+              "fingerprint": "8f4ecbfac4d0ec7175482deb7979ed5e60b96a6b0806bc54e5e36777b966600f"
+            },
+            {
+              "after": 2,
+              "fingerprint": "c3215c0adf91f48a9822f13ee55433b968b5380ebf04a90e8eff4aabecb22b06"
+            },
+            {
+              "after": 3,
+              "fingerprint": "d46854afcba012cb1449de1c586954ab1b4916686e799ccd4a3eb39733970d53"
+            },
+            {
+              "after": 4,
+              "fingerprint": "62fb97b9f766cea631ca2ec29ddf0b74c05024c628fe7d954d6ff3e8b24458d1"
+            },
+            {
+              "after": 5,
+              "fingerprint": "3c6179c78c59b334c4c368dd56fdfba44afb7e69317f0e415bf56dc01da81999"
+            },
+            {
+              "after": 6,
+              "fingerprint": "f278a591accfbeb123a598b6b95015ded4a0bc6d14befa15c62838e712376fa7"
+            }
+          ],
+          "result": {
+            "added": 7,
+            "cursor": 7,
+            "suppressionChanges": 7
+          },
+          "scan": "capture-016cc5db-a0cc-41ba-8d9a-811d12747f75"
+        },
+        "pending": null,
+        "suppression": [
+          {
+            "_creationTime": 1790319881432.8914,
+            "_id": "jh7acek0wpc2z4qfyhh5fsemnx8f399w",
+            "data": {
+              "contactId": 11,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8918,
+            "_id": "jh79kqeez1zscc1gdf5wbwa95d8f2d2s",
+            "data": {
+              "contactId": 16,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8923,
+            "_id": "jh7dmgsy5awnxhy6pjtm770cbd8f3yry",
+            "data": {
+              "contactId": 21,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8928,
+            "_id": "jh7dwky38h7jx240rg8z5jcvxs8f3xda",
+            "data": {
+              "contactId": 24,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8933,
+            "_id": "jh768q7njc8zdzc7b95tgqhxr18f37ky",
+            "data": {
+              "contactId": 25,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8938,
+            "_id": "jh7f0fkapvj3g53e98y5h5fbs58f2dm5",
+            "data": {
+              "contactId": 26,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          },
+          {
+            "_creationTime": 1790319881432.8943,
+            "_id": "jh79ts07rg74yrbkj0v8cyk93s8f2vc9",
+            "data": {
+              "contactId": 27,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7febzb257xyee37rbt3ccj0s8f3bc1"
+          }
+        ],
+        "tenant": "b"
+      }
+    },
+    {
+      "name": "Idle a traversal writes no duplicate capture or audit event",
+      "result": {
+        "added": 0,
+        "cursor": 7,
+        "duplicate": false,
+        "suppressionChanges": 0
+      }
+    },
+    {
+      "name": "Idle b traversal writes no duplicate capture or audit event",
+      "result": {
+        "added": 0,
+        "cursor": 7,
+        "duplicate": false,
+        "suppressionChanges": 0
+      }
+    },
+    {
+      "name": "Actual callback outage, partial backend kill, current suppression and post-upper append recover without losing or duplicating captures",
+      "nativeBefore": {
+        "a": {
+          "contacts": 166,
+          "anonymousContacts": 23,
+          "pageHits": 12,
+          "assetDownloads": 11,
+          "submissions": 7,
+          "queuedEmails": 0,
+          "emailStats": 170
+        },
+        "b": {
+          "contacts": 27,
+          "anonymousContacts": 19,
+          "pageHits": 10,
+          "assetDownloads": 9,
+          "submissions": 7,
+          "queuedEmails": 4,
+          "emailStats": 4
+        }
+      },
+      "nativeAfter": {
+        "contacts": 170,
+        "anonymousContacts": 23,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 11,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "lost": [
+        {
+          "status": 200,
+          "body": "Submission received",
+          "email": "capture-422036bc-0420-4d6c-ab02-11a6fb86f4db@example.invalid",
+          "contactId": 167,
+          "firstname": "Capture proof"
+        },
+        {
+          "status": 200,
+          "body": "Submission received",
+          "email": "capture-a988d138-39cf-43e4-a981-b60fa8239b10@example.invalid",
+          "contactId": 168,
+          "firstname": "Capture proof"
+        }
+      ],
+      "appended": {
+        "status": 200,
+        "body": "Submission received",
+        "email": "capture-c954925f-abe6-40ff-8fc3-c040f6b210dd@example.invalid",
+        "contactId": 169,
+        "firstname": "Capture proof"
+      },
+      "live": {
+        "status": 200,
+        "body": "Submission received",
+        "email": "capture-c4871e30-a2f4-4558-bada-a174f842b39f@example.invalid",
+        "contactId": 170,
+        "firstname": "Capture proof"
+      },
+      "completed": {
+        "added": 2,
+        "cursor": 9,
+        "duplicate": false,
+        "suppressionChanges": 2
+      },
+      "recoveredAppend": {
+        "added": 1,
+        "cursor": 10,
+        "duplicate": false,
+        "suppressionChanges": 1
+      },
+      "finalPoll": {
+        "added": 1,
+        "cursor": 11,
+        "duplicate": false,
+        "suppressionChanges": 1
+      },
+      "receiptCounts": {
+        "before": 1,
+        "after": 2
+      },
+      "suppressedContact": 167,
+      "finalSnapshot": {
+        "captures": [
+          {
+            "_creationTime": 1790319874250.709,
+            "_id": "j5718yq9qy0nap9t5ac3d0mj9h8f25vh",
+            "data": {
+              "contactId": 150,
+              "dateSubmitted": "2026-09-25T06:18:22+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "43963367aec3b1b904a3ac62a469bd8b90e51ac42e612ea25d4844067eb67206",
+              "submissionId": 1,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7095,
+            "_id": "j57df34zbg6nreex9v15ke2zkx8f2727",
+            "data": {
+              "contactId": 155,
+              "dateSubmitted": "2026-09-25T06:20:30+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "7a0c6d17db1a9aeb5d131618601387ad117cdd30656c69fd8c231c3f8133587f",
+              "submissionId": 2,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.71,
+            "_id": "j57fv4pxxpsgjqz97tjcaz68t98f2eh8",
+            "data": {
+              "contactId": 160,
+              "dateSubmitted": "2026-09-25T06:24:12+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-e0b0db0f-515a-4ccb-b0a2-98f41881ab5a@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "3e5892c9dc0b12c113a7f1b31cc5c793255bd504fe55c1f3faf66665b0d9cf86",
+              "submissionId": 3,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7104,
+            "_id": "j57arwqrcfra7gp3xd9c9m1ey18f383c",
+            "data": {
+              "contactId": 163,
+              "dateSubmitted": "2026-09-25T06:31:30+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-e6200b2f-1510-4482-8f92-cd747a3bd0ab@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "b2141a5445d1869722a1cf191f074248de8bd8395f784b1fb4d7fe8ec9956d7d",
+              "submissionId": 4,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.711,
+            "_id": "j5793agjkvn6y4f9pwfd4pk7jx8f2q9a",
+            "data": {
+              "contactId": 164,
+              "dateSubmitted": "2026-09-25T06:36:48+00:00",
+              "formId": 1,
+              "results": {
+                "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+                "firstname": "Route A"
+              },
+              "sha256": "64ba22f741853a4b9e5fb127f18ac62107bf3950a06e6f4393a997d401c26e64",
+              "submissionId": 5,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7114,
+            "_id": "j575eh63gnc3g49wt36093schd8f3hjy",
+            "data": {
+              "contactId": 165,
+              "dateSubmitted": "2026-09-25T07:01:49+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-8308419d-66c3-4a2e-923e-31f0718aca20@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "bb164aea8cd0c851f811c6a08772992eed17e727a2efbed3d641bf3a639d07a7",
+              "submissionId": 6,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.712,
+            "_id": "j576c5748eq3afhfkyerv8n6158f2atc",
+            "data": {
+              "contactId": 166,
+              "dateSubmitted": "2026-09-25T07:03:06+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-16a254d1-ed31-4527-bb15-90a3d1acfc3b@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "9a47d77aaf2fe3ba594b9560dc5413065eb92641d27411ac72ca804ea9a991d8",
+              "submissionId": 7,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319912500.397,
+            "_id": "j576jc86tawc17yp4cm17rhqz58f3vyd",
+            "data": {
+              "contactId": 167,
+              "dateSubmitted": "2026-09-25T07:05:01+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-422036bc-0420-4d6c-ab02-11a6fb86f4db@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "6fd01bca3eafc9315e62b605afceff7a4b44b558b011c0aca98fd384c8cf0b58",
+              "submissionId": 8,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319912500.3975,
+            "_id": "j57bzxy3pyb1qq5wy24hzeg63d8f235r",
+            "data": {
+              "contactId": 168,
+              "dateSubmitted": "2026-09-25T07:05:02+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-a988d138-39cf-43e4-a981-b60fa8239b10@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "f41f0a5f5f16cde0708eb1348118d4e94016b7d49ba4c56b600bdd04b3e8d8f2",
+              "submissionId": 9,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319918178.158,
+            "_id": "j57bvpeqd8efm6csskfqws3r7h8f207t",
+            "data": {
+              "contactId": 169,
+              "dateSubmitted": "2026-09-25T07:05:05+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-c954925f-abe6-40ff-8fc3-c040f6b210dd@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "72d702dae4986d25b898494f2af74c2da4c22c2a83aaf5dc5aa3eabd92114481",
+              "submissionId": 10,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319925177.723,
+            "_id": "j577jtq7e8j84fcdcv6dq015ax8f3ndz",
+            "data": {
+              "contactId": 170,
+              "dateSubmitted": "2026-09-25T07:05:18+00:00",
+              "formId": 1,
+              "results": {
+                "email": "capture-c4871e30-a2f4-4558-bada-a174f842b39f@example.invalid",
+                "firstname": "Capture proof"
+              },
+              "sha256": "f3cc7bf06b179c1fe11b04d5cd4f995cd8f77efcca49c2c147db17d857ba52c8",
+              "submissionId": 11,
+              "tenant": "a"
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          }
+        ],
+        "cursor": 11,
+        "events": [
+          {
+            "_creationTime": 1790319874250.7092,
+            "_id": "j9792aqtsv5nyypqy6xnc4vgd18f234q",
+            "actor": "marketing-poller:a",
+            "fingerprint": "43963367aec3b1b904a3ac62a469bd8b90e51ac42e612ea25d4844067eb67206",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 1
+          },
+          {
+            "_creationTime": 1790319874250.7097,
+            "_id": "j9761enmp61qhwf3431z77rmfs8f2xjv",
+            "actor": "marketing-poller:a",
+            "fingerprint": "7a0c6d17db1a9aeb5d131618601387ad117cdd30656c69fd8c231c3f8133587f",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 2
+          },
+          {
+            "_creationTime": 1790319874250.7102,
+            "_id": "j975kyf326qga78j9nsbnz3cz58f2909",
+            "actor": "marketing-poller:a",
+            "fingerprint": "3e5892c9dc0b12c113a7f1b31cc5c793255bd504fe55c1f3faf66665b0d9cf86",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 3
+          },
+          {
+            "_creationTime": 1790319874250.7107,
+            "_id": "j97e31vkehvfrwpj766pyd95q18f2vay",
+            "actor": "marketing-poller:a",
+            "fingerprint": "b2141a5445d1869722a1cf191f074248de8bd8395f784b1fb4d7fe8ec9956d7d",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 4
+          },
+          {
+            "_creationTime": 1790319874250.7112,
+            "_id": "j9735f8kgq7q265jmaf1zh8nk18f30yk",
+            "actor": "marketing-poller:a",
+            "fingerprint": "64ba22f741853a4b9e5fb127f18ac62107bf3950a06e6f4393a997d401c26e64",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 5
+          },
+          {
+            "_creationTime": 1790319874250.7117,
+            "_id": "j9722mv5hvczbxvr81zet5ac6x8f223v",
+            "actor": "marketing-poller:a",
+            "fingerprint": "bb164aea8cd0c851f811c6a08772992eed17e727a2efbed3d641bf3a639d07a7",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 6
+          },
+          {
+            "_creationTime": 1790319874250.7122,
+            "_id": "j973gbv9qf1j44r5m83zmzkpxh8f2b1n",
+            "actor": "marketing-poller:a",
+            "fingerprint": "9a47d77aaf2fe3ba594b9560dc5413065eb92641d27411ac72ca804ea9a991d8",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 7
+          },
+          {
+            "_creationTime": 1790319874250.7126,
+            "_id": "j9707j3642pbdjendke37jf88h8f3rj7",
+            "actor": "marketing-poller:a",
+            "fingerprint": "8ea4e938d7edb6dc44964c71c799cf5d9aab12eb1e4f27d6e2024a09163ccb32",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 150
+          },
+          {
+            "_creationTime": 1790319874250.7131,
+            "_id": "j977e7we78za7pcwpzczzwettd8f20gg",
+            "actor": "marketing-poller:a",
+            "fingerprint": "cf63692b442d130df06482cea3ae48a6475a332631d2226cb57043a3e2c1d040",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 155
+          },
+          {
+            "_creationTime": 1790319874250.7136,
+            "_id": "j97673ytnzwzpsydn82r9tdbxd8f2xmr",
+            "actor": "marketing-poller:a",
+            "fingerprint": "3903150bbb54fddec311ab492cce1090272c42b78658ab90d622ed01fb2910b7",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 160
+          },
+          {
+            "_creationTime": 1790319874250.714,
+            "_id": "j97d6nmbgvyh08gj7s1hm33cah8f20vg",
+            "actor": "marketing-poller:a",
+            "fingerprint": "e370ef8d4e38d88c9ac5d29344f89048d89d63dd39fc4ecbbd3eeddaad779c8f",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 163
+          },
+          {
+            "_creationTime": 1790319874250.7146,
+            "_id": "j97495rm5a5dphavhaz9ht9d798f2vrx",
+            "actor": "marketing-poller:a",
+            "fingerprint": "9b55669d697357ec9d5808bb7f339b6966cd6fab720165627132da99fd1c64c8",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 164
+          },
+          {
+            "_creationTime": 1790319874250.715,
+            "_id": "j97b9pd7nypw2stnsh4q999w718f3m2h",
+            "actor": "marketing-poller:a",
+            "fingerprint": "c38c854e0b70bc8fd02a7fb462fae297436c7382c005d17e66f2162c346ae945",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 165
+          },
+          {
+            "_creationTime": 1790319874250.7156,
+            "_id": "j970z8100cffjebc3md9a69dn98f2tx6",
+            "actor": "marketing-poller:a",
+            "fingerprint": "e0898774a69902fc4a55bdd3af5b21a59e20e359b4819f396dcedb35f49b6a4d",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 166
+          },
+          {
+            "_creationTime": 1790319912500.3972,
+            "_id": "j97510beyap7b4qzc9jef43pjn8f2k1z",
+            "actor": "marketing-poller:a",
+            "fingerprint": "6fd01bca3eafc9315e62b605afceff7a4b44b558b011c0aca98fd384c8cf0b58",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 8
+          },
+          {
+            "_creationTime": 1790319912500.3977,
+            "_id": "j972mk7p6g4q3ytz8zb0wr5gen8f2h80",
+            "actor": "marketing-poller:a",
+            "fingerprint": "f41f0a5f5f16cde0708eb1348118d4e94016b7d49ba4c56b600bdd04b3e8d8f2",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 9
+          },
+          {
+            "_creationTime": 1790319912500.3982,
+            "_id": "j970tetspqv0rttwdxrsb4psws8f21pa",
+            "actor": "marketing-poller:a",
+            "fingerprint": "e8922ed014401df683cbccc44f14a4a5cc719bdad6534ad7fb45d7234ed8bd6b",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 167
+          },
+          {
+            "_creationTime": 1790319912500.3987,
+            "_id": "j974h08qk88d5rcz311csmqn4d8f23ft",
+            "actor": "marketing-poller:a",
+            "fingerprint": "0287460e2c47b42586e6df427720baba1c28124f1e7b0ea6fb1bb63246431774",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 168
+          },
+          {
+            "_creationTime": 1790319918178.1582,
+            "_id": "j97a5zmbf3yn4aetzp2vny1aqs8f2cqy",
+            "actor": "marketing-poller:a",
+            "fingerprint": "72d702dae4986d25b898494f2af74c2da4c22c2a83aaf5dc5aa3eabd92114481",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 10
+          },
+          {
+            "_creationTime": 1790319918178.1587,
+            "_id": "j97cdhdf03193rh2prrz2swsxs8f2y5q",
+            "actor": "marketing-poller:a",
+            "fingerprint": "9fc109e091c8b6d86fef5e167b3531cfa116f3fbcbb37d46dbb459a7744a590a",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 169
+          },
+          {
+            "_creationTime": 1790319925177.7231,
+            "_id": "j977da2fbws062rmxerxch58958f3t7x",
+            "actor": "marketing-poller:a",
+            "fingerprint": "f3cc7bf06b179c1fe11b04d5cd4f995cd8f77efcca49c2c147db17d857ba52c8",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "capture",
+            "subject": 11
+          },
+          {
+            "_creationTime": 1790319925177.7236,
+            "_id": "j9796hc4b2dm2n62fq4wc485758f28hp",
+            "actor": "marketing-poller:a",
+            "fingerprint": "b2dc35a116d275b8c517576cc99f89fc62064bb548371b94f61294ee47ee3f75",
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22",
+            "kind": "suppression",
+            "subject": 170
+          }
+        ],
+        "formId": 1,
+        "last": {
+          "receipts": [
+            {
+              "after": 10,
+              "fingerprint": "980eebefc7b027e2ea6f6594d6e1c1fb3837ce1f63da5f7f2b8627cd60bd20c3"
+            }
+          ],
+          "result": {
+            "added": 1,
+            "cursor": 11,
+            "suppressionChanges": 1
+          },
+          "scan": "outage-4dfc897c-fdfc-41ef-a8f0-4ff1afa001ee"
+        },
+        "pending": null,
+        "suppression": [
+          {
+            "_creationTime": 1790319874250.7124,
+            "_id": "jh77fa05sz0m44kp73bd7d5pa18f2f6c",
+            "data": {
+              "contactId": 150,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.713,
+            "_id": "jh7cw283dmfmn6223bvd8a7a6x8f3pnw",
+            "data": {
+              "contactId": 155,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7134,
+            "_id": "jh7dp044n5rkzfxmakjf831hbx8f25h0",
+            "data": {
+              "contactId": 160,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7139,
+            "_id": "jh77ps3kn7astjxeej4qqsnrcx8f21hd",
+            "data": {
+              "contactId": 163,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7144,
+            "_id": "jh74kybf5k565nwbwbgf2yns8n8f3eby",
+            "data": {
+              "contactId": 164,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7148,
+            "_id": "jh7dt5p8kwfe4fk7z70hejhxg58f3yzf",
+            "data": {
+              "contactId": 165,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319874250.7153,
+            "_id": "jh735yvyv3g65vegymb29b8p618f3hw3",
+            "data": {
+              "contactId": 166,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319912500.398,
+            "_id": "jh75c2nr9gdyebyt1ge6m5aqf58f22ca",
+            "data": {
+              "contactId": 167,
+              "status": "present",
+              "suppressed": true
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319912500.3984,
+            "_id": "jh70yht0s1adyya20m1ycedbsd8f2324",
+            "data": {
+              "contactId": 168,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319918178.1584,
+            "_id": "jh77aq3c07v4gtzxxf1wese66h8f3pw7",
+            "data": {
+              "contactId": 169,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          },
+          {
+            "_creationTime": 1790319925177.7234,
+            "_id": "jh74d40a90b1sy8tp7h2hj1vh18f3ngx",
+            "data": {
+              "contactId": 170,
+              "status": "present",
+              "suppressed": false
+            },
+            "instance": "jd7f7y4dfj6ww5mkgt4rg86yjn8f2h22"
+          }
+        ],
+        "tenant": "a"
+      },
+      "otherTenantUnchanged": true
+    }
+  ],
+  "lifecycle": [
+    {
+      "start": 1,
+      "pid": 50954,
+      "at": "2026-09-25T07:04:17.985Z",
+      "stopSignal": "SIGKILL"
+    },
+    {
+      "start": 2,
+      "pid": 50994,
+      "at": "2026-09-25T07:04:27.245Z",
+      "stopSignal": "SIGKILL"
+    },
+    {
+      "start": 3,
+      "pid": 54636,
+      "at": "2026-09-25T07:04:41.450Z",
+      "stopSignal": "SIGKILL"
+    },
+    {
+      "start": 4,
+      "pid": 54990,
+      "at": "2026-09-25T07:05:06.784Z"
+    }
+  ],
+  "backendVersion": "precompiled-2026-09-21-0cf49cb",
+  "backendSha256": "f0fbcac398b8ee905b2d3a698b4ef1172a468a2a9d7e5b6a96abd6698e126fc9",
+  "privateHomeIsolated": true,
+  "credentialsSaved": true,
+  "freshProcessReadback": true,
+  "nativeWrites": {
+    "formSubmissions": 4,
+    "suppressions": 1
+  },
+  "webhooksConfigured": 0,
+  "callbackOutageExercised": true,
+  "limits": [
+    "Native deletion and webhook queue redelivery not exercised",
+    "No production identity/I1/CRM applyChange integration",
+    "DNC absence is not marketing opt-in"
+  ]
+}

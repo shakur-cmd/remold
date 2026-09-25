@@ -29,8 +29,8 @@ jobs:
           package-manager-cache: false
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - run: pnpm install --frozen-lockfile
-      - name: Verify marketing MIME and public boundaries
-        run: node --test proofs/marketing/mime.test.mjs proofs/marketing/mime-sink.test.mjs proofs/marketing/mime-oracle.test.mjs proofs/marketing/publishing/server.test.mjs
+      - name: Verify marketing MIME, public and callback boundaries
+        run: node --test proofs/marketing/mime.test.mjs proofs/marketing/mime-sink.test.mjs proofs/marketing/mime-oracle.test.mjs proofs/marketing/publishing/server.test.mjs proofs/marketing/capture/receiver.test.mjs
       - name: Run serialized checks and seal isolated frontend
         shell: bash
         run: |

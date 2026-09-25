@@ -1,0 +1,85 @@
+{
+  "phase": "After exact private-address allowlist",
+  "rows": [
+    {
+      "tenant": "a",
+      "before": {
+        "contacts": 165,
+        "anonymousContacts": 23,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 6,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "after": {
+        "contacts": 166,
+        "anonymousContacts": 23,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 7,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "receiptCount": 0,
+      "afterReceipts": 1,
+      "receipts": [
+        {
+          "tenant": "a",
+          "sha256": "36e10afc514117566b876461dd95e1c7bde9902970e88d9d33d90b117dc2eb12",
+          "keys": [
+            "mautic.form_on_submit"
+          ],
+          "containsEmail": true
+        }
+      ],
+      "submission": {
+        "status": 200,
+        "body": "Submission received",
+        "email": "capture-16a254d1-ed31-4527-bb15-90a3d1acfc3b@example.invalid",
+        "contactId": 166,
+        "firstname": "Capture proof"
+      }
+    },
+    {
+      "tenant": "b",
+      "before": {
+        "contacts": 26,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 6,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "after": {
+        "contacts": 27,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 7,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "receiptCount": 0,
+      "afterReceipts": 1,
+      "receipts": [
+        {
+          "tenant": "b",
+          "sha256": "88a3673519811ca931a26921f0d85b6cb2cffc155e945aeb16f1760409cecbcb",
+          "keys": [
+            "mautic.form_on_submit"
+          ],
+          "containsEmail": true
+        }
+      ],
+      "submission": {
+        "status": 200,
+        "body": "Submission received",
+        "email": "capture-c9d7176a-d77b-425b-9fef-881bd7ebeee8@example.invalid",
+        "contactId": 27,
+        "firstname": "Capture proof"
+      }
+    }
+  ]
+}

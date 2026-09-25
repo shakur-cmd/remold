@@ -1,0 +1,65 @@
+{
+  "phase": "Before exact private-address allowlist",
+  "rows": [
+    {
+      "tenant": "a",
+      "before": {
+        "contacts": 164,
+        "anonymousContacts": 23,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 5,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "after": {
+        "contacts": 165,
+        "anonymousContacts": 23,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 6,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "receiptCount": 0,
+      "afterReceipts": 0,
+      "submission": {
+        "status": 200,
+        "body": "Submission received",
+        "email": "capture-8308419d-66c3-4a2e-923e-31f0718aca20@example.invalid",
+        "contactId": 165,
+        "firstname": "Capture proof"
+      }
+    },
+    {
+      "tenant": "b",
+      "before": {
+        "contacts": 25,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 5,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "after": {
+        "contacts": 26,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 6,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "receiptCount": 0,
+      "afterReceipts": 0,
+      "submission": {
+        "status": 200,
+        "body": "Submission received",
+        "email": "capture-e8993ce7-01c2-4cec-bfc2-519c2cf281bb@example.invalid",
+        "contactId": 26,
+        "firstname": "Capture proof"
+      }
+    }
+  ]
+}

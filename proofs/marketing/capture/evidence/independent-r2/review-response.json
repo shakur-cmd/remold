@@ -1,0 +1,31 @@
+{
+  "result": "**Verdict: PASS for the bounded capture/callback slice at exact source `ed85fc277d0b41f23a4ae239d5001d15898388160795fd335be6a6f334a09af1`.** This doesn't certify P2, I1, the CRM integration, production or LIVE. I'm the same independent verifier session as round 1, not the builder, and delegated nothing.\n\n**The change:** only `receiver.test.mjs` and `callback-replay.mjs` differ from round 1. The copies in `evidence/r1-source` match the old hashes, and the receiver, importer and native code are byte-identical.\n\n**What I ran (all exit 0 except the mutant run, where failures are the point):**\n- **Tests:** receiver 3 of 3 pass; the combined 20 of 20 pass.\n- **Receiver mutants:** I reran my 9 in a new private scratch folder. 8 now fail the suite; in round 1 only 5 did. The duplicate-header-count mutant still passes the suite, but it's redundant: a raw request still gets 401 and stores nothing, because the signature format check refuses the joined header.\n- **`callback-replay.mjs independent-r2`:** passed. Each tenant got one signed whitespace variant carrying a foreign origin header, and it was stored under its own tenant (receipts A 4\u21925, B 2\u21923). Every stored row carries its configured tenant. Each receiver was SIGKILLed and restarted, kept its exact receipts, and a duplicate added nothing.\n\n**Before and after:**\n- **Native tenants A and B:** counters, suppression list, max IDs, domain digests, hooks and web config are all unchanged. Only the two receivers' restart times moved.\n- **Sources:** the 16 candidate files and the prior 10/7/57 sets are identical before and after.\n- **Earlier evidence:** unchanged, including my round-1 folder. The one exception is root's builder `capture/evidence/report.html`, which changed while my run was going. I didn't write it.\n- **Secrets:** a scan of the new files found none.\n\n**Actual bugs in the bounded slice:** none found.\n\n**Still open:**\n- **Importer harness:** my 28-case Convex harness and 5 importer mutants sit under `evidence/independent/importer-mutants`. I didn't rerun them this round. The whole `capture/` directory is untracked in git, so the harness isn't committed yet, it isn't wired to CI, and I saw no replay instructions yet.\n- **Production limits from round 1:** the possible skip of late-committed submission IDs (reasoning only, not reproduced), stale consent reads, the 100-capture stall, refusal of non-ASCII keys, and no scheduler, callback consumer or CRM applyChange integration.\n- **Not certified:** root's own native effects, resource declarations and the receipts root added before my run, beyond what I observed.\n\nFiles are in `proofs/marketing/capture/evidence/independent-r2/`:\n- report.html\n- verdict.json\n- native-before.json and native-after.json\n- hashes-before.json and hashes-after.json\n- receiver-mutants.json\n- receipt-tenants.json\n- the test and replay console logs\n\nThe replay runner also wrote `capture/evidence/callback-replay-independent-r2.json`, and private scratch is kept in `$TMPDIR/remold-capture-iv-r2.vjmTrGYlvu`.",
+  "is_error": false,
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2794,
+      "outputTokens": 19,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002889,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 94,
+      "outputTokens": 51165,
+      "thinkingTokens": 15429,
+      "cacheReadInputTokens": 3261821,
+      "cacheCreationInputTokens": 111914,
+      "webSearchRequests": 0,
+      "costUSD": 2.5713522,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  }
+}

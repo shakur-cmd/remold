@@ -1,0 +1,137 @@
+{
+ "at": "2026-09-25T07:09:14.664Z",
+ "tenants": {
+  "a": {
+   "counts": {
+    "contacts": 170,
+    "anonymousContacts": 23,
+    "pageHits": 12,
+    "assetDownloads": 11,
+    "submissions": 11,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "extra": {
+    "lead_donotcontact": 1,
+    "webhook_queue": 0,
+    "webhook_logs": 6,
+    "webhooks": 1,
+    "forms": 1,
+    "pages": 2,
+    "assets": 1,
+    "campaigns": 136,
+    "emails": 147
+   },
+   "dncEmailContacts": "167",
+   "maxSubmissionId": 11,
+   "maxLeadId": 170,
+   "domainDigest": "f4017bbfb67d9e6260fc1bbaf364818e6391c4aeb798181a94a1f672d797c2bd",
+   "hooks": {
+    "status": 200,
+    "total": 1,
+    "rows": [
+     {
+      "id": 1,
+      "url": "http://remold-marketing-proof-callback-a:8080/callback",
+      "published": true,
+      "triggers": [
+       "mautic.form_on_submit"
+      ]
+     }
+    ]
+   },
+   "webConfigSha256": "556b35e8ceed661cfb2e75c393f6d7914e8e6233a7c9d4c389ea9069159a775a",
+   "receipts": {
+    "count": 2,
+    "digest": "f7910f49a5be6726a3d97c849890b360a22c217e4061da62e3e6eeae17ff395f"
+   },
+   "receiver": {
+    "running": true,
+    "startedAt": "2026-09-25T07:05:34.235891123Z",
+    "restartCount": 0,
+    "imageId": "sha256:0b7b0351980d",
+    "serverSha256": "4157db7077602ef7cd336b44c7b853f6600bd41f79849498e5a04dde0c86c5b2"
+   },
+   "containers": {
+    "web": {
+     "running": true,
+     "startedAt": "2026-09-25T03:55:08.16073456Z"
+    },
+    "db": {
+     "running": true,
+     "startedAt": "2026-09-25T03:55:03.786342685Z"
+    },
+    "public": {
+     "running": true,
+     "startedAt": "2026-09-25T06:31:11.009546029Z"
+    }
+   }
+  },
+  "b": {
+   "counts": {
+    "contacts": 27,
+    "anonymousContacts": 19,
+    "pageHits": 10,
+    "assetDownloads": 9,
+    "submissions": 7,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "extra": {
+    "lead_donotcontact": 0,
+    "webhook_queue": 0,
+    "webhook_logs": 2,
+    "webhooks": 1,
+    "forms": 1,
+    "pages": 2,
+    "assets": 1,
+    "campaigns": 0,
+    "emails": 1
+   },
+   "dncEmailContacts": "",
+   "maxSubmissionId": 7,
+   "maxLeadId": 27,
+   "domainDigest": "b517803e932dcccf2d6885069d81ea8a70d35b840dbb711d39187426d7110fa0",
+   "hooks": {
+    "status": 200,
+    "total": 1,
+    "rows": [
+     {
+      "id": 1,
+      "url": "http://remold-marketing-proof-callback-b:8080/callback",
+      "published": true,
+      "triggers": [
+       "mautic.form_on_submit"
+      ]
+     }
+    ]
+   },
+   "webConfigSha256": "e4cfa77fb7b85cc82cad028bbc66a6c703379ab055d6a7a44a070f79f1113e1d",
+   "receipts": {
+    "count": 1,
+    "digest": "61dc646f72e24ea620eda3bee3c1a6a118a928dafd7d3b729bb0e5aedf85aeaf"
+   },
+   "receiver": {
+    "running": true,
+    "startedAt": "2026-09-25T07:05:34.795281119Z",
+    "restartCount": 0,
+    "imageId": "sha256:0b7b0351980d",
+    "serverSha256": "4157db7077602ef7cd336b44c7b853f6600bd41f79849498e5a04dde0c86c5b2"
+   },
+   "containers": {
+    "web": {
+     "running": true,
+     "startedAt": "2026-09-25T05:58:58.672872034Z"
+    },
+    "db": {
+     "running": true,
+     "startedAt": "2026-09-25T05:58:48.439397056Z"
+    },
+    "public": {
+     "running": true,
+     "startedAt": "2026-09-25T06:31:22.811785151Z"
+    }
+   }
+  }
+ }
+}

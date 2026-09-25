@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "level": "SERVICE saved native payloads, synthetic signed whitespace variant per tenant and isolated receiver restarts; no native writes",
+  "rows": [
+    {
+      "tenant": "a",
+      "receiptsBefore": 3,
+      "receiptsAfter": 4,
+      "syntheticSignedWhitespaceVariant": 1,
+      "foreignKeyStatus": 401,
+      "duplicateStatus": 200,
+      "freshForeignOriginCannotRebind": true,
+      "actualSigkillRestartPreservedExactReceipts": true,
+      "duplicateAfterRestartAddsNothing": true
+    },
+    {
+      "tenant": "b",
+      "receiptsBefore": 1,
+      "receiptsAfter": 2,
+      "syntheticSignedWhitespaceVariant": 1,
+      "foreignKeyStatus": 401,
+      "duplicateStatus": 200,
+      "freshForeignOriginCannotRebind": true,
+      "actualSigkillRestartPreservedExactReceipts": true,
+      "duplicateAfterRestartAddsNothing": true
+    }
+  ]
+}

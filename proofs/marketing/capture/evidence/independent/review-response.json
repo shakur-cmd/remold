@@ -1,0 +1,34 @@
+{
+  "result": "**Verdict: PASS for the bounded capture/callback slice only.** This doesn't certify P2, I1, the CRM applyChange integration or any dependency. I checked it as a fresh Opus 5.5 session, not the builder, and delegated nothing.\n\n**What I ran (all exit 0):**\n- `node --test proofs/marketing/capture/receiver.test.mjs`: 3 of 3 pass.\n- The combined 20 Node checks (receiver, mime, mime-oracle, mime-sink and publishing server tests): 20 of 20 pass.\n- `run.mjs independent-first --callback-outage`: passed. It did 3 real Convex SIGKILL restarts on 3620/3621 and stopped and restarted callback-a. Tenant A went from 11 to 15 submissions and new contact 171 is now email-suppressed. The local import holds 15 captures with no duplicates, and the typecheck and fresh-process readback passed.\n- `callback-replay.mjs independent-first`: both tenants passed. A foreign key gets 401, a duplicate adds no receipt, and a SIGKILL plus restart keeps the exact receipts.\n\n**Before and after:**\n- **Tenant A:** exactly the authorized writes (+4 submissions, +1 email suppression, +4 webhook log rows).\n- **Mail and queue counters:** unchanged (A 0/170, B 4/4).\n- **Tenant B:** data and domain digest unchanged. Only its own receiver restart time moved.\n- **Source files:** all 16 candidate files (aggregate `85863e6c\u20269e80`), the prior 10/7/57 sets and the 31 earlier capture evidence files are byte-identical before and after.\n- **Secrets:** a scan of every new file found no secret values.\n\n**Adversarial checks (scratch copies only, no extra native writes):**\n- **Receiver:** I made 9 copies with a protection removed. 5 fail the suite: HMAC check, idempotent insert, acknowledgement on storage failure, size cap, content type.\n- **Importer:** on an isolated Convex copy (ports 3720/3721, synthetic rows), all 28 of my cases behave correctly. Removing any one of 5 guards makes its case fail: page gap, tenant scope, consent coverage, replay fingerprint, missing contact must be suppressed.\n\n**Actual bugs in the bounded slice:** none found.\n\n**Weak tests (the code is right, but nothing committed would catch a regression):**\n- The importer has no committed tests for the page-gap, foreign-tenant, replay-changed, concurrent-scan or missing-contact guards. Only my scratch harness exercised them.\n- The \"origin cannot change tenant\" check in both `receiver.test.mjs` and `callback-replay.mjs` can't fail. It sends the foreign origin only with a body that's already stored. A copy that takes the tenant from that header still passes; the real receiver stores it correctly as tenant A.\n- Removing the JSON-object check or the strict UTF-8 check still passes the suite. The duplicate signature header check is redundant because the signature format check already refuses it.\n\n**Risks beyond what the slice claims:**\n- **Possible permanently skipped submissions:** the importer's cursor is the highest native submission ID seen. If two submissions arrive at once and the lower ID commits after the higher one is visible, the lower one is never imported. This is my reasoning only; I couldn't reproduce it without more native writes. It needs a fix before any production claim.\n- **The 100-capture cap stalls permanently:** after 100 captures, the next import is refused and every later poll is blocked, with no recovery path. Reproduced in the isolated copy.\n- **Late stale reads can undo a suppression:** the importer doesn't order consent reads, so an older \"not suppressed\" read that commits later overwrites a recorded suppression. Reproduced; this sits inside the acknowledged read/finalize race.\n- **Non-ASCII form field names are refused:** Convex rejects them. It fails safe, only blocking imports.\n\nThe builder's report already lists these as open: the read/finalize race, the 100 cap, no installed scheduler or callback consumer, provider-history rollback, native identity overwrite, and no CRM applyChange integration.\n\nAs instructed, I did not run setup-receivers, allow-callbacks, the old host baseline or the payment/mail proofs. No mail was sent, no production or provider account was touched, and nothing was reset. I also didn't append to the decisions log, because it's outside the folders I was allowed to write to; the root session should log this result.\n\nFiles are in `proofs/marketing/capture/evidence/independent/`:\n- report.html\n- verdict.json\n- native-before.json and native-after.json\n- hashes-before.json and hashes-after.json\n- receiver-mutants.json, receiver-probe.json and importer-mutants/\n- the test and run console logs\n\nThe two prescribed runs wrote their own evidence to `runs/independent-first/` and `callback-replay-independent-first.json`. Private scratch and backend logs are kept in `private/capture-independent-first` and `$TMPDIR/remold-capture-iv-scratch.zDAAON5kEX`.",
+  "is_error": false,
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2794,
+      "outputTokens": 19,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002889,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 72,
+      "outputTokens": 41011,
+      "cacheReadInputTokens": 2078746,
+      "cacheCreationInputTokens": 92688,
+      "webSearchRequests": 0,
+      "costUSD": 1.9777612,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 14244,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  }
+}

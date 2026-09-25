@@ -1,0 +1,31 @@
+✔ verified receipt survives reopen, duplicate delivery adds no receipt, origin cannot change tenant (21.397458ms)
+✔ wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt (10.08575ms)
+✖ durable storage failure never receives a successful acknowledgement (1.88975ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.024291
+
+✖ failing tests:
+
+test at ../../../../../../private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-callback-mutant-pn0b86ay/receiver.test.mjs:31:1
+✖ durable storage failure never receives a successful acknowledgement (1.88975ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-callback-mutant-pn0b86ay/receiver.test.mjs:32:90)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
