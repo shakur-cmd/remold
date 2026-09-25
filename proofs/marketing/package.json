@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node verify-runtime.mjs && node install-plugin.mjs && node safety-replay.mjs && node branch-replay.mjs && node reentry-replay.mjs && node api-boundary-replay.mjs",
     "typecheck": "tsc --noEmit",
-    "proof:reliability": "node reliability-replay.mjs"
+    "proof:reliability": "node reliability-replay.mjs",
+    "proof:mime": "node --test mime.test.mjs mime-sink.test.mjs mime-oracle.test.mjs && node mime-fault-replay.mjs && node mime-receiver-replay.mjs && node mime-boundary-replay.mjs && node verify-installed.mjs"
   },
   "dependencies": {
     "convex": "1.46.0"

@@ -1,0 +1,330 @@
+{
+  "verifier": "Fresh independent Opus 5.5 session (claude-opus-5-5), no delegation, no other model/agent started",
+  "capturedAt": "2026-09-25T05:22:17.874200+00:00",
+  "result": "BOUNDED PASS",
+  "scope": "Bounded P2 marketing MIME repair on local synthetic fixture (SERVICE level: native Mautic queue/workers, isolated local H0 authority, one internal HTTP receiver). Not SMTP, not a mailbox, not LIVE.",
+  "source": {
+    "manifest": "evidence/mime/r2/final-source-manifest.json",
+    "files": 57,
+    "aggregateSha256": "a0b59a92a768d86e10c2af8b922f0e713335cc938349c6fd8181bd7831702d26",
+    "before": "57/57 match, aggregate match (logs/00-hash-before.txt)",
+    "after": "57/57 match, aggregate match after all native runs and after local mutants (logs/61-hash-after.txt, logs/99-hash-final.txt)",
+    "codeApprovedAggregate": "b2cb8add0357c8d450be815c61c1557357020b2199963c38fc1fb3a822f4b886",
+    "deltaVsCodeApproved": [
+      "mime-boundary-replay.mjs",
+      "mime-oracle.test.mjs",
+      "mime.test.mjs"
+    ],
+    "runtimeFilesUnchangedVsCodeApproved": true,
+    "h0Frozen": "verify-runtime PASS before and after (h0-source.json copies)"
+  },
+  "testDeltas": {
+    "mime.test.mjs": "Adds Date negative with RFC-shaped date plus trailing comment carrying URL. Mutant M1 (Date shape regex removed, Date.parse kept) now fails this test; pre-delta test passes the same mutant (gap reproduced).",
+    "mime-oracle.test.mjs": "Truncation refusal now must match /outside MIME parts|changed the approved part body/ on stderr. Mutant M3 (oracle still refuses but messages blanked) fails new test, passes pre-delta test. M2 (both checks removed) fails.",
+    "mime-boundary-replay.mjs": "Adds Python email parser shape assertion: approved native bytes parse as {parts:2,epilogue:false}; host-substituted boundary variant must differ and have epilogue. Native run observed changed={parts:1,epilogue:true}. Label variantOrigin = host-side substitution.",
+    "assessment": "All three are strict strengthenings; no assertion weakened."
+  },
+  "checkedGroups": [
+    {
+      "phase": 1,
+      "command": "node verify-runtime.mjs; node verify-installed.mjs",
+      "exit": [
+        0,
+        0
+      ],
+      "result": "PASS, 12 installed hashes"
+    },
+    {
+      "phase": 2,
+      "command": "node mime-probe.mjs",
+      "exit": 0,
+      "result": "PASS",
+      "independent": {
+        "intent": "ab69fd0eebe580ae83e9ca7a326824a43ad3d05729d4377bedabcdb09b29d4fc",
+        "sealedHash": "2aec92ef582c4d7b4d7242b79fd568fbfd76f42e699f9100f2f90df1254a2d18",
+        "rows": [
+          {
+            "stage": "queued",
+            "rawSha256": "17a7c69cafe6e3c78a2d2f082cb9b96cc3362d7554e280407c425063aa7f7294"
+          },
+          {
+            "stage": "transport",
+            "rawSha256": "ff27cce31dd86398eec9bbb4bc52ca1a704aef678840fbe65416cdcc19d23fd9"
+          },
+          {
+            "stage": "transport",
+            "rawSha256": "2efa579c48c3db3b7beb6137f429130f8bcd86f3901dcd4c48308e2f8904ab6d"
+          }
+        ],
+        "checks": {
+          "queued1": true,
+          "transportGte2": true,
+          "rawDistinct": true,
+          "allJsEqualSealed": true,
+          "allPyEqualSealed": true,
+          "boundariesDistinct": 3,
+          "noEffect": true,
+          "sealedMatchesH0": true
+        },
+        "operationState": "proposed",
+        "h0Receipts": 0,
+        "receiverAttempts": 0
+      }
+    },
+    {
+      "phase": 3,
+      "command": "pnpm --dir proofs/marketing proof:mime",
+      "exit": 0,
+      "result": "PASS: 11/11 unit; faults body-after-consume, subject-before-consume, reconcile-collision; receiver 6 mutations + duplicate refused; native boundary collision refused (old normalizer collides, Python parts 2->1 with epilogue) and unchanged native control delivered once; installed 12 hashes"
+    },
+    {
+      "phase": 4,
+      "command": "pnpm --dir proofs/marketing test",
+      "exit": 0,
+      "result": "PASS 7 groups: unapproved, deliver, revoke, kill, branch (stored MIME pixel URL with ct query opened, readAfter 1, 2 deliveries), reentry, ordinary API refusal"
+    },
+    {
+      "phase": 5,
+      "command": "pnpm --dir proofs/marketing proof:reliability",
+      "exit": 0,
+      "result": "PASS 6/6: late-approval, sink-refused, sink-busy, lost-response, receiver-lost-response, concurrent-workers; each delivered case receiver POST count 1 and Python oracle hash match"
+    },
+    {
+      "phase": 6,
+      "command": "pnpm --dir proofs/marketing typecheck; node verify-runtime.mjs; node verify-installed.mjs",
+      "exit": [
+        0,
+        0,
+        0
+      ],
+      "result": "PASS"
+    },
+    {
+      "phase": "local",
+      "command": "temp-copy mutants M1-M3 (logs/70-local-delta-mutants.txt)",
+      "exit": "n/a",
+      "result": "Each strengthened assertion catches its mutant; controls pass"
+    }
+  ],
+  "directReadbacks": {
+    "normalDelivery": {
+      "intent": "8890a8cc57c7f5f944dc51e30b46ab83158ce6fe81a0c6605c15ef0377ac871a",
+      "bridgeState": "delivered",
+      "sealedHash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+      "forwardRawHash": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+      "h0State": "confirmed",
+      "h0PayloadContent": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+      "h0ProviderRefs": [
+        "local-mime-sink:2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9"
+      ],
+      "receiverStoredRawSha": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+      "receiverBlobRecomputedSha": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+      "pythonOracleHash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+      "blobIsWorkerTransportAttempt": false,
+      "blobIsQueuedBytes": false,
+      "receiverAttempts": [
+        "accepted",
+        "refused",
+        "refused",
+        "refused",
+        "refused",
+        "refused",
+        "refused",
+        "duplicate-refused"
+      ],
+      "transportAccepted": 1,
+      "transportUnconfirmed": 0
+    },
+    "boundaryNativeControl": {
+      "intent": "da1138fefd77d55fe00aebf61439e711ce3540764bf8affc5db0184623bb2ca8",
+      "bridgeState": "delivered",
+      "sealedHash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+      "forwardRawHash": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+      "h0State": "confirmed",
+      "h0PayloadContent": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+      "h0ProviderRefs": [
+        "local-mime-sink:d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2"
+      ],
+      "receiverStoredRawSha": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+      "receiverBlobRecomputedSha": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+      "pythonOracleHash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+      "blobIsWorkerTransportAttempt": true,
+      "blobIsQueuedBytes": false,
+      "receiverAttempts": [
+        "accepted"
+      ],
+      "transportAccepted": 1,
+      "transportUnconfirmed": 0,
+      "hiddenChosenDelimiterInPlain": true,
+      "note": "Stored BLOB equals a native worker transport-attempt probe, not queued bytes: worker-produced"
+    },
+    "bodyAfterConsume": {
+      "intent": "f548701a14fbe214860c7000d9aea3b1be1c3f43fa06b6fd9f20b6d04fa71bde",
+      "bridgeState": "consumed",
+      "sealedHash": "42f3b2ba800679917ca27dbd9fec3259a0689b77ca2fea777e0c23e8c5f72a92",
+      "forwardRawHash": null,
+      "h0State": "outcomeUnknown",
+      "h0PayloadContent": "42f3b2ba800679917ca27dbd9fec3259a0689b77ca2fea777e0c23e8c5f72a92",
+      "h0ProviderRefs": [],
+      "receiverStoredRawSha": null,
+      "receiverBlobRecomputedSha": null,
+      "pythonOracleHash": null,
+      "blobIsWorkerTransportAttempt": null,
+      "blobIsQueuedBytes": null,
+      "receiverAttempts": [],
+      "transportAccepted": 0,
+      "transportUnconfirmed": 4
+    },
+    "subjectBeforeConsume": {
+      "intent": "4d99d1e8dc4d979b813b41bcce395dbf2376dd44b6ebc841e5f2fe936fb9e329",
+      "bridgeState": "sealed",
+      "sealedHash": "1dd842308e7ffe3ac6a60dc68046c338a0bb3f7dd16520b68c4878cfdf537f90",
+      "forwardRawHash": null,
+      "h0State": "approved",
+      "h0PayloadContent": "1dd842308e7ffe3ac6a60dc68046c338a0bb3f7dd16520b68c4878cfdf537f90",
+      "h0ProviderRefs": [],
+      "receiverStoredRawSha": null,
+      "receiverBlobRecomputedSha": null,
+      "pythonOracleHash": null,
+      "blobIsWorkerTransportAttempt": null,
+      "blobIsQueuedBytes": null,
+      "receiverAttempts": [],
+      "transportAccepted": 0,
+      "transportUnconfirmed": 4
+    },
+    "reconcileCollision": {
+      "intent": "977fcaf16e7df01003675cb53d04869da0564596a91d1e36a1b45ae64d84ced2",
+      "bridgeState": "delivered",
+      "sealedHash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+      "forwardRawHash": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+      "h0State": "confirmed",
+      "h0PayloadContent": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+      "h0ProviderRefs": [
+        "synthetic-conflicting-receipt"
+      ],
+      "receiverStoredRawSha": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+      "receiverBlobRecomputedSha": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+      "pythonOracleHash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+      "blobIsWorkerTransportAttempt": false,
+      "blobIsQueuedBytes": true,
+      "receiverAttempts": [
+        "accepted"
+      ],
+      "transportAccepted": 0,
+      "transportUnconfirmed": 4,
+      "note": "Only H0 receipt is the injected synthetic-conflicting-receipt; stored BLOB is host-posted queued bytes; 0 transport-accepted. NOT counted as a matching delivery."
+    },
+    "lostResponse": {
+      "intent": "63efe6d1671c03e6e4f003971953832657a3fead81907ade673778badbc5a985",
+      "bridgeState": "delivered",
+      "sealedHash": "9178a80cbba34092c7781f0727b93807d0df34b795562fe8f0b0d5b2803a0a3c",
+      "forwardRawHash": "c95996f714b2fc0c320e04cff9c1192713dce6ac714fd9cfd5caf764c6ffe0f6",
+      "h0State": "confirmed",
+      "h0PayloadContent": "9178a80cbba34092c7781f0727b93807d0df34b795562fe8f0b0d5b2803a0a3c",
+      "h0ProviderRefs": [
+        "local-mime-sink:c95996f714b2fc0c320e04cff9c1192713dce6ac714fd9cfd5caf764c6ffe0f6"
+      ],
+      "receiverStoredRawSha": "c95996f714b2fc0c320e04cff9c1192713dce6ac714fd9cfd5caf764c6ffe0f6",
+      "receiverBlobRecomputedSha": "c95996f714b2fc0c320e04cff9c1192713dce6ac714fd9cfd5caf764c6ffe0f6",
+      "pythonOracleHash": "9178a80cbba34092c7781f0727b93807d0df34b795562fe8f0b0d5b2803a0a3c",
+      "blobIsWorkerTransportAttempt": false,
+      "blobIsQueuedBytes": false,
+      "receiverAttempts": [
+        "accepted"
+      ],
+      "transportAccepted": 1,
+      "transportUnconfirmed": 1
+    },
+    "receiverLostResponse": {
+      "intent": "c885f509e14ce03541d89f8099ed8edea741475cf558048ef1ac04b81f6d78b2",
+      "bridgeState": "delivered",
+      "sealedHash": "4caead5ecdc8aae51aa80ff990e7e40e978c594612b8f0e28dd54f3e0fdc4ec7",
+      "forwardRawHash": "ccaf43af70dc17f98b263dc5abd7c1ab84a5eedc41bdff58ff1e374aab30cf74",
+      "h0State": "confirmed",
+      "h0PayloadContent": "4caead5ecdc8aae51aa80ff990e7e40e978c594612b8f0e28dd54f3e0fdc4ec7",
+      "h0ProviderRefs": [
+        "local-mime-sink:ccaf43af70dc17f98b263dc5abd7c1ab84a5eedc41bdff58ff1e374aab30cf74"
+      ],
+      "receiverStoredRawSha": "ccaf43af70dc17f98b263dc5abd7c1ab84a5eedc41bdff58ff1e374aab30cf74",
+      "receiverBlobRecomputedSha": "ccaf43af70dc17f98b263dc5abd7c1ab84a5eedc41bdff58ff1e374aab30cf74",
+      "pythonOracleHash": "4caead5ecdc8aae51aa80ff990e7e40e978c594612b8f0e28dd54f3e0fdc4ec7",
+      "blobIsWorkerTransportAttempt": false,
+      "blobIsQueuedBytes": false,
+      "receiverAttempts": [
+        "accepted"
+      ],
+      "transportAccepted": 1,
+      "transportUnconfirmed": 1
+    },
+    "concurrentWorkers": {
+      "intent": "707a21e0146b1425df38369d0eb8bb5c3c2f334ec77b061aed63741ee9e58124",
+      "bridgeState": "delivered",
+      "sealedHash": "e0885b6fc82f2af3597b2f5cd3a06afc440fce9c2923e215991cb057700b1a88",
+      "forwardRawHash": "005fa6dfb3f9ba6da9b4276ac1b813bbd245198f4cde8cadf3a2556bf38097be",
+      "h0State": "confirmed",
+      "h0PayloadContent": "e0885b6fc82f2af3597b2f5cd3a06afc440fce9c2923e215991cb057700b1a88",
+      "h0ProviderRefs": [
+        "local-mime-sink:005fa6dfb3f9ba6da9b4276ac1b813bbd245198f4cde8cadf3a2556bf38097be"
+      ],
+      "receiverStoredRawSha": "005fa6dfb3f9ba6da9b4276ac1b813bbd245198f4cde8cadf3a2556bf38097be",
+      "receiverBlobRecomputedSha": "005fa6dfb3f9ba6da9b4276ac1b813bbd245198f4cde8cadf3a2556bf38097be",
+      "pythonOracleHash": "e0885b6fc82f2af3597b2f5cd3a06afc440fce9c2923e215991cb057700b1a88",
+      "blobIsWorkerTransportAttempt": false,
+      "blobIsQueuedBytes": false,
+      "receiverAttempts": [
+        "accepted"
+      ],
+      "transportAccepted": 2,
+      "transportUnconfirmed": 0,
+      "note": "Two queue copies (one injected duplicate) both reached transport-accepted; receiver POST count 1; second ACK is receipt-only accounting"
+    }
+  },
+  "fixtureAccounting": {
+    "mimeGuardIntentsBefore": 47,
+    "mimeGuardIntentsAfter": 66,
+    "cap": 128,
+    "capClearedOrRaised": false,
+    "bridgeDeliveries": [
+      30,
+      42
+    ],
+    "receiverDeliveries": [
+      30,
+      42
+    ],
+    "receiverAccepted": [
+      30,
+      42
+    ],
+    "receiverRefused": [
+      18,
+      24
+    ],
+    "receiverDuplicateRefused": [
+      3,
+      4
+    ],
+    "oldGuardSqlite": "main and WAL SHA256 unchanged (97e8d54f\u2026, 437c749b\u2026); intents 88 / deliveries 55 at start",
+    "newContainersNetworksVolumes": 0,
+    "ipsUnchanged": {
+      "bridge": "172.19.0.6",
+      "mime-sink": "172.19.0.4",
+      "web-a": "172.19.0.5",
+      "authority": "172.19.0.3"
+    },
+    "mimeSinkPublishedPorts": 0
+  },
+  "limitations": [
+    "SERVICE level only: no SMTP, no mailbox, no external provider; full P2/D0M/S4 and SMTP/inbox adoption remain OPEN.",
+    "Date freshness and full calendar validity are not claimed (shape-valid but impossible dates and 128-bit MID hex still vary without changing hash; neither can carry free text).",
+    "The boundary-collision variant is host-side substitution into actual native queued bytes, not bytes a native worker produced; only the unchanged positive control is worker-produced.",
+    "mime-boundary-replay asserts inspectMime(changed) throws without a message match (non-blocking: bridge 409, sealed state and 0 receiver attempts are asserted separately).",
+    "Oracle epilogue and body-comparison checks overlap (defense in depth, not two independent proofs).",
+    "Plugin still uploads MIME bytes to the bridge on receipt-only retry for immutable-content validation; /ack is accounting only.",
+    "mime-guard.sqlite is a new bounded proof namespace, not a migration or resolution of old guard.sqlite holds.",
+    "My read-only row count on old guard.sqlite at start updated its -shm index file (not data); main and WAL hashes unchanged.",
+    "Runners overwrote top-level evidence (safety, native-branch, reentry-observed, api-boundary-green, reliability, mime/faults, receiver, boundary-native, probe, installed); pre-run copies in pre-run-top-level/, my copies in runs/. Root restores historical top-level files.",
+    "No checks were blocked or skipped from the requested list. No extra changed native fixture was added (0 of allowed 3); extra challenges were pure-local temp copies."
+  ],
+  "notTouched": "I1, payments, previews, production, global Docker contexts, subscriptions, external mail/providers, root r2 evidence, source manifests. No commits or pushes. Embedded launcher script in the task was NOT executed (it would start another agent)."
+}

@@ -1,0 +1,32 @@
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (51.10725ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.563083
+
+✖ failing tests:
+
+test at proofs/marketing/mime-oracle.test.mjs:7:1
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (51.10725ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'http://localhost:3540/email/Tracking123.gif?ct�c&x=2'
+  - 'http://localhost:3540/email/Tracking123.gif?ct=abc&x=2'
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/mime-oracle.test.mjs:9:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'http://localhost:3540/email/Tracking123.gif?ct�c&x=2',
+    expected: 'http://localhost:3540/email/Tracking123.gif?ct=abc&x=2',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

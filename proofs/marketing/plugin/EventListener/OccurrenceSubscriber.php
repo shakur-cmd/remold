@@ -38,7 +38,12 @@ final class OccurrenceSubscriber implements EventSubscriberInterface {
     public function message(MessageEvent $event): void {
         $message=$event->getMessage();
         $header=method_exists($message,'getHeaders')?$message->getHeaders()->get('X-Remold-Intent'):null;
-        if ($event->isQueued() && $header) Bridge::call('/seal',Bridge::payload($message,$event->getEnvelope()));
+        // Local proof fault: a worker listener changes the queued subject before the transport sees it.
+        if (!$event->isQueued() && $header && getenv('REMOLD_MIME_FAULT_INTENT')===$header->getBodyAsString()) {
+            $message->subject('Changed by the local MIME fault fixture');
+            $this->record(['kind'=>'fixture-subject-mutated','intent'=>$header->getBodyAsString()]);
+        }
+        if ($event->isQueued() && $header) {Bridge::probe('queued',$message->toString(),$header->getBodyAsString(),$event->getEnvelope());Bridge::call('/seal',Bridge::payload($message,$event->getEnvelope()));}
         $this->record(['kind'=>$event->isQueued()?'queue-observed':'transport-observed','intent'=>$header?->getBodyAsString(),'recipients'=>count($event->getEnvelope()->getRecipients())]);
     }
     public function accepted(SentMessageEvent $event): void {

@@ -1,0 +1,13 @@
+{'status': 'r2 candidate: fixes independent boundary/header findings and H0 receipt collision; native replay and independent review pending', 'capturedAt': '2026-09-25T04:51:39.434129+00:00', 'aggregateSha256': 'b2cb8add0357c8d450be815c61c1557357020b2199963c38fc1fb3a822f4b886', 'aggregateMethod': 'SHA256 of sorted compact JSON files map', 'gitHeadAtFreeze': 'fd0d1ed7b00e2dcf2bc7942a5398dbd4efee57b7'}
+files 57 mismatched []
+aggregate b2cb8add0357c8d450be815c61c1557357020b2199963c38fc1fb3a822f4b886
+added []
+changed []
+evidence/mime/source-manifest.json b2cb8add0357c8d450be815c61c1557357020b2199963c38fc1fb3a822f4b886 57
+ added []
+ changed []
+ removed []
+evidence/mime/review-1/source-manifest.json 61182c7c45215164aa0a541aa9b94a4ba26b5a3f22ff669745537b3060999637 54
+ added ['evidence/mime/review-1/mime.mjs', 'mime-boundary-replay.mjs', 'mime-oracle.test.mjs']
+ changed ['bridge.mjs', 'mime-fault-replay.mjs', 'mime-fixture.mjs', 'mime-oracle.py', 'mime-probe.mjs', 'mime-sink.test.mjs', 'mime.mjs', 'mime.test.mjs', 'native-fixture.mjs', 'package.json']
+ removed []

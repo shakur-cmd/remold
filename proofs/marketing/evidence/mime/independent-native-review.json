@@ -1,0 +1,34 @@
+{
+  "result": "**Result: BOUNDED PASS.** The exact final source (57 files, aggregate `a0b59a92\u2026d26`) passes every required native check. Full P2, D0M, S4 and SMTP/inbox adoption stay OPEN; this proves the local synthetic fixture only, with no SMTP or mailbox. I did the review myself and didn't run the launcher script at the end of your message, because it would start another agent and the brief forbids that.\n\n**Source**\n- All 57 file hashes and the aggregate match before the runs, after them, and after my local tests.\n- The runtime code is byte-identical to the code-approved `b2cb8add\u2026`. Only the three test files differ, and I read each change:\n  - **`mime.test.mjs`** adds a Date that has a valid shape but a trailing comment with a URL. With the Date shape check removed, this test now fails; the old test still passed.\n  - **`mime-oracle.test.mjs`** now requires the actual refusal message. If the Python checker still refuses but for an unrelated reason, the new test fails; the old one passed.\n  - **`mime-boundary-replay.mjs`** now asserts that Python reads the changed copy differently. On the native run it read 2 parts before and 1 part plus trailing text after.\n\n  All three are strict strengthenings; no assertion was weakened.\n\n**Runs, in order, one at a time**\n\n| Phase | Command | Exit | Result |\n|---|---|---|---|\n| 1 | `verify-runtime`, `verify-installed` | 0, 0 | 12 installed hashes match |\n| 2 | `mime-probe.mjs` | 0 | My own check: 1 queued message plus 2 real worker attempts, 3 different raw hashes, all giving the same sealed hash in JS and Python. Nothing delivered or consumed. |\n| 3 | `proof:mime` | 0 | 11/11 unit tests, 3 native faults, 6 receiver mutations plus a refused duplicate, boundary collision refused, unchanged native message delivered once |\n| 4 | `test` | 0 | All 7 original groups pass. The branch opened the stored pixel URL with its `ct` query. |\n| 5 | `proof:reliability` | 0 | 6 of 6 cases; the receiver got exactly one POST in every delivered case |\n| 6 | `typecheck`, `verify-runtime`, `verify-installed` | 0, 0, 0 | Pass |\n\n**Stored rows I read directly**\n- **Normal delivery and both loss cases:** the stored bytes' SHA matches the receipt, the Python checker gives the approved hash, and there is exactly one H0 receipt pointing at those bytes.\n- **Boundary control:** the stored bytes equal a real worker attempt, not the queued copy, so a native worker produced them.\n- **H0 collision:** the only H0 receipt is the injected fake one and the transport was never acknowledged. I did not count it as a delivery.\n\n**Fixture state**\n- The intent count went from 47 to 66 of 128. I didn't clear or raise the cap.\n- Bridge and receiver deliveries both went from 30 to 42.\n- The old `guard.sqlite` data and WAL hashes are unchanged.\n- No containers, networks or volumes were created, and IPs are unchanged.\n\n**Things to know**\n- My one read-only count on the old `guard.sqlite` at the start updated its `-shm` index file. No data changed.\n- The runners overwrote the top-level evidence files. Copies from before my runs are in `pre-run-top-level/` for your restore, and my own copies are in `runs/`.\n- Minor, not blocking: in the boundary replay, the check that the changed copy is refused doesn't match on the error message. The replay also checks the refusal separately at the bridge, so it isn't a false pass.\n- Not claimed: whether the Date is fresh or a real calendar date.\n- Nothing required was skipped or blocked. I added no extra native fixture.\n- Nothing is committed or pushed.\n\nPrivate stderr is in `/tmp/remold-mime-indep-6Haw` (0700).\n\nFiles are in `proofs/marketing/evidence/mime/independent-r2/`:\n- `verdict.json`\n- `report.html`\n- `progress.txt`\n- `logs/`\n- `runs/`\n- `pre-run-top-level/`",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 4473,
+      "outputTokens": 16,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.004553000000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 70,
+      "outputTokens": 33535,
+      "cacheReadInputTokens": 2103618,
+      "cacheCreationInputTokens": 99692,
+      "webSearchRequests": 0,
+      "costUSD": 1.8892396,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6264,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

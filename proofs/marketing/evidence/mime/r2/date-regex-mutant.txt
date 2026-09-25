@@ -1,0 +1,37 @@
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.568083ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (5.105167ms)
+✔ the encoding and every extra header remain part of the approved hash (0.161041ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.120042ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.430833ms)
+✖ volatile headers accept generated metadata only, never arbitrary unapproved text (0.38225ms)
+✔ the serialized intent and exactly two MIME parts are required (0.205042ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45.51
+
+✖ failing tests:
+
+test at ../../../../../../private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-date-mutant-1vabyj2p/mime.test.mjs:28:1
+✖ volatile headers accept generated metadata only, never arbitrary unapproved text (0.38225ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-date-mutant-1vabyj2p/mime.test.mjs:30:391)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /proof MIME/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+PASS deliberate removal of the Date shape rule is caught by the free-text suffix case.

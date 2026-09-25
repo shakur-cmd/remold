@@ -1,0 +1,32 @@
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (30.320666ms)
+✖ swapped body, subject, headers or envelope cannot borrow an approved hash (3.853125ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.888542
+
+✖ failing tests:
+
+test at ../../../../../../private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-mime-mutant-c67mbj6k/mime-sink.test.mjs:17:1
+✖ swapped body, subject, headers or envelope cannot borrow an approved hash (3.853125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-mime-mutant-c67mbj6k/mime-sink.test.mjs:20:295)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+PASS mutation check: removing receiver hash comparison makes body-substitution test fail.

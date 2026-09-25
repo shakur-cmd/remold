@@ -3,10 +3,12 @@ import {execFileSync} from 'node:child_process';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {docker,directory,prefix} from './runtime.mjs';
 import {authority} from './authority.mjs';
+import {inspectMime} from './mime.mjs';
+import {received,oracle} from './receiver-evidence.mjs';
 execFileSync(process.execPath,[directory+'native-fixture.mjs','--branch'],{stdio:'pipe'});
 execFileSync(process.execPath,[directory+'setup-bridge.mjs','--rearm'],{stdio:'pipe'});
 const f=JSON.parse(readFileSync(directory+'private/native-fixture.json')),config=JSON.parse(readFileSync(directory+'private/bridge-config.json'));
-const cli=(...args)=>docker(['exec','--user','www-data',prefix+'-web-a','php','/var/www/html/bin/console',...args]);
+const cli=(...args)=>docker(['exec','--user','www-data','-e','REMOLD_MIME_PROBE=1',prefix+'-web-a','php','/var/www/html/bin/console',...args]);
 const sql=query=>docker(['exec',prefix+'-db-a','sh','-c','MYSQL_PWD="$MYSQL_PASSWORD" mysql -u "$MYSQL_USER" "$MYSQL_DATABASE" -NB -e "$1"','--',query]).trim();
 const call=async(path,body,key=config.bridgeKey)=>fetch('http://127.0.0.1:3542'+path,{method:'POST',headers:{'x-remold-key':key},body:JSON.stringify(body)});
 const status=async()=>{const r=await call('/status',{});assert.equal(r.status,200);const v=await r.json();return {...v,intents:v.intents.filter(x=>x.occurrence.lead===f.contact)};};
@@ -15,8 +17,11 @@ cli('mautic:campaigns:update','-i',String(f.campaign));cli('mautic:campaigns:tri
 let current=await status();assert.equal(current.intents.length,1);
 const first=current.intents[0];assert.equal(first.state,'sealed');
 authority('harness:approve',{token:config.fixture.A.sessions.owner,id:first.operation,expires:Date.now()+3600000});
-const payload={intent:first.intent,hash:first.hash,recipient:config.recipient,recipients:1};
-for(const changed of [{...payload,hash:'0'.repeat(64)},{...payload,intent:'f'.repeat(64)},{...payload,recipient:'foreign@example.invalid'},{...payload,recipients:2}])assert.equal((await call('/authorize',changed)).status,409);
+const probe=docker(['exec',prefix+'-web-a','cat','/var/www/html/var/logs/remold-mime-probe.jsonl']).trim().split('\n').map(JSON.parse).find(x=>x.intent===first.intent&&x.stage==='queued');assert.ok(probe);
+const payload={intent:first.intent,raw:probe.raw,sender:probe.sender,recipient:probe.recipients[0],recipients:1};
+assert.equal(inspectMime(payload).hash,first.hash,'Challenge starts with actual valid queued bytes');
+const changedBody={...payload,raw:Buffer.from(Buffer.from(payload.raw,'base64').toString('ascii').replace('Subject:','Subject: Changed '),'ascii').toString('base64')};assert.notEqual(inspectMime(changedBody).hash,first.hash);
+for(const changed of [changedBody,{...payload,intent:'f'.repeat(64)},{...payload,recipient:'foreign@example.invalid'},{...payload,recipients:2}])assert.equal((await call('/authorize',changed)).status,409);
 assert.equal((await call('/capture',{...first.occurrence,instance:'synthetic-b'})).status,409);
 assert.equal((await call('/authorize',payload,'wrong-key')).status,403);
 assert.equal((await status()).intents[0].state,'sealed','Refused substitutions cannot consume an approved occurrence');
@@ -24,7 +29,9 @@ const worker=()=>cli('messenger:consume','email','--limit=10','--time-limit=3','
 worker();current=await status();assert.equal(current.deliveries.filter(x=>x.id===first.intent).length,1);
 const tracking=sql('SELECT tracking_hash FROM email_stats WHERE lead_id='+f.contact+' AND email_id='+f.email+' LIMIT 1');assert.match(tracking,/^[a-zA-Z0-9]+$/);
 const before=Number(sql('SELECT is_read FROM email_stats WHERE lead_id='+f.contact+' AND email_id='+f.email+' LIMIT 1'));assert.equal(before,0);
-const open=await fetch('http://127.0.0.1:3540/email/'+tracking+'.gif',{headers:{'User-Agent':'Mozilla/5.0 RemoldSyntheticOpenProof'},redirect:'manual'});assert.equal(open.status,200);
+const stored=received(first.intent),parsed=oracle(stored);assert.equal(parsed.hash,first.hash);assert.equal(parsed.tracking,tracking);
+const pixel=new URL(parsed.pixel);assert.equal(pixel.origin,'http://localhost:3540');
+const open=await fetch(pixel,{headers:{'User-Agent':'Mozilla/5.0 RemoldSyntheticOpenProof'},redirect:'manual'});assert.equal(open.status,200);
 cli('mautic:campaigns:trigger','-i',String(f.campaign));
 const after=Number(sql('SELECT is_read FROM email_stats WHERE lead_id='+f.contact+' AND email_id='+f.email+' LIMIT 1'));assert.equal(after,1);
 current=await status();assert.equal(current.intents.length,2,'A native open must reach its second native send');
@@ -33,5 +40,5 @@ authority('harness:approve',{token:config.fixture.A.sessions.owner,id:second.ope
 for(let n=0;n<3;n++){cli('mautic:campaigns:trigger','-i',String(f.campaign));worker();}
 current=await status();const ids=new Set(current.intents.map(x=>x.intent)),delivered=current.deliveries.filter(x=>ids.has(x.id));assert.equal(delivered.length,2);
 const states=current.intents.map(x=>authority('harness:operation',{token:config.fixture.A.sessions.owner,id:x.operation}).state);assert.deepEqual(states,['confirmed','confirmed']);
-const evidence={level:'SERVICE real Mautic open pixel and native branch; synthetic recipient/local HTTP sink, no mailbox delivery',checks:{firstDelivered:1,readBefore:before,readAfter:after,secondNativeSendQueued:true,finalDeliveries:delivered.length,extraCronPasses:3,payloadRecipientIntentAndInstanceSubstitutionsRefused:true,wrongBridgeCredentialRefused:true},occurrences:current.intents.map(x=>({event:x.occurrence.event,lead:x.occurrence.lead,rotation:x.occurrence.rotation,log:x.occurrence.log,state:x.state})),authorityStates:states,limits:['Only native open branch proved; click/reply branches remain open','Fixture email_type is transactional; marketing frequency and dedup behavior remain open','Every exact queued intent approved explicitly by the test driver; automated campaign approval mapping remains open']};
+const evidence={level:'SERVICE real Mautic open pixel and native branch; synthetic recipient/local HTTP sink, no mailbox delivery',checks:{firstDelivered:1,readBefore:before,readAfter:after,secondNativeSendQueued:true,openPixelReadFromStoredMime:true,pythonOracleHash:parsed.hash,storedRawSha256:parsed.rawSha256,finalDeliveries:delivered.length,extraCronPasses:3,payloadRecipientIntentAndInstanceSubstitutionsRefused:true,wrongBridgeCredentialRefused:true},occurrences:current.intents.map(x=>({event:x.occurrence.event,lead:x.occurrence.lead,rotation:x.occurrence.rotation,log:x.occurrence.log,state:x.state})),authorityStates:states,limits:['Only native open branch proved; click/reply branches remain open','Fixture email_type is transactional; marketing frequency and dedup behavior remain open','Every exact queued intent approved explicitly by the test driver; automated campaign approval mapping remains open']};
 writeFileSync(directory+'evidence/native-branch.json',JSON.stringify(evidence,null,2)+'\n');console.log('PASS native send → actual local open pixel → second native send; exactly two sink receipts.');

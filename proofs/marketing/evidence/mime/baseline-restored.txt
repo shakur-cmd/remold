@@ -1,0 +1,31 @@
+$ node verify-runtime.mjs && node install-plugin.mjs && node safety-replay.mjs && node branch-replay.mjs && node reentry-replay.mjs && node api-boundary-replay.mjs
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: docker --context colima-remold-proof inspect --format {{.Config.Image}} remold-marketing-proof-web-a
+Cannot connect to the Docker daemon at unix:///Users/urkel/.colima/remold-proof/docker.sock. Is the docker daemon running?
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at docker (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/runtime.mjs:6:37)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/verify-runtime.mjs:9:15
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '\n',
+    'Cannot connect to the Docker daemon at unix:///Users/urkel/.colima/remold-proof/docker.sock. Is the docker daemon running?\n'
+  ],
+  pid: 64183,
+  stdout: '\n',
+  stderr: 'Cannot connect to the Docker daemon at unix:///Users/urkel/.colima/remold-proof/docker.sock. Is the docker daemon running?\n'
+}
+
+Node.js v24.18.0
+[ELIFECYCLE] Test failed. See above for more details.

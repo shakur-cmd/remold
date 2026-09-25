@@ -1,0 +1,197 @@
+[
+  {
+    "n": "V0 sealed control accepted by new JS",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "V0 sealed control accepted by new oracle, hash equal",
+    "ok": true,
+    "d": "{\"hash\":\"7b2942a2d0073824bf02ffd58517585f497afaa2102c37e5d2e"
+  },
+  {
+    "n": "V0 retry control (new boundary/Date/MID, same quoting) same hash",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1a padded delimiter in HTML comment: sealed valid under new JS",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1a padded delimiter in HTML comment: old normalizer collides",
+    "ok": true,
+    "d": "py sealed=2 '' disp=3 ''"
+  },
+  {
+    "n": "B1a padded delimiter in HTML comment: new JS refuses dispatched",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1a padded delimiter in HTML comment: new oracle refuses dispatched",
+    "ok": true,
+    "d": "AssertionError"
+  },
+  {
+    "n": "B1b close delimiter truncates HTML: sealed valid under new JS",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1b close delimiter truncates HTML: old normalizer collides",
+    "ok": true,
+    "d": "py sealed=2 '' disp=2 '--><p>Required foot"
+  },
+  {
+    "n": "B1b close delimiter truncates HTML: new JS refuses dispatched",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1b close delimiter truncates HTML: new oracle refuses dispatched",
+    "ok": true,
+    "d": "AssertionError: Unexpected parsed content outside MIME parts"
+  },
+  {
+    "n": "B1c close delimiter in plain text (native shape): sealed valid under new JS",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1c close delimiter in plain text (native shape): old normalizer collides",
+    "ok": true,
+    "d": "py sealed=2 '' disp=1 'Required footer\\r\\n"
+  },
+  {
+    "n": "B1c close delimiter in plain text (native shape): new JS refuses dispatched",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1c close delimiter in plain text (native shape): new oracle refuses dispatched",
+    "ok": true,
+    "d": "AssertionError: Unexpected parsed content outside MIME parts"
+  },
+  {
+    "n": "B1d tab-padded delimiter in plain text: sealed valid under new JS",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1d tab-padded delimiter in plain text: old normalizer collides",
+    "ok": true,
+    "d": "py sealed=2 '' disp=3 ''"
+  },
+  {
+    "n": "B1d tab-padded delimiter in plain text: new JS refuses dispatched",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B1d tab-padded delimiter in plain text: new oracle refuses dispatched",
+    "ok": true,
+    "d": "AssertionError"
+  },
+  {
+    "n": "B1e case-variant --CHOSEN-- not a parser delimiter (py parts=2, empty epilogue)",
+    "ok": true,
+    "d": "py=2 '' newJS=accepted"
+  },
+  {
+    "n": "B2 refuse Date phishing text",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse Date folded",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse Date double space",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse Date trailing comment",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID URL",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID other domain",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID subdomain",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID uppercase hex",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID 31 hex",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID trailing text",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 refuse MID empty",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 residual weekday mismatch",
+    "ok": true,
+    "d": "ACCEPTED"
+  },
+  {
+    "n": "B2 residual Feb 31",
+    "ok": true,
+    "d": "ACCEPTED"
+  },
+  {
+    "n": "B2 residual year 9999",
+    "ok": true,
+    "d": "ACCEPTED"
+  },
+  {
+    "n": "B2 residual year 0000",
+    "ok": true,
+    "d": "ACCEPTED"
+  },
+  {
+    "n": "B2 residual offset +9999",
+    "ok": true,
+    "d": "ACCEPTED"
+  },
+  {
+    "n": "B2 case variant DATE: refused (fail-closed)",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "B2 case variant Message-Id: refused (fail-closed)",
+    "ok": true,
+    "d": ""
+  },
+  {
+    "n": "C3 single-byte sweep: same-hash only inside Date/MID values",
+    "ok": true,
+    "d": "tried=5761 accepted=923 sameHash=71 \"\\nDate: Fri, \"^ \"Date: Fri, 2\"^ \"Fri, 25 Sep \"^ \"i, 25 Sep 20\"^"
+  }
+]

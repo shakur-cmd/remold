@@ -1,0 +1,84 @@
+{
+  "capturedAt": "2026-09-25T04:35:11.733Z",
+  "configuredMemoryMiB": 2304,
+  "measuredLoad": false,
+  "containers": [
+    {
+      "name": "/remold-marketing-proof-web-a",
+      "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+      "state": "running",
+      "memoryLimitBytes": 805306368,
+      "ports": {
+        "80/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "3540"
+          }
+        ]
+      },
+      "networks": [
+        "remold-marketing-proof"
+      ]
+    },
+    {
+      "name": "/remold-marketing-proof-db-a",
+      "image": "mysql@sha256:64a9d35fe6fed01159499be26c3279ac5ee16006c2ebb1f480d634bd5c61a053",
+      "state": "running",
+      "memoryLimitBytes": 536870912,
+      "ports": {},
+      "networks": [
+        "remold-marketing-proof"
+      ]
+    },
+    {
+      "name": "/remold-marketing-proof-authority",
+      "image": "ghcr.io/get-convex/convex-backend@sha256:b1f3b36e87142a043b9a9f2dcb5b3df4512b67e066a822933002388c44bf580a",
+      "state": "running",
+      "memoryLimitBytes": 805306368,
+      "ports": {
+        "3210/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "3545"
+          }
+        ],
+        "3211/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "3546"
+          }
+        ]
+      },
+      "networks": [
+        "remold-marketing-proof"
+      ]
+    },
+    {
+      "name": "/remold-marketing-proof-bridge",
+      "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+      "state": "running",
+      "memoryLimitBytes": 134217728,
+      "ports": {
+        "3542/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "3542"
+          }
+        ]
+      },
+      "networks": [
+        "remold-marketing-proof"
+      ]
+    },
+    {
+      "name": "/remold-marketing-proof-mime-sink",
+      "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+      "state": "running",
+      "memoryLimitBytes": 134217728,
+      "ports": {},
+      "networks": [
+        "remold-marketing-proof"
+      ]
+    }
+  ]
+}

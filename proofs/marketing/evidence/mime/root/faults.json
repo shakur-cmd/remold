@@ -1,0 +1,29 @@
+{
+  "level": "SERVICE native Mautic queue and local authority/receiver only",
+  "results": [
+    {
+      "scenario": "body-after-consume",
+      "status": "PASS",
+      "intent": "a4f04644a23aa14208c811cae36ef5c1f2e8f03b5762d6afe04a7660fa690002",
+      "normalizedHash": "c93f3aff2df8b0e1b0c98cc70405ca1f9ec035ae760fdad039d7caae32df953a",
+      "bridgeState": "consumed",
+      "authorityState": "outcomeUnknown",
+      "receiverPosts": 0,
+      "receiverDeliveries": 0,
+      "h0Receipts": 0,
+      "failedMessageEvents": 4
+    },
+    {
+      "scenario": "subject-before-consume",
+      "status": "PASS",
+      "intent": "ab8b639e9f435d510baa459d638f008a0f2a389b352718b46c841d016cf9bfe5",
+      "normalizedHash": "0c54de513820104ec82f94e3b1b81e42171fb59401650b197d199702902ae3be",
+      "bridgeState": "sealed",
+      "authorityState": "approved",
+      "receiverPosts": 0,
+      "receiverDeliveries": 0,
+      "h0Receipts": 0,
+      "failedMessageEvents": 4
+    }
+  ]
+}

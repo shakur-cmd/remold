@@ -1,0 +1,18 @@
+$ pnpm --dir proofs/marketing test
+PASS exact H0 source, SDK version, pinned runtime images and isolated network.
+
+ // Clearing the cache for the prod environment with debug false                
+
+ [OK] Cache for the "prod" environment (debug=false) was successfully cleared.  
+
+
+0 new plugins were installed and 0 updated.
+
+PASS unapproved: deliveries 0, operation proposed
+PASS deliver: deliveries 1, operation confirmed
+PASS revoke: deliveries 0, operation paused
+PASS kill: deliveries 0, operation outcomeUnknown
+PASS native send → actual local open pixel → second native send; exactly two sink receipts.
+PASS native re-entry advances rotation and creates one distinct occurrence; old open does not fire its new branch.
+PASS ordinary API cannot reach accepted final transport without an intent.
+exit=0

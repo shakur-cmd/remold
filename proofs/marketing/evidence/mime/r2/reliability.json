@@ -1,0 +1,160 @@
+{
+  "level": "SERVICE Mautic Doctrine workers, H0, separate internal HTTP receiver with stored MIME and independent Python oracle; no SMTP or external mail",
+  "results": [
+    {
+      "scenario": "late-approval",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 1
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "duplicateQueueFault": false,
+      "transportFailures": 3,
+      "receiver": {
+        "acceptedPosts": 1,
+        "totalPosts": 1,
+        "rawSha256": "ac28c19c35f2ffc14e9bcea7230d2bbdfb1998beaa898138d8cd1731f0877f58",
+        "normalizedHash": "7b7ed61b3ac5c0eae7055d706e409f73bb5e64033ebbcdf026f209ed832e7317",
+        "independentPythonMime": true
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "sink-refused",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "consumed",
+        "deliveries": 0,
+        "transportAccepted": 0
+      },
+      "after": {
+        "state": "consumed",
+        "deliveries": 0,
+        "operation": "outcomeUnknown",
+        "h0Receipts": 0,
+        "transportAccepted": 0
+      },
+      "workersSimultaneous": 0,
+      "duplicateQueueFault": false,
+      "transportFailures": 4,
+      "status": "PASS"
+    },
+    {
+      "scenario": "sink-busy",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 1
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "duplicateQueueFault": false,
+      "transportFailures": 0,
+      "receiver": {
+        "acceptedPosts": 1,
+        "totalPosts": 1,
+        "rawSha256": "e38d51bdf6e3c46c01c635174b6a38c12551d21c21a4b1ea0dc7b56a3bf1e501",
+        "normalizedHash": "eeafd6ee94964ab4a7799c00f20ede79f2b8892f8c512dbabdc6134cc80bb98d",
+        "independentPythonMime": true
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "lost-response",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 0
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "duplicateQueueFault": false,
+      "transportFailures": 1,
+      "receiver": {
+        "acceptedPosts": 1,
+        "totalPosts": 1,
+        "rawSha256": "7dadf047acea706d12ac21505028d9b2bf7fa8a2e9ef9597b9c60c71ca896292",
+        "normalizedHash": "cafcc982119423a908606715c70a0e43863f38b1c7fe0138a764cbb8d1617983",
+        "independentPythonMime": true
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "receiver-lost-response",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "sink-unknown",
+        "deliveries": 0,
+        "transportAccepted": 0
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 1
+      },
+      "workersSimultaneous": 0,
+      "duplicateQueueFault": false,
+      "transportFailures": 1,
+      "receiver": {
+        "acceptedPosts": 1,
+        "totalPosts": 1,
+        "rawSha256": "c9d2f5999cf3b0b59d127c082af61ec19840e6a6f07749a5ec006e92c5ce91de",
+        "normalizedHash": "0a9b40be6e66320b3bf1e441afc25ee29892efea44e05724c8793d090c99dab1",
+        "independentPythonMime": true
+      },
+      "status": "PASS"
+    },
+    {
+      "scenario": "concurrent-workers",
+      "beforeApproval": "sealed",
+      "first": {
+        "state": "delivered",
+        "deliveries": 1,
+        "transportAccepted": 2
+      },
+      "after": {
+        "state": "delivered",
+        "deliveries": 1,
+        "operation": "confirmed",
+        "h0Receipts": 1,
+        "transportAccepted": 2
+      },
+      "workersSimultaneous": 2,
+      "duplicateQueueFault": true,
+      "transportFailures": 0,
+      "receiver": {
+        "acceptedPosts": 1,
+        "totalPosts": 1,
+        "rawSha256": "6351d72334c3aef2caaab33c3842bb56516a5a49449836110c574a39f30e3064",
+        "normalizedHash": "c78eb96efc533270229b889ab2bde92a3f979161e9d2cb9f69fa7bbafcbe78d9",
+        "independentPythonMime": true
+      },
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (81.381208ms)
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (33.280917ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (26.230166ms)
+✔ the receiver refuses a boundary that changes how a mail parser reads approved parts (6.354625ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (4.31125ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (2.790959ms)
+✔ the encoding and every extra header remain part of the approved hash (0.166583ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.39875ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.627708ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.523917ms)
+✔ the serialized intent and exactly two MIME parts are required (0.139416ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.2905
+
+✖ failing tests:
+
+test at proofs/marketing/mime-oracle.test.mjs:7:1
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (81.381208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'http://localhost:3540/email/Tracking123.gif?ct�c&x=2'
+  - 'http://localhost:3540/email/Tracking123.gif?ct=abc&x=2'
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/mime-oracle.test.mjs:9:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'http://localhost:3540/email/Tracking123.gif?ct�c&x=2',
+    expected: 'http://localhost:3540/email/Tracking123.gif?ct=abc&x=2',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

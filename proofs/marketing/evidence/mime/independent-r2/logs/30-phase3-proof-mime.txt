@@ -1,0 +1,27 @@
+$ pnpm --dir proofs/marketing proof:mime
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (83.524542ms)
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (30.267333ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (13.797416ms)
+✔ the receiver refuses a boundary that changes how a mail parser reads approved parts (3.605459ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (2.157666ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (1.017292ms)
+✔ the encoding and every extra header remain part of the approved hash (0.138833ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.113625ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.255959ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.229334ms)
+✔ the serialized intent and exactly two MIME parts are required (0.090542ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.342791
+PASS body-after-consume: no false transport acknowledgement; receiver deliveries 0
+PASS subject-before-consume: no false transport acknowledgement; receiver deliveries 0
+PASS reconcile-collision: no false transport acknowledgement; receiver deliveries 1
+PASS native MIME receipt independently parsed, six mutations refused and duplicate POST cannot alter stored bytes.
+PASS actual queued boundary collision refused before receiver; unchanged native message delivered exactly once.
+PASS 12 installed source hashes, PHP syntax and bounded credential placement.
+exit=0

@@ -4,7 +4,7 @@ import {mautic} from './api.mjs';
 import {directory} from './runtime.mjs';
 const run=randomUUID().slice(0,8);
 const contact=(await mautic('/contacts/new','POST',{email:'synthetic-'+run+'@example.invalid',firstname:'Synthetic'})).contact;
-const email=(await mautic('/emails/new','POST',{name:'Synthetic '+run,subject:'Synthetic queue proof '+run,emailType:'template',isPublished:true,template:'blank',customHtml:'<html><body>Hello {contactfield=firstname}<p>Local proof only.</p>{unsubscribe_text}</body></html>',plainText:'Synthetic local proof',fromAddress:'synthetic-sender@example.invalid',fromName:'Synthetic proof'})).email;
+const email=(await mautic('/emails/new','POST',{name:'Synthetic '+run,subject:'Synthetic queue proof '+run,emailType:'template',isPublished:true,template:'blank',customHtml:'<html><body>Hello {contactfield=firstname}<p>Local proof only.</p>{unsubscribe_text}</body></html>',plainText:process.argv.includes('--boundary-fixture')?'Synthetic local proof\r\n--chosen--\r\nRequired footer':'Synthetic local proof',fromAddress:'synthetic-sender@example.invalid',fromName:'Synthetic proof'})).email;
 const segment=(await mautic('/segments/new','POST',{name:'Synthetic '+run,alias:'synthetic-'+run,isPublished:true,isGlobal:true})).list;
 await mautic('/segments/'+segment.id+'/contact/'+contact.id+'/add','POST',{});
 const events=[{id:'new_send',name:'Native first send',type:'email.send',eventType:'action',order:1,properties:{email:email.id,email_type:'transactional',attempts:3},triggerMode:'immediate',children:['new_open'],parent:null,decisionPath:null},{id:'new_open',name:'Native open decision',type:'email.open',eventType:'decision',order:2,properties:{email:email.id},children:[],parent:'new_send',decisionPath:null}];

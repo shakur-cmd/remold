@@ -1,0 +1,11 @@
+--- /Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/mime.mjs	2026-09-25 00:16:50
++++ mime.mjs	2026-09-25 00:43:16
+@@ -28,6 +28,8 @@
+  const type=one(headers,'content-type'),match=/^multipart\/alternative;\s*boundary=("?)([A-Za-z0-9_-]{1,70})\1$/i.exec(type);if(!match)fail();const [,quote,boundary]=match;
+  const begin='--'+boundary+'\r\n',end='\r\n--'+boundary+'--\r\n';if(!body.startsWith(begin)||!body.endsWith(end))fail();
+  const parts=body.slice(begin.length,-end.length).split('\r\n--'+boundary+'\r\n');if(parts.length!==2)fail();
++ // RFC 2046 forbids the boundary inside encapsulated parts; otherwise a retry boundary could turn approved content into delimiters.
++ if(parts.some(p=>p.includes('--'+boundary)))fail();
+  for(const [index,part] of parts.entries()){
+   const at=part.indexOf('\r\n\r\n');if(at<0)fail();const partHeaders=fields(part.slice(0,at));
+   if(partHeaders.length!==2||!new RegExp('^text/'+(index===0?'plain':'html')+'; charset=utf-8$','i').test(one(partHeaders,'content-type'))||!['quoted-printable','base64'].includes(one(partHeaders,'content-transfer-encoding').toLowerCase()))fail();

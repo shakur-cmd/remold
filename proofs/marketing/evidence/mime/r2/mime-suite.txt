@@ -1,0 +1,26 @@
+$ node --test mime.test.mjs mime-sink.test.mjs mime-oracle.test.mjs && node mime-fault-replay.mjs && node mime-receiver-replay.mjs && node mime-boundary-replay.mjs && node verify-installed.mjs
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (77.51ms)
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (22.993084ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (15.730208ms)
+✔ the receiver refuses a boundary that changes how a mail parser reads approved parts (4.322459ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.851542ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (0.812083ms)
+✔ the encoding and every extra header remain part of the approved hash (0.132708ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.106625ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.223042ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.1945ms)
+✔ the serialized intent and exactly two MIME parts are required (0.084833ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.103
+PASS body-after-consume: no false transport acknowledgement; receiver deliveries 0
+PASS subject-before-consume: no false transport acknowledgement; receiver deliveries 0
+PASS reconcile-collision: no false transport acknowledgement; receiver deliveries 1
+PASS native MIME receipt independently parsed, six mutations refused and duplicate POST cannot alter stored bytes.
+PASS actual queued boundary collision refused before receiver; unchanged native message delivered exactly once.
+PASS 12 installed source hashes, PHP syntax and bounded credential placement.

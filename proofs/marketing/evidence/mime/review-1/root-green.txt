@@ -1,0 +1,19 @@
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (86.60375ms)
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (22.399791ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (17.1455ms)
+✔ the receiver refuses a boundary that changes how a mail parser reads approved parts (5.154792ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (2.451333ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (1.959125ms)
+✔ the encoding and every extra header remain part of the approved hash (0.153834ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.109ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.491291ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.221042ms)
+✔ the serialized intent and exactly two MIME parts are required (0.123833ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.658916

@@ -1,0 +1,22 @@
+FIND C1 boundary-swap same normalized hash with different MIME structure :: hash equal=true; python sealed parts=[('text/plain', 'Approved text'), ('text/html', '<p>Approved html</p><!--\r\n--EVIL \r\nContent-Type: text/html; ')] 0 | dispatched parts=[('text/plain', 'Approved text'), ('text/html', '<p>Approved html</p><!--'), ('text/html', '<p>Unapproved payload</p>\r\n-->')] 0
+ok   C1b repo Python oracle on dispatched bytes :: sealed:AssertionError: Exactly one native tracking pixel required dispatched:AssertionError
+FIND C1c boundary-swap close-delimiter truncation :: hash equal=true; python dispatched parts=[('text/plain', 'Approved text'), ('text/html', '<p>Approved html</p><!--')] 0
+FIND C2 Date text excluded from hash :: accepted, same hash=true
+FIND C2 Message-ID text excluded from hash :: accepted, same hash=true
+FIND C2 Date folded 2KB excluded from hash :: accepted, same hash=true
+FIND C2 Message-ID empty excluded from hash :: accepted, same hash=true
+FIND C3 single-byte mutation sweep :: tried=3634 acceptedVariants=390 sameHash=12
+ok   C4 Resent-Bcc header accepted (hashed) :: accepted
+ok   C4 lowercase duplicate to :: rejected
+ok   C4 BOUNDARY uppercase param :: accepted
+ok   C4 8-bit byte :: rejected
+ok   C4 bare LF :: rejected
+ok   C4 preamble :: rejected
+ok   C4 top-level CTE header :: accepted
+ok   C4 folded To with second address :: rejected
+FIND C4b uppercase BOUNDARY param stable across retries :: hash equal=false (fails closed: retry would be held)
+ok   C5 wrong key 403
+FIND C5 boundary-swap variant with approved hash accepted by receiver :: receiver would store split-view bytes under approved hash
+ok   C5 8 concurrent retry-variant POSTs store exactly one :: statuses=200,409,409,409,409,409,409,409 rows=1
+ok   C5 oversize 413
+FIND C6 oracle/JS hash agreement on quoted+unquoted boundary variants :: 0/6
