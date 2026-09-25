@@ -20,7 +20,7 @@ const controls = [
   { name: 'readonly-human', file: 'convex/orgs.ts', from: 'await requireWriter(ctx, args.orgId, "admin"); await ctx.db.patch(args.orgId, { name: args.name }', to: 'await requireMember(ctx, args.orgId, "admin"); await ctx.db.patch(args.orgId, { name: args.name }', suites: 'sweeps' },
   { name: 'wildcard-cutoff', file: 'convex/identity.ts', from: 'org.authorityFrozenAt !== undefined && object._creationTime <= org.authorityFrozenAt && agent.grants', to: 'org.authorityFrozenAt !== undefined && agent.grants', script: 'ops/authority/migration-service.mjs' },
   { name: 'mask-sweep', file: 'convex/authority/reads.ts', from: '!hidden?.includes(field._id) && ', to: '', suites: 'sweeps' },
-  { name: 'h0-final-permit', file: 'convex/integrations/dispatch.ts', from: '  await checked(ctx, op);\n  const { org, global } = await budgets(ctx, op.orgId);', to: '  const { org, global } = await budgets(ctx, op.orgId);', suites: 'h0' },
+  { name: 'h0-final-permit', file: 'convex/integrations/dispatch.ts', from: '  await checked(ctx, op);\n  const { org, global } = await budgets(ctx, op.orgId);', to: '  const { org, global } = await budgets(ctx, op.orgId);', suites: 'h0', only: 'H0#7 ' },
   { name: 'h0-grant-expiry', file: 'convex/authority/grants.ts', from: 'g.revokedAt !== undefined || g.expiresAt <= Date.now()', to: 'g.revokedAt !== undefined', suites: 'h0', only: 'H0#7 ' },
 ];
 

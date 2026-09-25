@@ -1838,5 +1838,15 @@
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
     "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
+  },
+  {
+    "id": "lib/shape:idsBelong",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Callback, adapter, REST and ops logs reveal no secrets"
   }
 ]

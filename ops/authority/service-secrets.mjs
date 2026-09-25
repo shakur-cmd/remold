@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { anyApi } from 'convex/server';
 
 const response = async (runtime, path, key, body) => {
@@ -57,6 +57,20 @@ export async function replaySecrets({ runtime, tenant, test }) {
     await adapter('/api/integrations/v1/permit', 'ra_' + '0'.repeat(64), {});
     const agent = await t.human.action(anyApi.agents.create, { orgId: t.orgId, name: 'secret-log-agent', role: 'admin', grants: [{ action: 'create', objectKey: '*' }] });
     texts.push((await response(runtime, '/api/v1/changes', agent.key, { bad: true })).text);
+    // A malformed body can carry provider material; neither it nor the caller's key hash may reach the logs (IV D8).
+    const forwarded = 'PROVIDERSECRET' + randomUUID().replace(/-/g, '');
+    for (const name of ['callback', 'permit', 'consume', 'reconcile', 'bind', 'page', 'lookup', 'status', 'safety-begin', 'safety-resolve-unknown']) await adapter('/api/integrations/v1/' + name, connection.adapterKey, { providerSignature: forwarded, bindingId });
+    await adapter('/api/integrations/v1/callback', connection.adapterKey, { bindingId: forwarded, eventId: forwarded, body: forwarded });
+    texts.push((await response(runtime, '/api/v1/changes', agent.key, { action: 'create', object: 'company', values: { name: 'x' }, reason: 'hygiene', apiKey: forwarded })).text);
+    texts.push((await response(runtime, '/api/v1/suggestions', agent.key, { bogus: forwarded })).text);
+    texts.push((await response(runtime, '/api/v1/operations', agent.key, { logical: forwarded, bindingId: forwarded })).text);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const sha256 = value => createHash('sha256').update(value).digest('hex');
+    for (const [label, value] of [['forwarded body field', forwarded], ['adapter key SHA-256', sha256(connection.adapterKey)], ['agent key SHA-256', sha256(agent.key)]]) {
+      const line = runtime.logs().split('\n').find(l => l.includes(value));
+      assert.ok(!line, 'backend/function log contains the ' + label + ': ' + line?.replaceAll(value, '<' + label + '>').slice(0, 400));
+      assert.ok(!texts.join('\n').includes(value), 'response contains the ' + label);
+    }
     runtime.run('authorityFixture:revokeSecret', { id: secret });
     try { await t.human.mutation(anyApi['integrations/bindings'].provision, { orgId: t.orgId, connectionId: connection.connectionId, logical: 'after-revoke', recipient: 'after', kind: 'recipient', remove: false }); } catch (error) { texts.push(String(error)); }
     const fixture = runtime.exportFixture();

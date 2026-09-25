@@ -1,4 +1,8 @@
-import { httpRouter, makeFunctionReference } from "convex/server";
+import { getFunctionName, httpRouter, makeFunctionReference } from "convex/server";
+import { argumentsConform } from "./lib/shape";
+import * as agentApi from "./agentApi";
+import * as commands from "./integrations/commands";
+import * as grants from "./authority/grants";
 import { route as integrationRoute } from "./integrations/http";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -24,8 +28,15 @@ async function dispatch(ctx: any, request: Request) {
   if (!limit.allowed) return new Response(JSON.stringify({ error: { code: "RATE_LIMITED", message: "Agent write limit reached. Retry after the indicated delay.", retryAfter: limit.retryAfter } }), { status: 429, headers: { "content-type": "application/json", "retry-after": String(limit.retryAfter) } });
   const body = request.method === "POST" ? request.headers.get("content-type")?.includes("application/json") ? await request.json().catch(() => { throw { data: { code: "VALIDATION", message: "Expected JSON body" } }; }) : {} : undefined;
   // keyHash goes last so nothing in a request body can replace the identity the header proved.
-  const query = (reference: any, args: any) => ctx.runQuery(reference, { ...args, keyHash });
-  const mutation = (reference: any, args: any) => ctx.runMutation(reference, { ...args, keyHash });
+  // Malformed bodies are refused before the call: Convex would log every argument, keyHash included.
+  const modules: Record<string, Record<string, unknown>> = { agentApi, "integrations/commands": commands, "authority/grants": grants };
+  const checked = async (reference: any, args: any) => {
+    const [module, name] = getFunctionName(reference).split(":"), ids = argumentsConform(modules[module!]?.[name!], args);
+    if (!ids || (ids.length && !await ctx.runQuery(makeFunctionReference<"query">("lib/shape:idsBelong"), { ids }))) throw { data: { code: "VALIDATION", message: "Invalid request body for this route" } };
+    return args;
+  };
+  const query = async (reference: any, args: any) => ctx.runQuery(reference, await checked(reference, { ...args, keyHash }));
+  const mutation = async (reference: any, args: any) => ctx.runMutation(reference, await checked(reference, { ...args, keyHash }));
   if (path[0] === "operations") {
     if (request.method === "GET" && path.length === 2) return json(await query(makeFunctionReference<'query'>("integrations/commands:getAgent"), { id: path[1] }));
     if (request.method === "POST" && path.length === 1) return json(await mutation(makeFunctionReference<'mutation'>("integrations/commands:proposeAgent"), body), 201);

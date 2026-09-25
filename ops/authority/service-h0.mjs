@@ -65,7 +65,8 @@ export async function replayH0Parity({ runtime, tenant, test }) {
       // Continuation and retry both hand out a fresh fence; the stale-authority check must apply to that new claim too.
       if (change === 'continuation-fire') { const p = await t.adapter('permit', { id, ...c, worker: 'child' }); await t.consume(p); await t.adapter('reconcile', { id, ...c, providerRef: 'one', usage: 0, continue: true }); held = await childCall('POST', 'operations/' + id + '/claim', { worker: 'child' }); assert.equal(held.step, c.step + 1); await t.human.mutation(anyApi.agents.revoke, { orgId: t.orgId, agentId: manager.agentId }); }
       if (change === 'retry-fire') { await t.adapter('permit', { id, ...c, worker: 'child' }); await t.adapter('fail', { id, ...c, retryable: true }); held = await childCall('POST', 'operations/' + id + '/claim', { worker: 'child' }); assert.ok(held.fence > c.fence); await t.human.mutation(anyApi.agents.revoke, { orgId: t.orgId, agentId: manager.agentId }); }
-      await refuse(t.adapter('permit', { id, ...held, worker: 'child' }), /External capability denied/);
+      // Either layer may refuse first: the final-permit authority check, or the pause sweep the change scheduled.
+      await refuse(t.adapter('permit', { id, ...held, worker: 'child' }), /External capability denied|Stale claim/);
       const independent = await childCall('POST', 'operations', { logical: 'independent-' + change, bindingId: t.bindingId, capability: 'social.publish', payload: { ...t.payload, amountMinor: 0 }, reservationUnits: 1, maxSteps: 1 }); await childCall('POST', 'operations/' + independent + '/claim', { worker: 'child' });
       void manage;
     }

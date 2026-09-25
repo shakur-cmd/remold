@@ -1,5 +1,16 @@
 import { httpAction } from '../_generated/server';
 import { makeFunctionReference } from 'convex/server';
+import { argumentsConform } from '../lib/shape';
+import * as dispatch from './dispatch';
+import * as outcomes from './outcomes';
+import * as safety from './safety';
+import * as receipts from './receipts';
+import * as bindings from './bindings';
+import * as callbacks from './callbacks';
+import * as lookups from './lookups';
+import * as safetyFinality from './safetyFinality';
+const modules: Record<string, Record<string, unknown>> = { 'integrations/dispatch': dispatch, 'integrations/outcomes': outcomes, 'integrations/safety': safety, 'integrations/receipts': receipts, 'integrations/bindings': bindings, 'integrations/callbacks': callbacks, 'integrations/lookups': lookups, 'integrations/safetyFinality': safetyFinality };
+const functionFor = (name: string) => { const [module, fn] = name.split(':'); return modules[module!]?.[fn!]; };
 const status: Record<string, number> = { UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, VALIDATION: 400, UNSUPPORTED: 503 };
 const json = (value: unknown, code = 200) => new Response(JSON.stringify(value), { status: code, headers: { 'content-type': 'application/json' } });
 const mutations: Record<string, string> = {
@@ -19,6 +30,11 @@ export const route = httpAction(async (ctx, request) => {
     if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: { code: 'VALIDATION', message: 'Expected object' } }, 400);
     // Only the authenticated header selects the adapter. Validators reject tenant/actor substitutions.
     const args = { ...body, credentialHash };
+    const target = name === 'safety-resolve-unknown' ? 'integrations/safetyFinality:resolve' : name === 'lookup' ? 'integrations/lookups:seal' : name === 'callback' ? 'integrations/callbacks:callback' : name === 'status' ? 'integrations/dispatch:status' : mutations[name];
+    if (!target) return json({ error: { code: 'NOT_FOUND' } }, 404);
+    // Refuse malformed bodies here: a validator failure inside the call would log every argument, key hash included.
+    const ids = argumentsConform(functionFor(target), args);
+    if (!ids || (ids.length && !await ctx.runQuery(makeFunctionReference<'query'>('lib/shape:idsBelong'), { ids }))) return json({ error: { code: 'VALIDATION', message: 'Invalid adapter arguments' } }, 400);
     if (name === 'safety-resolve-unknown') return json(await ctx.runAction(makeFunctionReference<'action'>('integrations/safetyFinality:resolve'), args));
     if (name === 'lookup') return json(await ctx.runAction(makeFunctionReference<'action'>('integrations/lookups:seal'), args));
     if (name === 'callback') return json(await ctx.runAction(makeFunctionReference<'action'>('integrations/callbacks:callback'), args));

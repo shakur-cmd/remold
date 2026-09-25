@@ -3,6 +3,8 @@ import { financial } from './service-fixture.mjs';
 import { anyApi } from 'convex/server';
 const safety = anyApi['integrations/safety'], outcomes = anyApi['integrations/outcomes'];
 const pause = ms => new Promise(r => setTimeout(r, ms));
+// The send runs on the scheduler; wait for its recorded exit instead of a fixed sleep.
+const settled = async (t, id) => { const deadline = Date.now() + 10000; while (!t.dump().operations.find(op => op._id === id)?.safety?.sendSettledAt) { if (Date.now() > deadline) throw new Error('Scheduled send never settled'); await pause(50); } };
 export async function replaySafety({ runtime, tenant, test }) {
   const setup = async (name, kind = 'payment') => {
     const t = await tenant(name);
@@ -66,7 +68,7 @@ export async function replaySafety({ runtime, tenant, test }) {
     assert.equal((await t.get(id)).state, 'refused');
   });
   await test('Incomplete reconciliation blocks new safety consume and preserves unknown local holds', async () => {
-    const t = await setup('safety-incomplete'), id = await t.prepare('one', 5); await t.consume(id); await pause(100);
+    const t = await setup('safety-incomplete'), id = await t.prepare('one', 5); await t.consume(id); await settled(t, id);
     await t.pull([], false); await assert.rejects(t.consume(await t.prepare('two', 5)), /incomplete/);
     assert.equal(t.dump().safetyTargets[0].pendingRefundMinor, 5);
     await t.pull(); assert.equal(t.dump().safetyTargets[0].pendingRefundMinor, 5);
@@ -80,7 +82,7 @@ export async function replaySafety({ runtime, tenant, test }) {
   });
   await test('Only capability-specific finality with a complete post-consume lookup releases an unknown refund', async () => {
     const t = await setup('safety-finality'), id = await t.prepare('one');
-    const oldLookup = t.dump().safetyTargets[0].lookupId; await t.consume(id); await pause(100);
+    const oldLookup = t.dump().safetyTargets[0].lookupId; await t.consume(id); await settled(t, id);
     runtime.run('integrations/connections:registerProvider', { provider: 'fake', enabled: true, finalityRules: [{ capability: 'billing.refund', semantics: 'SIM exact receipt lookup can prove final absence', proofRef: 'SIM: deterministic no-provider absence' }] });
     await assert.rejects(t.adapter('safety-resolve-unknown', { id, lookupId: oldLookup }), /after the send action/);
     const { lookupId } = await t.pull(); await t.adapter('safety-resolve-unknown', { id, lookupId }); await t.adapter('safety-resolve-unknown', { id, lookupId });
