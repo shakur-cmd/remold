@@ -6,8 +6,8 @@ import { requireWriter, requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
-import { findByTitle } from "./lib/find";
-import { canReadField, projectRecord, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle } from "./authority/reads";
+import { findReadableByTitle } from "./lib/find";
+import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQueryField, visibleTitle } from "./authority/reads";
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
 const US = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
@@ -28,14 +28,15 @@ async function resolveRecord(run: Run, field: Doc<"fields">, text: string): Prom
   const { ctx, orgId } = run;
   if (isRef(text.toLowerCase())) {
     const byRef = await ctx.db.query("records").withIndex("by_org_ref", (q) => q.eq("orgId", orgId).eq("ref", text.toLowerCase())).unique();
-    if (byRef) { const object = await ctx.db.get(byRef.objectId); if (!object) fail('NOT_FOUND'); requireRecordRead(run.membership, object, byRef); return byRef._id; }
+    // An unreadable code falls through to the same outcome as an unknown one.
+    if (byRef) { const object = await ctx.db.get(byRef.objectId); if (object && canReadRecord(run.membership, object, byRef)) return byRef._id; }
   }
   if (!field.targetObjectId) throw new ConvexError({ code: "VALIDATION", message: `${field.label} links to any object, so use a record code` });
   const target = await ctx.db.get(field.targetObjectId); if (!target) fail('NOT_FOUND'); requireObjectRead(run.membership, target);
   const titleField = target.titleFieldId ? await ctx.db.get(target.titleFieldId) : null;
   if (titleField) requireQueryField(run.membership, target, titleField);
-  const found = await findByTitle(ctx, orgId, field.targetObjectId, text);
-  if (found) { requireRecordRead(run.membership, target, found); return found._id; }
+  const found = await findReadableByTitle(ctx, run.membership, target, text);
+  if (found) return found._id;
   if (run.createMissing && target?.titleFieldId) {
     const titleField = await ctx.db.get(target.titleFieldId);
     if (titleField?.type === "text") return (await applyChange(ctx, run.membership, { action: "create", orgId, objectId: target._id, values: { [titleField._id]: text }, reason: "Created by CSV import" })).recordId;
@@ -89,7 +90,7 @@ export const importRows = mutation({
         const values: Record<string, unknown> = {};
         for (const [col, field] of columns.entries()) if (field) { const value = await coerce(run, field, row[col] ?? ""); if (value !== undefined) values[field._id] = value; }
         const title = object.titleFieldId ? String(values[object.titleFieldId] ?? "").trim().toLowerCase() : "";
-        if (args.skipDuplicates && title && (seen.has(title) || (await findByTitle(ctx, args.orgId, object._id, title)))) { skipped += 1; continue; }
+        if (args.skipDuplicates && title && (seen.has(title) || (await findReadableByTitle(ctx, membership, object, title)))) { skipped += 1; continue; }
         await applyChange(ctx, membership, { action: "create", orgId: args.orgId, objectId: object._id, values, reason: "CSV import" });
         if (title) seen.add(title);
         created += 1;

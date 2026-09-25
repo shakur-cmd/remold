@@ -5,8 +5,8 @@ import { v } from "convex/values";
 import { requireWriter, type Membership } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
-import { findByTitle } from "./lib/find";
-import { requireObjectRead, requireRecordRead, requireQueryField } from './authority/reads';
+import { findReadableByTitle } from "./lib/find";
+import { requireObjectRead, requireQueryField } from './authority/reads';
 
 async function standard(ctx: MutationCtx, orgId: Id<"orgs">, key: string) {
   const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", key)).unique();
@@ -23,8 +23,8 @@ async function companyFor(ctx: MutationCtx, membership: Membership, orgId: Id<"o
   requireObjectRead(membership, company.object);
   const title = company.object.titleFieldId ? await ctx.db.get(company.object.titleFieldId) : null;
   if (title) requireQueryField(membership, company.object, title);
-  const existing = await findByTitle(ctx, orgId, company.object._id, name);
-  if (existing) { requireRecordRead(membership, company.object, existing); return { id: existing._id, created: false }; }
+  const existing = await findReadableByTitle(ctx, membership, company.object, name);
+  if (existing) return { id: existing._id, created: false };
   const { recordId } = await applyChange(ctx, membership, { action: "create", orgId, objectId: company.object._id, values: company.pick({ name, domain }), reason: "Saved from the browser extension" });
   return { id: recordId, created: true };
 }

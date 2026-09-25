@@ -1,7 +1,7 @@
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { fail } from "../errors";
-import { findByTitle } from "./find";
+import { findReadableByTitle } from "./find";
 import { isRef } from "./ref";
 import type { Principal } from "../identity";
 import { canReadField, canReadRecord, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle } from "../authority/reads";
@@ -18,18 +18,19 @@ async function related(ctx: Ctx, principal: Principal, field: Doc<"fields">, val
   if (typeof value !== "string") fail("VALIDATION", "Expected record", { fieldKey });
   const id = ctx.db.normalizeId("records", value);
   const direct = id && await ctx.db.get(id);
-  if (direct && direct.orgId === orgId && (!field.targetObjectId || direct.objectId === field.targetObjectId)) { const target = await ctx.db.get(direct.objectId); if (!target) fail("NOT_FOUND"); requireRecordRead(principal, target, direct); return direct._id; }
+  // Unreadable matches fall through, so every miss ends in the same error as a record that does not exist.
+  const readableTarget = async (record: Doc<"records">) => { const target = await ctx.db.get(record.objectId); return !!target && canReadRecord(principal, target, record); };
+  if (direct && direct.orgId === orgId && (!field.targetObjectId || direct.objectId === field.targetObjectId) && await readableTarget(direct)) return direct._id;
   if (isRef(value.trim().toLowerCase())) {
     const record = await ctx.db.query("records").withIndex("by_org_ref", (q) => q.eq("orgId", orgId).eq("ref", value.trim().toLowerCase())).unique();
-    if (record && (!field.targetObjectId || record.objectId === field.targetObjectId)) { const target = await ctx.db.get(record.objectId); if (!target) fail("NOT_FOUND"); requireRecordRead(principal, target, record); return record._id; }
+    if (record && (!field.targetObjectId || record.objectId === field.targetObjectId) && await readableTarget(record)) return record._id;
   }
   if (field.targetObjectId) {
     const object = await ctx.db.get(field.targetObjectId), title = object?.titleFieldId ? await ctx.db.get(object.titleFieldId) : null;
     if (object && title) requireQueryField(principal, object, title);
-    const record = await findByTitle(ctx, orgId, field.targetObjectId, value);
-    if (record) { const target = await ctx.db.get(record.objectId); if (!target) fail("NOT_FOUND"); requireRecordRead(principal, target, record); return record._id; }
-    const target = await ctx.db.get(field.targetObjectId);
-    fail("VALIDATION", `No ${target?.label ?? "record"} named ${JSON.stringify(value)}`, { fieldKey });
+    const record = object ? await findReadableByTitle(ctx, principal, object, value) : null;
+    if (record) return record._id;
+    fail("VALIDATION", `No ${object?.label ?? "record"} named ${JSON.stringify(value)}`, { fieldKey });
   }
   fail("VALIDATION", "Polymorphic lookup needs a record id or code", { fieldKey });
 }
