@@ -52,14 +52,17 @@ export async function replayH0Parity({ runtime, tenant, test }) {
   });
 
   await test('H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives', async () => {
-    for (const change of ['revoke', 'fire', 'continuation-fire', 'retry-fire']) {
+    for (const change of ['revoke', 'fire', 'continuation-fire', 'retry-fire', 'approved-revoke']) {
       const t = await tenant('h0-fence-' + change), manager = await t.human.action(anyApi.agents.createScoped, { orgId: t.orgId, name: 'manager', origin: 'external' }), child = await t.human.action(anyApi.agents.createScoped, { orgId: t.orgId, name: 'child', origin: 'external' });
       const manage = await grant(t, manager.agentId, 'agent.manage', { kind: 'agents', agents: [child.agentId] }); const parent = await grant(t, manager.agentId);
       const managerCall = agentApi(runtime, manager.key), childCall = agentApi(runtime, child.key);
-      await managerCall('POST', 'authority/grant', { target: child.agentId, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 5, maxSteps: 2 }, mode: 'direct', delegate: true, expiresAt: Date.now() + 30000, parent });
+      // approved-revoke: a propose-mode delegation whose queued work a human already approved.
+      await managerCall('POST', 'authority/grant', { target: child.agentId, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 5, maxSteps: 2 }, mode: change === 'approved-revoke' ? 'propose' : 'direct', delegate: true, expiresAt: Date.now() + 30000, parent });
       await grant(t, child.agentId, 'social.publish', { kind: 'bindings', bindings: [t.bindingId], currency: 'USD', maxAmountMinor: 1, maxRecipients: 1 });
-      const id = await childCall('POST', 'operations', { logical: change, bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 2 }); const c = await childCall('POST', 'operations/' + id + '/claim', { worker: 'child' });
-      if (change === 'revoke') await t.human.mutation(anyApi['authority/grants'].revoke, { orgId: t.orgId, id: parent });
+      const id = await childCall('POST', 'operations', { logical: change, bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 2 });
+      if (change === 'approved-revoke') await t.human.mutation(commands.approve, { orgId: t.orgId, id, expiresAt: Date.now() + 60000 });
+      const c = await childCall('POST', 'operations/' + id + '/claim', { worker: 'child' });
+      if (change === 'revoke' || change === 'approved-revoke') await t.human.mutation(anyApi['authority/grants'].revoke, { orgId: t.orgId, id: parent });
       if (change === 'fire') await t.human.mutation(anyApi.agents.revoke, { orgId: t.orgId, agentId: manager.agentId });
       let held = c;
       // Continuation and retry both hand out a fresh fence; the stale-authority check must apply to that new claim too.

@@ -3,27 +3,66 @@ import { join } from 'node:path';
 import { expect, test } from 'vitest';
 import parity from './h0-parity.json';
 
-// `replay.mjs` builds these 43 names from literals and its small parameter sets.
-// Keeping them explicit makes a removed frozen group fail this inventory check.
-const frozen = parity.map(row => row.h0);
-const authoritySources = readdirSync(join(process.cwd(), 'ops/authority'))
-  .filter(file => /\.(mjs|test\.ts)$/.test(file))
-  .map(file => readFileSync(join(process.cwd(), 'ops/authority', file), 'utf8')).join('\n');
+// Each H0 group must point at production tests that exercise the same operations
+// the group exercises. A row pointing at an unrelated test fails, because that
+// test's body does not perform the group's operations (IV defect D6).
+const root = process.cwd();
+const replay = readFileSync(join(root, 'proofs/contract/replay.mjs'), 'utf8');
+// SERVICE replays and convex-test unit tests both run the production convex/ code.
+const production = readdirSync(join(root, 'ops/authority')).filter(file => /^service.*\.mjs$/.test(file) || (/\.test\.ts$/.test(file) && !/^(h0-parity|inventory)\./.test(file))).map(file => readFileSync(join(root, 'ops/authority', file), 'utf8')).join('\n');
 
-test('every frozen H0 replay group has a named production test', () => {
-  expect(frozen).toHaveLength(43);
-  const replay = readFileSync(join(process.cwd(), 'proofs/contract/replay.mjs'), 'utf8');
+// Body of the test whose (possibly templated) source name starts with the given text.
+function body(source: string, name: string) {
+  const prefix = name.replace(/ (?:false|true|provisional|final|sweep|expiry|failure)(?= |$).*$/, '').slice(0, 40);
+  const found = [...source.matchAll(/\b(?:test|it)\((['`])/g)].map(m => ({ at: m.index!, text: m.index! + m[0].length }));
+  const starts = found.map(m => m.at), matches = found.filter(m => source.startsWith(prefix, m.text)).map(m => m.at);
+  expect(matches, `exactly one test source starts with "${prefix}"`).toHaveLength(1);
+  // A test ends at its own closing "});" line, so setup code that follows it is not credited to it.
+  const start = matches[0]!, next = starts.find(i => i > start) ?? source.length, close = /\n\s*\}\);/g;
+  close.lastIndex = start; const end = close.exec(source)?.index ?? next;
+  return source.slice(start, Math.min(end, next));
+}
+
+// H0 harness operation -> how the production suites perform the same operation.
+// Granting and approving are left out: H0 routes work through agents, while
+// production tests often use a human proposer who needs neither.
+const operations: [string, RegExp, RegExp][] = [
+  ['fire an actor', /\bfire\(|\('revoke'/, /agents\.revoke|authority\/fire|fireAgent/],
+  ['attempt an out-of-scope grant', /reject\('grant'/, /authority\/grant|grants'\]\.grant|\.issue\(/],
+  ['revoke a grant', /call\('revokeGrant'/, /grants'\]\.revoke|authority\/revoke|revokeAgent/],
+  ['record provider absence', /call\('resolveUnknown'/, /resolve-unknown|operatorResolveUnknown|absence\(/],
+  ['mark outcome unknown', /call\('unknown'/, /'unknown'/],
+  ['reconcile a provider result', /call\('reconcile'/, /'reconcile'/],
+  ['fail an attempt', /call\('fail'/, /'fail'/],
+  ['cancel', /call\('cancel'/, /cancel/i],
+  ['page a traversal', /call\('page'/, /'page'/],
+  ['provision', /call\('provision'/, /provision/],
+  ['deliver a callback', /call\('callback'|inbound\(/, /'callback'/],
+  ['bind', /call\('bind'/, /bind/],
+  ['edit a payload', /call\('edit'/, /edit/i],
+  ['set readonly', /readonly: true/, /readonly: true/],
+  ['clear an anomaly', /clearAnomaly/, /clearAnomaly/],
+  ['claim', /\bclaim\(|call\('claim'/, /claim|\.permit\(|\.start\(/],
+  ['issue a permit', /\bpermit\(|call\('permit'/, /permit|\.start\(/],
+  ['consume a permit', /\bconsume\(|call\('consume'/, /consume|\.start\(/],
+];
+
+test('every frozen H0 replay group maps to production tests that exercise its operations', () => {
+  expect(parity).toHaveLength(43);
+  expect(new Set(parity.map(row => row.h0)).size).toBe(43);
+  const gaps: string[] = [];
   for (const row of parity) {
-    if (row.h0.startsWith('Unresolved consumed attempt survives ')) {
-      expect(replay).toContain("for (const path of ['sweep', 'expiry', 'failure'])");
-      expect(replay).toContain("'Unresolved consumed attempt survives ' + path + ' and holds global exposure'");
-    } else if (row.h0.startsWith('Settled-step ') || row.h0.startsWith('Old consumed fence ')) {
-      expect(replay).toContain("for (const finality of ['provisional', 'final'])");
-      expect(replay).toContain(row.h0.startsWith('Settled-step ') ? "'Settled-step ' + finality" : "'Old consumed fence for the same unresolved step still supports ' + finality");
-    } else {
-      expect(replay).toContain(row.h0.replace(/ (?:false|true|provisional|final)$/, ''));
-    }
-    expect(row.production.length).toBeGreaterThan(0);
-    for (const name of row.production) expect(authoritySources).toContain("test('" + name + "'");
+    const h0 = body(replay, row.h0);
+    expect(row.production.length, row.h0).toBeGreaterThan(0);
+    const covered = row.production.map(name => body(production, name)).join('\n');
+    const missing = operations.filter(([, inH0, inProduction]) => inH0.test(h0) && !inProduction.test(covered)).map(([label]) => label);
+    if (missing.length) gaps.push(`${row.h0}: mapped tests never ${missing.join(', ')}`);
   }
+  expect(gaps).toEqual([]);
+});
+
+test('the guard rejects a map that points every group at one unrelated test', () => {
+  const unrelated = 'Real JWT verification derives human identity and rejects invalid audience and expired tokens';
+  const failing = parity.filter(row => { const h0 = body(replay, row.h0), covered = body(production, unrelated); return operations.some(([, inH0, inProduction]) => inH0.test(h0) && !inProduction.test(covered)); });
+  expect(failing).toHaveLength(43);
 });
