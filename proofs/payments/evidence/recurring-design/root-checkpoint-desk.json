@@ -1,0 +1,15 @@
+{
+  "verdict": "PASS report/evidence consistency only",
+  "report": "evidence/2026-09-24-unified-build/payments-root/recovery-provider/report.html",
+  "sha256": "ae6a3265bfdb5d3674238a248062fefa41c682f6641ba4db6566e95047c4c570",
+  "checks": [
+    "12 manual pass groups, required recurring BLOCKED exit1",
+    "5 no-application-fee proofs separated from Stripe fees",
+    "10808 invoice paid +109 boundary=10917 charged",
+    "10 PIs includes5 charged and5 uncharged; residual credit900 clearly named",
+    "No replay permitted, no fullP4/I1 claim",
+    "Four local links resolve"
+  ],
+  "providerGETs": 0,
+  "notIndependentProviderWitness": true
+}

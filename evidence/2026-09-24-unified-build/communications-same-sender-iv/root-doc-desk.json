@@ -1,0 +1,30 @@
+{
+  "verdict": "APPROVE desk-only bounded same-sender claims",
+  "at": "2026-09-25T00:40:37.742226+00:00",
+  "reviewer": "c0_verifier",
+  "files": {
+    "evidence/2026-09-24-unified-build/communications-same-sender-root/actual-report.html": "3c190cfb450c49cb73cbad6bba6e7719c24f23a9c400e4cdaf79fa1c3dcd92fe",
+    "docs/unified-launch/execution.json": "61abe9282d62c8b55761d9c80f48276bbdbf811ccdb36854aa36f5f651909b95",
+    "docs/unified-launch/gate-register.json": "788077c033a6a35ec726df543f71dc94456cf9ca014791d9939a52f71e29a9d9",
+    "docs/unified-launch/accounts-and-subscriptions-addendum.html": "348b20f56f3eb7dbb0c5e4a13c2c6133d067c722357329258a69308427fc416c",
+    "docs/unified-launch/build-status.html": "2fc00db27aa7ec31b8a8af2b0df8e81f7416cbf50a02242a292a621ca1121e42"
+  },
+  "sourceEvidence": "live-verdict.json",
+  "correction": "Root corrected process/sequence distinction: sequence540007ms from start; process exit0 separately.",
+  "links": {
+    "rootReport": 6,
+    "accountAddendum": 2,
+    "buildStatus": 20,
+    "P5ExecutionEvidencePaths": 7,
+    "missing": 0
+  },
+  "findings": [
+    "Exact A4/B1 added to prior A1/B4, A5/B5 rolling cap at terminal; C recipient-only and no replay",
+    "P2/P3 pre-reservation refusal and Q1-Q3 C metadata receipts attributed accurately",
+    "Root provider operation and c0 fresh metadata/evidence review distinguished",
+    "Historical source handover and driver pending-receipts label preserved with additive actual checkpoint",
+    "Whole P5, production identity/product/watch/history/reconnect/two-browser requirements remain open"
+  ],
+  "newProviderCalls": 0,
+  "sourceOrPriorEvidenceEdits": 0
+}

@@ -135,7 +135,7 @@
       "builder": "/root/c0_verifier",
       "independentVerifier": "/root/h0_builder, bounded code/offline/evidence review and exact calendar GET",
       "costCap": 0,
-      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests, plus A\u2192shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Prior A1/B4 count conservatively. No sending from third mailbox. Calendar single event proof consumed; no replay.",
+      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests plus A→shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Both A5/B5 consumed at2026-09-25T00:34:39Z; no further capacity then. C recipient only. Calendar and same-sender one-shot proofs consumed; no replay.",
       "depends": [
         "H0"
       ],
@@ -143,14 +143,17 @@
         "proofs/communications/**"
       ],
       "environment": "isolated loopback3520/3521, OAuth callback3522, Google staging app only",
-      "scopeNote": "LIVE bounded proof PASS: A1/B4 accepted and observed; reply suppression; one event created/rescheduled/deleted. Fresh independent 29 offline checks and exact cancelled-event witness. Whole P5 open: same-sender two-recipient fixture (additional recipient now authorized), CRM integration, provider restart/watch/history and two-browser proof. Second Google mailbox is not required by sealed P5; prior extra gate corrected after exact Opus 5.5 consultation. Additive durable synthetic import602c2c passed root5groups/3restarts and independent5groups plus alternate6group/4restart replay; provider persistence/integration remains open.",
+      "scopeNote": "Earlier reciprocal A1/B4 and single no-guests calendar lifecycle passed. Actual same-sender fixture added A4/B1: P2/P3 denied after stripped reply before reservation, Q1/Q2/Q3 received by C with independent exact Gmail metadata witness. Root540007ms observation, >=120000ms Q gaps, preserved old ledger, A5/B5 cap; c0 terminal approval. Full P5 remains open: CRM integration, provider restart/watch/history and two-browser proof. Second Google mailbox is not required. Durable synthetic import602c2c root5groups/3restarts and IV5+alternate6groups/4restarts remain bounded local evidence.",
       "evidence": "proofs/communications/handover.html",
       "independentEvidence": "evidence/2026-09-24-unified-build/communications-iv/report.html",
       "frozenManifest": "bdca8e23ecf927ed4e183ef0c2ae379f63009c99e4839c8a8ab9cc25dac9e069",
       "scopeClarification": "evidence/2026-09-24-unified-build/opus-p5-mailbox-scope.json",
       "durableImportManifest": "602c2c323fc2a6032d7ef0070ee013b19ad9c704eadca9d5f839e3db55eb0e56",
       "durableImportEvidence": "evidence/2026-09-24-unified-build/communications-import-root/report.html",
-      "durableImportIndependentEvidence": "evidence/2026-09-24-unified-build/communications-import-iv/review.html"
+      "durableImportIndependentEvidence": "evidence/2026-09-24-unified-build/communications-import-iv/review.html",
+      "sameSenderManifest": "c29dfab5c14e841ce38d31d702a54bc6ecea5063a9b3284b892dd7ee45722fa9",
+      "sameSenderEvidence": "evidence/2026-09-24-unified-build/communications-same-sender-root/actual-report.html",
+      "sameSenderIndependentEvidence": "evidence/2026-09-24-unified-build/communications-same-sender-iv/live-review.html"
     },
     {
       "id": "P6",
