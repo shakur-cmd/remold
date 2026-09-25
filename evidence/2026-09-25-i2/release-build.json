@@ -1,0 +1,89 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/tmp/i2-e2e/checkout[39m
+
+ [32m✓[39m convex/telemetry.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 116[2mms[22m[39m
+ [32m✓[39m convex/members.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 152[2mms[22m[39m
+ [32m✓[39m convex/ops.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 113[2mms[22m[39m
+ [32m✓[39m convex/csv.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 224[2mms[22m[39m
+ [32m✓[39m convex/applyChange.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m convex/rest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 315[2mms[22m[39m
+ [32m✓[39m convex/suggestions.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 339[2mms[22m[39m
+   [32m✓[39m suggestions [2m(2)[22m
+     [33m[2m✓[22m[39m applies once with agent attribution and conflicts after a person edit[33m 323[2mms[22m[39m
+ [32m✓[39m convex/capture.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 117[2mms[22m[39m
+ [32m✓[39m convex/refs.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m src/lib/fields.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m convex/fixes.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 398[2mms[22m[39m
+ [32m✓[39m src/lib/identity-route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/lib/identity-session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m convex/invites.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m convex/agentSafety.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 572[2mms[22m[39m
+   [32m✓[39m agent safety [2m(9)[22m
+     [33m[2m✓[22m[39m keeps a key inside its own org even when a body names another agent's hash[33m 303[2mms[22m[39m
+ [32m✓[39m convex/diff.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 101[2mms[22m[39m
+ [32m✓[39m convex/related.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m convex/slots.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32m✓[39m convex/agents.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 162[2mms[22m[39m
+ [32m✓[39m convex/identity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m convex/seed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/lib/csv.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m convex/isolation.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m convex/inbox.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m convex/rateLimit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 749[2mms[22m[39m
+   [33m[2m✓[22m[39m limits writes per key without starving reads or other agents[33m 609[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m      Tests [22m [1m[32m73 passed[39m[22m[90m (73)[39m
+[2m   Start at [22m 09:39:42
+[2m   Duration [22m 966ms[2m (tests 71%, transform 15%, import 13%, worker 1%)[22m
+
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.818625ms)
+✔ changed, missing and injected artifact bytes are refused (1.386875ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (68.012458ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.363375ms)
+✔ version metadata must name the artifact commit (1.029333ms)
+✔ symlink artifacts are refused instead of reading files outside the build (1.093667ms)
+✔ failed real process halts checks before a later process can run (25.63175ms)
+✔ successful real processes run in order (56.891584ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.341334ms)
+✔ missing metadata and destructive contraction are refused (0.104167ms)
+✔ a rollback to a schema without the expanded fields is refused (0.127875ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.453ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.034584ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (50.202542ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (26.447959ms)
+✔ PR changes use their common ancestor when the target branch advances independently (279.085792ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 564.136458
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/tmp/i2-e2e/checkout/packages/mcp[39m
+
+ [32m✓[39m src/client.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 09:39:48
+[2m   Duration [22m 98ms[2m (transform 43%, tests 38%, import 14%, worker 4%)[22m
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 2113 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../tmp/i2-e2e/artifact/index.html                                              0.45 kB │ gzip:   0.28 kB
+../../../../tmp/i2-e2e/artifact/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+../../../../tmp/i2-e2e/artifact/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+../../../../tmp/i2-e2e/artifact/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+../../../../tmp/i2-e2e/artifact/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+../../../../tmp/i2-e2e/artifact/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+../../../../tmp/i2-e2e/artifact/assets/index-DDQvmeqM.css                              67.96 kB │ gzip:  12.37 kB
+../../../../tmp/i2-e2e/artifact/assets/index-Dak1Uwcs.js                              665.95 kB │ gzip: 204.17 kB
+
+✓ built in 700ms
+{"sha":"696015cd723e3fd10b0cacc8049e4838ae21f5d6","manifestSha256":"bcfa89fa7230e69a9e3b00c50bf62c7091a90be4ebaf89b7f263b24ad40e8960","output":"/tmp/i2-e2e/artifact","deploymentAuthorized":false}

@@ -31,6 +31,10 @@ export const allowResume = internalMutation({
     await ctx.db.patch(orgId, { flags: { migrationResume: true } });
   },
 });
+export const bindBrowserUser = internalMutation({
+  args: { userId: v.id("users"), tokenIdentifier: v.string() },
+  handler: async (ctx, { userId, tokenIdentifier }) => { await ctx.db.patch(userId, { tokenIdentifier }); },
+});
 export const snapshot = internalQuery({ args: {}, handler: async (ctx) => ({
   records: (await ctx.db.query("records").collect()).map(record => ({ ...record })),
   agents: (await ctx.db.query("agents").collect()).map(({ _id, orgId, revokedAt, keyHash }) => ({ _id, orgId, revokedAt: revokedAt ?? null, keyHash })),

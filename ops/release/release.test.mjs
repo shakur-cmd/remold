@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { digest, sealArtifact, verifyArtifact, runChecks, validateReleaseNotes, preflight, resolveBase } from './release.mjs';
+import { canonical } from './snapshot.mjs';
 
 const sha = 'a'.repeat(40);
 const rollback = 'b'.repeat(40);
@@ -100,13 +101,59 @@ test('a rollback to a schema without the expanded fields is refused', () => {
   assert.throws(() => preflight(manifest, rollback, digest('old schema')), /schema/);
   assert.throws(() => preflight(manifest, sha, schema), /declared/);
 });
-test('persisted changes remain blocked even when a caller supplies a synthetic passing restore claim', () => {
-  const manifest = { schemaSha256: schema, release: { class: 'expand', rollbackTarget: rollback }, restore: { passed: true } };
-  assert.throws(() => preflight(manifest, rollback, schema), /restored-snapshot/);
+test('persisted preflight requires a receipt bound to release, schema, and manifest', () => {
+  const manifest = { sha, schemaSha256: schema, release: { class: 'expand', rollbackTarget: rollback } };
+  const pin = digest('pinned manifest');
+  const expected = { snapshotSha256: digest('snapshot'), canonical: { sha256: digest('data'), tables: { records: { count: 1, sha256: digest('records') } } } };
+  const receipt = { result: 'PASS', releaseSha: sha, manifestSha256: pin, candidateSchemaSha256: schema, ...expected };
+  assert.throws(() => preflight(manifest, rollback, schema, undefined, pin), /Blocked: actual restored-snapshot/);
+  for (const changed of [{ releaseSha: rollback }, { candidateSchemaSha256: digest('other schema') }, { manifestSha256: digest('other manifest') }, { result: 'FAIL' }]) {
+    assert.throws(() => preflight(manifest, rollback, schema, { ...receipt, ...changed }, pin, expected), /[Ss]napshot receipt/);
+  }
+  assert.deepEqual(preflight(manifest, rollback, schema, receipt, pin, expected), { snapshot: 'restored-and-validated', snapshotSha256: receipt.snapshotSha256, deploymentAuthorized: false });
+});
+test('preflight refuses a receipt for any snapshot other than the expected backup', t => {
+  const dir = mkdtempSync(join(tmpdir(), 'remold-backup-test-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const zip = (name, tables) => {
+    const tree = join(dir, name);
+    for (const [table, docs] of Object.entries(tables)) { mkdirSync(join(tree, table), { recursive: true }); writeFileSync(join(tree, table, 'documents.jsonl'), docs.map(JSON.stringify).join('\n') + (docs.length ? '\n' : '')); }
+    execFileSync('zip', ['-qrD', `${name}.zip`, ...Object.keys(tables)], { cwd: tree }); return join(tree, `${name}.zip`);
+  };
+  const users = [{ _id: 'users:1', name: 'Fixture' }], records = [{ _id: 'records:1', title: 'Original' }, { _id: 'records:2', title: 'Second' }];
+  const _tables = [{ _id: '_tables:1', name: 'users' }, { _id: '_tables:2', name: 'records' }];
+  const backup = zip('backup', { _tables, users, records });
+  const emptied = zip('emptied', { _tables, users: [], records: [] });
+  const edited = zip('edited', { _tables, users, records: [{ ...records[0], title: 'Edited but schema-valid' }, records[1]] });
+  const record = path => ({ snapshotSha256: digest(readFileSync(path)), canonical: canonical(path) });
+  const expected = record(backup);
+  const manifest = { sha, schemaSha256: schema, release: { class: 'expand', rollbackTarget: rollback } };
+  const pin = digest('pinned manifest');
+  const receiptFor = snapshot => ({ result: 'PASS', releaseSha: sha, manifestSha256: pin, candidateSchemaSha256: schema, ...snapshot });
+  assert.throws(() => preflight(manifest, rollback, schema, receiptFor(record(emptied)), pin, expected), /empty app tables/);
+  assert.throws(() => preflight(manifest, rollback, schema, receiptFor(record(edited)), pin, expected), /expected backup/);
+  assert.throws(() => preflight(manifest, rollback, schema, receiptFor({ ...expected, snapshotSha256: 'e'.repeat(64) }), pin, expected), /expected backup/);
+  assert.throws(() => preflight(manifest, rollback, schema, receiptFor(expected), pin), /expected backup/);
+  assert.deepEqual(preflight(manifest, rollback, schema, receiptFor(expected), pin, expected), { snapshot: 'restored-and-validated', snapshotSha256: expected.snapshotSha256, deploymentAuthorized: false });
 });
 test('UI-only artifacts can skip snapshot rehearsal without authorizing a deployment', () => {
   const manifest = { schemaSha256: schema, release: { class: 'ui-only', rollbackTarget: rollback } };
   assert.deepEqual(preflight(manifest, rollback, schema), { snapshot: 'not-required', deploymentAuthorized: false });
+});
+
+test('canonical snapshot data ignores JSONL order and catches changed documents', t => {
+  const dir = mkdtempSync(join(tmpdir(), 'remold-snapshot-test-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const zip = (name, records) => {
+    const tree = join(dir, name); mkdirSync(join(tree, 'records'), { recursive: true });
+    writeFileSync(join(tree, 'records/documents.jsonl'), records.map(JSON.stringify).join('\n') + '\n');
+    execFileSync('zip', ['-qr', `${name}.zip`, 'records'], { cwd: tree }); return join(tree, `${name}.zip`);
+  };
+  const one = zip('one', [{ _id: 'records:2', nested: { b: 2, a: 1 } }, { _id: 'records:1', title: 'same' }]);
+  const two = zip('two', [{ _id: 'records:1', title: 'same' }, { nested: { a: 1, b: 2 }, _id: 'records:2' }]);
+  const changed = zip('changed', [{ _id: 'records:1', title: 'different' }, { _id: 'records:2', nested: { a: 1, b: 2 } }]);
+  assert.equal(canonical(one).sha256, canonical(two).sha256);
+  assert.notEqual(canonical(one).tables.records.sha256, canonical(changed).tables.records.sha256);
 });
 
 test('verification subprocesses receive fixture config and cannot inherit provider secrets', t => {

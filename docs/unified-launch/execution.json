@@ -316,7 +316,7 @@
         "Bounded internal REST telemetry: root50 and independent73 concurrent receipts, actualdelay/error and schedulerejection, real3minute transportgap/recovery,63app tests/typecheck; no publicdashboard/alerts orreleasecomparison"
       ],
       "evidence": "evidence/2026-09-24-unified-build/i2-slice-verdict.json",
-      "remaining": "Email/password, blocked-third-party-cookie and production first-party session proof, owned close-one cleanup and automated PR lifecycle, managed backups/restore, real old-browser migration/rollback, delivered alerts and remaining measurement UI integration",
+      "remaining": "Email/password, blocked-third-party-cookie and production first-party session proof, PR3 WorkOS entry removal and automated PR lifecycle, scheduled managed backups, delivered alerts and remaining measurement UI integration; builder slices on i2/finish-2026-09-25 await independent verification",
       "additionalEvidence": "evidence/2026-09-24-unified-build/flags-version-verdict.json",
       "migrationEvidence": "ops/migrations/evidence/independent.html",
       "authEvidence": "evidence/2026-09-24-unified-build/authkit-iv/invite-report.html",
@@ -326,10 +326,22 @@
       "previewOperatorManifest": "d92702a0909fcbf7927b8bfa787be35f358bd3147b14bd896a9d2450217a5104",
       "previewExternalAllowance": "Two named synthetic PR3/PR4 previews on existing free Cloudflare/Convex plans, exact staging AuthKit callbacks/origins and close-one owned cleanup. No production cutover or paid upgrade. Approved infrastructure allowance50USD/month.",
       "previewReconciliationEvidence": "evidence/2026-09-24-unified-build/previews-reconciliation/r3/report.html",
-      "previewCurrentState": "PR3 954bdfb and PR4 31c8434 hosted on exact owned backends and Cloudflare frontend IDs from previews-r5 receipts. Root plus independently authorized Opus browser checks pass. No cleanup/recreate yet.",
+      "previewCurrentState": "PR3 closed 2026-09-25; its Cloudflare preview and Convex backend neat-squid-188 deleted by the reviewed cleanup operator, independently confirmed absent by GET. PR3 WorkOS callback, CORS and sign-out entries remain pending owner confirmation. PR4 head 31c8434, backend kindred-hyena-171 and frontend 567c0b1448364e4786f2bafb238b372d independently confirmed present by GET only; PR4 staying signed in after cleanup is builder-observed, not independently checked.",
       "previewRehearsalEvidence": "evidence/2026-09-24-unified-build/previews-r5/report.html",
       "previewRehearsalState": "Both hosted; source and actual staging browser behavior independently passed with exact build/fixture binding, reload/logout/deeplink Google reauthentication. Close-one cleanup and automatic lifecycle pending; no full I2 completion.",
-      "previewBrowserIndependentEvidence": "evidence/2026-09-25-preview-browser-iv/report.html"
+      "previewBrowserIndependentEvidence": "evidence/2026-09-25-preview-browser-iv/report.html",
+      "builderPendingVerification": {
+        "branch": "i2/finish-2026-09-25",
+        "pr": "https://github.com/shakur-cmd/remold/pull/6",
+        "slices": [
+          "restored-snapshot release gate: independent PARTIAL on f1ae237 (emptied/edited/random-hash snapshot receipts passed preflight); fixed by binding preflight to the operator-named backup file, re-verification pending",
+          "old headless Chromium ConvexClient through expand/partial migrate/rollback/resume with red control: independent PASS (SERVICE-local, synthetic)",
+          "PR3 close-one hosting cleanup: independent PASS for hosting by GET; WorkOS entries pending owner"
+        ],
+        "handover": "evidence/2026-09-25-i2/builder-handover.html",
+        "independentReport": "evidence/2026-09-25-i2/iv/report.html on i2/iv-2026-09-25 (dc954ec)",
+        "ownerDecision": "rollback target 3339517 vs bfb37cb"
+      }
     },
     {
       "id": "I3",

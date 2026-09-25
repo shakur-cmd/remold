@@ -1,0 +1,35 @@
+{
+  "sourceRootSha": "9a08f5559220a341ed25165d61c08c8a3b2f2965",
+  "sourceRootDirty": true,
+  "result": "FAIL",
+  "level": "SERVICE-local; synthetic fixture",
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-1NZ3lo",
+  "checks": {},
+  "limitations": [
+    "Managed backup snapshot restore is not tested",
+    "Production identities are not tested; old browser is a headless Chromium ConvexClient bundle built from the baseline source, not the full React app",
+    "No production deployment or release authorization"
+  ],
+  "baseline": {
+    "sourceHash": "dc190ee1e21d013bce242439ea290035bafdc258b73b9ad30ecffdbaad7d4001",
+    "records": 1000,
+    "canonicalHash": "68ee499e9189c4a70e0e94ece3e2c4d3a44e5264cf4cb227688f1bf8198c64e9",
+    "schemaHash": "f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243"
+  },
+  "oldBrowser": {
+    "bundleSha256": "3238fb4659ec2b5a099a20b3b89c4751630c8cb2eb6290fe17bda81e151f01e9",
+    "baselineSourceHash": "dc190ee1e21d013bce242439ea290035bafdc258b73b9ad30ecffdbaad7d4001",
+    "auth": "different-key negative control",
+    "binary": {
+      "protocolVersion": "1.3",
+      "product": "HeadlessChrome/151.0.7922.34",
+      "revision": "@782af9cb30a53f54487e5d2e44738645a8ec457c",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+      "jsVersion": "15.1.206.8"
+    },
+    "loadId": "0ac17678-7494-4244-8c01-6d3a6c1e86f4"
+  },
+  "oldMcpSourceHash": "5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e",
+  "error": "Old browser write failed: ConvexError: [CONVEX M(records:update)] [Request ID: 5bda4b58a2105110] Server Error\nUncaught ConvexError: {\"code\":\"UNAUTHENTICATED\",\"message\":\"Sign in first\"}\n    at fail (../../convex/errors.ts:7:0)\n    at getPrincipal (../../convex/identity.ts:16:8)\n    at async requireMember (../../convex/identity.ts:38:22)\n    at async handler (../convex/records.ts:28:37)\n\n  Called by client",
+  "rootDeploymentConfigUnchanged": true
+}
