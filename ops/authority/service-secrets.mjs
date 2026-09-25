@@ -29,6 +29,15 @@ export async function replaySecrets({ runtime, tenant, test }) {
     const mismatch = await t.propose('secret-mismatch-claim', 1, 1);
     runtime.run('authorityFixture:patchSecretAccount', { id: t.secretReferenceId, account: 'changed-' + canary });
     await assert.rejects(t.claim(mismatch), /reconnection/i);
+    // Any drift in the reference's provider, environment or account closes the connection.
+    runtime.run('authorityFixture:patchSecretAccount', { id: t.secretReferenceId, account: t.account });
+    for (const patch of [{ environment: 'live' }, { provider: 'fake2' }]) {
+      const drifted = await t.propose('secret-drift-' + Object.keys(patch)[0], 1, 1);
+      runtime.run('authorityFixture:patchSecret', { id: t.secretReferenceId, ...patch });
+      await assert.rejects(t.claim(drifted), /reconnection/i, 'claim must fail closed after ' + JSON.stringify(patch));
+      runtime.run('authorityFixture:patchSecret', { id: t.secretReferenceId, environment: 'test', provider: 'fake' });
+      await t.cancel(drifted);
+    }
     // The queued operation makes revocation testable even though new provisioning is correctly closed.
     runtime.run('authorityFixture:patchSecretAccount', { id: t.secretReferenceId, account: t.account });
     const revoked = await t.propose('secret-revoked-claim', 1, 1);

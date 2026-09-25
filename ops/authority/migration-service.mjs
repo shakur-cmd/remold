@@ -93,9 +93,10 @@ const report = await withAuthority(async f => {
     // Frozen but not yet backfilled: the legacy wildcard is evaluated against the freeze cutoff.
     await assertFutureRefused('frozen-before-backfill', future.recordId, bindingId, victim.agentId);
     const first = f.run('authority/migration:migrateAgent', { agentId: legacy.agentId }); assert.equal(first.changed, true); assert.equal(f.run('authority/migration:migrateAgent', { agentId: legacy.agentId }).changed, false);
+    // Access to the post-freeze object is checked first, so a widening fails as a widening.
+    await assertFutureRefused('migrated', future.recordId, bindingId, victim.agentId);
     const after = await exercise('migrated'); assert.deepEqual(after, baseline);
     const migratedSnapshot = f.run('authorityFixture:snapshot', { orgId }); assert.equal(migratedSnapshot.agents[0].keyHash, baselineSnapshot.agents[0].keyHash); assert.equal(migratedSnapshot.agents[0].role, baselineSnapshot.agents[0].role); assert.ok(!migratedSnapshot.agents[0].readObjectIds.includes(futureId));
-    await assertFutureRefused('migrated', future.recordId, bindingId, victim.agentId);
     const current = await human.action(anyApi.agents.create, { orgId, name: 'Current-object agent', grants: [{ action: 'create', objectKey: '*' }] });
     const currentRest = async (path, body) => fetch(f.site + '/api/v1/' + path, { method: 'POST', headers: { authorization: 'Bearer ' + current.key, 'content-type': 'application/json' }, body: JSON.stringify(body) });
     assert.equal((await currentRest('changes', { action: 'create', object: 'future', values: { name: 'Current object allowed' }, reason: 'synthetic frozen scope' })).status, 200);

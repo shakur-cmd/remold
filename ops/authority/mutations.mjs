@@ -14,6 +14,9 @@ const controls = [
   { name: 'object-scope-boundary', file: 'convex/authority/reads.ts', from: "g.scope.objectId === object._id).flatMap", to: "true).flatMap", test: 'ops/authority/grants.test.ts' },
   { name: 'durable-cancel-check', file: 'convex/integrations/commands.ts', from: 'cancelRequestedAt: Date.now()', to: 'cancelRequestedAt: undefined', test: 'ops/authority/operations.test.ts' },
   { name: 'code-owned-finality-verifier', file: 'convex/integrations/safetyFinality.ts', from: '!await selected.verifyAbsent(ctx, checked.request, checked.proof)', to: 'false', test: 'ops/authority/safety.test.ts' },
+  { name: 'readable-name-match', file: 'convex/lib/find.ts', from: ' && canReadRecord(principal, object, record)', to: '', test: 'ops/authority/oracles.test.ts' },
+  { name: 'proposal-scope-first', file: 'convex/agentApi.ts', from: '  if (!canPropose(principal, target.item.object, target.record?._id, touched)) fail("FORBIDDEN", "Proposal scope required");\n', to: '', test: 'ops/authority/oracles.test.ts' },
+  { name: 'frozen-keys', file: 'convex/authority/migration.ts', from: "org.authorityFrozenKeys?.[object._id] ?? object.key", to: 'object.key', test: 'ops/authority/migration.test.ts' },
   { name: 'explicit-inbox-audience', file: 'convex/authority/inbox.ts', from: "return audience === 'org' && sharedInboxReader(principal);", to: 'return true;', test: 'ops/authority/inbox.test.ts' },
 ];
 const results = [];

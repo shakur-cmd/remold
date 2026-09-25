@@ -150,6 +150,15 @@ export async function replaySweeps({ runtime, tenant, test }) {
       const result = await t.human.query(fn(entry.id), queries[entry.id]);
       assert.ok(!JSON.stringify(result).includes(canary), entry.id + ' leaked a hidden field value');
     }
+    // Filtering or sorting by a hidden field would reveal its value by which rows come back.
+    for (const [label, args] of [['filter', { filter: { fieldId: w.city._id, value: canary } }], ['sort', { sort: { fieldId: w.city._id, direction: 'asc' } }]]) {
+      const result = await outcome(() => t.human.query(anyApi.records.list, { orgId, objectId: w.company._id, paginationOpts: page, ...args }));
+      assert.match(result, /refused: Field not found/, 'member ' + label + ' by a hidden field: ' + result);
+    }
+    for (const path of ['records?object=company&filter=city&value=' + encodeURIComponent(canary), 'records?object=company&filter=city&value=nothing', 'records?object=company&sort=city']) {
+      const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
+      assert.equal(response.status, 404, 'agent ' + path + ' must refuse a hidden field: ' + text); assert.ok(!text.includes(canary));
+    }
     const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'inbox'];
     for (const path of gets) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
