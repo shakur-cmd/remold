@@ -1,0 +1,198 @@
+{
+ "at": "2026-09-25T06:36:23.314Z",
+ "pass": true,
+ "rows": [
+  {
+   "tenant": "a",
+   "before": {
+    "contacts": 163,
+    "anonymousContacts": 23,
+    "pageHits": 12,
+    "assetDownloads": 11,
+    "submissions": 4,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "after": {
+    "contacts": 163,
+    "anonymousContacts": 23,
+    "pageHits": 12,
+    "assetDownloads": 11,
+    "submissions": 4,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "countersUnchanged": true,
+   "requests": [
+    {
+     "label": "client DNT0/Sec-GPC0 GET",
+     "method": "GET",
+     "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-a",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "035b98f9168cf1bba376bee46bcc2fd8965f3f45f4bf5aa77d182e766e94d4b3",
+     "bytes": 381,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "client DNT0/Sec-GPC0 HEAD",
+     "method": "HEAD",
+     "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-a",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "bytes": 0,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "client DNT0/Sec-GPC0 GET",
+     "method": "GET",
+     "path": "/asset/d05d2f9d-2e42-4a2a-b1cd-009c9cbfc863",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "151c97c427a263fc01fa180210754d8e3dd2212c1168f3d9824376c1314a5727",
+     "bytes": 58,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "client DNT0/Sec-GPC0 HEAD",
+     "method": "HEAD",
+     "path": "/asset/d05d2f9d-2e42-4a2a-b1cd-009c9cbfc863",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "bytes": 0,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "benign query control",
+     "method": "GET",
+     "path": "/asset/d05d2f9d-2e42-4a2a-b1cd-009c9cbfc863?utm_source=x",
+     "expected": 404,
+     "status": 404,
+     "ok": true,
+     "bodySha256": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31",
+     "bytes": 9,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "foreign Host control",
+     "method": "GET",
+     "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-a",
+     "expected": 421,
+     "status": 421,
+     "ok": true,
+     "bodySha256": "82dbb3296b1b12c5f5a81519e8d0499f8869311ddd2b373f9f28972bb0958bf5",
+     "bytes": 12,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    }
+   ]
+  },
+  {
+   "tenant": "b",
+   "before": {
+    "contacts": 24,
+    "anonymousContacts": 19,
+    "pageHits": 10,
+    "assetDownloads": 9,
+    "submissions": 4,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "after": {
+    "contacts": 24,
+    "anonymousContacts": 19,
+    "pageHits": 10,
+    "assetDownloads": 9,
+    "submissions": 4,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "countersUnchanged": true,
+   "requests": [
+    {
+     "label": "client DNT0/Sec-GPC0 GET",
+     "method": "GET",
+     "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-b",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "0c7fb2be0f43ac2d658b042dfc2723461ce4590aa2c5d152d4f2ca6b80620871",
+     "bytes": 399,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "client DNT0/Sec-GPC0 HEAD",
+     "method": "HEAD",
+     "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-b",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "bytes": 0,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "client DNT0/Sec-GPC0 GET",
+     "method": "GET",
+     "path": "/asset/abba8ef1-7c95-40cd-9e6b-fc6b429ee7d9",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "c7fadb3fc06cb4dd6877f38e4c0006087dbd911235141762dca7afb6ef471c9f",
+     "bytes": 58,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "client DNT0/Sec-GPC0 HEAD",
+     "method": "HEAD",
+     "path": "/asset/abba8ef1-7c95-40cd-9e6b-fc6b429ee7d9",
+     "expected": 200,
+     "status": 200,
+     "ok": true,
+     "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "bytes": 0,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "benign query control",
+     "method": "GET",
+     "path": "/asset/abba8ef1-7c95-40cd-9e6b-fc6b429ee7d9?utm_source=x",
+     "expected": 404,
+     "status": 404,
+     "ok": true,
+     "bodySha256": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31",
+     "bytes": 9,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    },
+    {
+     "label": "foreign Host control",
+     "method": "GET",
+     "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-b",
+     "expected": 421,
+     "status": 421,
+     "ok": true,
+     "bodySha256": "82dbb3296b1b12c5f5a81519e8d0499f8869311ddd2b373f9f28972bb0958bf5",
+     "bytes": 12,
+     "setCookie": null,
+     "csp": "default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
+    }
+   ]
+  }
+ ]
+}

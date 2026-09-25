@@ -1,0 +1,27 @@
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: docker --context colima-remold-proof exec remold-marketing-proof-public-a sha256sum /public-server.mjs
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at docker (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/runtime.mjs:6:37)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/setup.mjs:25:15
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 128,
+  signal: null,
+  output: [
+    null,
+    'OCI runtime exec failed: exec failed: cannot exec in a stopped container\r\n',
+    ''
+  ],
+  pid: 70236,
+  stdout: 'OCI runtime exec failed: exec failed: cannot exec in a stopped container\r\n',
+  stderr: ''
+}
+
+Node.js v24.18.0

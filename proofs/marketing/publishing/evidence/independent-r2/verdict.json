@@ -1,0 +1,59 @@
+{
+  "verdict": "BOUNDED PASS",
+  "verifiedAt": "2026-09-25T06:45:00Z",
+  "verifier": "Fresh Claude Opus 5.5 session (claude-opus-5-5), independent of the root builder and of the r1 verifier; no delegation, no source edits",
+  "level": "SERVICE: two installed internal edge sidecars plus actual native Mautic A/B on docker context colima-remold-proof. No browser, DNS, TLS, LIVE, worker or mail.",
+  "fullP2Complete": false,
+  "sourceAggregate": {"expected": "6d1275123b7875212d49b7ac31b24faa794a4431eff9a38ab729951ec2aa2755", "files": 10, "before": "match", "after": "match"},
+  "preservedAggregates": {
+    "mime57": {"expected": "a0b59a92a768d86e10c2af8b922f0e713335cc938349c6fd8181bd7831702d26", "before": "match", "after": "match"},
+    "tenant7": {"expected": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727", "before": "match", "after": "match"}
+  },
+  "preservedEvidence": {"files": 76, "aggregateBeforeEqualsAfter": true, "scope": "all files under publishing/evidence except independent-r2 (root, r1-source, independent)"},
+  "installedServerSha256": {"repo": "2187710a94698ac4547a3dd973254f32effe8a687a39a9c7cc349c63d60da951", "public-a": "2187710a94698ac4547a3dd973254f32effe8a687a39a9c7cc349c63d60da951", "public-b": "2187710a94698ac4547a3dd973254f32effe8a687a39a9c7cc349c63d60da951", "checkedBeforeAndAfter": true},
+  "commands": [
+    {"cmd": "python3 logs/aggregate.py (before and after)", "exit": 0, "log": "logs/aggregate-before.json, logs/aggregate-after.json"},
+    {"cmd": "node --test proofs/marketing/publishing/server.test.mjs", "exit": 0, "result": "6/6", "log": "logs/unit-tests.txt"},
+    {"cmd": "node --test proofs/marketing/mime.test.mjs proofs/marketing/mime-sink.test.mjs proofs/marketing/mime-oracle.test.mjs proofs/marketing/publishing/server.test.mjs", "exit": 0, "result": "17/17", "log": "logs/ci-command.txt"},
+    {"cmd": "python3 evidence/independent/logs/mutations.py . (prior IV harness, unchanged)", "exit": 0, "result": "10/10 killed", "log": "logs/mutations-prior10.json"},
+    {"cmd": "python3 logs/mutations-r2-extra.py .", "exit": 0, "result": "7/17 killed incl. all 4 privacy-header mutants; 10 survivors are unit gaps", "log": "logs/mutations-r2-extra.json"},
+    {"cmd": "REMOLD_PUBLISH_EVIDENCE_DIR=/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/evidence/independent-r2/runs/ node read-effects-replay.mjs after", "exit": 0, "runs": 1, "log": "runs/read-effects-after.json, logs/read-effects-*.txt"},
+    {"cmd": "node logs/client-override.mjs logs/client-override.json", "exit": 0, "log": "logs/client-override.json"},
+    {"cmd": "node evidence/independent/logs/extra-cases.mjs logs/extra-cases.json (prior IV harness)", "exit": 0, "result": "16/16", "log": "logs/extra-cases.json"},
+    {"cmd": "REMOLD_PUBLISH_EVIDENCE_DIR=/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/evidence/independent-r2/runs/ node replay.mjs", "exit": 0, "runs": 1, "log": "runs/replay.json, logs/replay-*.txt"},
+    {"cmd": "node logs/inspect-submissions.mjs ...", "exit": 0, "log": "logs/submission-inspection.json"}
+  ],
+  "nativeCounters": {
+    "columns": ["contacts", "anonymousContacts", "pageHits", "assetDownloads", "submissions", "queuedEmails", "emailStats"],
+    "a": {"start": [163, 23, 12, 11, 4, 0, 170], "afterReadcheck": [163, 23, 12, 11, 4, 0, 170], "afterClientOptOutAndControls": [163, 23, 12, 11, 4, 0, 170], "afterExtraCases": [163, 23, 12, 11, 4, 0, 170], "afterReplay": [164, 23, 12, 11, 5, 0, 170]},
+    "b": {"start": [24, 19, 10, 9, 4, 4, 4], "afterReadcheck": [24, 19, 10, 9, 4, 4, 4], "afterClientOptOutAndControls": [24, 19, 10, 9, 4, 4, 4], "afterExtraCases": [24, 19, 10, 9, 4, 4, 4], "afterReplay": [25, 19, 10, 9, 5, 4, 4]},
+    "formActions": {"a": 0, "b": 0},
+    "log": "logs/counts-00..06-*.json"
+  },
+  "checks": [
+    {"check": "Source aggregates 10/57/7 before and after; 76 preserved evidence files unchanged", "result": "PASS", "evidence": "logs/aggregate-before.json, logs/aggregate-after.json"},
+    {"check": "Installed server hash equals repo on both edges, before and after", "result": "PASS", "evidence": "logs/installed-server-hash-before.txt, logs/installed-server-hash-after.txt"},
+    {"check": "Edge posture: pinned mautic image digest, one internal tenant network each, no port bindings, cap-drop ALL with all five cap sets 0, NoNewPrivs 1, 64 MiB, no restarts", "result": "PASS", "evidence": "logs/container-posture-before.json, logs/credential-absence.txt, logs/networks-before.txt, logs/container-start-after.txt"},
+    {"check": "No native admin/DB credentials or source keys in edges; HMAC key only in root 0400 /public-config.json", "result": "PASS", "evidence": "logs/credential-absence.txt"},
+    {"check": "Unit tests 6/6 and combined CI 17/17", "result": "PASS", "evidence": "logs/unit-tests.txt, logs/ci-command.txt"},
+    {"check": "Ten prior-IV mutants all killed", "result": "PASS", "evidence": "logs/mutations-prior10.json"},
+    {"check": "Privacy-header mutants (removed, DNT only, Sec-GPC only, DNT 0) all killed", "result": "PASS", "evidence": "logs/mutations-r2-extra.json"},
+    {"check": "Actual read-effects check once: public page+asset reads change zero native counters", "result": "PASS", "evidence": "runs/read-effects-after.json, logs/counts-01/02"},
+    {"check": "Client DNT:0 / Sec-GPC:0 plus tracking cookie on page/asset GET and HEAD via both edges: 200, no Set-Cookie, counters unchanged", "result": "PASS", "evidence": "logs/client-override.json"},
+    {"check": "Benign query control 404 and foreign Host control 421 on both edges, counters unchanged", "result": "PASS", "evidence": "logs/client-override.json"},
+    {"check": "16 extra raw cases incl. chunked oversize x2 and raw invalid UTF-8 per tenant; no capture", "result": "PASS", "evidence": "logs/extra-cases.json, logs/counts-03/04"},
+    {"check": "Full replay once: exactly +1 identified contact and +1 submission per tenant; anonymousContacts/pageHits/assetDownloads/queuedEmails/emailStats unchanged", "result": "PASS", "evidence": "runs/replay.json, logs/counts-05/06"},
+    {"check": "Native API readback: submission 5 -> contact 164 (A, firstname Route A) and contact 25 (B, Route B), same email; prior 4 submissions retained; contact 1 hash unchanged both tenants; IP stored as 0; client Referer not forwarded", "result": "PASS", "evidence": "logs/submission-inspection.json, logs/snapshot-*.json"},
+    {"check": "Page/asset bytes equal privacy-marked native reads (4 comparisons in replay); unmarked native GET and old host baseline not rerun", "result": "PASS", "evidence": "runs/replay.json hostChecks.matchesNative"},
+    {"check": "Cross-tenant network: each edge cannot reach the other tenant's web (ENETUNREACH)", "result": "PASS", "evidence": "runs/replay.json network-a/network-b"},
+    {"check": "Source review for bypass / false ACK in edge code", "result": "PASS with findings", "detail": "No bypass or false ACK found in the edge. See newFindings."}
+  ],
+  "newFindings": [
+    "Known-email overwrite (source-read, not exercised live): installed Mautic SubmissionModel::createLeadFromSubmit (sha256 041db937...) resolves a submitted email to an existing contact and calls setFieldValues with overwriteWithBlank=false, so a public submission carrying a known contact's email overwrites that contact's non-blank firstname and adds a submission to it. The edge's 'contact 1 unchanged' proof only covers tracking-cookie association with a different email. Not tested live because it would modify existing contact data. Must be resolved or explicitly accepted before LIVE.",
+    "Ten unit survivors (runtime covers some): POST status!==200 check, errorMessage check, validationErrors check, email format check, firstname control-char check, read GET/HEAD method check, HEAD-returns-empty, exact form Content-Type, Content-Length precheck (stream cap still covers), CSP header (replay asserts CSP on actual edges). None is a bypass in current code; each can regress unnoticed by unit tests.",
+    "The DNT/Sec-GPC protection relies on pinned Mautic code (IpLookupHelper::isRequestTrackable, sha256 ddf67f36..., no config switch). A native image upgrade needs the read-effects check rerun.",
+    "public-a shares its internal network with db-a, bridge, mime-sink and authority (tenant-B edge only with web-b/db-b). The edge holds no credentials for them, but the network boundary is tenant-level, not edge-to-web only."
+  ],
+  "notVerified": ["Browser rendering and CSP enforcement", "DNS/TLS/LIVE routing", "Rate limiting and abuse control (static per-form token is replayable)", "Slow-client and connection exhaustion limits", "Callback binding", "Dynamic publish/unpublish", "Duplicate or lost-response capture recovery (edge 502 after native success can cause duplicate on retry)", "Native JS forms, uploads/multipart, conditional fields, captcha, native actions", "Known-email overwrite behavior at runtime", "Full P2 comparison"],
+  "notes": ["No source edits, setup, fixtures, restarts, deletes, worker or mail. Only new native rows: one synthetic submission and contact per tenant from the single replay.", "web-a keeps its pre-existing 127.0.0.1:3540 binding inside the colima VM; not exercised."]
+}

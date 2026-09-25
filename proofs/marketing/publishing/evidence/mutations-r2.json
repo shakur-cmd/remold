@@ -1,0 +1,95 @@
+{
+ "baseSha256": "2187710a94698ac4547a3dd973254f32effe8a687a39a9c7cc349c63d60da951",
+ "rows": [
+  {
+   "mutation": "host-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (11.20575ms)"
+   ],
+   "mutantSha256": "6073bce0edc46ac0faf5c0882cbd5a87868d757c125cd644bbf749c81f5a6047"
+  },
+  {
+   "mutation": "response-cap-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (6.633542ms)"
+   ],
+   "mutantSha256": "7e950903b0cb7e82b4d66cf823ef2258f9ad335ed9f324331d1d90f20a519f23"
+  },
+  {
+   "mutation": "content-type-prefix",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (3.743125ms)"
+   ],
+   "mutantSha256": "a8ce446ce03249275cdd074e504f794c6b96e79d308c2b1f05b9ab5bec9ac17f"
+  },
+  {
+   "mutation": "duplicate-key-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ malformed, duplicate and extra form inputs never reach native capture (1.212125ms)"
+   ],
+   "mutantSha256": "61451b6c5caaea2f306f4282524d954c688984038849880342b256ddf5749bd0"
+  },
+  {
+   "mutation": "utf8-fatal-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ raw invalid UTF-8 and streamed oversized forms refuse before native capture (1.610042ms)"
+   ],
+   "mutantSha256": "511cfa8891f11e89395798f59012878cd363a1bd9b7131f066984a1438082056"
+  },
+  {
+   "mutation": "token-compare-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ rendered form token binds tenant, form and published field labels (2.0155ms)"
+   ],
+   "mutantSha256": "2a8a2755d7ce6038960b37927405093ffb069e18d02c9633f7dbfc3dd653fb2b"
+  },
+  {
+   "mutation": "success-flag-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (6.994834ms)"
+   ],
+   "mutantSha256": "1906585a8824126f4cf3c83e0acd1b5fec4c14d478916024c9404918f072f645"
+  },
+  {
+   "mutation": "request-cap-in-stream-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ raw invalid UTF-8 and streamed oversized forms refuse before native capture (2.015167ms)"
+   ],
+   "mutantSha256": "18d2f398af9b095e38fbbfd328f8a087d3d981ce5a84f96de254c636e4fe1c0a"
+  },
+  {
+   "mutation": "routing-header-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (16.582084ms)"
+   ],
+   "mutantSha256": "dcab3a1f45390e15f03878fe474ba7f5f4d1135dd1bc7f2d3c50daac78534af4"
+  },
+  {
+   "mutation": "origin-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ malformed, duplicate and extra form inputs never reach native capture (2.744417ms)"
+   ],
+   "mutantSha256": "26451486c8359ba2e9f45dd0f0aa437be405f13008c65523afe3b1cc8f3f575f"
+  }
+ ]
+}

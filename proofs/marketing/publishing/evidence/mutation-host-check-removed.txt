@@ -1,0 +1,34 @@
+✖ only the exact host and published paths reach the native service (11.593833ms)
+✔ rendered form token binds tenant, form and published field labels (4.223583ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.923709ms)
+✔ client tracking headers and native cookies or redirects are not forwarded (1.053667ms)
+✔ native validation failure, redirect and oversized responses cannot report success (7.327916ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 71.628084
+
+✖ failing tests:
+
+test at ../../../../../../private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-public-host-check-removed-vlehg5v3/server.test.mjs:17:1
+✖ only the exact host and published paths reach the native service (11.593833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 421
+  
+      at file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-public-host-check-removed-vlehg5v3/server.test.mjs:19:109
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async fixture (file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-public-host-check-removed-vlehg5v3/server.test.mjs:14:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 421,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

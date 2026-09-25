@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Public edge r2: independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Public edge r2: independent verification</h1>
+<div class="meta">2026-09-25 · scope: P2 public marketing edge, frozen 10-file <code>6d127512…</code> · level: SERVICE · verdict: <b>BOUNDED PASS</b> · checked by a fresh Opus 5.5 session, not the builder</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Known-email overwrite.</b> Anyone who knows a contact's email can use the public form to overwrite that contact's first name. This is how Mautic works (I read its source; I did not test it live because that would change real contact data). Before LIVE, pick one: accept it, only create new contacts, or require a confirmation email.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>The r2 fix works. Public page and asset reads now change nothing in native Mautic: zero counter change on both tenants, down from +2 anonymous contacts, +1 page hit and +1 download per tenant in r1.</li>
+  <li>Visitors can't turn tracking back on. Page/asset GET and HEAD sent with <code>DNT: 0</code>, <code>Sec-GPC: 0</code> and a tracking cookie still left every counter unchanged.</li>
+  <li>The full replay ran once and added exactly one identified contact and one submission per tenant. Nothing else changed.</li>
+  <li>6/6 unit tests, 17/17 CI tests, all 10 earlier mutants killed and all 4 new privacy-header mutants killed.</li>
+  <li>Source (10/57/7 files), installed server hash on both edges and all 76 earlier evidence files are the same before and after.</li>
+</ul>
+</div>
+
+<h2>Native counters (actual DB)</h2>
+<table>
+<tr><th>Tenant, step</th><th>contacts</th><th>anon</th><th>page hits</th><th>downloads</th><th>submissions</th><th>queued mail</th><th>email stats</th></tr>
+<tr><td>A start</td><td>163</td><td>23</td><td>12</td><td>11</td><td>4</td><td>0</td><td>170</td></tr>
+<tr><td>A after readcheck, opt-out reads, controls, 16 extra cases</td><td>163</td><td>23</td><td>12</td><td>11</td><td>4</td><td>0</td><td>170</td></tr>
+<tr><td>A after full replay</td><td><b>164</b></td><td>23</td><td>12</td><td>11</td><td><b>5</b></td><td>0</td><td>170</td></tr>
+<tr><td>B start</td><td>24</td><td>19</td><td>10</td><td>9</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>B after readcheck, opt-out reads, controls, 16 extra cases</td><td>24</td><td>19</td><td>10</td><td>9</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>B after full replay</td><td><b>25</b></td><td>19</td><td>10</td><td>9</td><td><b>5</b></td><td>4</td><td>4</td></tr>
+</table>
+<p>Form actions stay at 0 in both tenants. Each step has its own counts file in <code>logs/counts-00..06-*.json</code>. My read-only API snapshot changed no counters (00 = 01).</p>
+
+<h2>Before and after</h2>
+<table>
+<tr><th>Behavior</th><th>Before (r1, independent)</th><th>After (r2, this run)</th></tr>
+<tr><td>Public page+asset reads</td><td>+2 anonymous contacts, +1 page hit, +1 download per tenant</td><td>0 change on every counter (readcheck exit 0)</td></tr>
+<tr><td>Client sends DNT 0 / Sec-GPC 0 with a tracking cookie</td><td>Not tested</td><td>8 reads (GET and HEAD), all 200, no Set-Cookie, 0 change</td></tr>
+<tr><td>Unit mutants</td><td>3 of 10 survived</td><td>10/10 killed, plus 4/4 privacy-header mutants killed</td></tr>
+</table>
+
+<h2>Detail</h2>
+<table>
+<tr><th>Check</th><th>Result</th><th>Evidence</th></tr>
+<tr><td>Edge posture: pinned image digest, own internal network, no ports, cap-drop ALL (all 5 cap sets 0), NoNewPrivs, 64 MiB, 0 restarts</td><td>PASS</td><td><code>logs/container-posture-before.json</code>, <code>logs/credential-absence.txt</code>, <code>logs/container-start-after.txt</code></td></tr>
+<tr><td>No DB/admin credentials or source keys in the edges. The HMAC key is only in root-owned 0400 <code>/public-config.json</code>, and its value is not printed.</td><td>PASS</td><td><code>logs/credential-absence.txt</code></td></tr>
+<tr><td>Benign query <code>?utm_source=x</code> returns 404; foreign Host returns 421 (both tenants)</td><td>PASS</td><td><code>logs/client-override.json</code></td></tr>
+<tr><td>16 extra raw cases on both edges, including chunked oversize (x2) and raw 0xFF byte</td><td>16/16 refused, no capture</td><td><code>logs/extra-cases.json</code></td></tr>
+<tr><td>Replay: 6 host controls (421), 34 path controls (404), cross-tenant token 403, refusals, cross-tenant network ENETUNREACH, 4 privacy-marked native byte matches</td><td>PASS, exit 0</td><td><code>runs/replay.json</code></td></tr>
+<tr><td>Native readback: submission 5 went to contact 164 in A ("Route A") and contact 25 in B ("Route B"), same email. Prior submissions kept, contact 1 hash unchanged, IP stored as 0, Referer not forwarded.</td><td>PASS</td><td><code>logs/submission-inspection.json</code></td></tr>
+</table>
+
+<h2>New findings</h2>
+<ul>
+<li><b>Known-email overwrite</b> (source-read only). <code>SubmissionModel::createLeadFromSubmit</code> (sha256 <code>041db937…</code>) matches a submitted email to an existing contact and writes non-blank fields to it. The "contact 1 unchanged" proof only covers cookie-based association, not a submission that uses contact 1's email. Excerpts are in <code>logs/native-source-review.txt</code>.</li>
+<li><b>10 unit survivors</b>, none of them a bypass today: the POST status/errorMessage/validationErrors checks, email format, firstname control characters, the read method check, HEAD returning an empty body, exact form Content-Type, the Content-Length precheck (the stream cap still covers it) and the CSP header (the replay asserts CSP on the real edges). See <code>logs/mutations-r2-extra.json</code>.</li>
+<li><b>The DNT fix depends on Mautic's code.</b> <code>IpLookupHelper::isRequestTrackable</code> (sha256 <code>ddf67f36…</code>) honors DNT/Sec-GPC with no config switch. It is safe on the pinned image, but the readcheck must be rerun after any Mautic upgrade.</li>
+<li><b>Network scope.</b> public-a shares its tenant network with db-a, bridge, mime-sink and authority. It holds no credentials for any of them.</li>
+</ul>
+
+<h2>Not verified (full P2 stays open)</h2>
+<p>Browser rendering and CSP enforcement; DNS/TLS/LIVE; rate limiting and abuse control (the static token can be replayed); slow clients and connection exhaustion; callback binding; dynamic publish/unpublish; duplicate or lost-response recovery (a 502 after native success can cause a duplicate on retry); native JS forms, uploads, conditional fields, captcha and native actions; the known-email overwrite at runtime.</p>
+
+<h2>What I did not do</h2>
+<p>No source edits, setup, fixtures, restarts, deletes, worker or mail. I did not rerun the old host baseline or unmarked native GETs. Read-effects and replay each ran exactly once. The only new native rows are the one synthetic contact and submission per tenant from the replay. Machine-readable results are in <code>verdict.json</code>.</p>
+</body>
+</html>

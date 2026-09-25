@@ -1,0 +1,38 @@
+{
+  "verdict": "BOUNDED PASS",
+  "verifiedAt": "2026-09-25T06:30:00Z",
+  "verifier": "Fresh Claude Opus 5.5 session (claude-opus-5-5), independent of the root builder; no delegation",
+  "level": "SERVICE: two internal edge sidecars plus actual native Mautic A/B capture on docker context colima-remold-proof. No browser, DNS, TLS, LIVE or mail.",
+  "fullP2Complete": false,
+  "sourceAggregate": {"expected": "e4396bc3e41c28c8d587d0f4d5d58aa83501900a3d089f63ff3c7613871a8216", "before": "match", "after": "match", "files": 9},
+  "preservedAggregates": {
+    "mime57": {"expected": "a0b59a92a768d86e10c2af8b922f0e713335cc938349c6fd8181bd7831702d26", "before": "match", "after": "match"},
+    "tenant7": {"expected": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727", "before": "match", "after": "match"}
+  },
+  "installedServerSha256": {"public-a": "865ac77926edb1b64351682d4596a57e5eb95b5593d7070773584fc0bb5c78e4", "public-b": "865ac77926edb1b64351682d4596a57e5eb95b5593d7070773584fc0bb5c78e4", "repo": "865ac77926edb1b64351682d4596a57e5eb95b5593d7070773584fc0bb5c78e4", "checkedBeforeAndAfter": true},
+  "checks": [
+    {"check": "Source aggregates before/after (9, 57, 7 files)", "result": "PASS", "evidence": "logs/aggregate-before.json, logs/aggregate-after.json"},
+    {"check": "Installed server hash both edges", "result": "PASS", "evidence": "logs/credential-absence.txt, logs/installed-server-hash-after.txt"},
+    {"check": "Pinned image, one internal network per tenant, no port bindings, cap-drop ALL (all cap sets 0), no-new-privileges, 64 MiB", "result": "PASS", "evidence": "logs/container-inspect.json, logs/credential-absence.txt"},
+    {"check": "Private credential absence in edges (no DB/admin env, no local.php, .env equals image default, only publication HMAC key in root 0400 config)", "result": "PASS", "evidence": "logs/credential-absence.txt, logs/env-file-check.txt"},
+    {"check": "node --test publishing/server.test.mjs", "result": "PASS", "detail": "5/5, exit 0", "evidence": "logs/unit-tests.txt"},
+    {"check": "Independent replay once into independent/runs/", "result": "PASS", "detail": "exit 0; root evidence 29 files byte-identical before/after", "evidence": "runs/replay.json, logs/replay-*.txt, logs/snapshot-*.json"},
+    {"check": "API submission readbacks", "result": "PASS", "detail": "A 2->3 (new sub 3 contact 160 Route A), B 2->3 (new sub 3 contact 21 Route B); prior submissions retained", "evidence": "logs/snapshot-before.json, logs/snapshot-after.json"},
+    {"check": "Foreign token refusal", "result": "PASS", "detail": "A token at B and B token at A both 403; stale-schema, duplicate, extra, native-ID, multipart, oversize, wrong Origin all refused with submissions unchanged", "evidence": "runs/replay.json"},
+    {"check": "Same email stays distinct", "result": "PASS", "detail": "edge-e0b0db0f-... is contact 160 in A and 21 in B with different firstname", "evidence": "runs/replay.json"},
+    {"check": "Existing contact 1 unchanged under injected tracking cookie", "result": "PASS", "evidence": "logs/snapshot-*.json contact1Sha256"},
+    {"check": "No worker, no email, native actions empty", "result": "PASS", "detail": "messenger_messages A0/B4 and email_stats A170/B4 unchanged; form_actions 0; API form actions 0", "evidence": "logs/native-counts-*.txt, logs/form-actions-after.txt"},
+    {"check": "Page/asset bytes equal native", "result": "PASS", "detail": "4 byte comparisons in replay; rendered form intentionally differs from native HTML", "evidence": "runs/replay.json"},
+    {"check": "Extra request cases on installed edges (chunked oversized x2, percent-encoded duplicate keys x2, encoded native field, plus-encoded key, raw invalid UTF-8, CL+TE)", "result": "PASS", "detail": "16/16 expected refusals across A/B; native counts unchanged", "evidence": "logs/extra-cases.json, logs/native-counts-*-extra.txt"},
+    {"check": "Root reds meaningful (native Host baseline, content-type prefix, host-check removal, response-cap removal)", "result": "PASS", "detail": "Reproduced independently in temp-dir mutants; each fails the specific targeted test", "evidence": "logs/mutations.json, ../host-baseline.json"},
+    {"check": "Code review for bypass/false ACK", "result": "PASS with test gaps", "detail": "No bypass or false ACK found. Three mutants survive unit tests: UTF-8 fatal removed, success!==1 removed, in-stream request cap removed. Installed code covers each; runtime cases confirm UTF-8 and chunked cap.", "evidence": "logs/mutations.json"},
+    {"check": "Published-page tracking/CSP", "result": "PASS as policy only; NEW GAP", "detail": "CSP default-src 'none' on every edge response; no browser execution claimed. Every page view or asset download through the edge creates a persistent anonymous native contact plus a page_hit/asset_download row; not disclosed by root report.", "evidence": "logs/anonymous-contacts.txt"}
+  ],
+  "newGaps": [
+    "Every public page GET/HEAD and asset download through the edge creates a new anonymous Mautic contact plus page_hits/asset_downloads row (4 per tenant per replay; 151-154,156-159 in A; 12-15,17-20 in B). Unbounded native writes from anonymous public reads; root report's 'native tracking is not supported' omits server-side tracking.",
+    "Unit suite does not kill three mutants: UTF-8 fatal removal, success-flag check removal, in-stream request cap removal (chunked).",
+    "No rate or abuse limits on public form POST or page/asset reads; static per-form token is replayable (already stated by root as not anti-abuse)."
+  ],
+  "notVerified": ["Browser rendering/CSP enforcement", "DNS/TLS/LIVE routing", "Callbacks", "Dynamic publish/unpublish", "Duplicate or lost-response capture recovery", "Native JS forms, uploads/multipart, conditional fields, captcha, native actions", "Slow-client/resource exhaustion limits", "Full P2 comparison"],
+  "notes": ["Native web-a keeps its pre-existing loopback binding 127.0.0.1:3540; the native direct path still accepts foreign Host as expected and was not re-exercised.", "One throwaway docker run --rm --network none of the pinned image was used to hash the image-default .env; no service deployed."]
+}

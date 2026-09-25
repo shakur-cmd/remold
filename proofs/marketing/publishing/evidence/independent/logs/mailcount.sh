@@ -1,0 +1,2 @@
+# Counts only; password comes from the db container's own env and is never echoed.
+for t in a b; do docker --context colima-remold-proof exec remold-marketing-proof-db-$t sh -c 'db=${MYSQL_DATABASE:-mautic}; MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -e "select \"'$t'\", (select count(*) from messenger_messages), (select count(*) from email_stats), (select count(*) from form_submissions), (select count(*) from leads), (select count(*) from form_actions) " "$db" 2>&1'; done

@@ -1,0 +1,13 @@
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/http.mjs:5
+ if(!['a','b'].includes(tenant)||!['web','public'].includes(container)||!path.startsWith('/'))throw Error('Unknown fixture endpoint');
+                                                                                                    ^
+
+Error: Unknown fixture endpoint
+    at request (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/http.mjs:5:101)
+    at call (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/replay.mjs:11:33)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/replay.mjs:25:300
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0

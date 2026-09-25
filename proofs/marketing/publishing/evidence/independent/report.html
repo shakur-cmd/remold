@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P2 public edge independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>P2 public marketing edge: independent verification</h1>
+<div class="meta">2026-09-25 · scope: P2 bounded public edge, SERVICE level · verdict: <b>BOUNDED PASS</b> · checked by a fresh Opus 5.5 session, independent of root · full P2 is NOT complete</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Each public page view or asset download through the edge creates a new anonymous contact in Mautic. Accept that as a known limit for this slice, or require a fix before the edge counts toward P2. I recommend requiring the fix: anonymous traffic currently leads to unbounded contact writes.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Source hashes match before and after: 9-file <code>e4396bc3…8216</code>, 57-file MIME <code>a0b59a92…2d26</code>, 7-file tenant <code>3a63d24a…e727</code>.</li>
+  <li>Installed <code>/public-server.mjs</code> in both edges = repo = <code>865ac779…78e4</code>, checked before and after.</li>
+  <li>Both edges use the pinned image and sit on one internal network each. They have no port bindings, zero capabilities in every set, and NoNewPrivs=1. They hold no DB or admin credentials.</li>
+  <li><code>node --test publishing/server.test.mjs</code>: 5/5 pass, exit 0.</li>
+  <li>One independent replay (exit 0), written to <code>runs/</code>. All 29 root evidence files are byte-identical before and after.</li>
+  <li>Actual API readback: A submissions 2→3 (contact 160, "Route A"), B 2→3 (contact 21, "Route B"). The same email maps to different contacts, and contact 1 is unchanged in both tenants.</li>
+  <li>16/16 extra raw-socket refusals on the installed edges (chunked oversize, percent-encoded duplicate keys, raw 0xFF, CL+TE). Native counts are unchanged.</li>
+  <li>Root reds reproduced independently with temp-dir mutants. Each fails the specific test it targets.</li>
+</ul>
+</div>
+
+<h2>Checks</h2>
+<table>
+<tr><th>Required check</th><th>Result</th><th>Actual runtime evidence</th></tr>
+<tr><td>Aggregates before/after</td><td>PASS</td><td>All 3 match, every file matches its manifest. <code>logs/aggregate-before.json</code>, <code>logs/aggregate-after.json</code></td></tr>
+<tr><td>Installed server hash, both edges</td><td>PASS</td><td><code>logs/credential-absence.txt</code>, <code>logs/installed-server-hash-after.txt</code></td></tr>
+<tr><td>Pinned container / network / capabilities / no ports</td><td>PASS</td><td><code>mautic@sha256:0b7b0351…</code>. A is on <code>remold-marketing-proof</code>, B on <code>…-tenant-b</code>. PortBindings {}, CapDrop ALL, Cap* all 0, no-new-privileges, 64 MiB. Neither edge restarted and native A was not restarted (up since 03:55). <code>logs/container-inspect.json</code>, <code>logs/containers-after.txt</code></td></tr>
+<tr><td>Private credential absence</td><td>PASS</td><td>Env names hold no secret-like keys except GPG_KEYS (image signing keys). There is no <code>local.php</code>. <code>.env</code> hash equals the image default (APP_ENV/APP_DEBUG only). The only secret is the publication HMAC key in root-owned 0400 <code>/public-config.json</code>, which was not printed. <code>logs/env-file-check.txt</code></td></tr>
+<tr><td>Unit tests</td><td>PASS</td><td>5/5, exit 0. <code>logs/unit-tests.txt</code></td></tr>
+<tr><td>Independent replay (once)</td><td>PASS</td><td>6 host controls (own 200, foreign 421), 34 path refusals (all 404), 4 routing headers → 400, duplicate Host → 421, cross-network ENETUNREACH both ways. <code>runs/replay.json</code></td></tr>
+<tr><td>Submission readbacks / foreign token</td><td>PASS</td><td>A token at B → 403 and the reverse. Stale-schema, duplicate, extra, native-ID, multipart, oversize and wrong-Origin requests are all refused, with submission inventories unchanged before each positive. <code>logs/snapshot-before.json</code>, <code>logs/snapshot-after.json</code></td></tr>
+<tr><td>No worker / no email / native actions empty</td><td>PASS</td><td>messenger_messages A 0 / B 4 and email_stats A 170 / B 4 unchanged. form_actions 0. API form actions 0. <code>logs/native-counts-*.txt</code>, <code>logs/form-actions-after.txt</code></td></tr>
+<tr><td>Page/asset bytes equal native</td><td>PASS</td><td>4 byte-equal comparisons. The rendered form intentionally differs from native HTML.</td></tr>
+<tr><td>Extra request cases</td><td>PASS</td><td>For each tenant: chunked 20 KB → 413, chunked cap crossed mid-stream → 413, <code>%65mail</code> and <code>first%6eame</code> duplicates → 400, <code>mauticform%5Bemail%5D</code> → 400, <code>t+</code> → 400, raw 0xFF → 400, CL+TE → 400. The CL+TE 400 comes from Node's parser before the handler runs. <code>logs/extra-cases.json</code></td></tr>
+<tr><td>Root reds meaningful</td><td>PASS</td><td>Native Host baseline: 6/6 foreign reads returned 200 with identical bytes. Mutants: host-check removed, response-cap removed and content-type prefix each fail their targeted test. So do routing-header removed, token compare removed, duplicate-key check removed and origin removed. <code>logs/mutations.json</code></td></tr>
+<tr><td>Bypass / false-ACK review</td><td>PASS, with test gaps</td><td>No bypass or false ACK found in <code>server.mjs</code>. 200 only follows native HTTP 200 with exact <code>application/json</code>, <code>success===1</code> and no errors. A lost native response returns 502, never 200. Three mutants survive the unit suite (see gaps).</td></tr>
+<tr><td>Published-page tracking / CSP</td><td>Policy only; NEW GAP</td><td>Every edge response carries <code>default-src 'none'</code>. The native page bytes still contain <code>&lt;script src="http://localhost:3540/mtc.js"&gt;</code>. No browser execution was tested and none is claimed.</td></tr>
+</table>
+
+<h2>Newly found gaps (not scoped away)</h2>
+<ul>
+  <li><b>Anonymous contacts from public reads.</b> Every page GET/HEAD and asset download through the edge makes native Mautic create a new unidentified contact plus a <code>page_hits</code>/<code>asset_downloads</code> row. This replay added 4 per tenant (A 156–159, B 17–20), and every root run did the same. The edge strips client cookies, so each view is a fresh contact. This is unbounded native writes from anonymous traffic. The root report's line "native tracking is not supported by this slice" does not disclose that server-side tracking still fires. It is not a tenant crossing and not a false ACK. Evidence: <code>logs/anonymous-contacts.txt</code>.</li>
+  <li><b>Unit tests miss three protections.</b> These mutants still pass all 5 tests: UTF-8 <code>fatal</code> removed (the tests use only <code>%ff</code>, never raw bytes), <code>success!==1</code> removed (the tests always pair <code>success:0</code> with <code>errorMessage</code>) and in-stream request cap removed (the tests never send chunked bodies). The installed code has all three, and runtime cases confirmed UTF-8 and the chunked cap. The success-flag guard has no failing check anywhere.</li>
+  <li><b>No rate or abuse limits</b> on form POSTs or page/asset reads. The static per-form token is replayable. The root report already states that the token is not anti-abuse.</li>
+</ul>
+
+<h2>Not verified (still open)</h2>
+<p>Callbacks, browser/CSP execution, LIVE DNS/TLS, dynamic publish/unpublish, duplicate and lost-response capture, native JS forms, uploads/multipart, conditional fields, captcha, native actions, slow-client resource limits and the full P2 comparison. Native web-a keeps its pre-existing loopback binding <code>127.0.0.1:3540</code>. The native direct path still accepts a foreign Host, as expected, and was not re-exercised.</p>
+
+<h2>What I did not do</h2>
+<p>I made no source edits and ran no setup/fixtures. I did not restart or roll back anything, took no external actions, sent no mail and changed no native config. One throwaway <code>docker run --rm --network none</code> of the pinned image hashed its default <code>.env</code>. Mutants ran only in temp directories that were then deleted. No secrets were printed; DB counts used the container's own env.</p>
+</body>
+</html>

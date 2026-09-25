@@ -1,0 +1,226 @@
+{
+ "name": "/remold-marketing-proof-public-a",
+ "id": "53e12c2d8437a639c163c685f2886c89ab2a0e7da62ba5400361fa6b978616d9",
+ "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+ "imageId": "sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+ "running": true,
+ "startedAt": "2026-09-25T06:20:10.474843256Z",
+ "restartCount": 0,
+ "entrypoint": [
+  "node"
+ ],
+ "cmd": [
+  "/public-server.mjs"
+ ],
+ "user": "",
+ "labels": {
+  "maintainer": "Mautic core team <>",
+  "remold.fixture": "49397c35-be26-485a-812e-f715ebd472ef",
+  "remold.proof": "marketing",
+  "remold.tenant": "a",
+  "vendor": "Mautic"
+ },
+ "networks": {
+  "remold-marketing-proof": {
+   "ip": "172.19.0.7"
+  }
+ },
+ "portBindings": {},
+ "exposedPortsNetworkSettings": {
+  "80/tcp": null
+ },
+ "publishAll": false,
+ "capAdd": null,
+ "capDrop": [
+  "ALL"
+ ],
+ "securityOpt": [
+  "no-new-privileges"
+ ],
+ "privileged": false,
+ "memory": 67108864,
+ "mounts": [
+  {
+   "Type": "volume",
+   "Name": "cdbfda07e66f6594865ccd403b4ea4b3a7903fe655e6b8ab40462b17e5f43f93",
+   "Source": "/var/lib/docker/volumes/cdbfda07e66f6594865ccd403b4ea4b3a7903fe655e6b8ab40462b17e5f43f93/_data",
+   "Destination": "/var/www/html/docroot/media/files",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  },
+  {
+   "Type": "volume",
+   "Name": "e0fd8132427acac5d0c0706080ebc38a5e21a51eea60e7ff1dec45b32841964b",
+   "Source": "/var/lib/docker/volumes/e0fd8132427acac5d0c0706080ebc38a5e21a51eea60e7ff1dec45b32841964b/_data",
+   "Destination": "/var/www/html/docroot/media/images",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  },
+  {
+   "Type": "volume",
+   "Name": "765eb255c1b7df3779712b275282ad352960e0bd5c53fc8efee180683f45c2b4",
+   "Source": "/var/lib/docker/volumes/765eb255c1b7df3779712b275282ad352960e0bd5c53fc8efee180683f45c2b4/_data",
+   "Destination": "/var/www/html/var/logs",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  },
+  {
+   "Type": "volume",
+   "Name": "45c008e2058fbc0412711d800ececc82ac28886065c24eae9c724b9f718bcda3",
+   "Source": "/var/lib/docker/volumes/45c008e2058fbc0412711d800ececc82ac28886065c24eae9c724b9f718bcda3/_data",
+   "Destination": "/var/www/html/config",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  }
+ ],
+ "envVarNames": [
+  "APACHE_CONFDIR",
+  "APACHE_DOCUMENT_ROOT",
+  "APACHE_ENVVARS",
+  "DEBUG",
+  "DOCKER_MAUTIC_LOAD_TEST_DATA",
+  "DOCKER_MAUTIC_ROLE",
+  "DOCKER_MAUTIC_RUN_MIGRATIONS",
+  "DOCKER_MAUTIC_WORKERS_CONSUME_EMAIL",
+  "DOCKER_MAUTIC_WORKERS_CONSUME_FAILED",
+  "DOCKER_MAUTIC_WORKERS_CONSUME_HIT",
+  "FLAVOUR",
+  "GPG_KEYS",
+  "PATH",
+  "PHPIZE_DEPS",
+  "PHP_ASC_URL",
+  "PHP_CFLAGS",
+  "PHP_CPPFLAGS",
+  "PHP_INI_DIR",
+  "PHP_INI_VALUE_DATE_TIMEZONE",
+  "PHP_INI_VALUE_MAX_EXECUTION_TIME",
+  "PHP_INI_VALUE_MEMORY_LIMIT",
+  "PHP_INI_VALUE_POST_MAX_FILESIZE",
+  "PHP_INI_VALUE_UPLOAD_MAX_FILESIZE",
+  "PHP_LDFLAGS",
+  "PHP_SHA256",
+  "PHP_URL",
+  "PHP_VERSION"
+ ]
+}
+{
+ "name": "/remold-marketing-proof-public-b",
+ "id": "1b539b9d648a65bf328e0eee59e3a2ac18ac0e0a9a902f8218f968a04a0e4cc0",
+ "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+ "imageId": "sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+ "running": true,
+ "startedAt": "2026-09-25T06:20:22.446422807Z",
+ "restartCount": 0,
+ "entrypoint": [
+  "node"
+ ],
+ "cmd": [
+  "/public-server.mjs"
+ ],
+ "user": "",
+ "labels": {
+  "maintainer": "Mautic core team <>",
+  "remold.fixture": "49397c35-be26-485a-812e-f715ebd472ef",
+  "remold.proof": "marketing",
+  "remold.tenant": "b",
+  "vendor": "Mautic"
+ },
+ "networks": {
+  "remold-marketing-proof-tenant-b": {
+   "ip": "172.21.0.4"
+  }
+ },
+ "portBindings": {},
+ "exposedPortsNetworkSettings": {
+  "80/tcp": null
+ },
+ "publishAll": false,
+ "capAdd": null,
+ "capDrop": [
+  "ALL"
+ ],
+ "securityOpt": [
+  "no-new-privileges"
+ ],
+ "privileged": false,
+ "memory": 67108864,
+ "mounts": [
+  {
+   "Type": "volume",
+   "Name": "bdd6dcd5b1b901b5696aec45e885535833e0a5ea17cb52c4c4b8418d7228ec82",
+   "Source": "/var/lib/docker/volumes/bdd6dcd5b1b901b5696aec45e885535833e0a5ea17cb52c4c4b8418d7228ec82/_data",
+   "Destination": "/var/www/html/config",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  },
+  {
+   "Type": "volume",
+   "Name": "1b7beed303b7324c67422da89e561ed58b24594f6af5100d5611f5c44ac01560",
+   "Source": "/var/lib/docker/volumes/1b7beed303b7324c67422da89e561ed58b24594f6af5100d5611f5c44ac01560/_data",
+   "Destination": "/var/www/html/docroot/media/files",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  },
+  {
+   "Type": "volume",
+   "Name": "2d1e981b91ec3715b0e3806ebdbafce98398f61c051266ee64665da43574e1ca",
+   "Source": "/var/lib/docker/volumes/2d1e981b91ec3715b0e3806ebdbafce98398f61c051266ee64665da43574e1ca/_data",
+   "Destination": "/var/www/html/docroot/media/images",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  },
+  {
+   "Type": "volume",
+   "Name": "2a2e024eb92ea2b287587da0d65082632e94b5e64eb093db5cce548d00dcf76a",
+   "Source": "/var/lib/docker/volumes/2a2e024eb92ea2b287587da0d65082632e94b5e64eb093db5cce548d00dcf76a/_data",
+   "Destination": "/var/www/html/var/logs",
+   "Driver": "local",
+   "Mode": "",
+   "RW": true,
+   "Propagation": ""
+  }
+ ],
+ "envVarNames": [
+  "APACHE_CONFDIR",
+  "APACHE_DOCUMENT_ROOT",
+  "APACHE_ENVVARS",
+  "DEBUG",
+  "DOCKER_MAUTIC_LOAD_TEST_DATA",
+  "DOCKER_MAUTIC_ROLE",
+  "DOCKER_MAUTIC_RUN_MIGRATIONS",
+  "DOCKER_MAUTIC_WORKERS_CONSUME_EMAIL",
+  "DOCKER_MAUTIC_WORKERS_CONSUME_FAILED",
+  "DOCKER_MAUTIC_WORKERS_CONSUME_HIT",
+  "FLAVOUR",
+  "GPG_KEYS",
+  "PATH",
+  "PHPIZE_DEPS",
+  "PHP_ASC_URL",
+  "PHP_CFLAGS",
+  "PHP_CPPFLAGS",
+  "PHP_INI_DIR",
+  "PHP_INI_VALUE_DATE_TIMEZONE",
+  "PHP_INI_VALUE_MAX_EXECUTION_TIME",
+  "PHP_INI_VALUE_MEMORY_LIMIT",
+  "PHP_INI_VALUE_POST_MAX_FILESIZE",
+  "PHP_INI_VALUE_UPLOAD_MAX_FILESIZE",
+  "PHP_LDFLAGS",
+  "PHP_SHA256",
+  "PHP_URL",
+  "PHP_VERSION"
+ ]
+}

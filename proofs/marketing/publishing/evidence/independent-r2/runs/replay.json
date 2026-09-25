@@ -1,0 +1,272 @@
+{
+  "capturedAt": "2026-09-25T06:36:41.066Z",
+  "level": "SERVICE internal public edges plus actual native capture; no DNS/TLS/provider mail",
+  "hostChecks": [
+    {
+      "tenant": "a",
+      "kind": "form",
+      "path": "/form/1",
+      "ownStatus": 200,
+      "foreignStatus": 421,
+      "ownSha256": "f870fb58ee32f0e02527ad0a75b101c71ce0a3b7fac6c02bcd3d1d04f9cb3257",
+      "matchesNative": null
+    },
+    {
+      "tenant": "a",
+      "kind": "page",
+      "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-a",
+      "ownStatus": 200,
+      "foreignStatus": 421,
+      "ownSha256": "035b98f9168cf1bba376bee46bcc2fd8965f3f45f4bf5aa77d182e766e94d4b3",
+      "matchesNative": true
+    },
+    {
+      "tenant": "a",
+      "kind": "asset",
+      "path": "/asset/d05d2f9d-2e42-4a2a-b1cd-009c9cbfc863",
+      "ownStatus": 200,
+      "foreignStatus": 421,
+      "ownSha256": "151c97c427a263fc01fa180210754d8e3dd2212c1168f3d9824376c1314a5727",
+      "matchesNative": true
+    },
+    {
+      "tenant": "b",
+      "kind": "form",
+      "path": "/form/1",
+      "ownStatus": 200,
+      "foreignStatus": 421,
+      "ownSha256": "cb3efeba68f4a19d4972fc93c9f8a07350b4a8ed064c0076d82127d5f710d44f",
+      "matchesNative": null
+    },
+    {
+      "tenant": "b",
+      "kind": "page",
+      "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-b",
+      "ownStatus": 200,
+      "foreignStatus": 421,
+      "ownSha256": "0c7fb2be0f43ac2d658b042dfc2723461ce4590aa2c5d152d4f2ca6b80620871",
+      "matchesNative": true
+    },
+    {
+      "tenant": "b",
+      "kind": "asset",
+      "path": "/asset/abba8ef1-7c95-40cd-9e6b-fc6b429ee7d9",
+      "ownStatus": 200,
+      "foreignStatus": 421,
+      "ownSha256": "c7fadb3fc06cb4dd6877f38e4c0006087dbd911235141762dca7afb6ef471c9f",
+      "matchesNative": true
+    }
+  ],
+  "pathChecks": [
+    {
+      "tenant": "a",
+      "path": "/api/contacts",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/s/dashboard",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/index.php/form/1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/media/files/remold-publishing-49397c35-be26-485a-812e-f715ebd472ef-a.txt",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form/generate.js?id=1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/mtc.js",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/mtracking.gif",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form/../1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form/%2e%2e/1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form%2f1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "//form/1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form/1/",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/Form/1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form/1;",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form\\1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "/form/1?x=1",
+      "status": 404
+    },
+    {
+      "tenant": "a",
+      "path": "http://tenant-a.marketing-proof.invalid/form/1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/api/contacts",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/s/dashboard",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/index.php/form/1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/media/files/remold-publishing-49397c35-be26-485a-812e-f715ebd472ef-b.txt",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form/generate.js?id=1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/mtc.js",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/mtracking.gif",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form/../1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form/%2e%2e/1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form%2f1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "//form/1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form/1/",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/Form/1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form/1;",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form\\1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "/form/1?x=1",
+      "status": 404
+    },
+    {
+      "tenant": "b",
+      "path": "http://tenant-b.marketing-proof.invalid/form/1",
+      "status": 404
+    }
+  ],
+  "submissions": [
+    {
+      "tenant": "a",
+      "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+      "contactId": 164,
+      "firstname": "Route A",
+      "before": 4,
+      "after": 5,
+      "oldContactUnchanged": true,
+      "allNegativeRequestsLeftNoSubmissions": true
+    },
+    {
+      "tenant": "b",
+      "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+      "contactId": 25,
+      "firstname": "Route B",
+      "before": 4,
+      "after": 5,
+      "oldContactUnchanged": true,
+      "allNegativeRequestsLeftNoSubmissions": true
+    }
+  ],
+  "limits": [
+    "Only urlencoded email and firstname forms; no multipart, uploads, native JS, conditional fields, captcha or native actions",
+    "Token binds tenant/form/published schema; public token is not abuse prevention",
+    "Callback binding, LIVE routing and full P2 remain open",
+    "Native page tracking scripts remain in bytes but edge CSP disallows scripts; browser execution not tested",
+    "No retries after ambiguous native capture; loss/duplicate recovery not certified"
+  ],
+  "network-a": {
+    "reachable": false,
+    "error": "ENETUNREACH"
+  },
+  "network-b": {
+    "reachable": false,
+    "error": "ENETUNREACH"
+  },
+  "status": "PASS",
+  "noWorkerRun": true,
+  "nativePageAndAssetByteComparisons": true
+}

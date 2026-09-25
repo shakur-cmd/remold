@@ -1,0 +1,34 @@
+{
+  "result": "**Verdict: BOUNDED PASS** at SERVICE level. I checked this in a fresh Opus 5.5 session, separate from the root session. Full P2 is not complete.\n\n**Runtime results**\n- **Source hashes:** the 9-file set (`e4396bc3\u20268216`), the 57-file MIME set and the 7-file tenant set all match before and after. The server file installed in both edges matches the repo (`865ac779\u202678e4`), checked before and after.\n- **Edge containers:** both run the pinned image, each on its own internal network. They have no published ports, every capability set is zero, and no-new-privileges is on. Neither holds a database or admin credential; the only secret is the publication signing key in a root-only file, which I didn't print. Neither edge restarted, and I didn't restart native A.\n- **Unit tests:** `node --test publishing/server.test.mjs` passed 5/5 (exit 0).\n- **Replay, run once:** exit 0, output in `independent/runs/`. All 29 root evidence files are byte-identical before and after.\n  - Readbacks: A went from 2 to 3 submissions (contact 160, \"Route A\") and B from 2 to 3 (contact 21, \"Route B\"). The same email became separate contacts in each tenant.\n  - Contact 1 is unchanged in both tenants.\n  - A's token was refused at B, and B's at A (403 both ways).\n  - The mail queue and email stats counts didn't change, and form actions are still empty.\n- **Extra request cases:** 16/16 refused as expected on the installed edges: chunked oversized (twice), percent-encoded duplicate keys, an encoded native field name, raw invalid UTF-8 (0xFF), and a Content-Length plus chunked request. Native counts didn't change. The Content-Length plus chunked 400 comes from Node's HTTP parser, before the edge code runs.\n- **Root failure evidence:** it holds up. I reran the removed-protection tests in temp copies, and each still fails the specific test it targets. The native host baseline shows all six foreign-host reads returning 200 with identical bytes.\n\n**New gaps (recorded, not scoped away)**\n1. **Anonymous contacts from public reads.** Every page view or asset download through the edge makes Mautic create a new anonymous contact plus a hit/download row. That's 4 per tenant per replay (A 156\u2013159, B 17\u201320), and every root run did the same. Anyone viewing a public page adds rows with no limit. The root report says native tracking isn't supported, but doesn't mention that Mautic still records every view on the server side. It isn't a tenant crossing or a false success.\n2. **Unit tests miss three protections.** The installed code has all three, but removing any one still passes the suite:\n   - the strict UTF-8 check (tests only use `%ff`, never raw bytes)\n   - the `success!==1` check (the tests always pair `success:0` with an error message, so nothing tests this check on its own)\n   - the cap on streamed request bodies (no chunked test)\n\n   My runtime cases confirmed the UTF-8 check and the streamed-body cap work on the real edges.\n3. **No rate or abuse limits.** The per-form token never changes, so it can be reused. The root report already says the token isn't anti-abuse.\n\n**Not verified:** browser behavior or CSP enforcement, live DNS/TLS, callbacks, publishing or unpublishing without re-running setup, duplicate or lost-response capture, native JS forms, uploads, captcha, native actions, slow-client limits, and the full P2 comparison.\n\n**Decision for you:** whether to accept the anonymous contacts as a known limit for this slice, or require a fix before the edge counts toward P2. I recommend requiring the fix, because anonymous traffic can currently add contacts without limit.\n\nI didn't commit anything; that's left to the root session. I appended the verdict to `decisions.jsonl`.\n\nFiles are in `proofs/marketing/publishing/evidence/independent/`:\n- report.html\n- verdict.json\n- runs/replay.json\n- logs/",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2572,
+      "outputTokens": 17,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002657,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 56,
+      "outputTokens": 29641,
+      "cacheReadInputTokens": 1395480,
+      "cacheCreationInputTokens": 80054,
+      "webSearchRequests": 0,
+      "costUSD": 1.5125720000000002,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 7990,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

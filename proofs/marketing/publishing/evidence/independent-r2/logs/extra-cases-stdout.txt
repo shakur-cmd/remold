@@ -1,0 +1,17 @@
+a PASS 413 expected 413 - chunked oversized (valid fields, firstname 20000 bytes, 10 chunks, no Content-Length)
+a PASS 413 expected 413 - chunked oversized, cap crossed before any terminator (edge must answer without full body)
+a PASS 400 expected 400 - duplicate key via percent-encoded name %65mail
+a PASS 400 expected 400 - duplicate key via percent-encoded name first%6eame
+a PASS 400 expected 400 - native field injected via encoded brackets mauticform%5Bemail%5D
+a PASS 400 expected 400 - plus-encoded key "t+" treated as different key
+a PASS 400 expected 400 - raw invalid UTF-8 byte 0xFF (not percent-encoded)
+a PASS 400 expected 400 - Content-Length plus Transfer-Encoding (request smuggling shape)
+b PASS 413 expected 413 - chunked oversized (valid fields, firstname 20000 bytes, 10 chunks, no Content-Length)
+b PASS 413 expected 413 - chunked oversized, cap crossed before any terminator (edge must answer without full body)
+b PASS 400 expected 400 - duplicate key via percent-encoded name %65mail
+b PASS 400 expected 400 - duplicate key via percent-encoded name first%6eame
+b PASS 400 expected 400 - native field injected via encoded brackets mauticform%5Bemail%5D
+b PASS 400 expected 400 - plus-encoded key "t+" treated as different key
+b PASS 400 expected 400 - raw invalid UTF-8 byte 0xFF (not percent-encoded)
+b PASS 400 expected 400 - Content-Length plus Transfer-Encoding (request smuggling shape)
+exit 0

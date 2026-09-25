@@ -1,0 +1,138 @@
+{
+ "baseSha256": "2187710a94698ac4547a3dd973254f32effe8a687a39a9c7cc349c63d60da951",
+ "rows": [
+  {
+   "mutation": "privacy-headers-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (10.971958ms)"
+   ],
+   "mutantSha256": "3cf1a7ee97e36c155864c2afbddbe875f63253c30b2b838a8c000bae7ad0d4e5"
+  },
+  {
+   "mutation": "dnt-only",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (10.356875ms)"
+   ],
+   "mutantSha256": "36002b5fd149b45f27dea3e18d3bc204830e8024dca917fa958c012b5e772aa7"
+  },
+  {
+   "mutation": "sec-gpc-only",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (10.780833ms)"
+   ],
+   "mutantSha256": "7b93a3aa2c1b5aecb493f55c9275842f94567b71322d51ab6a9474d3dc54d262"
+  },
+  {
+   "mutation": "dnt-zero",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (10.370125ms)"
+   ],
+   "mutantSha256": "5da8d570d2144e4a4e9258bcc6833c53cbb414425c66ba26fbc12b77a78a4f37"
+  },
+  {
+   "mutation": "post-status-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "426852ff9abedf420ae48ffe4b28ddeea2b985af893822ef1411be85571103f8"
+  },
+  {
+   "mutation": "error-message-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "df0001e2274814f30f3de21a4b184c67d3d3412f9fca2e00aabac16e3382f816"
+  },
+  {
+   "mutation": "validation-errors-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "e27e92847245f2d79b4d91a1184e94b102a8d0fff90aee99eb42ef3ec4bd10d2"
+  },
+  {
+   "mutation": "email-format-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "5af022bf493389f1aa31601b68416a8bb7e7a2d88365f849d74460a86caa7029"
+  },
+  {
+   "mutation": "firstname-control-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "bc59638752049f1617e8e4cc8a155db6fa87558f723180367cd7ebf0f95eb523"
+  },
+  {
+   "mutation": "read-status-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (5.774333ms)"
+   ],
+   "mutantSha256": "93510dfa3ac26fd63dddc5bf40fc47e2ad4bbdb309404bc186a17e27df242b72"
+  },
+  {
+   "mutation": "read-type-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (6.229417ms)"
+   ],
+   "mutantSha256": "a943ca24053603bf36fef8889e45cad212b94d6d359558100185255c9470f002"
+  },
+  {
+   "mutation": "read-method-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "39ce3530b9a1e51633df4df731d96df4ddefb20e3aa63a131f775218fd7045d8"
+  },
+  {
+   "mutation": "head-returns-body",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "c35ca8233cb73415b89f6800a5892cc3900f7a4179820394be8cda9a5a7dcc6c"
+  },
+  {
+   "mutation": "content-type-exact-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "bcc25e52970a35937eb11b24f4899c91e119cff67004105faf6a4b1a1b3c5926"
+  },
+  {
+   "mutation": "content-length-precheck-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "7f5ce86b0bfdf741b787a9a1247dfdef7475ab28a662af1332b392b06830f12f"
+  },
+  {
+   "mutation": "csp-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "f792a613c4aca78530764fcad9d4515dcf1707cfa9f08c6ee8ccc2139481d8de"
+  },
+  {
+   "mutation": "percent-decode-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ malformed, duplicate and extra form inputs never reach native capture (2.710583ms)"
+   ],
+   "mutantSha256": "03537bfa52d533c31a29acadf2aaf9e32d58fe0914c53d986a076fb63ca83430"
+  }
+ ]
+}

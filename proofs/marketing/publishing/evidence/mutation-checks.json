@@ -1,0 +1,24 @@
+[
+  {
+    "mutation": "host-check-removed",
+    "exit": 1,
+    "baseSha256": "865ac77926edb1b64351682d4596a57e5eb95b5593d7070773584fc0bb5c78e4",
+    "mutantSha256": "24bcfcc0ae99f3c3b8cdbf3b52991af630833b451d233b25aab38729dad75721",
+    "sourceEdit": {
+      "old": "if(hosts.length!==1||req.headers.host!==config.host)",
+      "new": "if(false)"
+    },
+    "scope": "Temporary local HTTP test process; no installed runtime/source changes"
+  },
+  {
+    "mutation": "response-cap-removed",
+    "exit": 1,
+    "baseSha256": "865ac77926edb1b64351682d4596a57e5eb95b5593d7070773584fc0bb5c78e4",
+    "mutantSha256": "ee9cf86a965096df207fa0477136be531934228f2e1cd3f843be20885e9c2da8",
+    "sourceEdit": {
+      "old": "if(size>responseCap)",
+      "new": "if(false)"
+    },
+    "scope": "Temporary local HTTP test process; no installed runtime/source changes"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "capturedAt": "2026-09-25T06:00:48.282458+00:00",
+  "source": "Read from pinned installed Mautic7.2.1; no source code copied into Remold",
+  "observations": [
+    "Local asset API registers existing file in media/files; file upload itself not proven",
+    "Form API fields map contact data; keep fixture actions empty",
+    "Public form endpoints include /form/{id}, /form/embed/{id}, /form/submit, /form/submit/ajax",
+    "Forms/pages/assets initial inventories A/B each zero on HTTP200"
+  ],
+  "files": [
+    {
+      "installedPath": "/var/www/html/docroot/app/bundles/AssetBundle/Controller/Api/AssetApiController.php",
+      "sha256": "49ce0c208af5e804dae2e3188591416cf244194ac5a8a35f6efa6e21dc64fd43"
+    },
+    {
+      "installedPath": "/var/www/html/docroot/app/bundles/AssetBundle/Tests/Controller/Api/AssetApiControllerFunctionalTest.php",
+      "sha256": "25428bb05ea74909b3f39484ebf5961e8adabb4b9da5ac9e465404cf0fbc4261"
+    },
+    {
+      "installedPath": "/var/www/html/docroot/app/bundles/FormBundle/Controller/Api/FormApiController.php",
+      "sha256": "fcd8d8b68b4bf53094a96db13fc33937dd36f48a4d56ff29f3c4f36da30a7f6a"
+    },
+    {
+      "installedPath": "/var/www/html/docroot/app/bundles/FormBundle/Tests/Controller/Api/FormApiControllerFunctionalTest.php",
+      "sha256": "5f597218303247a6a30d2acfa4518fd714e82417da4d680cf48f11345d682ca0"
+    },
+    {
+      "installedPath": "/var/www/html/docroot/app/bundles/FormBundle/Config/config.php",
+      "sha256": "144e56c9a1e6ad84a96f31edc701b0c72b6b18ee1060b761d0fe8210fbe4a672"
+    },
+    {
+      "installedPath": "/var/www/html/docroot/app/bundles/PageBundle/Controller/Api/PageApiController.php",
+      "sha256": "70c1cc2e8f184d01e7d04fb2fb27c04036e6d89bcddf45e485ab3c242a2779fd"
+    }
+  ]
+}
