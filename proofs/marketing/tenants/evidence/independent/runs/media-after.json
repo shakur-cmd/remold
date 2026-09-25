@@ -1,0 +1,52 @@
+{
+  "phase": "after",
+  "level": "SERVICE filesystem marker; not native asset API or full restore",
+  "capturedAt": "2026-09-25T05:58:35.860Z",
+  "fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+  "originalMarkerSha256": "a7e5029dd6497222bd448c7bc163f9e13dd329896679aeb9f84ebd834f53004c",
+  "originalMarkerPresent": true,
+  "probe": "remold-marketing-proof-media-probe-after-f61e8eef",
+  "id": "f702b7dd20f060d286056b64ba8b56b4e3ddc19dc6713dd15b7e294ad5eedc8c",
+  "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+  "network": "none",
+  "probeExitCode": 0,
+  "retained": true,
+  "declaredMounts": [
+    {
+      "name": "remold-marketing-proof-media-b",
+      "destination": "/var/www/html/docroot/media"
+    },
+    {
+      "name": "remold-marketing-proof-files-b",
+      "destination": "/var/www/html/docroot/media/files"
+    },
+    {
+      "name": "remold-marketing-proof-images-b",
+      "destination": "/var/www/html/docroot/media/images"
+    }
+  ],
+  "actualMounts": [
+    {
+      "name": "remold-marketing-proof-images-b",
+      "destination": "/var/www/html/docroot/media/images"
+    },
+    {
+      "name": "f776f48bd1ffdb3a2a85e187b4830b764bc24d22c1c60a867d8ee426f5f4e8c5",
+      "destination": "/var/www/html/var/logs"
+    },
+    {
+      "name": "6fa51362739ebd1003a95cd43c6db29ad3abe0cd758b521be7835f0d111ebdc0",
+      "destination": "/var/www/html/config"
+    },
+    {
+      "name": "remold-marketing-proof-media-b",
+      "destination": "/var/www/html/docroot/media"
+    },
+    {
+      "name": "remold-marketing-proof-files-b",
+      "destination": "/var/www/html/docroot/media/files"
+    }
+  ],
+  "webContainerUnchangedDuringProbe": true,
+  "probeRetainedForReview": true
+}

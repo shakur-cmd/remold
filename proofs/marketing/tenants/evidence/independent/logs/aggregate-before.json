@@ -1,0 +1,18 @@
+/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/evidence/independent/logs/aggregate.py:5: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  print(json.dumps({'at':datetime.datetime.utcnow().isoformat()+'Z','files':cur,'allMatchManifest':cur==m,'aggregate':agg,'expected':'3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727','match':agg=='3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727'},indent=1))
+{
+ "at": "2026-09-25T05:58:15.143184Z",
+ "files": {
+  "runtime.mjs": "b995c36bced15cebc4a8ff408900ca0215ba080d7e3013dfc28f14c95af21f1d",
+  "tenants/api.mjs": "a31f1a91d31976e70848a56c9aaa24b5540d2153479e9cf3b71bb2c3e6a481a8",
+  "tenants/isolation-replay.mjs": "766e047218c5c98b343fbcc48a38c1de0a3ac1c2a9ea5818b1f8563b28a1de0a",
+  "tenants/media-migrate-b.mjs": "62440ab14f0d0920654697285868c7fa0a538fd51ce66b1ff3a123a93e016d8c",
+  "tenants/media-replay.mjs": "bab962adca5adc0566cc46bf7710b058535a94f91e894db7ab33700ed2d52af1",
+  "tenants/media-storage.mjs": "14741d5a7610bd544be2a0a7652f0f7ce5216bb77fd2c52db44f075dae662233",
+  "tenants/setup-b.mjs": "356dceafcec84a2e28a755185de504969171ca920f9a395b6242c064968a7226"
+ },
+ "allMatchManifest": true,
+ "aggregate": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727",
+ "expected": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727",
+ "match": true
+}

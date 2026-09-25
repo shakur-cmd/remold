@@ -1,0 +1,61 @@
+{
+  "capturedAt": "2026-09-25T05:32:12.908Z",
+  "level": "SERVICE read-only inventory",
+  "before": "Only one Mautic instance has been exercised; no B instance exists, so A/B isolation is unproved",
+  "bExists": false,
+  "containers": [
+    {
+      "name": "/remold-marketing-proof-web-a",
+      "id": "c19fa778f41d9015917e56b09f50575afa1cc8058ef900128f897e37006082a7",
+      "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+      "networks": [
+        "remold-marketing-proof"
+      ],
+      "volumes": [
+        {
+          "type": "volume",
+          "name": "remold-marketing-proof-logs-a",
+          "destination": "/var/www/html/var/logs"
+        },
+        {
+          "type": "volume",
+          "name": "e3b0cb0efc451dd88d1c2661299ccbf236afc4bac8e18adbe5f5c4bcaad9014f",
+          "destination": "/var/www/html/docroot/media/files"
+        },
+        {
+          "type": "volume",
+          "name": "4d28c0c6846c64c4b346a3fb7b79cb2d555dd70a49c28eb1a361f7e673a62934",
+          "destination": "/var/www/html/docroot/media/images"
+        },
+        {
+          "type": "volume",
+          "name": "remold-marketing-proof-config-a",
+          "destination": "/var/www/html/config"
+        },
+        {
+          "type": "volume",
+          "name": "remold-marketing-proof-media-a",
+          "destination": "/var/www/html/docroot/media"
+        }
+      ],
+      "running": true
+    },
+    {
+      "name": "/remold-marketing-proof-db-a",
+      "id": "32106e7ddd24ef6761f9726c71c38b2c8528c3ebf9d7107be99686adeb0ad1ca",
+      "image": "mysql@sha256:64a9d35fe6fed01159499be26c3279ac5ee16006c2ebb1f480d634bd5c61a053",
+      "networks": [
+        "remold-marketing-proof"
+      ],
+      "volumes": [
+        {
+          "type": "volume",
+          "name": "remold-marketing-proof-db-a",
+          "destination": "/var/lib/mysql"
+        }
+      ],
+      "running": true
+    }
+  ],
+  "vmMemoryBytes": 4094386176
+}

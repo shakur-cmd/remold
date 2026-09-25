@@ -1,0 +1,34 @@
+{
+  "result": "**Result: BOUNDED PASS.** I made no source edits and found no code flaws or blockers. One required check is BLOCKED because running it now wouldn't be safe.\n\n**Checks that passed:**\n- **Frozen 7-file aggregate:** `3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727` matched before and after my runs. The 57-file MIME hash `a0b59a92\u20262d26` is unchanged.\n- **`media-replay.mjs before`:** exit 1, failing on the marker-retention assertion as expected.\n- **`media-replay.mjs after`:** exit 0. The probe mounted the named media-b, files-b and images-b volumes read-only and read the marker with hash `a7e5029d\u2026004c`.\n- **`isolation-replay.mjs`, run once:** exit 0. The B queue went from 3 to 4 rows. Foreign and empty credentials got 401 all three times, and B could not reach A (ENETUNREACH). A's contact and queue hashes equal the builder's values. Only db-b and web-b restarted.\n- **Volumes vs original sources:** my own read-only `find`/`sha256sum` helper found identical bytes, modes and ownership (uid/gid 33, 755/644). I checked before the new writes and again after B restarted.\n- **Legacy B:** stopped, with no networks.\n- **Pinning:** the replacement ID equals the recorded one, and the env hash is identical across the replacement, the legacy container and the record. No values were printed. Only the files/images mount sources differ between legacy and replacement.\n- **A:** matches its baseline and nothing about it changed during the session.\n- **www-data writes:** it created and read a new file in each B volume. Both files are kept:\n  - `\u2026/media/files/independent-verify-63161e1a-\u2026.txt`, hash `d488c704\u202625fe`\n  - `\u2026/media/images/independent-verify-63161e1a-\u2026.txt`, hash `1e8be850\u20266192`\n\n  I compared the volumes first. The live volumes and the migration manifests now intentionally differ by exactly these two files. The legacy source volumes are unchanged.\n- **Migration no-op:** the completed migration command exits 0 on the final source, and the root evidence and private files were unchanged.\n- **Counterexample test:** the real fixture had no symlinks and only uniform ownership and modes. So I ran the builder's exact copy code, with the same capabilities, on a harder synthetic tree in a throwaway container with no volumes. It kept symlinks, setuid/setgid modes and mixed owners. Its comparison also caught all 7 changes I made to the copy.\n- **Root evidence:** the original evidence files are byte-identical after all my runs.\n\n**BLOCKED:** rerunning setup-b's refusal of the old media layout. Its guards now pass on the migrated layout, so running it would rewrite B's config and overwrite the root `setup-b.json`. I reviewed that guard in the source only.\n\n**Findings:**\n- **Wording fix needed:** the builder report says symlink targets were preserved, but the B fixture had no symlinks. That claim is now supported only by my throwaway-container test, not by the real volumes.\n- The root `media-before.json` came from an earlier version of `media-replay.mjs`. My rerun on the final source reproduces the same failure.\n- There is an extra builder probe, `\u2026media-probe-after-3c238bbc` (exit 0), that no evidence file mentions.\n- Probes leave unnamed volumes behind.\n- `private/tenants/media-replacement.env` still holds B's secrets. It is mode 0600 and gitignored.\n- Legacy B shares the config, media and logs volumes with the replacement, so the two must never run together. Rollback is untested.\n- The resume guards were reviewed in source only. On the final source, only the no-op path actually ran.\n\n**Not certified:** crash recovery, whole-migration automation, rollback, new-resource setup, native asset export/restore, ACLs, extended attributes, timestamps, A's media layout, any B worker or delivery, or P2 as a whole.\n\nEverything is in `proofs/marketing/tenants/evidence/independent/`; open `report.html` first. `verdict.json` records the results and hashes every raw log.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2560,
+      "outputTokens": 15,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002635,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 56,
+      "outputTokens": 32165,
+      "cacheReadInputTokens": 1510029,
+      "cacheCreationInputTokens": 79691,
+      "webSearchRequests": 0,
+      "costUSD": 1.5830578000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 7319,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

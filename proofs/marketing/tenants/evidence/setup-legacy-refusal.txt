@@ -1,0 +1,11 @@
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/setup-b.mjs:39
+}catch(error){writeFileSync(privateDir+'setup-error.log',String(error.stderr??error.stack??error),{mode:0o600});throw Error('B setup stopped; private error retained. Existing A data was not changed by this script.');}
+                                                                                                                      ^
+
+Error: B setup stopped; private error retained. Existing A data was not changed by this script.
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/setup-b.mjs:39:119
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0

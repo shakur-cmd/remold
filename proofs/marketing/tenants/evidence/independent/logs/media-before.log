@@ -1,0 +1,24 @@
+2026-09-25T05:58:30Z
+cmd: REMOLD_TENANT_EVIDENCE_DIR=/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/evidence/independent/runs/ node media-replay.mjs before
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Declared replacement layout must retain the original media marker
+
+false !== true
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/media-replay.mjs:33:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0
+exit=1

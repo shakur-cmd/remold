@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent check: two tenants and B media</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Independent check: two tenants and B media</h1>
+<div class="meta">2026-09-25 · scope: SERVICE, synthetic, colima-remold-proof · verdict: <b>BOUNDED PASS</b> · checked by a fresh Opus 5.5 session, not the builder</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>None for this slice. P2 stays open and Mautic stays unselected.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Frozen 7-file aggregate <code>3a63d24a…e727</code> matched before and after. 57-file MIME aggregate <code>a0b59a92…2d26</code> unchanged.</li>
+  <li><code>media-replay.mjs before</code> exit 1 with the marker-retention assertion; <code>after</code> exit 0, marker <code>a7e5029d…004c</code> read through the named volumes.</li>
+  <li><code>isolation-replay.mjs</code> exit 0. B queue went 3 to 4 (one row). A contact and queue hashes equal the builder's values. Only B restarted.</li>
+  <li>My own read-only helper found source and copy volumes identical in bytes, modes and owners before any new writes.</li>
+  <li>Legacy B is stopped with no networks. IDs, env hash and mounts are pinned. A matches its baseline.</li>
+  <li>www-data created and read a new file in each B volume. Both files were kept, listed below.</li>
+</ul>
+</div>
+
+<h2>Before and after</h2>
+<table>
+<tr><th>Check</th><th>Before</th><th>After</th></tr>
+<tr><td>Source aggregate</td><td><code>3a63d24a…e727</code></td><td><code>3a63d24a…e727</code></td></tr>
+<tr><td>Media probe</td><td>Parent-only layout: exit 1, marker missing (probe <code>…before-61a65416</code>)</td><td>Named files-b/images-b: exit 0, hash matches (probe <code>…after-f61e8eef</code>)</td></tr>
+<tr><td>B queue rows</td><td>3</td><td>4, survived db-b/web-b restart</td></tr>
+<tr><td>A web/db</td><td>c19fa778… / 32106e7d…</td><td>Same IDs, networks, mounts and start times</td></tr>
+<tr><td>files-b vs legacy source</td><td>Identical (3 entries)</td><td>Differs only by the new independent file, as intended</td></tr>
+<tr><td>images-b vs legacy source</td><td>Identical (2 entries)</td><td>Differs only by the new independent file, as intended</td></tr>
+</table>
+
+<h2>All required checks</h2>
+<table>
+<tr><th>Check</th><th>Result</th><th>Evidence</th></tr>
+<tr><td>Aggregate before/after</td><td>PASS</td><td>logs/aggregate-before.json, aggregate-after.json</td></tr>
+<tr><td>media-replay before (red expected)</td><td>PASS, exit 1</td><td>logs/media-before.log, runs/media-before.json</td></tr>
+<tr><td>media-replay after</td><td>PASS, exit 0</td><td>logs/media-after.log, runs/media-after.json, logs/probe-inspect.txt</td></tr>
+<tr><td>isolation-replay, once</td><td>PASS, exit 0</td><td>logs/isolation.log, runs/isolation.json</td></tr>
+<tr><td>Volume bytes/modes/ownership vs original sources</td><td>PASS</td><td>logs/volumes-before-writes.txt, volumes-pre-write-recheck.txt</td></tr>
+<tr><td>Legacy B stopped and disconnected</td><td>PASS</td><td>logs/state-*.json</td></tr>
+<tr><td>IDs, env hash, mounts pinned</td><td>PASS</td><td>logs/state-*.json (env values never printed)</td></tr>
+<tr><td>A baseline unchanged</td><td>PASS</td><td>logs/state-*.json vs ../baseline.json</td></tr>
+<tr><td>www-data write/read in files and images</td><td>PASS</td><td>logs/www-data-writes.txt, volumes-after-writes.txt</td></tr>
+<tr><td>Completed migration is a no-op on final source</td><td>PASS, exit 0</td><td>logs/migration-noop.log; root evidence and private listing unchanged</td></tr>
+<tr><td>Copy/manifest counterexample</td><td>PASS</td><td>logs/counterexample.mjs, counterexample.log</td></tr>
+<tr><td>setup-b legacy-layout refusal, rerun</td><td>BLOCKED</td><td>Not safe to run now: the guards pass on the migrated layout, so setup-b would rewrite B config and root setup-b.json. Reviewed in source only.</td></tr>
+<tr><td>Default root evidence preserved</td><td>PASS</td><td>logs/root-evidence-*.txt</td></tr>
+</table>
+
+<h2>New files kept in B</h2>
+<table>
+<tr><th>Path in web-b</th><th>SHA256</th></tr>
+<tr><td><code>/var/www/html/docroot/media/files/independent-verify-63161e1a-490c-43f6-b26f-4f68e7da9458.txt</code></td><td><code>d488c70462dc2431faba5d2452b7fd9e6c2dc403438a21efdcc6dd29da9b25fe</code></td></tr>
+<tr><td><code>/var/www/html/docroot/media/images/independent-verify-63161e1a-490c-43f6-b26f-4f68e7da9458.txt</code></td><td><code>1e8be850583929fc0c2097363c7386aa85cf29087f0b944b7df50cd1e25c6192</code></td></tr>
+</table>
+<p>Both are uid/gid 33, mode 644. A comparison of the migration manifests against the live volumes will now show these two extra entries. That is expected.</p>
+
+<h2>Counterexample</h2>
+<p>The real fixture had no symlinks, and every file was 33:33 with mode 755 or 644, so it could not show whether the copy keeps unusual metadata. I ran the builder's exact <code>manifestCode</code> and <code>cp -a</code>, with the same four added capabilities, in a throwaway tmpfs container with no volumes. The copy kept two symlinks (one dangling), a setgid 2750 directory, a setuid 4755 file and mixed owners. The manifest caught all seven mutations: chmod, chown, lchown, symlink retarget, byte change, extra file and root mode.</p>
+
+<h2>Findings (no code flaws, no blockers)</h2>
+<ul>
+  <li><b>Scope wording.</b> The builder report says symlink targets were preserved, but the B fixture had no symlinks. That claim now rests only on the tmpfs counterexample, not on the Docker volume driver.</li>
+  <li>The root <code>media-before.json</code> came from an earlier media-replay revision. Its key is <code>originalContainerUnchanged</code>; the final source writes <code>webContainerUnchangedDuringProbe</code>. My rerun on the final source reproduces the red.</li>
+  <li>Builder probe <code>…media-probe-after-3c238bbc</code> (exit 0) is not referenced in the root evidence.</li>
+  <li>Probes leave anonymous volumes behind. <code>private/tenants/media-replacement.env</code> (0600, gitignored) still holds B secrets.</li>
+  <li>Legacy B shares config-b, media-b and logs-b with the replacement, so never run both. Rollback is untested.</li>
+  <li>The resume guards for the prepared, fenced and copied phases were reviewed in source only. On the final source, only the verified no-op path ran. The fenced-phase guards look sound: they refuse copying while a replacement exists, refuse a non-empty partial destination, and re-verify both sides before creating the replacement.</li>
+  <li>The earlier HTTP 200-vs-201 and Docker mount-ordering failures were driver errors. The final source handles both.</li>
+</ul>
+
+<h2>Not certified</h2>
+<p>Crash recovery, whole-migration automation, rollback, new-resource setup, native asset export and restore, ACLs, xattrs, timestamps, A's media layout, any B worker or delivery, tenant-bound public routes, and P2 as a whole. The fenced and copied resume guards were reviewed in source only.</p>
+
+<p>Raw logs: <code>logs/</code>. Replay outputs: <code>runs/</code>. Hashes of every log and run file: <code>verdict.json</code>.</p>
+</body>
+</html>

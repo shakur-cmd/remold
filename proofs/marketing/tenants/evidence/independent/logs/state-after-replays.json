@@ -1,0 +1,304 @@
+{
+ "web-a": {
+  "id": "c19fa778f41d9015917e56b09f50575afa1cc8058ef900128f897e37006082a7",
+  "name": "/remold-marketing-proof-web-a",
+  "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+  "running": true,
+  "status": "running",
+  "startedAt": "2026-09-25T03:55:08.16073456Z",
+  "restartCount": 0,
+  "networks": {
+   "remold-marketing-proof": {
+    "aliases": [
+     "web-a"
+    ]
+   }
+  },
+  "envHashSortedJSON": "47a6335fbb4867b9c10e87948a842950938167ddc18be751a914b833fbfe9139",
+  "envCount": 38,
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-config-a",
+    "destination": "/var/www/html/config",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-media-a",
+    "destination": "/var/www/html/docroot/media",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "e3b0cb0efc451dd88d1c2661299ccbf236afc4bac8e18adbe5f5c4bcaad9014f",
+    "destination": "/var/www/html/docroot/media/files",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "4d28c0c6846c64c4b346a3fb7b79cb2d555dd70a49c28eb1a361f7e673a62934",
+    "destination": "/var/www/html/docroot/media/images",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-logs-a",
+    "destination": "/var/www/html/var/logs",
+    "rw": true
+   }
+  ],
+  "portBindings": {
+   "80/tcp": [
+    {
+     "HostIp": "127.0.0.1",
+     "HostPort": "3540"
+    }
+   ]
+  },
+  "memory": 805306368,
+  "restartPolicy": "no",
+  "labels": {
+   "maintainer": "Mautic core team <>",
+   "remold.proof": "marketing",
+   "vendor": "Mautic"
+  },
+  "entrypoint": [
+   "/entrypoint.sh"
+  ],
+  "cmd": null
+ },
+ "db-a": {
+  "id": "32106e7ddd24ef6761f9726c71c38b2c8528c3ebf9d7107be99686adeb0ad1ca",
+  "name": "/remold-marketing-proof-db-a",
+  "image": "mysql@sha256:64a9d35fe6fed01159499be26c3279ac5ee16006c2ebb1f480d634bd5c61a053",
+  "running": true,
+  "status": "running",
+  "startedAt": "2026-09-25T03:55:03.786342685Z",
+  "restartCount": 0,
+  "networks": {
+   "remold-marketing-proof": {
+    "aliases": [
+     "db-a"
+    ]
+   }
+  },
+  "envHashSortedJSON": "7cc535327029286c03f8559e18c51c99507919c03de828700f895ef3c4afb19b",
+  "envCount": 9,
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-db-a",
+    "destination": "/var/lib/mysql",
+    "rw": true
+   }
+  ],
+  "portBindings": {},
+  "memory": 536870912,
+  "restartPolicy": "no",
+  "labels": {
+   "remold.proof": "marketing"
+  },
+  "entrypoint": [
+   "docker-entrypoint.sh"
+  ],
+  "cmd": [
+   "--innodb-buffer-pool-size=64M",
+   "--max-connections=30",
+   "--performance-schema=OFF"
+  ]
+ },
+ "web-b": {
+  "id": "4135bacb51b927221cf3d0c1910edf30db2be50247007d3747f7e95d9af0d5ac",
+  "name": "/remold-marketing-proof-web-b",
+  "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+  "running": true,
+  "status": "running",
+  "startedAt": "2026-09-25T05:58:58.672872034Z",
+  "restartCount": 0,
+  "networks": {
+   "remold-marketing-proof-tenant-b": {
+    "aliases": [
+     "tenant-b.marketing-proof.invalid",
+     "web-b"
+    ]
+   }
+  },
+  "envHashSortedJSON": "635db574b829d2850a281863c5ff408376cef7021b68e3f44399c42602472746",
+  "envCount": 36,
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-config-b",
+    "destination": "/var/www/html/config",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-media-b",
+    "destination": "/var/www/html/docroot/media",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-files-b",
+    "destination": "/var/www/html/docroot/media/files",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-images-b",
+    "destination": "/var/www/html/docroot/media/images",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-logs-b",
+    "destination": "/var/www/html/var/logs",
+    "rw": true
+   }
+  ],
+  "portBindings": {},
+  "memory": 805306368,
+  "restartPolicy": "no",
+  "labels": {
+   "maintainer": "Mautic core team <>",
+   "remold.fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+   "remold.proof": "marketing",
+   "remold.tenant": "b",
+   "vendor": "Mautic"
+  },
+  "entrypoint": [
+   "/entrypoint.sh"
+  ],
+  "cmd": null
+ },
+ "db-b": {
+  "id": "97133d3746e197b9328b589d24dbdba70051ca27b6752b5793cb8e73c4b068ac",
+  "name": "/remold-marketing-proof-db-b",
+  "image": "mysql@sha256:64a9d35fe6fed01159499be26c3279ac5ee16006c2ebb1f480d634bd5c61a053",
+  "running": true,
+  "status": "running",
+  "startedAt": "2026-09-25T05:58:48.439397056Z",
+  "restartCount": 0,
+  "networks": {
+   "remold-marketing-proof-tenant-b": {
+    "aliases": [
+     "db-b"
+    ]
+   }
+  },
+  "envHashSortedJSON": "088bb248b896687eb68dbe58e1ce998247fe36244cb829c7b9792dde2813611b",
+  "envCount": 9,
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-db-b",
+    "destination": "/var/lib/mysql",
+    "rw": true
+   }
+  ],
+  "portBindings": {},
+  "memory": 536870912,
+  "restartPolicy": "no",
+  "labels": {
+   "remold.fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+   "remold.proof": "marketing",
+   "remold.tenant": "b"
+  },
+  "entrypoint": [
+   "docker-entrypoint.sh"
+  ],
+  "cmd": [
+   "mysqld"
+  ]
+ },
+ "web-b-before-media": {
+  "id": "ad8998590b3ca12f945626a725ad9a5b5a85c92e4b255469d236545af1ec9423",
+  "name": "/remold-marketing-proof-web-b-before-media",
+  "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+  "running": false,
+  "status": "exited",
+  "startedAt": "2026-09-25T05:43:46.014009535Z",
+  "restartCount": 0,
+  "networks": {},
+  "envHashSortedJSON": "635db574b829d2850a281863c5ff408376cef7021b68e3f44399c42602472746",
+  "envCount": 36,
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-config-b",
+    "destination": "/var/www/html/config",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-media-b",
+    "destination": "/var/www/html/docroot/media",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "a6b409427bf27cfd35154c01a787414efb63c0239d11d6225d1ad4dd07d56271",
+    "destination": "/var/www/html/docroot/media/files",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "db159a4c57cdf4c5057fd5854ad9e0b0c15f3a5bd59860bb222e8ab2bc8ebe29",
+    "destination": "/var/www/html/docroot/media/images",
+    "rw": true
+   },
+   {
+    "type": "volume",
+    "name": "remold-marketing-proof-logs-b",
+    "destination": "/var/www/html/var/logs",
+    "rw": true
+   }
+  ],
+  "portBindings": {},
+  "memory": 805306368,
+  "restartPolicy": "no",
+  "labels": {
+   "maintainer": "Mautic core team <>",
+   "remold.fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+   "remold.proof": "marketing",
+   "remold.tenant": "b",
+   "vendor": "Mautic"
+  },
+  "entrypoint": [
+   "/entrypoint.sh"
+  ],
+  "cmd": null
+ },
+ "volume:files-b": {
+  "name": "remold-marketing-proof-files-b",
+  "driver": "local",
+  "labels": {
+   "remold.fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+   "remold.proof": "marketing",
+   "remold.tenant": "b"
+  },
+  "createdAt": "2026-09-25T01:54:38-04:00"
+ },
+ "volume:images-b": {
+  "name": "remold-marketing-proof-images-b",
+  "driver": "local",
+  "labels": {
+   "remold.fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+   "remold.proof": "marketing",
+   "remold.tenant": "b"
+  },
+  "createdAt": "2026-09-25T01:54:39-04:00"
+ },
+ "volume:media-b": {
+  "name": "remold-marketing-proof-media-b",
+  "driver": "local",
+  "labels": {
+   "remold.fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+   "remold.proof": "marketing",
+   "remold.tenant": "b"
+  },
+  "createdAt": "2026-09-25T01:35:51-04:00"
+ }
+}

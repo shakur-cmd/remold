@@ -1,0 +1,20 @@
+{
+  "level": "SERVICE setup only; B mail discarded by null transport, no B dispatch proof",
+  "capturedAt": "2026-09-25T05:36:11.188Z",
+  "fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+  "network": "remold-marketing-proof-tenant-b",
+  "internal": true,
+  "containers": [
+    "remold-marketing-proof-db-b",
+    "remold-marketing-proof-web-b"
+  ],
+  "images": {
+    "mautic": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+    "mysql": "mysql@sha256:64a9d35fe6fed01159499be26c3279ac5ee16006c2ebb1f480d634bd5c61a053",
+    "convex": "ghcr.io/get-convex/convex-backend@sha256:b1f3b36e87142a043b9a9f2dcb5b3df4512b67e066a822933002388c44bf580a"
+  },
+  "publishedPorts": 0,
+  "configuredMemoryMiB": 1280,
+  "existingTablesAtEntry": 0,
+  "aResourcesChanged": false
+}

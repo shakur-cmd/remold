@@ -1,0 +1,167 @@
+{
+  "verdict": "BOUNDED PASS",
+  "verifier": "Fresh Claude Opus 5.5 session (claude-opus-5-5), independent of builder; no source edits",
+  "capturedAt": "2026-09-25T06:01:51.460097+00:00",
+  "level": "SERVICE, isolated synthetic, Docker context colima-remold-proof",
+  "sourceAggregate": {
+    "expected": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727",
+    "before": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727",
+    "after": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727",
+    "method": "SHA256 of sorted compact JSON {path:sha256} relative to proofs/marketing",
+    "files": {
+      "runtime.mjs": "b995c36bced15cebc4a8ff408900ca0215ba080d7e3013dfc28f14c95af21f1d",
+      "tenants/api.mjs": "a31f1a91d31976e70848a56c9aaa24b5540d2153479e9cf3b71bb2c3e6a481a8",
+      "tenants/isolation-replay.mjs": "766e047218c5c98b343fbcc48a38c1de0a3ac1c2a9ea5818b1f8563b28a1de0a",
+      "tenants/media-migrate-b.mjs": "62440ab14f0d0920654697285868c7fa0a538fd51ce66b1ff3a123a93e016d8c",
+      "tenants/media-replay.mjs": "bab962adca5adc0566cc46bf7710b058535a94f91e894db7ab33700ed2d52af1",
+      "tenants/media-storage.mjs": "14741d5a7610bd544be2a0a7652f0f7ce5216bb77fd2c52db44f075dae662233",
+      "tenants/setup-b.mjs": "356dceafcec84a2e28a755185de504969171ca920f9a395b6242c064968a7226"
+    }
+  },
+  "mime57Aggregate": {
+    "expected": "a0b59a92a768d86e10c2af8b922f0e713335cc938349c6fd8181bd7831702d26",
+    "actual": "a0b59a92a768d86e10c2af8b922f0e713335cc938349c6fd8181bd7831702d26",
+    "mismatches": [],
+    "behaviorRetested": false
+  },
+  "checks": [
+    {
+      "id": "aggregate-before",
+      "result": "PASS",
+      "cmd": "python3 tenants/evidence/independent/logs/aggregate.py",
+      "exit": 0
+    },
+    {
+      "id": "media-replay-before",
+      "result": "PASS (expected red reproduced)",
+      "cmd": "REMOLD_TENANT_EVIDENCE_DIR=/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/evidence/independent/runs/ node media-replay.mjs before",
+      "exit": 1,
+      "observed": "AssertionError 'Declared replacement layout must retain the original media marker'; probe remold-marketing-proof-media-probe-before-61a65416 exit 1; parent-only layout received anonymous files/images volumes"
+    },
+    {
+      "id": "media-replay-after",
+      "result": "PASS",
+      "cmd": "REMOLD_TENANT_EVIDENCE_DIR=/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/evidence/independent/runs/ node media-replay.mjs after",
+      "exit": 0,
+      "observed": "probe remold-marketing-proof-media-probe-after-f61e8eef exit 0 with read-only named media-b/files-b/images-b; marker sha256 a7e5029dd6497222bd448c7bc163f9e13dd329896679aeb9f84ebd834f53004c"
+    },
+    {
+      "id": "isolation-replay",
+      "result": "PASS",
+      "cmd": "REMOLD_TENANT_EVIDENCE_DIR=/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/evidence/independent/runs/ node isolation-replay.mjs",
+      "exit": 0,
+      "observed": "B queue 3->4 (exactly one row), foreign/empty credentials 401 x3, B->A ENETUNREACH, aContactHash 1692e36d... and aQueueHash 4f53cda1... equal builder values; only db-b and web-b StartedAt changed"
+    },
+    {
+      "id": "volume-bytes-modes-ownership",
+      "result": "PASS",
+      "observed": "Own find/sha256sum read-only helper (network none, cap-drop ALL, volume-nocopy): source a6b40942...==files-b and db159a4c...==images-b before writes and again after B restart; entries equal media-migration.json manifests (uid/gid 33, 755/644)"
+    },
+    {
+      "id": "legacy-stopped-disconnected",
+      "result": "PASS",
+      "observed": "web-b-before-media ad8998590b3c... exited, networks {} throughout"
+    },
+    {
+      "id": "ids-envhash-mounts-pinned",
+      "result": "PASS",
+      "observed": "web-b 4135bacb51b9... == recorded replacementId; sorted Env SHA256 635db574b829d285... equal for replacement, legacy and recorded envHash (values never printed); only files/images mount sources differ legacy->replacement; image, labels, entrypoint, cmd, memory, restart policy, ports, aliases equal"
+    },
+    {
+      "id": "a-baseline-unchanged",
+      "result": "PASS",
+      "observed": "web-a c19fa778... and db-a 32106e7d... ids, networks, sorted mounts equal baseline.json; no inspected field changed during session"
+    },
+    {
+      "id": "www-data-write-read",
+      "result": "PASS",
+      "observed": "uid 33 created (no-clobber) and read a file in each volume; separate read-only uid 33 container sees them in the named volumes",
+      "files": {
+        "/var/www/html/docroot/media/files/independent-verify-63161e1a-490c-43f6-b26f-4f68e7da9458.txt": "d488c70462dc2431faba5d2452b7fd9e6c2dc403438a21efdcc6dd29da9b25fe",
+        "/var/www/html/docroot/media/images/independent-verify-63161e1a-490c-43f6-b26f-4f68e7da9458.txt": "1e8be850583929fc0c2097363c7386aa85cf29087f0b944b7df50cd1e25c6192"
+      },
+      "retained": true,
+      "note": "Compared first; source and copy manifests now intentionally diverge by exactly these two files. Legacy source volumes unchanged."
+    },
+    {
+      "id": "migration-final-source-noop",
+      "result": "PASS",
+      "cmd": "node media-migrate-b.mjs",
+      "exit": 0,
+      "observed": "verified-journal path only; root evidence and private listing unchanged; no error log created"
+    },
+    {
+      "id": "copy-manifest-counterexample",
+      "result": "PASS",
+      "cmd": "node tenants/evidence/independent/logs/counterexample.mjs",
+      "exit": 0,
+      "observed": "Builder manifestCode + cp -a with CHOWN/DAC_OVERRIDE/FOWNER/FSETID in a --rm tmpfs container: preserves 2 symlinks (1 dangling), setgid 2750 dir, setuid 4755 file, mixed owners; detects chmod, chown, lchown, symlink retarget, byte change, extra file, root mode"
+    },
+    {
+      "id": "setup-legacy-refusal-rerun",
+      "result": "BLOCKED",
+      "reason": "Not safely executable now: guards pass on the current layout, so setup-b.mjs would rewrite B local.php, clear cache and overwrite root setup-b.json. Source-reviewed only; builder refusal log exists."
+    },
+    {
+      "id": "root-evidence-preserved",
+      "result": "PASS",
+      "observed": "evidence root media-before.json, media-after.json, isolation.json byte-identical after all independent runs"
+    },
+    {
+      "id": "aggregate-after",
+      "result": "PASS",
+      "cmd": "python3 tenants/evidence/independent/logs/aggregate.py",
+      "exit": 0
+    }
+  ],
+  "findings": [
+    "Scope wording: builder report says symlink targets were preserved; the actual B fixture had zero symlinks and uniform 33:33 755/644. Symlink/mode coverage exists only through the tmpfs counterexample, not on the Docker volume driver.",
+    "Root media-before.json came from an earlier media-replay revision (key originalContainerUnchanged vs final webContainerUnchangedDuringProbe). Independent rerun on final source reproduces the red.",
+    "Unreferenced builder probe remold-marketing-proof-media-probe-after-3c238bbc (exit 0) exists alongside the recorded one.",
+    "Probes retain anonymous volumes; private media-replacement.env (0600, gitignored) still holds B secrets after migration.",
+    "Legacy container shares config-b/media-b/logs-b with the replacement; running both would share them. Rollback untested.",
+    "Resume guards for prepared/fenced/copied phases are source-reviewed only; on final source only the verified no-op path executed."
+  ],
+  "codeFlaws": [],
+  "blockers": [],
+  "limits": [
+    "No crash recovery, whole-migration automation, rollback or new-resource setup certified",
+    "Filesystem marker only; no native asset API or restore",
+    "ACLs, xattrs, timestamps not compared",
+    "A still on anonymous media volumes",
+    "No B worker or delivery; null transport",
+    "P2 remains open; Mautic not selected"
+  ],
+  "logSha256": {
+    "aggregate-after.json": "7b2446d1b74a50e03818330fbda156809d3aaa956f8b5b07c7b7377253496399",
+    "aggregate-before.json": "604fa5ee683218103f116df141b6d0ec1d467e096afc864b712230722611961f",
+    "aggregate.py": "4678470e8b01f53dc16a0b0f8869f448768a2c3ce10fd434bb1f089b31cf238d",
+    "counterexample.log": "9065a0153c448de763ca94ef5d0a5a2502fb68a674811c3d01bac51b47dbdb68",
+    "counterexample.mjs": "153df8e1269da307a3ac8b5fd9926d980a5043e11d3999ec0a50a121bc324d95",
+    "isolation.log": "341bafbf74ac5900e42a610e107781941c09bf79360e85fd5415bde83a13485c",
+    "media-after.log": "58223868452aeb1875d852537bbe1c89e7aa086eaa9ff233309cb0efc3c00e7e",
+    "media-before.log": "122d2eb5e4d9cb72a114b682cab7a2f546494ae9422861d1de0f003899f9c43c",
+    "migration-noop.log": "aad71d224a12417ad956c6a1d7acf5ec8bc0f7c611e373018186f819961eb971",
+    "mime57-hash.json": "ff6a3e2244599f390dc57962fec1b0f5c4dc2663e226f99ade9df05b8c989e1c",
+    "private-listing-after-noop.txt": "012a6ffcf29750840d7744a0a48ee249bea7c4d7e7d9dab5ab179e0ef9e8a876",
+    "private-listing-before-noop.txt": "012a6ffcf29750840d7744a0a48ee249bea7c4d7e7d9dab5ab179e0ef9e8a876",
+    "probe-inspect.txt": "4f3204d418210170c9742b770e6dec670b4ff9618e1ba25f6b95ee8ccb547c63",
+    "root-evidence-after-noop.txt": "2fece10302a5bfccf74cb2ac9a648f3907d3d57e6c498bcde24e3c533009cb85",
+    "root-evidence-before-noop.txt": "2fece10302a5bfccf74cb2ac9a648f3907d3d57e6c498bcde24e3c533009cb85",
+    "root-evidence-hashes-before.txt": "553d3b004c035c6623a2467d3c89abf6a315c8037b11f7d9c33c8913c2906999",
+    "snap.py": "ec32e84fb0d149d1f1060a635537d150406a8c305d9550ab707d6486927a8b12",
+    "state-after-replays.json": "a1d80e3c92b6de618005f81fb3877616409e4e88b2fd8d3fab0198f35c4ddc49",
+    "state-before.json": "cf500430b0ef7924a5e9133619c5460fd0330ffde80c2553ac38c7dd28e5e896",
+    "state-final.json": "a1d80e3c92b6de618005f81fb3877616409e4e88b2fd8d3fab0198f35c4ddc49",
+    "volumes-after-writes.txt": "909557b4bf5ca69865e64b25ae49e1ded4f76276e2d21ed5297abbe94ef1b25e",
+    "volumes-before-writes.txt": "efe383c6a06836172ba14b91cec8cf962788d8b6a210a972ee3ee1b1d835a66f",
+    "volumes-pre-write-recheck.txt": "efe383c6a06836172ba14b91cec8cf962788d8b6a210a972ee3ee1b1d835a66f",
+    "write-id.txt": "73c7a39d44bc89d026d7682378f1d96c3422e97ee2026816f484c50a2a586583",
+    "www-data-writes.txt": "1e8fe980c8a8ba48da70b1609b3d2ccfc855ed8e7aae73286505053bc00ffc23"
+  },
+  "runSha256": {
+    "isolation.json": "15388c5540edd2c9b3db39f4e3d718101e6073786b7c51e7b078cd5a0556bf64",
+    "media-after.json": "3e11a1a29eb90a74e1555e8c27e449f0b139f7b5ba40fbd43731aaf94f32ef51",
+    "media-before.json": "40da81891988648cb1491801a6c1006e9e7d0e1ea0da9e266a6ef57bf37f1b37"
+  }
+}
