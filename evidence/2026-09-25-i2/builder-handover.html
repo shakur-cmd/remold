@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 finish: builder handover</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>I2 finish: builder handover</h1>
+<div class="meta">2026-09-25 · branch <code>i2/finish-2026-09-25</code>, draft PR <a href="https://github.com/shakur-cmd/remold/pull/6">#6</a> into <code>build/unified-remold-2026-09-24</code> · builder evidence only · awaiting independent verification</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>PR3 WorkOS cleanup.</b> Can I remove three Remold Staging entries: redirect <code>https://pr-3-remold-i2-preview.shakur-949.workers.dev/callback</code>, CORS origin <code>https://pr-3-remold-i2-preview.shakur-949.workers.dev</code> and sign-out URI <code>https://pr-3-remold-i2-preview.shakur-949.workers.dev</code>? PR4 and localhost stay as they are. The browser-automation rules treat this as a security setting change, so it needs your yes.</li>
+  <li><b>Email/password sign-in.</b> Can Remold Staging use email and password sign-in, with WorkOS sending one verification code to <code>shakur+remold-staging@codemyvibe.com</code>? Or name a different test mailbox. This also unblocks the blocked-third-party-cookie check, because a fresh browser profile can then sign in without your Google account.</li>
+  <li><b>Scheduled backups.</b> Do you want Convex Pro for daily backups? The docs say scheduled backups need Pro. I did not check the price. If not, the free manual backup plus the restore drill below is the fallback.</li>
+  <li><b>Alert channel.</b> Where should operator alerts go? Every choice needs a new account (email provider, push app, error tracker) or a send you would approve. Nothing was built for this row.</li>
+  <li><b>Automatic PR previews.</b> Do you want a preview for every PR? That would go beyond the two approved previews. It also means storing a Cloudflare token and a Convex preview key as GitHub secrets in this public repo, and deciding how each preview's WorkOS callback gets added (a staging API key in CI, or one click from you per PR).</li>
+  <li><b>Production first-party session.</b> This needs a production WorkOS environment, a custom auth domain and a production host. That is the L0 cutover, which is not approved. I did not check the price.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done by the builder (independent check still pending)</h2>
+<ul>
+  <li><b>Restored-snapshot release gate.</b> A persisted release now passes <code>preflight</code> only with a PASS receipt bound to its commit, schema and pinned manifest. Without a receipt it is refused, as before. Real Convex snapshots are restored into a scratch local backend and the candidate schema is pushed over them. A candidate that adds a required field is refused (<code>Schema validation failed</code>). An optional-field expansion passes. A tampered snapshot changes the canonical hash. This ran on synthetic data and on real free-plan exports of both previews. <code>deploymentAuthorized</code> stays false.</li>
+  <li><b>Real old browser during migration.</b> A headless Chromium page is loaded once before the schema change and never reloaded. It keeps a live subscription and makes authenticated writes through the whole run: expansion, partial migration, rollback to the expand target and resume, over 1,004 records. With a wrong signing key, the red control fails on its first browser write.</li>
+  <li><b>PR3 close-one cleanup (hosting).</b> PR3 was closed and its Cloudflare preview and Convex backend were deleted by the reviewed operator. Both are confirmed gone, and the PR3 URL returns 404. PR4 is unchanged and still signed in with only its own fixture after a reload. A snapshot of PR3 was exported before deletion and kept privately.</li>
+  <li>Typecheck, 73 app tests, 34 ops tests and the production build pass. GitHub CI <a href="https://github.com/shakur-cmd/remold/actions/runs/36142463556">36142463556</a> passed on <code>f1b197b</code>.</li>
+</ul>
+</div>
+
+<h2>Remaining I2 rows</h2>
+<table>
+<tr><th>Row</th><th>State</th><th>Evidence</th></tr>
+<tr><td>Email/password</td><td>Blocked: needs your yes on the staging method and the verification email (above)</td><td>none</td></tr>
+<tr><td>Blocked-third-party-cookie proof</td><td>Blocked. Previews keep the session in first-party storage, so this should pass, but it has not been observed. A clean browser profile needs a non-Google sign-in, which depends on email/password. Changing cookie settings in your owned Chrome profile is out of bounds.</td><td>none</td></tr>
+<tr><td>Production first-party session</td><td>Blocked on L0 production cutover and the custom auth domain</td><td>none</td></tr>
+<tr><td>Close-one cleanup</td><td>Hosting done (SANDBOX). WorkOS entries pending your yes.</td><td><code>cleanup-before.json</code>, <code>pr3-cleanup.log</code>, <code>cleanup-after.json</code>, <code>pr4-after-cleanup.json</code>, <code>workos-cleanup-plan.json</code></td></tr>
+<tr><td>Automated PR lifecycle</td><td>Blocked: preview count beyond two, CI secrets in a public repo, and WorkOS callback method (above). Not built, because code that cannot be run live would prove nothing.</td><td>none</td></tr>
+<tr><td>Backups/restore</td><td>Restore drill and release gate done (SERVICE plus SANDBOX). Scheduled managed backups need Pro.</td><td><code>snapshot-drill-*.json</code>, <code>release-cli-e2e.txt</code>, <code>release-snapshot-receipt.json</code></td></tr>
+<tr><td>Real old-browser migration/rollback</td><td>Done (SERVICE-local, synthetic)</td><td><code>ops/migrations/evidence/old-browser-green.json</code>, <code>old-browser-red.json</code>, <code>old-browser-builder-rerun.json</code></td></tr>
+<tr><td>Delivered alerts</td><td>Blocked on the channel/account choice</td><td>none</td></tr>
+<tr><td>Measurement UI integration</td><td>Blocked. The dashboard belongs to I10 and needs an operator-role decision. Backend release tagging needs the gated deploy pipeline.</td><td>none</td></tr>
+</table>
+
+<h2>How to reproduce (independent verifier)</h2>
+<p>Use a fresh checkout of the PR head, run <code>pnpm install --frozen-lockfile</code>, <code>pnpm --dir packages/mcp install --frozen-lockfile &amp;&amp; pnpm --dir packages/mcp build</code> and <code>pnpm --dir ops/migrations install --frozen-lockfile</code>. Everything below is loopback-local unless marked.</p>
+<ol>
+  <li><b>Unit checks:</b> <code>node --test ops/release/release.test.mjs ops/previews/policy.test.mjs ops/migrations/rollback.test.mjs</code>, <code>pnpm typecheck</code>, <code>pnpm test</code>, <code>pnpm build</code>.</li>
+  <li><b>Snapshot drill:</b> <code>node ops/release/snapshot-drill.mjs /tmp/v-synthetic.json</code> should exit 0 with green PASS, red FAIL, expansion PASS and differing tamper hashes. To see that the check can fail, change the red candidate in <code>snapshot-drill.mjs</code> to add an optional field instead. The drill should then exit 1 with "Incompatible schema unexpectedly accepted".</li>
+  <li><b>SANDBOX snapshot:</b> export PR4 yourself with the preview-only key (valid until 2026-09-27 00:38Z, stored at <code>ops/previews/.private/convex-preview-key</code> in the main checkout). Run it from a directory whose <code>package.json</code> depends on <code>convex</code>: <code>CONVEX_DEPLOY_KEY=… node …/convex/bin/main.js export --deployment kindred-hyena-171 --path pr4.zip</code>. Then run <code>node ops/release/snapshot-drill.mjs /tmp/v-pr4.json --snapshot pr4.zip</code>. The builder's copies are in the ignored <code>ops/previews/.private/snapshots/</code> of the <code>remold-i2</code> worktree. They contain your staging user record, so they are not committed.</li>
+  <li><b>Release gate end to end:</b> from a clean checkout at the PR head, run <code>node ops/release/release.mjs build /tmp/v-art HEAD_SHA bfb37cb4c1e4d141e27ab910ec84d77788074ab0 ops/release/notes.json</code>. Then run <code>preflight /tmp/v-art HEAD_SHA PIN</code> (expect Blocked), <code>snapshot /tmp/v-art HEAD_SHA PIN $(pwd) pr4.zip /tmp/v-receipt.json</code> (expect PASS), <code>preflight … /tmp/v-receipt.json</code> (expect restored-and-validated) and the same with <code>releaseSha</code> edited (expect refusal). The builder transcript is <code>release-cli-e2e.txt</code>.</li>
+  <li><b>Old browser:</b> <code>node ops/migrations/rehearse.mjs /tmp/v-green.json</code> should give PASS, and <code>node ops/migrations/rehearse.mjs /tmp/v-red.json 1000 --break-browser-auth</code> should fail with UNAUTHENTICATED on the first browser write. Do not run two at once, because they share ports. Chromium is at <code>~/Library/Caches/ms-playwright/chromium_headless_shell-1234</code>, or set <code>REMOLD_REHEARSAL_CHROME</code>.</li>
+  <li><b>Cleanup (SANDBOX, read-only):</b> confirm Cloudflare preview <code>pr-3</code> is absent, Convex <code>neat-squid-188</code> returns 404, PR4 <code>kindred-hyena-171</code> and frontend <code>567c0b14…</code> are present, PR #3 is CLOSED at <code>954bdfb</code>, and PR4 sign-in, reload and logout still work in a real browser.</li>
+</ol>
+
+<h2>Limits you should know</h2>
+<ul>
+  <li>A snapshot receipt is plain JSON. It is trusted only when the same trusted process that pinned the manifest produces it, the same model as the manifest pin. It is not a signature.</li>
+  <li>The canonical comparison covers app tables, not the rate-limiter component's internal tables.</li>
+  <li>The "old browser" is a Convex client bundle in real Chromium, not the full React app with AuthKit. It uses a rehearsal-only signing key in scratch.</li>
+  <li>The WorkOS cleanup plan was computed from the last recorded WorkOS state (PR3 receipt), not a fresh dashboard read. Re-read WorkOS before removing anything.</li>
+  <li>PR3's original temp checkout had been deleted. The builder recreated the exact clean <code>954bdfb</code> checkout at the receipt path so the operator's source checks could run, then removed it.</li>
+  <li><code>ops/release/notes.json</code> now names <code>3339517</code> as the rollback target. The old target <code>bedff74</code> predates the telemetry tables, so preflight correctly refused it.</li>
+</ul>
+
+<h2>Other findings</h2>
+<ul>
+  <li>Dirty temp worktree <code>remold-preview-readiness-*</code> only contains regenerated <code>dist/</code> build output, which is no longer tracked. Not kept.</li>
+  <li>Dirty temp worktree <code>remold-session-fix-*</code> contains the guarded preview-session change. It is byte-identical to <code>b9345f8</code>, which is already on the build branch. Not needed. Neither worktree was deleted.</li>
+  <li>Files changed outside the I2 allowed paths: <code>package.json</code>, for the <code>proof:snapshot</code> script only; <code>ops/migrations/**</code>, where the migration rehearsal lives; and <code>docs/unified-launch/execution.json</code>, to record this state without claiming verification.</li>
+</ul>
+</body>
+</html>
