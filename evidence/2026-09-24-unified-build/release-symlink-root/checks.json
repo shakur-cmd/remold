@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-25T00:59:18.885882+00:00",
+  "sourceFiles": {
+    "ops/release/release.mjs": "012592cb7af8132ad180a66ae8761cb27a73e943ac018ecdec9ad09a7f1afbe5",
+    "ops/release/release.test.mjs": "f134f36b3d416e3231b53198c5d9d5e0fa51610d72a7c81c9adc04c716919bfa"
+  },
+  "before": {
+    "command": "node --test --test-name-pattern='verification invoked through a symlink' ops/release/release.test.mjs",
+    "exit": 1,
+    "reason": "CLI returned success with empty stdout; artifact was not verified"
+  },
+  "after": {
+    "command": "node --test ops/release/release.test.mjs",
+    "exit": 0,
+    "tests": 15
+  },
+  "providerCalls": 0,
+  "appOrI1TestsRun": false,
+  "independentReview": "APPROVE c0_verifier: directory-symlink old/new, altered bytes, import behavior and15tests"
+}

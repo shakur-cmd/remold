@@ -121,7 +121,7 @@ export function build(cwd, output, sha, baseSha, notesPath) {
   return { sha, manifestSha256: pin, output, deploymentAuthorized: false };
 }
 
-if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const [command, directory, sha, third, notes] = process.argv.slice(2);
     if (command === 'base') console.log(resolveBase(process.cwd(), directory, sha, third));

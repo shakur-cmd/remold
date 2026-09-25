@@ -1,9 +1,10 @@
 import { test } from 'node:test';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, rmSync, symlinkSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { digest, sealArtifact, verifyArtifact, runChecks, validateReleaseNotes, preflight, resolveBase } from './release.mjs';
 
 const sha = 'a'.repeat(40);
@@ -36,6 +37,21 @@ test('changed, missing and injected artifact bytes are refused', t => {
   assert.throws(() => verifyArtifact(dir, sha, pin), /inventory/);
   writeFileSync(join(dir, 'private-export.json'), '{"customer":"must not ship"}');
   assert.throws(() => verifyArtifact(dir, sha, pin), /inventory/);
+});
+test('verification invoked through a symlink checks the artifact and refuses changed bytes', t => {
+  const dir = fixture(t), pin = seal(dir);
+  const alias = join(tmpdir(), `remold-release-alias-${process.pid}.mjs`);
+  symlinkSync(fileURLToPath(new URL('./release.mjs', import.meta.url)), alias);
+  t.after(() => rmSync(alias));
+  const verify = () => spawnSync(process.execPath, [alias, 'verify', dir, sha, pin], { encoding: 'utf8' });
+  const clean = verify();
+  assert.equal(clean.status, 0);
+  assert.match(clean.stdout, /"sha"/, 'CLI must execute verification rather than silently exit');
+  assert.equal(JSON.parse(clean.stdout).sha, sha);
+  writeFileSync(join(dir, 'assets/app.js'), 'changed after sealing');
+  const changed = verify();
+  assert.equal(changed.status, 1);
+  assert.match(changed.stderr, /inventory mismatch/);
 });
 test('rewriting manifest checksums does not defeat the separately pinned digest', t => {
   const dir = fixture(t), pin = seal(dir);

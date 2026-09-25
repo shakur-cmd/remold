@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Release verifier follows symlinked entry paths</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Release verifier follows symlinked entry paths</h1><p class="meta">2026-09-24 · I2 release tooling · root red/green and independent c0 check passed</p><div class="decisions"><h2>Review boundary</h2><p>No owner decision needed. This fixes CLI invocation only. Existing artifact hashes, release classifications, snapshot and production gates remain enforced.</p></div><div class="status"><h2>Root proof</h2><p>The symlink invocation failed its new behavior test before the edit: it exited 0 with empty output. Resolving both entry paths to their actual file lets the CLI execute. The same test now verifies an intact artifact and returns exit 1 for modified bytes. All 15 release tests pass.</p></div><h2>Before and after</h2><table><tr><th>Before</th><th>After</th></tr><tr><td>argv path could contain /var or a symbolic link while the loaded module used its canonical path. The main-entry comparison failed and ran nothing.</td><td>Compare canonical paths on both sides. Imported helpers still remain imports; actual CLI invocations run their existing checks.</td></tr><tr><td>A successful process exit could be mistaken for verification.</td><td>The regression test requires the expected SHA response, then changes artifact bytes and requires a nonzero refusal.</td></tr></table><p><a href="before.txt">Captured failing behavior</a> · <a href="after.txt">15 passing tests</a> · <a href="checks.json">Commands and exact source hashes</a>. h0 first observed the issue in an isolated preview checkout; its <a href="../../../ops/previews/evidence/release-cli-symlink-noop.json">original reproduction</a> remains separate. Preview artifact validation used the exported checker directly and was not counted from the empty CLI result.</p><p>No provider calls, app authorization audits, deployment or production change occurred. <a href="../release-symlink-iv/review.html">c0 independently approved</a> after comparing old and new behavior through a directory symlink, verifying altered-byte refusal and import behavior, and repeating all 15 release tests.</p></body></html>

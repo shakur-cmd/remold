@@ -1,0 +1,33 @@
+{
+  "verdict": "APPROVE bounded release CLI symlink fix",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-25T01:00:23.717442+00:00",
+  "sourceHashes": {
+    "ops/release/release.mjs": "012592cb7af8132ad180a66ae8761cb27a73e943ac018ecdec9ad09a7f1afbe5",
+    "ops/release/release.test.mjs": "f134f36b3d416e3231b53198c5d9d5e0fa51610d72a7c81c9adc04c716919bfa"
+  },
+  "oldSourceSha256": "570f4c5f8d7748a39d1c64e8d36330ae922ff4f45fe09dc5d1b04eb32fdd78ad",
+  "checks": [
+    {
+      "command": "node evidence/2026-09-24-unified-build/release-symlink-iv/check.mjs",
+      "exit": 0,
+      "cases": "Verified preserved predecessor from e7485f6ec9fcf2487f4ca390ee61ef42a51acc03 via directory alias silently succeeds on both good/altered artifact; candidate good verifies/altered refuses; normal file import and eval import produce only explicit wrapper marker"
+    },
+    {
+      "command": "node --test ops/release/release.test.mjs",
+      "exit": 0,
+      "tests": 15
+    }
+  ],
+  "providerCalls": 0,
+  "sourceEdits": 0,
+  "scope": "CLI entry-point dispatch only. No app/auth/I1/release deployment/preview lifecycle certification.",
+  "baseline": {
+    "commit": "e7485f6ec9fcf2487f4ca390ee61ef42a51acc03",
+    "path": "before-release.mjs",
+    "sha256": "570f4c5f8d7748a39d1c64e8d36330ae922ff4f45fe09dc5d1b04eb32fdd78ad",
+    "replay": "Checker loads preserved predecessor and asserts exact SHA; independent of current HEAD"
+  },
+  "checkerSha256": "df9fe06c993101da7f3a95a1c389169404b0b0713de580bb8ddf463d416c51dc",
+  "narrowRerunExit": 0
+}
