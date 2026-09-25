@@ -1,0 +1,31 @@
+{
+  "result": "**Bounded rehearsal: PASS.** The finite P4 recurring rehearsal in the Stripe SANDBOX is verified, and this does not certify full P4.\n\nI made 78 GETs and 0 POSTs, all with `Stripe-Version` 2025-05-28.basil. The results are saved to `final-independent-readback.json` (sha `38a94735\u2026`), with no signed links, secrets or tokens. Root's own readback (50 GETs, 0 POSTs) agrees on every total.\n\nOne slip: my first attempt passed a platform-level account read with a mismatched account header, so it was a refused GET with no effect. I fixed it and reran.\n\n## Journals and budget\n- **Journals intact:** all three are still byte-identical and 0600: `dbe91638`, `8ecfcbbe`, and the failure diagnostic `954fc750`. The new journal `829acb90` is 0600, and its header carries the exact source `670c6629`, parent `8ecfcbbe`, 2709 reserved and 1806 collected.\n- **Continue-2 writes:** 10 attempts, all with new keys (none reused from earlier journals) and valid digests. 9 got normal responses. Attempt 2, the H1 activation, got HTTP 200 with the injected response loss and is journaled as `unknown`. There were no other errors and no failure diagnostic.\n- **Cumulative:** 31 writes, all 9 limits hit exactly: clocks 2, advances 14 (F 8, H 6), customers 2, product 1, price 1, setups 4, schedules 3, card changes 2, cancels 2.\n\n## Provider state (independent GETs)\n- **Clocks:** F frozen at **1790481889**, H at **1790658529**, both ready, `deletes_after` 1792897135 and 1792897139.\n- **Inventories:** each clock holds exactly its one customer, with no email and balance 0. No pending invoice items and no credit notes.\n  - F: 1 schedule `canceled`, 1 subscription `canceled`, 2 invoices, 5 SetupIntents (the same 5 as before: 3 ours, 2 provider-derived).\n  - H: 2 schedules, 2 subscriptions `canceled`, 4 invoices, 1 SetupIntent.\n- **F:**\n  - Invoice `\u2026AsAZx` is paid 301.\n  - Invoice `\u2026Ewf` is **open**: 301 remaining, `auto_advance` false, no next retry, a `generic_decline` payment.\n  - Canceled at 1790477988, and no invoice after the final advance.\n  - The local ledger shows `cancellationPending`, paid 301, **602 held**, complete, no anomaly.\n- **H1:**\n  - Exactly **one** schedule carries H1's commitment metadata, so the lost response didn't cause a duplicate.\n  - It's `completed` at 1790564329, and its subscription ended there.\n  - 3 invoices, all paid, with back-to-back daily lines from 1790305129 to 1790564329 and no proration.\n  - Local: ended, 903, 0 held.\n- **H2:**\n  - A new schedule starting at 1790568229, after H1 ended, with its own commitment metadata.\n  - 1 invoice, paid 301, a full-day line with no proration.\n  - Canceled at 1790572129. No further invoice through the final H time.\n  - Local: cancelled, 301, 0 held, with activate and cancel commands both confirmed.\n- **Totals:** 6 invoices, 5 paid for **1505** collected, 1 open for 301. 0 refunds. All 5 paid PaymentIntents pass the fee proof: explicit-null fee fields, complete and empty platform fee lists.\n  - Every invoice read twice 1.3 seconds apart changed only its two links.\n  - Issuer `self`, application `ca_VJwF\u2026`.\n- **Isolation:** E-scoped GETs of all 3 schedules are refused (404). E has no clocks.\n- **Caps:** collected 1505 \u2264 1806, held 602 \u2264 2709.\n\n## Limits of this evidence\n- Fresh acceptance for H2 is shown by local records only. The provider can confirm a distinct schedule and commitment, but it can't see an acceptance.\n- The F retry was never observed: Stripe scheduled it about 1.8 days out, then cancelling stopped collection. The open 301 is a permanent, recorded liability. There is no void or forgiveness path.\n- I didn't recheck CI 36091602684 or source commit `3e3720d`.\n- Everything is preserved: no cleanup, no POST. The clocks are deleted at **1792897135**.\n\n## Still open for full P4\n- future-start (not-yet-started) scheduling and its cancellation\n- monthly cadence\n- durable, signed recurring ingress (the webhook listener only recorded fixture events)\n- live-mode and financial gates\n- the I1/I7 audits\n- whether the provider-derived SetupIntents are documented Stripe behaviour (my cause is inferred from timing)",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 118,
+      "outputTokens": 78490,
+      "thinkingTokens": 31185,
+      "cacheReadInputTokens": 6996712,
+      "cacheCreationInputTokens": 225822,
+      "webSearchRequests": 0,
+      "costUSD": 4.776190400000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}
