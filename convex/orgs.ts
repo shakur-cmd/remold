@@ -13,7 +13,7 @@ export const create = mutation({ args: { name: v.string() }, handler: async (ctx
   await ctx.db.insert("members", { orgId, userId: principal.user._id, role: "owner" });
   await seedStandard(ctx, orgId);
   const objects = await ctx.db.query("objects").withIndex("by_org", q => q.eq("orgId", orgId)).collect();
-  await ctx.db.patch(orgId, { authorityFrozenAt: Math.max(Date.now(), ...objects.map(o => o._creationTime)) });
+  await ctx.db.patch(orgId, { authorityFrozenAt: Math.max(Date.now(), ...objects.map(o => o._creationTime)), authorityFrozenKeys: Object.fromEntries(objects.map(o => [o._id, o.key])) });
   return orgId;
 } });
 export const mine = query({ args: {}, handler: async (ctx) => {

@@ -75,3 +75,18 @@ it('a human explicitly adopts a fired suggestion as a new attributable action', 
   const data = await f.t.run(async ctx => ({ event: await ctx.db.get(applied.eventId!), adopted: await ctx.db.get(adopted), old: await ctx.db.get(proposed.json.suggestion.id) }));
   expect(data.event!.actor.kind).toBe('user'); expect(data.adopted!.agentId).toBe(agent.agentId); expect(data.adopted!.adoptedFrom).toBe(proposed.json.suggestion.id); expect((data.old as any).status).toBe('pending');
 });
+
+it('an explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7)', async () => {
+  // Legacy agent holds update:vendor; no vendor object existed when authority was frozen.
+  const f = await legacy('member', [{ action: 'update' as const, objectKey: 'vendor' }]);
+  await f.t.mutation(migration.freeze, { orgId: f.orgId });
+  const campaign = await objectFields(f.client, f.orgId, 'campaign');
+  const row = await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: campaign.object._id, values: { [campaign.fields.name._id]: 'Launch' } });
+  // Operator-only rename (no public rename exists) of a pre-freeze object onto the granted key.
+  await f.t.run(ctx => ctx.db.patch(campaign.object._id, { key: 'vendor' }));
+  const update = () => f.call('POST', '/api/v1/changes', { action: 'update', record: row.recordId, values: { name: 'Hijacked' }, reason: 'rename' });
+  expect((await update()).status).toBe(403);
+  const migrated = await f.t.mutation(migration.migrateAgent, { agentId: f.agent.agentId });
+  expect(migrated.dropped).toEqual(['update:vendor']);
+  expect((await update()).status).toBe(403);
+});

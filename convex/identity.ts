@@ -3,6 +3,7 @@ import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { fail } from "./errors";
 import { writable } from "./authority/readonly";
 import { validGrants } from "./authority/grants";
+import { frozenKey } from "./authority/migration";
 
 export type Role = "owner" | "admin" | "member";
 export type Actor = { kind: "user" | "agent" | "automation"; id: string };
@@ -32,7 +33,7 @@ export async function requireAgent(ctx: Ctx, keyHash: string): Promise<AgentMemb
 
 export function granted(agent: Doc<"agents">, action: "create" | "update" | "delete", object: Doc<"objects">, org: Doc<"orgs">) {
   if (agent.authorityVersion === 1) return agent.grants.some(grant => grant.action === action && grant.objectId === object._id);
-  return org.authorityFrozenAt !== undefined && object._creationTime <= org.authorityFrozenAt && agent.grants.some(grant => grant.action === action && (grant.objectKey === "*" || grant.objectKey === object.key));
+  return org.authorityFrozenAt !== undefined && object._creationTime <= org.authorityFrozenAt && agent.grants.some(grant => grant.action === action && (grant.objectKey === "*" || grant.objectKey === frozenKey(org, object)));
 }
 
 export function roleOf(principal: Principal): Role { return "member" in principal ? principal.member.role : principal.agent.role; }
