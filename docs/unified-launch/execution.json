@@ -118,7 +118,7 @@
         "proofs/payments/**"
       ],
       "environment": "Stripe test sandboxacct_1UJHeKJjT84hNemU, two synthetic merchants; optional loopback3490/3491",
-      "scopeNote": "Frozen54fc21064 passed root changed-behavior and independent checks. One-shot actual recovery retained existing deposit,12manualSANDBOX groupsPASS; requiredrecurringBLOCKED so exit1/INCOMPLETE. Independent exhaustive provider checkpoint:5invoices,10PIs(5charged/5uncharged),5charges10917USDminor,refund101,credit99,dispute805;Ecompleteempty. Opencredit900 remains payabletestobligation. Root exactID/arithmetic comparison passes. Hosted-payer default-payment/fee path, recurring/fullP4/I1/I7 remainopen; do not rerun spentrecovery.",
+      "scopeNote": "Frozen54fc21064 passed root changed-behavior and independent checks. One-shot actual recovery retained existing deposit,12manualSANDBOX groupsPASS; requiredrecurringBLOCKED so exit1/INCOMPLETE. Independent exhaustive provider checkpoint:5invoices,10PIs(5charged/5uncharged),5charges10917USDminor,refund101,credit99,dispute805;Ecompleteempty. Opencredit900 remains payabletestobligation. Root exactID/arithmetic comparison passes. Hosted-payer default-payment/fee path, recurring/fullP4/I1/I7 remainopen; do not rerun spentrecovery. Additive recurring local14 successor passed root15 and independent15+11 altered observations/3restarts. Exact line cadence and retained receipt accounting repaired; actual recurring Stripe work still open.",
       "evidence": "evidence/2026-09-24-unified-build/payments-root/r3/report.html",
       "independentEvidence": "evidence/2026-09-24-unified-build/payments-iv/r3/review.html",
       "frozenManifest": "fc21064f9f4197bd02872ad078f73cec61b91400804e9692c8bc89e68300398e",
@@ -127,7 +127,10 @@
       "providerCheckpoint": "evidence/2026-09-24-unified-build/payments-iv/recovery-provider/review.html",
       "recoveryEvidence": "evidence/2026-09-24-unified-build/payments-root/basil/report.html",
       "recoveryIndependentEvidence": "evidence/2026-09-24-unified-build/payments-iv/basil-recovery/review.html",
-      "providerExecutionEvidence": "evidence/2026-09-24-unified-build/payments-root/recovery-provider/report.html"
+      "providerExecutionEvidence": "evidence/2026-09-24-unified-build/payments-root/recovery-provider/report.html",
+      "recurringLocalEvidence": "evidence/2026-09-24-unified-build/payments-recurring-root/r2/report.html",
+      "recurringIndependentEvidence": "evidence/2026-09-24-unified-build/payments-recurring-iv/r2/review.html",
+      "recurringLocalManifest": "28735f6b846e88b0fecaeee2866a568cf5662cc3baacfa5b2d5aed728bf4a57d"
     },
     {
       "id": "P5",
@@ -135,7 +138,7 @@
       "builder": "/root/c0_verifier",
       "independentVerifier": "/root/h0_builder, bounded code/offline/evidence review and exact calendar GET",
       "costCap": 0,
-      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests plus A→shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Both A5/B5 consumed at2026-09-25T00:34:39Z; no further capacity then. C recipient only. Calendar and same-sender one-shot proofs consumed; no replay.",
+      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests plus A\u2192shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Both A5/B5 consumed at2026-09-25T00:34:39Z; no further capacity then. C recipient only. Calendar and same-sender one-shot proofs consumed; no replay.",
       "depends": [
         "H0"
       ],

@@ -1,0 +1,8 @@
+$ node replay.mjs
+AssertionError [ERR_ASSERTION]: Observed excess payment must not disappear after narrower pull
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:55:1074
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:18:27)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:10:5
+[ELIFECYCLE] Test failed. See above for more details.
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?

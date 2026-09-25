@@ -1,0 +1,119 @@
+{
+  "scope": "Isolated P4 local proof, not shipping/H0/I1 API",
+  "convexVersion": "1.46.0",
+  "base": "evidence/base-manifest.json",
+  "addedTables": [
+    "recurringPlans",
+    "recurringCommitments",
+    "recurringCommands",
+    "recurringCycles"
+  ],
+  "schemaSha256": "a3aacf60f598bc2394cdbf6c840f1fc6b309f41d5654b88cdf2dc2c50e053522",
+  "functions": [
+    {
+      "name": "propose",
+      "kind": "mutation",
+      "arguments": "{\n    token: v.string(),\n    customer: v.id('payCustomers'),\n    service: v.string(),\n    price: v.string(),\n    setupIntent: v.string(),\n    interval: v.union(v.literal('day'), v.literal('month')),\n    start: v.number(),\n    amountMinor: v.literal(301),\n    cycles: v.literal(3),\n    currency: v.literal('usd')\n}"
+    },
+    {
+      "name": "issueAcceptance",
+      "kind": "action",
+      "arguments": "{ token: v.string(), plan: v.id('recurringPlans') }"
+    },
+    {
+      "name": "acceptance",
+      "kind": "internalMutation",
+      "arguments": "{\n        token: v.string(),\n        plan: v.id('recurringPlans'),\n        tokenHash: v.string()\n    }"
+    },
+    {
+      "name": "accept",
+      "kind": "mutation",
+      "arguments": "{\n        plan: v.id('recurringPlans'),\n        token: v.string(),\n        hash: v.string()\n    }"
+    },
+    {
+      "name": "adopt",
+      "kind": "mutation",
+      "arguments": "{ token: v.string(), plan: v.id('recurringPlans') }"
+    },
+    {
+      "name": "prepareCommand",
+      "kind": "mutation",
+      "arguments": "{\n        token: v.string(),\n        id: v.id('recurringCommitments'),\n        kind: v.union(v.literal('card'), v.literal('cancel')),\n        setupIntent: v.optional(v.string())\n    }"
+    },
+    {
+      "name": "context",
+      "kind": "query",
+      "arguments": "{ token: v.string(), id: v.id('recurringCommitments') }"
+    },
+    {
+      "name": "command",
+      "kind": "query",
+      "arguments": "{ token: v.string(), id: v.id('recurringCommands') }"
+    },
+    {
+      "name": "consume",
+      "kind": "mutation",
+      "arguments": "{ token: v.string(), id: v.id('recurringCommands') }"
+    },
+    {
+      "name": "unknown",
+      "kind": "mutation",
+      "arguments": "{ token: v.string(), id: v.id('recurringCommands') }"
+    },
+    {
+      "name": "settled",
+      "kind": "mutation",
+      "arguments": "{\n        token: v.string(),\n        id: v.id('recurringCommands'),\n        providerRef: v.string(),\n        subscription: v.optional(v.string()),\n        subscriptionItem: v.optional(v.string()),\n        providerEnd: v.optional(v.number())\n    }"
+    },
+    {
+      "name": "beginObservation",
+      "kind": "mutation",
+      "arguments": "{ token: v.string(), id: v.id('recurringCommitments') }"
+    },
+    {
+      "name": "observe",
+      "kind": "mutation",
+      "arguments": "{\n        token: v.string(),\n        id: v.id('recurringCommitments'),\n        generation: v.number(),\n        subscription: v.string(),\n        schedule: v.string(),\n        terminal: v.boolean(),\n        cancelled: v.boolean(),\n        shapeValid: v.boolean(),\n        pendingItemsEmpty: v.boolean(),\n        cycles: v.array(cycle)\n    }"
+    },
+    {
+      "name": "inspect",
+      "kind": "query",
+      "arguments": "{ token: v.string(), id: v.id('recurringCommitments') }"
+    }
+  ],
+  "fixtureOnly": [
+    "recurringFixture:customer internalQuery",
+    "recurringFixture:epoch internalMutation"
+  ],
+  "closedProviderWrites": [
+    "POST /v1/subscription_schedules fixed301*3 end_behavior=cancel",
+    "POST /v1/subscriptions/:boundId default_payment_method from scoped SetupIntent",
+    "POST /v1/subscription_schedules/:boundId/cancel invoice_now=false prorate=false"
+  ],
+  "limits": {
+    "cycles": 3,
+    "amountMinor": 301,
+    "totalMinor": 903,
+    "currency": "usd",
+    "invoiceTraversal": 10,
+    "listPage": 100,
+    "paymentReceiptsPerInvoice": 10,
+    "cyclesPerBinding": 100,
+    "commandsPerCommitment": 30
+  },
+  "lineIdentity": {
+    "source": "Complete invoice.lines within consistent invoice snapshot",
+    "boundItem": "Fresh subscription.items single item captured at activation",
+    "cadence": "Core computes exact indices0–2 from shared cadence.ts; line service period, not invoice accumulation period",
+    "eligibility": "Core-set immutable first-success receipt flag, with incomplete line identity undecided",
+    "gross": "Sum retained unique succeeded receipts across all retained invoices",
+    "recognized": "Eligible succeeded receipts, capped301 per unique valid cycle; max903",
+    "reservation": "903 minus recognized while unresolved; never anomalous gross"
+  },
+  "argumentValidators": {
+    "planArgs": "{\n    token: v.string(),\n    customer: v.id('payCustomers'),\n    service: v.string(),\n    price: v.string(),\n    setupIntent: v.string(),\n    interval: v.union(v.literal('day'), v.literal('month')),\n    start: v.number(),\n    amountMinor: v.literal(301),\n    cycles: v.literal(3),\n    currency: v.literal('usd')\n}",
+    "payment": "v.object({\n    id: v.string(),\n    amountMinor: v.number(),\n    status: v.union(v.literal('pending'), v.literal('succeeded'), v.literal('failed'), v.literal('cancelled'))\n})",
+    "line": "v.union(v.null(), v.object({\n    id: v.string(),\n    subscriptionItem: v.string(),\n    price: v.string(),\n    serviceStart: v.number(),\n    serviceEnd: v.number()\n}))",
+    "cycle": "v.object({\n    invoice: v.string(),\n    subscription: v.string(),\n    period: v.number(),\n    amountMinor: v.number(),\n    paidMinor: v.number(),\n    status: v.string(),\n    autoAdvance: v.boolean(),\n    payments: v.array(payment),\n    lineComplete: v.boolean(),\n    lineShape: v.boolean(),\n    line,\n    billingReason: v.string()\n})"
+  }
+}

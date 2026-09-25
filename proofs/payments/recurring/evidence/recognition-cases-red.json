@@ -1,0 +1,74 @@
+[
+  {
+    "kind": "disjoint-valid",
+    "paid": 201,
+    "held": 702,
+    "anomaly": true
+  },
+  {
+    "kind": "line-changed-new-success",
+    "paid": 201,
+    "held": 702,
+    "anomaly": true
+  },
+  {
+    "kind": "pending-then-valid",
+    "paid": 301,
+    "held": 602,
+    "anomaly": false
+  },
+  {
+    "kind": "pending-then-invalid",
+    "paid": 301,
+    "held": 602,
+    "anomaly": false
+  },
+  {
+    "kind": "invalid-then-reverted",
+    "paid": 301,
+    "held": 602,
+    "anomaly": false
+  },
+  {
+    "kind": "omitted-invoice",
+    "paid": 201,
+    "held": 702,
+    "anomaly": true
+  },
+  {
+    "kind": "duplicate-existing",
+    "paid": 602,
+    "held": 301,
+    "anomaly": false
+  },
+  {
+    "kind": "duplicate-same-pull",
+    "paid": 602,
+    "held": 301,
+    "anomaly": false
+  },
+  {
+    "kind": "success-regression",
+    "paid": 301,
+    "held": 602,
+    "anomaly": true
+  },
+  {
+    "kind": "amount-regression",
+    "paid": 201,
+    "held": 702,
+    "anomaly": true
+  },
+  {
+    "kind": "overpaid",
+    "paid": 401,
+    "held": 502,
+    "anomaly": true
+  },
+  {
+    "kind": "incomplete-then-complete",
+    "paid": 301,
+    "held": 602,
+    "anomaly": false
+  }
+]

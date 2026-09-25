@@ -1,0 +1,52 @@
+{
+  "at": "2026-09-25T00:55:42.279684+00:00",
+  "candidateHeld": "71a13358f83cf44495e9f2a9494e1c727e2c54c2d5535c6c8df0c507d7b49743",
+  "version": "stripe-node v18.2.0, API2025-05-28.basil",
+  "facts": [
+    {
+      "source": "Invoices.d.ts",
+      "lines": [
+        340,
+        348
+      ],
+      "finding": "Invoice period_start/end concern accumulated invoice items and look back one period; provider explicitly directs service-period consumers to invoice lines."
+    },
+    {
+      "source": "InvoiceLineItems.d.ts",
+      "lines": [
+        168,
+        196
+      ],
+      "finding": "Basil recurring parent exposes proration, subscription and subscription_item IDs."
+    },
+    {
+      "source": "InvoiceLineItems.d.ts",
+      "lines": [
+        224,
+        236
+      ],
+      "finding": "Line period contains start/end timestamps described as inclusive; exact cadence boundary mapping still needs supported provider fixture evidence."
+    },
+    {
+      "source": "InvoiceLineItems.d.ts",
+      "lines": [
+        266,
+        289
+      ],
+      "finding": "Line pricing uses price_details.price; quantity, amount/currency and invoice identity remain separate fields."
+    },
+    {
+      "source": "lines.md",
+      "lines": [
+        1,
+        20
+      ],
+      "finding": "Embedded invoice lines can be only the first portion; use full GET /v1/invoices/:id/lines and prove traversal complete."
+    }
+  ],
+  "independentFindings": [
+    "evidence/2026-09-24-unified-build/payments-recurring-iv/period-result.json",
+    "evidence/2026-09-24-unified-build/payments-recurring-iv/disjoint-result.json"
+  ],
+  "scope": "Primary-source and design guidance only; no provider call or source modification"
+}

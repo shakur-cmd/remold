@@ -1,0 +1,10 @@
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:16
+ const start=async()=>{log='';child=spawn(process.execPath,[cli,'dev','--local-cloud-port','3590','--local-site-port','3591','--typecheck','enable','--tail-logs','disable'],{cwd,env,detached:true,stdio:['ignore','pipe','pipe']});for(const s of [child.stdout,child.stderr])s.on('data',b=>log+=b);const end=Date.now()+180000;while(!log.includes('Convex functions ready')){if(child.exitCode!==null||Date.now()>end)throw Error('Local backend not ready; private log retained');await new Promise(r=>setTimeout(r,150));}};
+                                                                                                                                                                                                                                                                                                                                                                                                                                 ^
+
+Error: Local backend not ready; private log retained
+    at start (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:16:418)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:18:6)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/[eval1]:1:70
+
+Node.js v24.18.0

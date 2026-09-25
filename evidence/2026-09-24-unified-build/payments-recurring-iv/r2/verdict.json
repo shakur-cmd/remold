@@ -1,0 +1,46 @@
+{
+  "verdict": "APPROVE bounded recurring local successor",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-25T01:15:16.675010+00:00",
+  "sourceAggregate": "28735f6b846e88b0fecaeee2866a568cf5662cc3baacfa5b2d5aed728bf4a57d",
+  "files": 14,
+  "sourceAndBuilderEvidenceUnchanged": true,
+  "baseline": {
+    "command": "pnpm --dir proofs/payments/recurring test",
+    "exit": 0,
+    "groups": 15,
+    "includesLineCases": 10,
+    "includesRecognitionCases": 12
+  },
+  "independent": {
+    "command": "node evidence/2026-09-24-unified-build/payments-recurring-iv/r2/altered.mjs",
+    "exit": 0,
+    "observations": 11,
+    "backendRestarts": 3,
+    "typecheck": "Convex --typecheck enable passed before each isolated backend start"
+  },
+  "before": "../review.html preserves71 REVISE and independently observed reds",
+  "baselineIntegrity": "Original13 assertions retained; provider fixture gained exact subscription-item/line facts and invoice accumulation period deliberately differs. Two new matrix groups added.",
+  "provenance": "Independent scenario bodies reuse frozen replay provider/setup scaffolding; fresh IDs and backend. New service-period probes target normalized line fields, not prior top-level invoice period assumption.",
+  "portsReleased": [
+    3590,
+    3591
+  ],
+  "externalProviderCalls": 0,
+  "productionSourceChanges": 0,
+  "limits": [
+    "No actual Stripe clock/field-shape/renewal/cancellation evidence",
+    "Future-start null subscription and terminal provider lineage remain open",
+    "Synthetic contradictory provider histories are deliberate local counterexamples",
+    "No production policy, I1 audit, shared H0 promotion or whole P4 acceptance"
+  ],
+  "hashes": {
+    "baseline.txt": "a7e7ccb36241c728fd0cc3b99ec84574ef32d26ceb3783d7bd4b833cb63bf6f0",
+    "altered.mjs": "3692c97d9d02f75344d5157b14325a1d216fbc08f24372420c2e790acf71c176",
+    "altered.txt": "a067bfd9288702c88a84cc31305b3ae119e588f00171fccc210627719154d5ed",
+    "altered-result.json": "c4c39443ce084cd8b3bef834941ea9951fe6a5ab9f8e361d0a4a70f182a59a2a",
+    "local.json": "4ec2b3690943a3f522a6f2c224a9d35f40c62abb0d4b600945a4584289b47efd",
+    "line-cases.json": "2a1f9cd7995b06b9b7a0bef9f5c203d8469842667fdc5e58fcbb03e3e8f5a213",
+    "recognition-cases.json": "b76ffb4d60176698361a9c90d467fd92f34f0890ce219644c78d2ac65e1b62f2"
+  }
+}

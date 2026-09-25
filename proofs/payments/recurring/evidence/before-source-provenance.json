@@ -1,0 +1,40 @@
+{
+  "scope": "Authored predecessor source only; ignored paths contain no public fixture credential output",
+  "base": "base-manifest.json",
+  "failureLogs": [
+    "receipt-history-red.txt",
+    "snapshot-red.txt",
+    "cancellation-red.txt",
+    "preactivation-red.txt",
+    "line-red.txt",
+    "recognition-red.txt"
+  ],
+  "sources": {
+    "receipt-history-before": {
+      "private/receipt-history-before/adapter.mjs": "80e13c4fa2e0ddca179bfe7903423ef970a5cb7170e05b0650f6c807f2d1cfd9",
+      "private/receipt-history-before/recurring.ts": "7e56251b132d7b58d0c98cc1e5a1f7004ee5ccd25292b652ea4d748ba811e16e",
+      "private/receipt-history-before/replay.mjs": "3eeca64c06e2c6be479339a5a05145587f2208ff4fbdbdcfe51b8777fd78b7c9",
+      "private/receipt-history-before/schema.ts": "c77e00b90b763781a7f27f86f0eb90cb907ea4d8958f94d9663c41ac910d6fc8"
+    },
+    "snapshot-before": {
+      "private/snapshot-before/adapter.mjs": "9847e24e0d4c81c777902c65c1364500422773a67a25dc67ac61b70f9477505d",
+      "private/snapshot-before/recurring.ts": "8f689ffbfe6bb70f7fcbed61c3802570c029fb79001faf25dc9c493dcbca0ea5",
+      "private/snapshot-before/replay.mjs": "407539bbb6db3745579531e04844a29857444333309693641022ea65d7d65ff8"
+    },
+    "cancellation-before": {
+      "private/cancellation-before/recurring.ts": "8f689ffbfe6bb70f7fcbed61c3802570c029fb79001faf25dc9c493dcbca0ea5",
+      "private/cancellation-before/replay.mjs": "467adc95f89d6b13a0c423fd3733a37abe48a232835a69ad23e25a6daa6d781f"
+    },
+    "preactivation-before": {
+      "private/preactivation-before/recurring.ts": "61bff155a8e14fbef30168679dfc1e439546abb9a8ab1406fb39e6fe1520812f",
+      "private/preactivation-before/replay.mjs": "8e02db69f76ab32a5710d4c0082ef19286316ea25decc16285db688b979589bd"
+    },
+    "line-recognition-before": {
+      "private/line-recognition-before/adapter.mjs": "ad7407c702f08c926ea93a7dcec90977199887433f88a0754ac0b7590d9480d0",
+      "private/line-recognition-before/recurring.ts": "878966491cfb2337a6de5294086f79da643f883abf0f1e6d646910074cd79888",
+      "private/line-recognition-before/replay.mjs": "84968acf40456754ab6543079a16e62dc4d17718d3a7b5fb5f9ae9b170e733a4",
+      "private/line-recognition-before/schema.ts": "732561e656dad1c13c3f2a9930138d181624a2074afab15d37aa37a8d32fcae7"
+    }
+  },
+  "frozenPredecessor": "private/frozen-71a13358/evidence/source-manifest.json"
+}

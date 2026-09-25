@@ -1,0 +1,113 @@
+{
+  "sourceAggregate": "28735f6b846e88b0fecaeee2866a568cf5662cc3baacfa5b2d5aed728bf4a57d",
+  "level": "SERVICE local Convex and loopback; SIM provider/clock/identities",
+  "results": [
+    {
+      "name": "valid-different-accumulation",
+      "paid": 301,
+      "recognized": 301,
+      "held": 0,
+      "state": "ended",
+      "anomaly": null,
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "shift17",
+      "paid": 301,
+      "recognized": 0,
+      "held": 903,
+      "state": "active",
+      "anomaly": "recurring line outside accepted cycle",
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "at-term-end",
+      "paid": 301,
+      "recognized": 0,
+      "held": 903,
+      "state": "active",
+      "anomaly": "recurring line outside accepted cycle",
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "wrong-line-price",
+      "paid": 301,
+      "recognized": 0,
+      "held": 903,
+      "state": "active",
+      "anomaly": "recurring line outside accepted cycle",
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "disjoint-valid",
+      "paid": 301,
+      "recognized": 301,
+      "held": 602,
+      "state": "active",
+      "anomaly": "receipt regression",
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "disjoint-invalid-new",
+      "paid": 301,
+      "recognized": 100,
+      "held": 803,
+      "state": "active",
+      "anomaly": "recurring line outside accepted cycle",
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "omitted-invoice",
+      "paid": 301,
+      "recognized": 301,
+      "held": 602,
+      "state": "active",
+      "anomaly": "incomplete invoice history",
+      "invoices": 2,
+      "receiptSum": 301
+    },
+    {
+      "name": "omitted-after-restart",
+      "paid": 301,
+      "recognized": 301,
+      "held": 602,
+      "state": "active",
+      "anomaly": "incomplete invoice history",
+      "invoices": 2,
+      "receiptSum": 301
+    },
+    {
+      "name": "cancel-response-loss-processing",
+      "paid": 0,
+      "recognized": 0,
+      "held": 903,
+      "state": "cancellationPending",
+      "anomaly": null,
+      "invoices": 1,
+      "receiptSum": 0
+    },
+    {
+      "name": "cancel-response-loss-late-success",
+      "paid": 301,
+      "recognized": 301,
+      "held": 0,
+      "state": "cancelled",
+      "anomaly": null,
+      "invoices": 1,
+      "receiptSum": 301
+    },
+    {
+      "name": "prepared-cancel-replacement",
+      "oldHeld": 0,
+      "newHeld": 903,
+      "newActivationPosts": 1
+    }
+  ],
+  "externalProviderCalls": 0
+}
