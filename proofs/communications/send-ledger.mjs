@@ -1,12 +1,13 @@
 import { open, readFile, mkdir, rmdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-const A = 'shakur@envoylogic.com', B = 'reply@repliedfor.com';
+const A = 'shakur@envoylogic.com', B = 'reply@repliedfor.com', C = 'shakur@codemyvibe.com';
 const DAY = 86_400_000;
+// These are capped senders; C is an additional approved recipient only.
 const header = { kind: 'policy', version: 1, cap: 5, windowMs: DAY, mailboxes: [A, B] };
 const validIntent = (value) => typeof value.id === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value.id)
   && /^[a-f0-9]{64}$/.test(value.contentHash)
-  && ((value.from === A && value.to === B) || (value.from === B && value.to === A));
+  && ((value.from === A && [B, C].includes(value.to)) || (value.from === B && value.to === A));
 
 export class SendLedger {
   constructor(path, now = Date.now) { this.path = path; this.now = now; }
@@ -50,7 +51,7 @@ export class SendLedger {
     } finally { await rmdir(lock); }
   }
   async reserve(intent) {
-    if (!validIntent(intent)) throw new Error('RECIPROCAL_ONLY_OR_INVALID_INTENT');
+    if (!validIntent(intent)) throw new Error('ROUTE_NOT_ALLOWED_OR_INVALID_INTENT');
     return this.transaction((rows, at) => {
       const previous = rows.find((row) => row.kind === 'reservation' && row.id === intent.id);
       if (previous) {

@@ -32,8 +32,8 @@ test('same attempt never dispatches again, and cannot change its recipient or co
   await ledger.reserve(intent('same'));
   assert.equal((await ledger.reserve(intent('same'))).shouldDispatch, false);
   await assert.rejects(ledger.reserve({ ...intent('same'), contentHash: 'b'.repeat(64) }), /ATTEMPT_CONFLICT/);
-  await assert.rejects(ledger.reserve(intent('self', A, A)), /RECIPROCAL_ONLY/);
-  await assert.rejects(ledger.reserve(intent('third', A, 'third@example.com')), /RECIPROCAL_ONLY/);
+  await assert.rejects(ledger.reserve(intent('self', A, A)), /ROUTE_NOT_ALLOWED/);
+  await assert.rejects(ledger.reserve(intent('third', A, 'third@example.com')), /ROUTE_NOT_ALLOWED/);
 });
 test('concurrent independent ledgers cannot reserve more than five', async (t) => {
   const { path, clock } = await setup(t);

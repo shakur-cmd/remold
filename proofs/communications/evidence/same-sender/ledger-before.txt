@@ -1,0 +1,42 @@
+✖ A to B and newly approved C share the same five-attempt allowance across restart (18.2865ms)
+✔ C remains recipient-only and B cannot address C (6.3205ms)
+✖ malformed new route, duplicate reservations and orphan outcomes still corrupt the ledger (6.779958ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.987667
+
+✖ failing tests:
+
+test at proofs/communications/same-sender.test.mjs:10:1
+✖ A to B and newly approved C share the same five-attempt allowance across restart (18.2865ms)
+  Error: RECIPROCAL_ONLY_OR_INVALID_INTENT
+      at SendLedger.reserve (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/send-ledger.mjs:53:37)
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/same-sender.test.mjs:12:56)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at proofs/communications/same-sender.test.mjs:22:1
+✖ malformed new route, duplicate reservations and orphan outcomes still corrupt the ledger (6.779958ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /LEDGER_CORRUPT/. Input:
+  
+  'Error: RECIPROCAL_ONLY_OR_INVALID_INTENT'
+  
+      at async TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/same-sender.test.mjs:24:126)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: RECIPROCAL_ONLY_OR_INVALID_INTENT
+        at SendLedger.reserve (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/send-ledger.mjs:53:37)
+        at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/same-sender.test.mjs:24:154)
+        at async Test.run (node:internal/test_runner/test:1332:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:911:7),
+    expected: /LEDGER_CORRUPT/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
