@@ -1,0 +1,815 @@
+{
+  "at": "2026-09-25T00:15:20.208Z",
+  "level": "SANDBOX exact scoped GET diagnostic, no mutations",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "account": "acct_1UJIndJL8hhTtG1o",
+  "customer": "cus_VJzrZTORGay5Lp",
+  "totalPaymentIntents": 10,
+  "explicitPaymentIds": [
+    "pi_3UJMikJL8hhTtG1o052vE6tn",
+    "pi_3UJMivJL8hhTtG1o1dNY7e1K",
+    "pi_3UJMj2JL8hhTtG1o1UT4Z7nY",
+    "pi_3UJMjVJL8hhTtG1o047JovLR",
+    "pi_3UJMjdJL8hhTtG1o00qp2Pfp"
+  ],
+  "extra": [
+    {
+      "id": {
+        "present": true,
+        "value": "pi_3UJMjaJL8hhTtG1o0EenEstY"
+      },
+      "amount": {
+        "present": true,
+        "value": 805
+      },
+      "amount_received": {
+        "present": true,
+        "value": 0
+      },
+      "amount_capturable": {
+        "present": true,
+        "value": 0
+      },
+      "currency": {
+        "present": true,
+        "value": "usd"
+      },
+      "status": {
+        "present": true,
+        "value": "canceled"
+      },
+      "customer": {
+        "present": true,
+        "value": "cus_VJzrZTORGay5Lp"
+      },
+      "latest_charge": {
+        "present": true,
+        "value": null
+      },
+      "payment_method": {
+        "present": true,
+        "value": null
+      },
+      "confirmation_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "capture_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "canceled_at": {
+        "present": true,
+        "value": 1790295095
+      },
+      "cancellation_reason": {
+        "present": true,
+        "value": "duplicate"
+      },
+      "application_fee_amount": {
+        "present": true,
+        "value": null
+      },
+      "transfer_data": {
+        "present": true,
+        "value": null
+      },
+      "on_behalf_of": {
+        "present": true,
+        "value": null
+      },
+      "setup_future_usage": {
+        "present": true,
+        "value": null
+      },
+      "invoice": {
+        "present": false,
+        "value": null
+      },
+      "metadata": {
+        "present": true,
+        "value": {}
+      }
+    },
+    {
+      "id": {
+        "present": true,
+        "value": "pi_3UJMjMJL8hhTtG1o1dWy9hP1"
+      },
+      "amount": {
+        "present": true,
+        "value": 900
+      },
+      "amount_received": {
+        "present": true,
+        "value": 0
+      },
+      "amount_capturable": {
+        "present": true,
+        "value": 0
+      },
+      "currency": {
+        "present": true,
+        "value": "usd"
+      },
+      "status": {
+        "present": true,
+        "value": "requires_payment_method"
+      },
+      "customer": {
+        "present": true,
+        "value": "cus_VJzrZTORGay5Lp"
+      },
+      "latest_charge": {
+        "present": true,
+        "value": null
+      },
+      "payment_method": {
+        "present": true,
+        "value": null
+      },
+      "confirmation_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "capture_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "canceled_at": {
+        "present": true,
+        "value": null
+      },
+      "cancellation_reason": {
+        "present": true,
+        "value": null
+      },
+      "application_fee_amount": {
+        "present": true,
+        "value": null
+      },
+      "transfer_data": {
+        "present": true,
+        "value": null
+      },
+      "on_behalf_of": {
+        "present": true,
+        "value": null
+      },
+      "setup_future_usage": {
+        "present": true,
+        "value": null
+      },
+      "invoice": {
+        "present": false,
+        "value": null
+      },
+      "metadata": {
+        "present": true,
+        "value": {}
+      }
+    },
+    {
+      "id": {
+        "present": true,
+        "value": "pi_3UJMjFJL8hhTtG1o0JDbXNw4"
+      },
+      "amount": {
+        "present": true,
+        "value": 777
+      },
+      "amount_received": {
+        "present": true,
+        "value": 0
+      },
+      "amount_capturable": {
+        "present": true,
+        "value": 0
+      },
+      "currency": {
+        "present": true,
+        "value": "usd"
+      },
+      "status": {
+        "present": true,
+        "value": "canceled"
+      },
+      "customer": {
+        "present": true,
+        "value": "cus_VJzrZTORGay5Lp"
+      },
+      "latest_charge": {
+        "present": true,
+        "value": null
+      },
+      "payment_method": {
+        "present": true,
+        "value": null
+      },
+      "confirmation_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "capture_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "canceled_at": {
+        "present": true,
+        "value": 1790295068
+      },
+      "cancellation_reason": {
+        "present": true,
+        "value": "void_invoice"
+      },
+      "application_fee_amount": {
+        "present": true,
+        "value": null
+      },
+      "transfer_data": {
+        "present": true,
+        "value": null
+      },
+      "on_behalf_of": {
+        "present": true,
+        "value": null
+      },
+      "setup_future_usage": {
+        "present": true,
+        "value": null
+      },
+      "invoice": {
+        "present": false,
+        "value": null
+      },
+      "metadata": {
+        "present": true,
+        "value": {}
+      }
+    },
+    {
+      "id": {
+        "present": true,
+        "value": "pi_3UJMisJL8hhTtG1o1BeeB8dp"
+      },
+      "amount": {
+        "present": true,
+        "value": 5002
+      },
+      "amount_received": {
+        "present": true,
+        "value": 0
+      },
+      "amount_capturable": {
+        "present": true,
+        "value": 0
+      },
+      "currency": {
+        "present": true,
+        "value": "usd"
+      },
+      "status": {
+        "present": true,
+        "value": "canceled"
+      },
+      "customer": {
+        "present": true,
+        "value": "cus_VJzrZTORGay5Lp"
+      },
+      "latest_charge": {
+        "present": true,
+        "value": null
+      },
+      "payment_method": {
+        "present": true,
+        "value": null
+      },
+      "confirmation_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "capture_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "canceled_at": {
+        "present": true,
+        "value": 1790295054
+      },
+      "cancellation_reason": {
+        "present": true,
+        "value": "duplicate"
+      },
+      "application_fee_amount": {
+        "present": true,
+        "value": null
+      },
+      "transfer_data": {
+        "present": true,
+        "value": null
+      },
+      "on_behalf_of": {
+        "present": true,
+        "value": null
+      },
+      "setup_future_usage": {
+        "present": true,
+        "value": null
+      },
+      "invoice": {
+        "present": false,
+        "value": null
+      },
+      "metadata": {
+        "present": true,
+        "value": {}
+      }
+    },
+    {
+      "id": {
+        "present": true,
+        "value": "pi_3UJMihJL8hhTtG1o00fmF0SR"
+      },
+      "amount": {
+        "present": true,
+        "value": 3001
+      },
+      "amount_received": {
+        "present": true,
+        "value": 0
+      },
+      "amount_capturable": {
+        "present": true,
+        "value": 0
+      },
+      "currency": {
+        "present": true,
+        "value": "usd"
+      },
+      "status": {
+        "present": true,
+        "value": "canceled"
+      },
+      "customer": {
+        "present": true,
+        "value": "cus_VJzrZTORGay5Lp"
+      },
+      "latest_charge": {
+        "present": true,
+        "value": null
+      },
+      "payment_method": {
+        "present": true,
+        "value": null
+      },
+      "confirmation_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "capture_method": {
+        "present": true,
+        "value": "automatic"
+      },
+      "canceled_at": {
+        "present": true,
+        "value": 1790295036
+      },
+      "cancellation_reason": {
+        "present": true,
+        "value": "duplicate"
+      },
+      "application_fee_amount": {
+        "present": true,
+        "value": null
+      },
+      "transfer_data": {
+        "present": true,
+        "value": null
+      },
+      "on_behalf_of": {
+        "present": true,
+        "value": null
+      },
+      "setup_future_usage": {
+        "present": true,
+        "value": null
+      },
+      "invoice": {
+        "present": false,
+        "value": null
+      },
+      "metadata": {
+        "present": true,
+        "value": {}
+      }
+    }
+  ],
+  "invoices": [
+    {
+      "id": "in_1UJM6fJL8hhTtG1oZ5396711",
+      "kind": "deposit",
+      "status": "paid",
+      "total": 3001,
+      "paid": 3001,
+      "remaining": 0,
+      "auto_advance": false,
+      "collection_method": "send_invoice",
+      "payments": [
+        {
+          "id": "inpay_1UJMimJL8hhTtG1oUhQgJBZt",
+          "invoice": "in_1UJM6fJL8hhTtG1oZ5396711",
+          "is_default": false,
+          "status": "paid",
+          "amount_requested": 3001,
+          "amount_paid": 3001,
+          "payment": {
+            "payment_intent": "pi_3UJMikJL8hhTtG1o052vE6tn",
+            "type": "payment_intent"
+          }
+        },
+        {
+          "id": "inpay_1UJMihJL8hhTtG1o9nxA8dGj",
+          "invoice": "in_1UJM6fJL8hhTtG1oZ5396711",
+          "is_default": false,
+          "status": "canceled",
+          "amount_requested": 3001,
+          "amount_paid": null,
+          "payment": {
+            "payment_intent": "pi_3UJMihJL8hhTtG1o00fmF0SR",
+            "type": "payment_intent"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "id": "in_1UJMipJL8hhTtG1oZfobroTq",
+      "kind": "balance",
+      "status": "paid",
+      "total": 7002,
+      "paid": 7002,
+      "remaining": 0,
+      "auto_advance": false,
+      "collection_method": "send_invoice",
+      "payments": [
+        {
+          "id": "inpay_1UJMj4JL8hhTtG1onTKQfJ1E",
+          "invoice": "in_1UJMipJL8hhTtG1oZfobroTq",
+          "is_default": false,
+          "status": "paid",
+          "amount_requested": 5002,
+          "amount_paid": 5002,
+          "payment": {
+            "payment_intent": "pi_3UJMj2JL8hhTtG1o1UT4Z7nY",
+            "type": "payment_intent"
+          }
+        },
+        {
+          "id": "inpay_1UJMiyJL8hhTtG1ojcvZXKOV",
+          "invoice": "in_1UJMipJL8hhTtG1oZfobroTq",
+          "is_default": false,
+          "status": "paid",
+          "amount_requested": 2000,
+          "amount_paid": 2000,
+          "payment": {
+            "payment_intent": "pi_3UJMivJL8hhTtG1o1dNY7e1K",
+            "type": "payment_intent"
+          }
+        },
+        {
+          "id": "inpay_1UJMitJL8hhTtG1o9z1tCnIs",
+          "invoice": "in_1UJMipJL8hhTtG1oZfobroTq",
+          "is_default": false,
+          "status": "canceled",
+          "amount_requested": 5002,
+          "amount_paid": null,
+          "payment": {
+            "payment_intent": "pi_3UJMisJL8hhTtG1o1BeeB8dp",
+            "type": "payment_intent"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "id": "in_1UJMjCJL8hhTtG1oUzv5qzUr",
+      "kind": "void",
+      "status": "void",
+      "total": 777,
+      "paid": 0,
+      "remaining": 777,
+      "auto_advance": false,
+      "collection_method": "send_invoice",
+      "payments": [
+        {
+          "id": "inpay_1UJMjFJL8hhTtG1ohBPAJNNf",
+          "invoice": "in_1UJMjCJL8hhTtG1oUzv5qzUr",
+          "is_default": true,
+          "status": "canceled",
+          "amount_requested": 777,
+          "amount_paid": null,
+          "payment": {
+            "payment_intent": "pi_3UJMjFJL8hhTtG1o0JDbXNw4",
+            "type": "payment_intent"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "id": "in_1UJMjJJL8hhTtG1ootTJfMjH",
+      "kind": "credit",
+      "status": "open",
+      "total": 999,
+      "paid": 0,
+      "remaining": 900,
+      "auto_advance": false,
+      "collection_method": "send_invoice",
+      "payments": [
+        {
+          "id": "inpay_1UJMjMJL8hhTtG1otOWHAnQj",
+          "invoice": "in_1UJMjJJL8hhTtG1ootTJfMjH",
+          "is_default": true,
+          "status": "open",
+          "amount_requested": 900,
+          "amount_paid": null,
+          "payment": {
+            "payment_intent": "pi_3UJMjMJL8hhTtG1o1dWy9hP1",
+            "type": "payment_intent"
+          }
+        }
+      ],
+      "complete": true
+    },
+    {
+      "id": "in_1UJMjXJL8hhTtG1oAeEoiJuk",
+      "kind": "dispute",
+      "status": "paid",
+      "total": 805,
+      "paid": 805,
+      "remaining": 0,
+      "auto_advance": false,
+      "collection_method": "send_invoice",
+      "payments": [
+        {
+          "id": "inpay_1UJMjjJL8hhTtG1o0sMBdLG0",
+          "invoice": "in_1UJMjXJL8hhTtG1oAeEoiJuk",
+          "is_default": false,
+          "status": "paid",
+          "amount_requested": 805,
+          "amount_paid": 805,
+          "payment": {
+            "payment_intent": "pi_3UJMjdJL8hhTtG1o00qp2Pfp",
+            "type": "payment_intent"
+          }
+        },
+        {
+          "id": "inpay_1UJMjaJL8hhTtG1oWCok3blF",
+          "invoice": "in_1UJMjXJL8hhTtG1oAeEoiJuk",
+          "is_default": false,
+          "status": "canceled",
+          "amount_requested": 805,
+          "amount_paid": null,
+          "payment": {
+            "payment_intent": "pi_3UJMjaJL8hhTtG1o0EenEstY",
+            "type": "payment_intent"
+          }
+        }
+      ],
+      "complete": true
+    }
+  ],
+  "charges": [
+    {
+      "id": "ch_3UJMjdJL8hhTtG1o0xCDX3oj",
+      "paymentIntent": "pi_3UJMjdJL8hhTtG1o00qp2Pfp",
+      "amount": 805,
+      "paid": true,
+      "refunded": 0
+    },
+    {
+      "id": "ch_3UJMjVJL8hhTtG1o0FYsbgxu",
+      "paymentIntent": "pi_3UJMjVJL8hhTtG1o047JovLR",
+      "amount": 109,
+      "paid": true,
+      "refunded": 0
+    },
+    {
+      "id": "ch_3UJMj2JL8hhTtG1o1dpKCtc2",
+      "paymentIntent": "pi_3UJMj2JL8hhTtG1o1UT4Z7nY",
+      "amount": 5002,
+      "paid": true,
+      "refunded": 0
+    },
+    {
+      "id": "ch_3UJMivJL8hhTtG1o19vHustf",
+      "paymentIntent": "pi_3UJMivJL8hhTtG1o1dNY7e1K",
+      "amount": 2000,
+      "paid": true,
+      "refunded": 0
+    },
+    {
+      "id": "ch_3UJMikJL8hhTtG1o0TU1CnR1",
+      "paymentIntent": "pi_3UJMikJL8hhTtG1o052vE6tn",
+      "amount": 3001,
+      "paid": true,
+      "refunded": 101
+    }
+  ],
+  "chargeInventoryComplete": true,
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_KzQyfRaAXjkE8t",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_khxvvM7QrJz4WE",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_cJNrVLzvMfTF4s",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents/pi_3UJMjaJL8hhTtG1o0EenEstY",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_GvbY9CAk3wStLm",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents/pi_3UJMjMJL8hhTtG1o1dWy9hP1",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_yHpuU2ZzduUfQy",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents/pi_3UJMjFJL8hhTtG1o0JDbXNw4",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_9hZiaGmkdDswek",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents/pi_3UJMisJL8hhTtG1o1BeeB8dp",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_8Bt1htRWT69I6G",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents/pi_3UJMihJL8hhTtG1o00fmF0SR",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_V4cYQldqyowlwT",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJM6fJL8hhTtG1oZ5396711",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_qvcuYSUxmVYBuT",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_WaaOdAT3kcd5hW",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJMipJL8hhTtG1oZfobroTq",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_2gpg6Ynl5Rrk9e",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_hIMkBHQ1MelseD",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJMjCJL8hhTtG1oUzv5qzUr",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_ny2n2m161aGWYt",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_PsXuKZ2LjsKe5M",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJMjJJL8hhTtG1ootTJfMjH",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_O8N52GINOvwqT4",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_03EyKNLnEoWRe6",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJMjXJL8hhTtG1oAeEoiJuk",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_NH6Q7EaRue9TXM",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_hKwAU2o97N68oX",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_4xBpO9863S6KZI",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ]
+}

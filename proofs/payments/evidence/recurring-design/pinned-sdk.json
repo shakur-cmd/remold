@@ -1,0 +1,171 @@
+{
+  "version": "stripe-node v18.2.0; API2025-05-28.basil",
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/src/apiVersion.ts",
+      "sha256": "17885e18875d1760970daa8184303597e10c2a917c471cd46f096ff101a9683e",
+      "bytes": 87,
+      "declarations": [
+        {
+          "text": "export const ApiVersion = '2025-05-28.basil';"
+        }
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/SubscriptionsResource.d.ts",
+      "sha256": "b76b23174161c4a2b0da43f6bfc74097ce028d3119f72a3dc516e929b6e6d612",
+      "bytes": 87615,
+      "declarations": [
+        {
+          "line": 19,
+          "text": "application_fee_percent?: Stripe.Emptyable<number>;"
+        },
+        {
+          "line": 51,
+          "text": "cancel_at?: number;"
+        },
+        {
+          "line": 76,
+          "text": "default_payment_method?: string;"
+        },
+        {
+          "line": 141,
+          "text": "payment_behavior?: SubscriptionCreateParams.PaymentBehavior;"
+        },
+        {
+          "line": 158,
+          "text": "proration_behavior?: SubscriptionCreateParams.ProrationBehavior;"
+        },
+        {
+          "line": 524,
+          "text": "save_default_payment_method?: PaymentSettings.SaveDefaultPaymentMethod;"
+        },
+        {
+          "line": 869,
+          "text": "application_fee_percent?: Stripe.Emptyable<number>;"
+        },
+        {
+          "line": 891,
+          "text": "cancel_at?: Stripe.Emptyable<number>;"
+        },
+        {
+          "line": 916,
+          "text": "default_payment_method?: string;"
+        },
+        {
+          "line": 984,
+          "text": "payment_behavior?: SubscriptionUpdateParams.PaymentBehavior;"
+        },
+        {
+          "line": 1001,
+          "text": "proration_behavior?: SubscriptionUpdateParams.ProrationBehavior;"
+        },
+        {
+          "line": 1233,
+          "text": "clear_usage?: boolean;"
+        },
+        {
+          "line": 1397,
+          "text": "save_default_payment_method?: PaymentSettings.SaveDefaultPaymentMethod;"
+        },
+        {
+          "line": 1870,
+          "text": "proration_behavior?: SubscriptionResumeParams.ProrationBehavior;"
+        }
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/SubscriptionSchedulesResource.d.ts",
+      "sha256": "ea81edf11817d396c9ebb31785a91a623ca981d728e38db67a35bf0099d043bc",
+      "bytes": 60868,
+      "declarations": [
+        {
+          "line": 19,
+          "text": "end_behavior?: SubscriptionScheduleCreateParams.EndBehavior;"
+        },
+        {
+          "line": 52,
+          "text": "application_fee_percent?: number;"
+        },
+        {
+          "line": 79,
+          "text": "default_payment_method?: string;"
+        },
+        {
+          "line": 208,
+          "text": "application_fee_percent?: number;"
+        },
+        {
+          "line": 238,
+          "text": "default_payment_method?: string;"
+        },
+        {
+          "line": 273,
+          "text": "iterations?: number;"
+        },
+        {
+          "line": 288,
+          "text": "proration_behavior?: Phase.ProrationBehavior;"
+        },
+        {
+          "line": 637,
+          "text": "end_behavior?: SubscriptionScheduleUpdateParams.EndBehavior;"
+        },
+        {
+          "line": 657,
+          "text": "proration_behavior?: SubscriptionScheduleUpdateParams.ProrationBehavior;"
+        },
+        {
+          "line": 665,
+          "text": "application_fee_percent?: number;"
+        },
+        {
+          "line": 692,
+          "text": "default_payment_method?: string;"
+        },
+        {
+          "line": 821,
+          "text": "application_fee_percent?: number;"
+        },
+        {
+          "line": 851,
+          "text": "default_payment_method?: string;"
+        },
+        {
+          "line": 886,
+          "text": "iterations?: number;"
+        },
+        {
+          "line": 901,
+          "text": "proration_behavior?: Phase.ProrationBehavior;"
+        }
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/SetupIntentsResource.d.ts",
+      "sha256": "f07c38b83e61a68e14027a2613569922a43e892c5e71bf9d274b19e398b425c1",
+      "bytes": 135331,
+      "declarations": [
+        {
+          "line": 110,
+          "text": "usage?: SetupIntentCreateParams.Usage;"
+        }
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/TestHelpers/TestClocksResource.d.ts",
+      "sha256": "a9ed29c4dde54a0c6da1a8092a3754e24de6b74040c68612081267506c7c14b3",
+      "bytes": 3189,
+      "declarations": [
+        {
+          "line": 10,
+          "text": "frozen_time: number;"
+        },
+        {
+          "line": 43,
+          "text": "frozen_time: number;"
+        }
+      ]
+    }
+  ]
+}

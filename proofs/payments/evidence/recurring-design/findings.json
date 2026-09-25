@@ -1,0 +1,56 @@
+{
+  "mode": "DESIGN ONLY; no provider calls, implementation or frozen-source changes",
+  "h0Finding": {
+    "capabilities": [
+      "read",
+      "marketing.send",
+      "model.call",
+      "agent.manage",
+      "billing.collect",
+      "billing.refund"
+    ],
+    "bindingScope": "bindings, maxAmountMinor, currency, maxRecipients",
+    "missing": [
+      "typed recurring activation/cancellation/card-change capability",
+      "recurring cadence, cycle count and lifetime amount semantics",
+      "standing customer/service agreement and generation",
+      "provider-owned renewal/retry accounting",
+      "readonly commitment continuation path"
+    ],
+    "conclusion": "A content hash can bind opaque bytes but existing H0 does not validate or enforce a recurring mandate. Reusing billing.collect alone is insufficient."
+  },
+  "providerFacts": [
+    {
+      "claim": "Direct subscription customers and prices belong to the connected account; disconnect does not cancel existing subscriptions.",
+      "source": "https://docs.stripe.com/connect/subscriptions"
+    },
+    {
+      "claim": "Schedule end_behavior release leaves the subscription running; cancel terminates it. Basil iterations multiplies the price interval.",
+      "source": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/SubscriptionSchedulesResource.d.ts"
+    },
+    {
+      "claim": "Schedule cancellation invoice_now and prorate default true; no-new-final-invoice proof must explicitly set both false.",
+      "source": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/SubscriptionSchedulesResource.d.ts"
+    },
+    {
+      "claim": "Updating only customer default does not replace a subscription default; retry counters can increase without a new Charge on hard declines.",
+      "source": "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+    },
+    {
+      "claim": "Cancellation pauses automatic collection of existing open/draft invoices but manual collection remains possible, and pending items can affect another subscription.",
+      "source": "https://docs.stripe.com/billing/subscriptions/cancel"
+    },
+    {
+      "claim": "Test-clock advance is bounded by the shortest subscription interval; connected-account support and actual behavior remain unverified here.",
+      "source": "https://raw.githubusercontent.com/stripe/stripe-node/v18.2.0/types/TestHelpers/TestClocksResource.d.ts"
+    }
+  ],
+  "unverifiedProviderPreconditions": [
+    "Clock/customer/schedule supported on exact connected sandbox accounts",
+    "Exact finite phase readback and expected initial/renewal invoice lineage",
+    "Account retry settings and emails understood and explicitly allowed for isolated fixture",
+    "Retry effect of changing payment method under clock and already in-flight attempt",
+    "Terminal cancellation plus unsettled invoice/payment state",
+    "No-fee outcome on each actual successful charge, not absence of invoice field"
+  ]
+}

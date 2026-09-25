@@ -1,0 +1,17 @@
+{
+  "sources": [
+    {
+      "url": "https://docs.stripe.com/api/invoice-payment/object?api-version=2025-05-28.basil",
+      "observed": "Default InvoicePayment created on finalization, synchronized with amount_remaining; associated PI cannot be edited/canceled directly. Default marker may become false after alternate payments, as actual records show."
+    },
+    {
+      "url": "https://docs.stripe.com/api/invoices/finalize?api-version=2025-05-28.basil",
+      "observed": "auto_advance false disables automatic invoice state advance without explicit action."
+    },
+    {
+      "url": "https://docs.stripe.com/invoicing/integration/automatic-advancement-collection",
+      "observed": "auto_advance false disables automatic email and retry features; does not claim hosted payment surface disabled."
+    }
+  ],
+  "scope": "Primary documentation browsed during independent reconciliation; no source implementation change."
+}

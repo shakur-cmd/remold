@@ -1,0 +1,14 @@
+$ node sandbox-replay.mjs --recover-existing-draft
+PASS Actual hosted invoice payment page is returned only by its scoped unexpired capability
+PASS Deposit paid once in merchant A with exact 3001 minor units and no platform fee
+PASS Partial payment remains open and one deposit allocation preserves quote total
+PASS Foreign account customer and invoice references are rejected by provider and tenant boundary
+PASS Actual void and credit note preserve original invoice amount and explain adjustment
+PASS Readonly human safety refund creates one provider refund across timeout lookup and replay
+PASS Firing an agent before exact H0 final permit produces no provider write
+PASS Firing after consumed final permit records only the bounded late provider result
+PASS Frozen H0 general refund still refuses readonly at its final authority boundary
+PASS Provider test dispute exposes exact amount/status on the owning financial document
+PASS Actual CLI forwarded provider webhook is signed, durably ingested and duplicate-safe
+PASS Merchant B financial state and platform collections remain unchanged
+[ELIFECYCLE] Command failed with exit code 1.
