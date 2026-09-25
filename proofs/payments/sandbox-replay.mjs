@@ -10,31 +10,35 @@ import {trustedAdapter} from './adapter.mjs';
 import {listen} from './webhooks.mjs';
 import {recurring} from './recurring.mjs';
 import {boundary} from './boundary.mjs';
+import {invoiceOrigin,proveNoPlatformFee} from './invoice-contract.mjs';
+import {claimRecovery,checkLocalRecovery,checkRecoveryProvider,completeDraft,RECOVERY_ID,RECOVERED_INVOICE} from './recovery.mjs';
 import {claimContinuation,checkCustomers,setCustomerEmails,CUSTOMERS,CONTINUATION_ID,FIRST_RUN,FIRST_ATTEMPT_SHA} from './continuation.mjs';
-const args=process.argv.slice(2);assert.ok(args.length===0||(args.length===1&&args[0]==='--continue-first-enabled-attempt'),'Unsupported sandbox invocation');
-const continuing=args.length===1;
-let journal;
-if(continuing){
+const args=process.argv.slice(2);assert.ok(args.length===0||(args.length===1&&['--continue-first-enabled-attempt','--recover-existing-draft'].includes(args[0])),'Unsupported sandbox invocation');
+const continuing=args[0]==='--continue-first-enabled-attempt',recovering=args[0]==='--recover-existing-draft';
+let journal,recovery;
+if(continuing||recovering){
  const manifest=JSON.parse(readFileSync(new URL('./evidence/source-manifest.json',import.meta.url)));
  for(const[file,hash]of Object.entries(manifest.files))assert.equal(createHash('sha256').update(readFileSync(new URL(file,import.meta.url))).digest('hex'),hash,'Unfrozen continuation source');
- journal=claimContinuation({privateDirectory:fileURLToPath(new URL('./private/',import.meta.url)),evidenceDirectory:fileURLToPath(new URL('./evidence/',import.meta.url)),sourceAggregate:manifest.aggregateSha256});
+ const directories={privateDirectory:fileURLToPath(new URL('./private/',import.meta.url)),evidenceDirectory:fileURLToPath(new URL('./evidence/',import.meta.url)),sourceAggregate:manifest.aggregateSha256};
+ if(recovering){recovery=claimRecovery(directories);journal=recovery.journal;}else journal=claimContinuation(directories);
 }
-const rawStripe=provider(credentials()),stripe=journal?journal.wrap(rawStripe):rawStripe,guard=await stripe.verify(),runId=continuing?CONTINUATION_ID:randomUUID();
+const rawStripe=provider(credentials()),stripe=journal?journal.wrap(rawStripe):rawStripe,guard=await stripe.verify(),runId=continuing||recovering?CONTINUATION_ID:randomUUID(),outputId=recovering?RECOVERY_ID:runId;
 const merchantFixtures=Object.fromEntries(Object.entries({A:'D',B:'E'}).map(([tenant,label])=>{
  const receipt=JSON.parse(readFileSync(new URL('./evidence/oauth-'+label+'.json',import.meta.url)));
  assert.equal(receipt.fixture,label);assert.equal(receipt.oauthLivemode,false);assert.equal(receipt.scope,'read_write');assert.match(receipt.account,/^acct_[A-Za-z0-9]+$/);
  return[tenant,{fixture:label,account:receipt.account}];
 }));
 assert.notEqual(merchantFixtures.A.account,merchantFixtures.B.account,'Two distinct OAuth test merchants required');
-if(continuing)for(const name of ['A','B'])assert.equal(merchantFixtures[name].account,CUSTOMERS[name].account,'Continuation merchant mismatch');
-const results=[],objects=[],webhookReceipts=[];
-const proof={...(continuing?{continuationOf:FIRST_RUN,firstAttemptSha:FIRST_ATTEMPT_SHA}:{}),level:'SANDBOX Stripe, SERVICE disposable local Convex, SIM identities/prices/jurisdiction',runId,apiVersion:API_VERSION,guard,merchantFixtures,results,objects,receipts:stripe.receipts,webhookReceipts};
-const save=()=>writeFileSync(new URL(continuing?'./evidence/sandbox-'+CONTINUATION_ID+'.json':'./evidence/sandbox.json',import.meta.url),JSON.stringify(proof,null,2)+'\n');
+if(continuing||recovering)for(const name of ['A','B'])assert.equal(merchantFixtures[name].account,CUSTOMERS[name].account,'Continuation merchant mismatch');
+const results=[],objects=[],webhookReceipts=[],feeEvidence=[];
+const proof={...(continuing||recovering?{continuationOf:FIRST_RUN,firstAttemptSha:FIRST_ATTEMPT_SHA}:{}),...(recovering?{recoveryOf:CONTINUATION_ID,recoveryId:RECOVERY_ID,comparisonWindow:'recovery only'}:{}),level:'SANDBOX Stripe, SERVICE disposable local Convex, SIM identities/prices/jurisdiction',runId,apiVersion:API_VERSION,guard,merchantFixtures,results,objects,receipts:stripe.receipts,webhookReceipts,feeEvidence};
+const save=()=>writeFileSync(new URL(continuing||recovering?'./evidence/sandbox-'+outputId+'.json':'./evidence/sandbox.json',import.meta.url),JSON.stringify(proof,null,2)+'\n');
 const check=async(name,fn)=>{await fn();results.push({name,status:'PASS'});save();console.log('PASS '+name);};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const noFee=async(pi,account,customer,amountMinor)=>{try{feeEvidence.push(await proveNoPlatformFee(stripe,{paymentIntent:pi.id,account,customer,amountMinor}));save();}catch(error){feeEvidence.push({paymentIntent:pi.id,account,status:error.evidenceStatus??'FAIL'});save();throw error;}};
 try{
  await withPayments(async({url,run})=>{
-  const client=new ConvexHttpClient(url,{logger:false}),f=run('harness:seed',{run:runId,tokens:Array.from({length:10},()=>randomUUID())});
+  const client=new ConvexHttpClient(url,{logger:false}),f=recovering?recovery.fixture:run('harness:seed',{run:runId,tokens:Array.from({length:10},()=>randomUUID())});
   const m=(name,args)=>client.mutation(api.payments[name],args),q=(name,args)=>client.query(api.payments[name],args),h=(name,args)=>client.mutation(api.harness[name],args);
   for(const name of ['A','B']){
    const account=await stripe.request('GET','/v1/accounts/'+merchantFixtures[name].account);
@@ -43,10 +47,11 @@ try{
    for(const field of ['currently_due','past_due','pending_verification','errors'])assert.deepEqual(account.requirements?.[field],[],'Unresolved account requirement: '+field);
    assert.equal(account.type,'standard');assert.equal(account.controller.requirement_collection,'stripe');assert.equal(account.controller.fees?.payer,'account');assert.equal(account.controller.losses?.payments,'stripe');assert.equal(account.controller.stripe_dashboard?.type,'full');
    const balance=await stripe.request('GET','/v1/balance',{},account.id);assert.equal(balance.livemode,false);
-   run('payments:configureFixture',{binding:f[name].binding,adapterToken:f[name].adapter,account:account.id,environment:'SANDBOX',healthy:true});f[name].key={provider:'stripe',environment:'SANDBOX',account:account.id};
-   run('paymentFixture:role',{actor:f[name].actors.owner,role:'finance'});
+   if(!recovering)run('payments:configureFixture',{binding:f[name].binding,adapterToken:f[name].adapter,account:account.id,environment:'SANDBOX',healthy:true});f[name].key={provider:'stripe',environment:'SANDBOX',account:account.id};
+   if(!recovering)run('paymentFixture:role',{actor:f[name].actors.owner,role:'finance'});
   }
-  journal?.append({kind:'local-fixture',fixture:f});
+  if(!recovering)journal?.append({kind:'local-fixture',fixture:f});
+  const restored=recovering?checkLocalRecovery(await q('exportFinance',{token:f.A.sessions.owner}),run('paymentFixture:recoveryOperations',{org:f.A.org}),recovery):null;
   const adapter=trustedAdapter(stripe,client,f),owner=f.A.sessions.owner;
   // Each provider read is a new reconciliation attempt, separate from webhook deduplication.
   const pull=(invoice,label)=>adapter.observe('A',invoice,runId+':pull:'+label+':'+randomUUID(),randomUUID());
@@ -56,31 +61,35 @@ try{
    const account=f[name];await m('ingest',{token:account.adapter,binding:account.binding,eventId:event.id,type:event.type,externalId:event.data.object.id,digest});
   });
   try{
+   if(recovering)await checkRecoveryProvider(stripe,journal,restored.createCommand);
    if(continuing){const snapshot=await checkCustomers(stripe,journal);await setCustomerEmails(stripe,journal,snapshot);}
    for(const name of ['A','B']){
-    if(continuing)assert.equal(f[name].key.account,CUSTOMERS[name].account);
-    const c=continuing?{id:CUSTOMERS[name].customer}:await stripe.request('POST','/v1/customers',{name:'Synthetic P4 customer '+name,'metadata[remold_fixture]':runId},f[name].key.account,runId+'-customer-'+name);
-    f[name].customer=c.id;f[name].localCustomer=await m('registerCustomer',{token:f[name].adapter,binding:f[name].binding,externalId:c.id,name:'Synthetic P4 customer '+name});objects.push({kind:'customer',account:f[name].key.account,id:c.id});
+    if(continuing||recovering)assert.equal(f[name].key.account,CUSTOMERS[name].account);
+    const c=continuing||recovering?{id:CUSTOMERS[name].customer}:await stripe.request('POST','/v1/customers',{name:'Synthetic P4 customer '+name,'metadata[remold_fixture]':runId},f[name].key.account,runId+'-customer-'+name);
+    f[name].customer=c.id;f[name].localCustomer=recovering?(name==='A'?restored.localCustomer:undefined):await m('registerCustomer',{token:f[name].adapter,binding:f[name].binding,externalId:c.id,name:'Synthetic P4 customer '+name});objects.push({kind:'customer',account:f[name].key.account,id:c.id});
    }
    const bBefore=await q('exportFinance',{token:f.B.sessions.owner});
    const platformBefore=await stripe.request('GET','/v1/payment_intents',{limit:100});
-   const quote=await m('createQuote',{token:owner,customer:f.A.localCustomer,amountMinor:10003,currency:'usd'});
+   let quote,deposit;
+   if(recovering){quote=restored.quote;deposit=restored.deposit;}else{
+   quote=await m('createQuote',{token:owner,customer:f.A.localCustomer,amountMinor:10003,currency:'usd'});
    const link=await client.action(api.payments.issueAcceptance,{token:owner,id:quote,expires:Date.now()+60000});
    await m('acceptQuote',{id:quote,...link});
-   const deposit=await m('prepareDeposit',{token:owner,quote,amountMinor:3001,currency:'usd'});
+   deposit=await m('prepareDeposit',{token:owner,quote,amountMinor:3001,currency:'usd'});
+   }
    const issue=async(document,label)=>{
     const d=await q('getDocument',{token:owner,id:document});
-    const {result:invoice}=await adapter.execute('A',document,{customer:f.A.customer,collection_method:'send_invoice',days_until_due:30,auto_advance:false,pending_invoice_items_behavior:'exclude','metadata[remold_fixture]':runId},'POST','/v1/invoices',{stage:label+'-create',timeout:true});
+    let invoice;
+    if(recovering&&document===restored.deposit){assert.equal(label,'deposit');invoice={id:RECOVERED_INVOICE};}else{
+    ({result:invoice}=await adapter.execute('A',document,{customer:f.A.customer,collection_method:'send_invoice',days_until_due:30,auto_advance:false,pending_invoice_items_behavior:'exclude','metadata[remold_fixture]':runId},'POST','/v1/invoices',{stage:label+'-create',timeout:true}));
     await m('attachProvider',{token:f.A.adapter,id:document,externalId:invoice.id});
-    await adapter.execute('A',document,{customer:f.A.customer,invoice:invoice.id,amount:d.amountMinor,currency:d.currency,description:'Synthetic P4 fixture '+label},'POST','/v1/invoiceitems',{stage:label+'-item'});
-    const {result:finalized}=await adapter.execute('A',document,{auto_advance:false},'POST','/v1/invoices/'+invoice.id+'/finalize');
-    await m('bindPaymentPage',{token:f.A.adapter,id:document,url:finalized.hosted_invoice_url});
-    await pull(invoice.id,label+'-finalized');
-    objects.push({kind:label,document,account:f.A.key.account,id:invoice.id,amountMinor:d.amountMinor});return invoice.id;
+    }
+    const finalized=await completeDraft({adapter,document,invoice:invoice.id,label,customer:f.A.customer,amountMinor:d.amountMinor,currency:d.currency,bindPaymentPage:url=>m('bindPaymentPage',{token:f.A.adapter,id:document,url}),pull});
+    objects.push({kind:label,document,account:f.A.key.account,id:invoice.id,amountMinor:d.amountMinor,...invoiceOrigin(finalized)});return invoice.id;
    };
    const pay=async(document,invoice,amount,stage,pm='pm_card_visa')=>{
     const {result:pi}=await adapter.execute('A',document,{customer:f.A.customer,amount,currency:'usd',payment_method:pm,'payment_method_types[]':'card',confirm:true,'metadata[remold_fixture]':runId},'POST','/v1/payment_intents',{stage});
-    assert.equal(pi.livemode,false);assert.equal(pi.status,'succeeded');assert.equal(pi.application_fee_amount,null);
+    assert.equal(pi.livemode,false);assert.equal(pi.status,'succeeded');await noFee(pi,f.A.key.account,f.A.customer,amount);
     await adapter.execute('A',document,{payment_intent:pi.id},'POST','/v1/invoices/'+invoice+'/attach_payment',{stage:stage+'-attach'});
     objects.push({kind:'payment',account:f.A.key.account,id:pi.id,invoice,amountMinor:amount});return pi;
    };
@@ -123,7 +132,7 @@ try{
    await check('Readonly human safety refund creates one provider refund across timeout lookup and replay',async()=>{const refunds=await stripe.request('GET','/v1/refunds',{payment_intent:pi.id,limit:100},f.A.key.account);assert.equal(refunds.data.length,1);assert.equal(refunds.data[0].amount,101);assert.equal((await q('getDocument',{token:owner,id:deposit})).refundedMinor,101);await assert.rejects(m('createQuote',{token:owner,customer:f.A.localCustomer,amountMinor:5,currency:'usd'}),/readonly/);});
    await h('control',{token:owner,readonly:false});
    results.push(recurring());save();
-   await boundary({stripe,client,m,q,h,run,account:f.A.key.account,externalCustomer:f.A.customer,runId,check,objects});
+   await boundary({stripe,client,m,q,h,run,account:f.A.key.account,externalCustomer:f.A.customer,runId,check,objects,noFee});
    const disputeDoc=await m('prepareInvoice',{token:owner,customer:f.A.localCustomer,amountMinor:805,currency:'usd',kind:'invoice'}),disputeInvoice=await issue(disputeDoc,'dispute');
    const disputed=await pay(disputeDoc,disputeInvoice,805,'disputed-payment','pm_card_createDispute');
    await pull(disputeInvoice,'pull-dispute-paid');
@@ -152,4 +161,4 @@ try{
    webhookReceipts.push(...listener.receipts);proof.status=results.some(r=>r.status!=='PASS')?'INCOMPLETE: required recurring activation/retry proof remains blocked':'Builder SANDBOX replay passed; production integration, IV and G-pay remain pending';if(results.some(r=>r.status!=='PASS'))process.exitCode=1;save();
   }finally{webhookReceipts.push(...listener.receipts.filter(x=>!webhookReceipts.some(y=>y.id===x.id)));await listener.stop();}
  });
-}catch(error){proof.status='FAILED or BLOCKED';proof.failure={message:error.message,status:error.status??null,code:error.code??null,providerMessage:error.providerMessage?String(error.providerMessage).replace(/(?:sk_test_|rk_test_|whsec_|ac_)[A-Za-z0-9]+/g,'[redacted]'):null};save();console.error(JSON.stringify(proof.failure));process.exitCode=1;}finally{save();journal?.append({kind:'stopped',status:proof.status??'stopped-review',evidence:'sandbox-'+CONTINUATION_ID+'.json'});}
+}catch(error){proof.status='FAILED or BLOCKED';proof.failure={message:error.message,status:error.status??null,code:error.code??null,providerMessage:error.providerMessage?String(error.providerMessage).replace(/(?:sk_test_|rk_test_|whsec_|ac_)[A-Za-z0-9]+/g,'[redacted]'):null};save();console.error(JSON.stringify(proof.failure));process.exitCode=1;}finally{save();journal?.append({kind:'stopped',status:proof.status??'stopped-review',evidence:'sandbox-'+outputId+'.json'});}

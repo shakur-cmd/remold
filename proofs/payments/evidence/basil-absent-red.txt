@@ -1,0 +1,26 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- null
+
+    at supportedInvoice (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/adapter.mjs:35:417)
+    at readInvoice (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/adapter.mjs:47:194)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Object.execute (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/adapter.mjs:49:36)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/route-success-replay.mjs:23:3
+    at async withPayments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:22:10)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/route-success-replay.mjs:3:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: null,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

@@ -4,9 +4,10 @@
   "type": "module",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "test": "node --test stripe.test.mjs adjustments.test.mjs continuation.test.mjs && node domain-replay.mjs && node public-payment-replay.mjs && node safety-replay.mjs && node lifecycle-replay.mjs && node collection-replay.mjs && node accounting-replay.mjs && node paid-observation-replay.mjs && node collection-accounting-replay.mjs && node route-policy-replay.mjs && node route-success-replay.mjs && node repeated-pull-replay.mjs && node remaining-replay.mjs",
+    "test": "node --test stripe.test.mjs adjustments.test.mjs continuation.test.mjs invoice-contract.test.mjs && node domain-replay.mjs && node public-payment-replay.mjs && node safety-replay.mjs && node lifecycle-replay.mjs && node collection-replay.mjs && node accounting-replay.mjs && node paid-observation-replay.mjs && node collection-accounting-replay.mjs && node route-policy-replay.mjs && node route-success-replay.mjs && node repeated-pull-replay.mjs && node remaining-replay.mjs && node recovery-replay.mjs",
     "proof:sandbox": "node sandbox-replay.mjs",
     "proof:continue": "node sandbox-replay.mjs --continue-first-enabled-attempt",
+    "proof:recover": "node sandbox-replay.mjs --recover-existing-draft",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

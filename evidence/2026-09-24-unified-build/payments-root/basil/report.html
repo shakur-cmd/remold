@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Basil recovery: root acceptance</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Basil recovery: root acceptance</h1><p class="meta">Root source review and replay; independent final verifier /root/c0_verifier</p><div class="decisions"><h2>Next effect</h2><p>The reviewed one-shot recovery can now be committed and executed in the authorized Stripe test sandbox. It resumes the known empty draft. Original spent markers remain intact; any new failure requires reconciliation, never a blind rerun.</p></div><div class="status"><h2>Proven locally</h2><p>Root read the changed source and passed27 continuation/invoice-contract unit checks, TypeScript, seven recovery groups,44 route-policy cases and three supported-route groups. All54 frozen hashes remain fc21064f9f4197bd02872ad078f73cec61b91400804e9692c8bc89e68300398e. Fresh independent c0_verifier reproduced the old absent-field failure, passed42 offline checks, seven recovery groups,44 route cases,20 balance groups and TypeScript, plus two altered response probes.</p></div><table><tr><th>Before</th><th>After</th></tr><tr><td>Actual Basil invoice omits fee field, so the old adapter refused its empty draft.</td><td>Omission remains unobserved. Supported manual invoice passes locally; explicit non-null fees refuse. Actual no-fee proof requires exact PaymentIntent, Charge and complete platform fee-list evidence.</td></tr><tr><td>Generic restart could seed a new quote or invoice.</td><td>Fixed parent-journal hash and exact existing namespace/draft/local creation operation are required. Changed inventory refuses. One item and finalize complete the same draft in the synthetic replay.</td></tr><tr><td>Fee may be visible only after provider finalization.</td><td>Independent altered finalize response shows one accepted finalize effect, then refusal with H0 unconfirmed, response retained and repeat invocation refused. This is a post-effect stop requiring reconciliation.</td></tr></table><p>H0/core/schema unchanged. Actual recovery, actual payments and no-fee provider evidence are pending at this checkpoint. Recurring remains required and blocked; full P4/I1/I7 are not certified.</p><p><a href="service-checks.json">Root service receipt</a> · <a href="unit.txt">27 unit checks</a> · <a href="typecheck.txt">TypeScript</a> · <a href="../../payments-iv/basil-recovery/review.html">Independent review</a> · <a href="../../../../proofs/payments/basil-recovery.html">Frozen handover and red evidence</a>.</p></body></html>

@@ -3,6 +3,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {api} from './convex/_generated/api.js';
 import {pullAdjustments} from './adjustments.mjs';
 import {OutcomeUnknown} from './stripe.mjs';
+import {invoiceOrigin} from './invoice-contract.mjs';
 
 export function trustedAdapter(stripe,client,fixture){
  const m=(name,args)=>client.mutation(api.payments[name],args);
@@ -32,7 +33,7 @@ export function trustedAdapter(stripe,client,fixture){
   const invoiceTarget=/^\/v1\/invoices\/([^/]+)\//.exec(path)?.[1]??params.invoice;
   if(invoiceTarget!==undefined)assert.equal(invoiceTarget,value.document.externalId,'Immutable invoice target mismatch');
   const supportedInvoice=invoice=>{
-   assert.equal(invoice.id,value.document.externalId);assert.equal(invoice.customer,value.customer);assert.equal(invoice.currency,value.document.currency);assert.equal(invoice.livemode,false);assert.equal(invoice.collection_method,'send_invoice');assert.equal(invoice.auto_advance,false);assert.ok(!invoice.subscription&&invoice.parent?.type!=='subscription_details','Subscription invoice route unsupported');assert.equal(invoice.application_fee_amount,null);
+   assert.equal(invoice.id,value.document.externalId);assert.equal(invoice.customer,value.customer);assert.equal(invoice.currency,value.document.currency);assert.equal(invoice.livemode,false);assert.equal(invoice.collection_method,'send_invoice');assert.equal(invoice.auto_advance,false);assert.ok(!invoice.subscription&&invoice.parent?.type!=='subscription_details','Subscription invoice route unsupported');invoiceOrigin(invoice);
   };
   // Customer-balance/minimum-charge/overpayment effects are not modeled by this route.
   const explainedBalance=invoice=>{
@@ -82,7 +83,7 @@ export function trustedAdapter(stripe,client,fixture){
    result=matching[0];
    const duplicate=await stripe.request(method,path,providerParams,consumed.account,consumed.key);assert.equal(duplicate.id,result.id);
   }
-  if(route==='finalize'){assert.equal(result.id,value.document.externalId);assert.equal(result.status,'open');assert.equal(result.collection_method,'send_invoice');assert.equal(result.auto_advance,false);assert.equal(result.livemode,false);assert.equal(result.customer,value.customer);assert.equal(result.application_fee_amount,null);assert.ok(!result.subscription&&result.parent?.type!=='subscription_details');exactLine(result);}
+  if(route==='finalize'){assert.equal(result.id,value.document.externalId);assert.equal(result.status,'open');assert.equal(result.collection_method,'send_invoice');assert.equal(result.auto_advance,false);assert.equal(result.livemode,false);assert.equal(result.customer,value.customer);invoiceOrigin(result);assert.ok(!result.subscription&&result.parent?.type!=='subscription_details');exactLine(result);}
   if(reservation)await m('recordCollection',{token:f.adapter,id:reservation,providerRef:result.id});
   const receipt=await h('reconcile',{token:f.adapter,id,...claim,providerRef:result.id,usage:0});assert.equal(receipt.accepted,true);
   return{result,operation:id,receipt};

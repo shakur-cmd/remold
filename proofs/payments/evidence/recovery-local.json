@@ -1,0 +1,12 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; parent journal and provider objects synthetic; no Stripe calls",
+  "results": [
+    "Changed parent bytes refuse recovery before requests",
+    "Unexpected parent write refuses even when a supplied digest matches",
+    "Spent recovery latch refuses before provider calls",
+    "Changed document, quote, unresolved create or later local operation refuses recovery",
+    "Provider missing/duplicate draft, existing line/item/payment/charge/subscription refuses with zero writes",
+    "Same original quote/deposit/draft complete with one item and finalize, zero invoice/customer creation",
+    "Recovery effects journaled before subsequent steps"
+  ]
+}

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {trustedAdapter} from './adapter.mjs';
-export async function boundary({stripe,client,m,q,h,run,account,externalCustomer,runId,check,objects}){
+export async function boundary({stripe,client,m,q,h,run,account,externalCustomer,runId,check,objects,noFee}){
  const f=run('harness:seed',{run:randomUUID(),tokens:Array.from({length:10},()=>randomUUID())});
  run('payments:configureFixture',{binding:f.A.binding,adapterToken:f.A.adapter,account,environment:'SANDBOX',healthy:true});f.A.key={provider:'stripe',environment:'SANDBOX',account};
  const customer=await m('registerCustomer',{token:f.A.adapter,binding:f.A.binding,externalId:externalCustomer,name:'Synthetic boundary customer'});
@@ -18,7 +18,7 @@ export async function boundary({stripe,client,m,q,h,run,account,externalCustomer
  await grant(f.A.actors.child);
  await check('Firing after consumed final permit records only the bounded late provider result',async()=>{
   const out=await adapter.execute('A',doc,params,'POST','/v1/payment_intents',{callerToken:f.A.sessions.child,stage:'after-permit',afterPermit:()=>h('revoke',{token:f.A.sessions.owner,target:f.A.actors.child})});
-  assert.equal(out.result.status,'succeeded');assert.equal(out.receipt.late,true);assert.equal(out.result.amount,109);
+  await noFee(out.result,account,externalCustomer,109);assert.equal(out.result.status,'succeeded');assert.equal(out.receipt.late,true);assert.equal(out.result.amount,109);
   objects.push({kind:'bounded-late',account,id:out.result.id,operation:out.operation,late:out.receipt.late,amountMinor:109});
   await assert.rejects(adapter.execute('A',doc,params,'POST','/v1/payment_intents',{callerToken:f.A.sessions.child,stage:'after-fire-new'}),/inactive/);
  });

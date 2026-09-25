@@ -1,0 +1,20 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; parent journal and provider objects synthetic; no Stripe calls",
+  "results": [
+    "Changed parent bytes refuse recovery before requests",
+    "Unexpected parent write refuses even when a supplied digest matches",
+    "Spent recovery latch refuses before provider calls",
+    "Changed document, quote, unresolved create or later local operation refuses recovery",
+    "Provider missing/duplicate draft, existing line/item/payment/charge/subscription refuses with zero writes",
+    {
+      "name": "Independent clean pre-read then explicit fee only in finalize response",
+      "providerFinalizeWrites": 1,
+      "itemWrites": 1,
+      "finalState": "dispatching",
+      "confirmedReceipts": 0,
+      "durableProviderResponse": true,
+      "restartRefused": true,
+      "classification": "Post-effect refusal, not pre-write refusal"
+    }
+  ]
+}

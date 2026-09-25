@@ -111,7 +111,7 @@
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "[Request ID: c1ed37d2dda56753] Server Error\nUncaught Error: payment is not reserved for this document\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:426:32)\n"
+      "reason": "[Request ID: 3724de3c1676ee6f] Server Error\nUncaught Error: payment is not reserved for this document\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:426:32)\n"
     },
     {
       "name": "inactive-card",
@@ -167,126 +167,120 @@
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n1 !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n1 !== null\n"
     },
     {
       "name": "explicit-invoice-fee-item-0",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n0 !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n0 !== null\n"
     },
     {
       "name": "explicit-invoice-fee-item-\"0\"",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n'0' !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n'0' !== null\n"
     },
     {
       "name": "explicit-invoice-fee-item-{}",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n{} !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n{} !== null\n"
     },
     {
       "name": "explicit-invoice-fee-finalize-1",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n1 !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n1 !== null\n"
     },
     {
       "name": "explicit-invoice-fee-finalize-0",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n0 !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n0 !== null\n"
     },
     {
       "name": "explicit-invoice-fee-finalize-\"0\"",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n'0' !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n'0' !== null\n"
     },
     {
       "name": "explicit-invoice-fee-finalize-{}",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n{} !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n{} !== null\n"
     },
     {
       "name": "explicit-invoice-fee-pi-1",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n1 !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n1 !== null\n"
     },
     {
       "name": "explicit-invoice-fee-pi-0",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n0 !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n0 !== null\n"
     },
     {
       "name": "explicit-invoice-fee-pi-\"0\"",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n'0' !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n'0' !== null\n"
     },
     {
       "name": "explicit-invoice-fee-pi-{}",
       "refused": true,
       "writes": 0,
       "status": "PASS",
-      "reason": "Explicit invoice fee unsupported\n\n{} !== null\n"
+      "reason": "Expected values to be strictly equal:\n\n{} !== null\n"
     },
     {
       "name": "invoice-transfer",
-      "refused": true,
-      "writes": 0,
-      "status": "PASS",
-      "reason": "Invoice transfer/on-behalf route unsupported\n+ actual - expected\n\n+ {\n+   destination: 'acct_foreign'\n+ }\n- null\n"
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
     },
     {
       "name": "invoice-on-behalf",
-      "refused": true,
-      "writes": 0,
-      "status": "PASS",
-      "reason": "Invoice transfer/on-behalf route unsupported\n+ actual - expected\n\n+ 'acct_foreign'\n- null\n"
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
     },
     {
       "name": "missing-issuer",
-      "refused": true,
-      "writes": 0,
-      "status": "PASS",
-      "reason": "Invoice issuer mismatch\n+ actual - expected\n\n+ null\n- {\n-   type: 'self'\n- }\n"
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
     },
     {
       "name": "foreign-issuer",
-      "refused": true,
-      "writes": 0,
-      "status": "PASS",
-      "reason": "Invoice issuer mismatch\n+ actual - expected\n\n  {\n+   account: 'acct_foreign',\n+   type: 'account'\n-   type: 'self'\n  }\n"
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
     },
     {
       "name": "missing-application",
-      "refused": true,
-      "writes": 0,
-      "status": "PASS",
-      "reason": "Invoice application mismatch\n+ actual - expected\n\n+ null\n- 'ca_VJwFj4FcjohaD0wjZKB5vJcllH0TPDnD'\n"
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
     },
     {
       "name": "foreign-application",
-      "refused": true,
-      "writes": 0,
-      "status": "PASS",
-      "reason": "Invoice application mismatch\n+ actual - expected\n\n+ 'ca_foreign'\n- 'ca_VJwFj4FcjohaD0wjZKB5vJcllH0TPDnD'\n      ^\n"
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
     },
     {
       "name": "platform-fee",

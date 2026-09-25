@@ -1,0 +1,35 @@
+✔ Continuation reuses both exact customers with email-only updates and durable receipts (111.738084ms)
+✔ Continuation refuses wrong-scope before any provider write (9.764583ms)
+✔ Continuation refuses nonempty before any provider write (10.425166ms)
+✔ Continuation refuses incomplete before any provider write (9.025458ms)
+✔ An existing one-shot latch refuses a second start before a provider call (4.244959ms)
+✔ Lost response retains the attempted update and refuses restart (43.391584ms)
+✔ A changed email readback stops before updating the second customer (44.848708ms)
+✔ Absent Basil invoice fee stays unobserved; explicit null stays explicit (0.684042ms)
+✔ Explicit invoice fee 0 is refused (0.40775ms)
+✔ Explicit invoice fee 1 is refused (0.1025ms)
+✔ Explicit invoice fee 0 is refused (0.09225ms)
+✔ Explicit invoice fee [object Object] is refused (0.062042ms)
+✔ Explicit invoice fee undefined is refused (0.092ms)
+✔ Unsupported invoice provenance {} is refused (0.221375ms)
+✔ Unsupported invoice provenance {"issuer":{"type":"account","account":"acct_other"}} is refused (0.097041ms)
+✔ Unsupported invoice provenance {} is refused (0.080583ms)
+✔ Unsupported invoice provenance {"application":"ca_other"} is refused (0.093833ms)
+✔ Unsupported invoice provenance {"transfer_data":{"destination":"acct_other"}} is refused (0.086375ms)
+✔ Unsupported invoice provenance {"on_behalf_of":"acct_other"} is refused (0.052291ms)
+✔ No-fee proof requires exact scoped PI and charge plus complete platform empty fee list (24.637917ms)
+✔ missing-pi is UNOBSERVED, never zero (8.033417ms)
+✔ missing-charge is UNOBSERVED, never zero (6.175416ms)
+✔ pi-fee cannot pass no-fee proof (2.048375ms)
+✔ charge-fee cannot pass no-fee proof (3.924667ms)
+✔ foreign-charge cannot pass no-fee proof (5.971833ms)
+✔ platform-fee cannot pass no-fee proof (7.184458ms)
+✔ incomplete cannot pass no-fee proof (4.437875ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 290.842

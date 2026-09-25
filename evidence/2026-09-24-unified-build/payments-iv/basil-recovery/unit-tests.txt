@@ -1,0 +1,35 @@
+✔ Continuation reuses both exact customers with email-only updates and durable receipts (101.771916ms)
+✔ Continuation refuses wrong-scope before any provider write (10.121083ms)
+✔ Continuation refuses nonempty before any provider write (10.950458ms)
+✔ Continuation refuses incomplete before any provider write (9.764625ms)
+✔ An existing one-shot latch refuses a second start before a provider call (5.946209ms)
+✔ Lost response retains the attempted update and refuses restart (42.497292ms)
+✔ A changed email readback stops before updating the second customer (43.806042ms)
+✔ Absent Basil invoice fee stays unobserved; explicit null stays explicit (1.098292ms)
+✔ Explicit invoice fee 0 is refused (0.428083ms)
+✔ Explicit invoice fee 1 is refused (0.076333ms)
+✔ Explicit invoice fee 0 is refused (0.099333ms)
+✔ Explicit invoice fee [object Object] is refused (0.0635ms)
+✔ Explicit invoice fee undefined is refused (0.096583ms)
+✔ Unsupported invoice provenance {} is refused (0.278958ms)
+✔ Unsupported invoice provenance {"issuer":{"type":"account","account":"acct_other"}} is refused (0.164208ms)
+✔ Unsupported invoice provenance {} is refused (0.130041ms)
+✔ Unsupported invoice provenance {"application":"ca_other"} is refused (0.105375ms)
+✔ Unsupported invoice provenance {"transfer_data":{"destination":"acct_other"}} is refused (0.245917ms)
+✔ Unsupported invoice provenance {"on_behalf_of":"acct_other"} is refused (0.073584ms)
+✔ No-fee proof requires exact scoped PI and charge plus complete platform empty fee list (20.064834ms)
+✔ missing-pi is UNOBSERVED, never zero (8.037041ms)
+✔ missing-charge is UNOBSERVED, never zero (2.113167ms)
+✔ pi-fee cannot pass no-fee proof (3.005292ms)
+✔ charge-fee cannot pass no-fee proof (2.813583ms)
+✔ foreign-charge cannot pass no-fee proof (3.328959ms)
+✔ platform-fee cannot pass no-fee proof (6.315292ms)
+✔ incomplete cannot pass no-fee proof (4.067583ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 276.462834

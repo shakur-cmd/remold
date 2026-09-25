@@ -13,8 +13,11 @@ export function claimContinuation({privateDirectory,evidenceDirectory,sourceAggr
  const old=readFileSync(join(evidenceDirectory,'sandbox-first-enabled-attempt.json'));assert.equal(digest(old),FIRST_ATTEMPT_SHA,'Original attempt digest mismatch');
  const first=JSON.parse(old);assert.equal(first.runId,FIRST_RUN);assert.equal(first.results.length,0);assert.equal(first.objects.length,2);
  for(const {account,customer}of Object.values(CUSTOMERS))assert.ok(first.objects.some(o=>o.kind==='customer'&&o.account===account&&o.id===customer));
- mkdirSync(privateDirectory,{recursive:true,mode:0o700});const path=join(privateDirectory,CONTINUATION_ID+'.jsonl');
- durable(path,{kind:'started',id:CONTINUATION_ID,continuationOf:FIRST_RUN,sourceAggregate,firstAttemptSha:FIRST_ATTEMPT_SHA,customers:CUSTOMERS,emails:{A:email('A'),B:email('B')},at:new Date().toISOString()},'wx');
+ return claimJournal(privateDirectory,CONTINUATION_ID,{continuationOf:FIRST_RUN,sourceAggregate,firstAttemptSha:FIRST_ATTEMPT_SHA,customers:CUSTOMERS,emails:{A:email('A'),B:email('B')}});
+}
+export function claimJournal(privateDirectory,id,header){
+ mkdirSync(privateDirectory,{recursive:true,mode:0o700});const path=join(privateDirectory,id+'.jsonl');
+ durable(path,{kind:'started',id,...header,at:new Date().toISOString()},'wx');
  const dir=openSync(privateDirectory,'r');try{fsyncSync(dir);}finally{closeSync(dir);}
  let sequence=0;
  const append=row=>durable(path,{...row,at:new Date().toISOString()},'a');
