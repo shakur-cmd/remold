@@ -1,0 +1,387 @@
+{
+  "at": "2026-09-25T03:05:23.066Z",
+  "reviewer": "independent Opus 5.5 read-only checkpoint",
+  "scope": "Exact existing fixture GETs only via stripe.mjs provider(credentials()); zero writes",
+  "apiVersion": "2025-05-28.basil",
+  "invoiceTwiceRead": {
+    "separationMs": 1300,
+    "changedKeys": [
+      "hosted_invoice_url",
+      "invoice_pdf"
+    ],
+    "linkFieldsAreStrings": [
+      [
+        "string",
+        "string"
+      ],
+      [
+        "string",
+        "string"
+      ]
+    ],
+    "rawDigests": [
+      "c1225149ccccfcdda51aaf02ec734ad0c74fa87a3723dd4448c45abd46646657",
+      "3ec7f160b467cc79b39a09bb5163c53995be37cca12458350c6aa6ef12356f5b"
+    ],
+    "withoutTwoLinksDigests": [
+      "8c5cc20a3dc8322a32c803936c216bdd8c7d172a12840566e8b51c3cbcc55610",
+      "8c5cc20a3dc8322a32c803936c216bdd8c7d172a12840566e8b51c3cbcc55610"
+    ],
+    "withoutTwoLinksEqual": true,
+    "facts": {
+      "id": "in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "livemode": false,
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "status": "paid",
+      "currency": "usd",
+      "amountDue": 301,
+      "amountPaid": 301,
+      "amountRemaining": 0,
+      "total": 301,
+      "billingReason": "subscription_create",
+      "attemptCount": 1,
+      "nextPaymentAttempt": null,
+      "autoAdvance": false,
+      "periodStart": 1790305189,
+      "periodEnd": 1790305189,
+      "issuer": {
+        "type": "self"
+      },
+      "lines": {
+        "hasMore": false,
+        "count": 1,
+        "data": [
+          {
+            "id": "il_1UJPMXJL8hhTtG1oDi66HMMJ",
+            "amount": 301,
+            "quantity": 1,
+            "period": {
+              "end": 1790391589,
+              "start": 1790305189
+            },
+            "price": "price_1UJPLkJL8hhTtG1ogKQZq82g",
+            "subscriptionItem": "si_VK3Sci4vzesLGt",
+            "proration": false
+          }
+        ]
+      }
+    }
+  },
+  "clocks": [
+    {
+      "label": "F",
+      "id": "clock_1UJPLfJL8hhTtG1ovv5p5G1t",
+      "livemode": false,
+      "status": "ready",
+      "frozenTime": 1790309089,
+      "deletesAfter": 1792897135,
+      "nameDigest": "a4651536b97fd3dd1ddcb9ed6a637471b5cf7b8135e7b04d4f7a3f72e121edf2"
+    },
+    {
+      "label": "H",
+      "id": "clock_1UJPLjJL8hhTtG1oH7Ws1cC6",
+      "livemode": false,
+      "status": "ready",
+      "frozenTime": 1790305129,
+      "deletesAfter": 1792897139,
+      "nameDigest": "2ba47edc7a785d327ceecdd18712d235a51f29d79136b7e9aabefb1de4048dda"
+    }
+  ],
+  "inventories": [
+    {
+      "label": "F",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "path": "/v1/subscription_schedules",
+      "hasMore": false,
+      "rows": [
+        {
+          "id": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+          "status": "active",
+          "livemode": false
+        }
+      ]
+    },
+    {
+      "label": "F",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "path": "/v1/subscriptions",
+      "hasMore": false,
+      "rows": [
+        {
+          "id": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+          "status": "active",
+          "livemode": false
+        }
+      ]
+    },
+    {
+      "label": "F",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "path": "/v1/invoices",
+      "hasMore": false,
+      "rows": [
+        {
+          "id": "in_1UJPLpJL8hhTtG1owAaKsAZx",
+          "status": "paid",
+          "livemode": false
+        }
+      ]
+    },
+    {
+      "label": "H",
+      "customer": "cus_VK3SpTgZuF0j1W",
+      "path": "/v1/subscription_schedules",
+      "hasMore": false,
+      "rows": []
+    },
+    {
+      "label": "H",
+      "customer": "cus_VK3SpTgZuF0j1W",
+      "path": "/v1/subscriptions",
+      "hasMore": false,
+      "rows": []
+    },
+    {
+      "label": "H",
+      "customer": "cus_VK3SpTgZuF0j1W",
+      "path": "/v1/invoices",
+      "hasMore": false,
+      "rows": []
+    }
+  ],
+  "schedule": {
+    "id": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+    "status": "active",
+    "customer": "cus_VK3Sk08ekk8Hiy",
+    "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+    "testClock": "clock_1UJPLfJL8hhTtG1ovv5p5G1t",
+    "endBehavior": "cancel",
+    "iterations": [
+      null
+    ],
+    "phaseEnd": [
+      1790564389
+    ],
+    "metadataPlanDigest": "2f3db1cf161b063fc5b730159756c4dd4e3b1f1fd1ac0f6320dc66cdd7af7f00"
+  },
+  "subscription": {
+    "id": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+    "status": "active",
+    "customer": "cus_VK3Sk08ekk8Hiy",
+    "schedule": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+    "testClock": "clock_1UJPLfJL8hhTtG1ovv5p5G1t",
+    "items": [
+      {
+        "id": "si_VK3Sci4vzesLGt",
+        "price": "price_1UJPLkJL8hhTtG1ogKQZq82g",
+        "quantity": 1,
+        "currentPeriodStart": 1790305189,
+        "currentPeriodEnd": 1790391589
+      }
+    ],
+    "defaultPaymentMethodPresent": true,
+    "cancelAt": 1790564389
+  },
+  "invoicePayments": {
+    "hasMore": false,
+    "rows": [
+      {
+        "id": "inpay_1UJPLuJL8hhTtG1oTzVC63hS",
+        "status": "paid",
+        "amountPaid": 301,
+        "amountRequested": 301,
+        "currency": "usd",
+        "type": "payment_intent",
+        "paymentIntent": "pi_3UJPLuJL8hhTtG1o1ijPgsYT",
+        "isDefault": true
+      }
+    ]
+  },
+  "fee": {
+    "paymentIntent": "pi_3UJPLuJL8hhTtG1o1ijPgsYT",
+    "charge": "ch_3UJPLuJL8hhTtG1o14hTDeFd",
+    "account": "acct_1UJIndJL8hhTtG1o",
+    "status": "PASS",
+    "piFee": "explicit-null",
+    "chargeFee": "explicit-null",
+    "platformFeeList": "complete-empty"
+  },
+  "eClocks": {
+    "hasMore": false,
+    "ids": []
+  },
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_eV4L58QmcKQpdY",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_6OAvX2CsUiLyXK",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks/clock_1UJPLfJL8hhTtG1ovv5p5G1t",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_1vq8skAlZ8TvY6",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks/clock_1UJPLjJL8hhTtG1oH7Ws1cC6",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_ijWLrrzKzGcteC",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscription_schedules",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_VW13X7dXd7iAsU",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_5WQdOW6EyI4KZK",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_KvDN9NUV5nOREu",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscription_schedules",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_AO5HjyXQ6l0oui",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_AnEnh5ACngGnen",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_M4cIFuxKl3BvDL",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscription_schedules/sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_GQiK2U0plFvMuv",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions/sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_UXXlRxDJHj4qtO",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_tdrlf7Z8VdkASK",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents/pi_3UJPLuJL8hhTtG1o1ijPgsYT",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_25ogKJaB0LTrnZ",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges/ch_3UJPLuJL8hhTtG1o14hTDeFd",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_HmLNRgv07I9z4S",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/application_fees",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_eSjnJnCnTB9Ld3",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_Min9KHVm1EcKfG",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "writes": 0
+}

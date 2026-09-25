@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { makeFunctionReference } from 'convex/server';
 import { proveNoPlatformFee } from '../invoice-contract.mjs';
 import { cadence } from './cadence.ts';
-import { assertSameInvoice } from './provider-evidence.mjs';
 export const termEnd = plan => cadence(plan, 3);
 const id = x => typeof x === 'string' ? x : x?.id;
 export function recurringAdapter(stripe, client, token) {
@@ -336,7 +335,7 @@ export function recurringAdapter(stripe, client, token) {
                 });
             }
             const final = await stripe.request('GET', '/v1/invoices/' + invoice.id, {}, c.account);
-            assertSameInvoice(invoice, final);
+            assert.deepEqual(final, invoice, 'Invoice changed during traversal');
             cycles.push({
                 ...invoiceLine(invoice, c),
                 invoice: invoice.id,

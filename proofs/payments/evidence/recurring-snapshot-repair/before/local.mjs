@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, cpSync, writeFileSync, readFileSync, existsSync, symlinkSync, realpathSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, cpSync, writeFileSync, readFileSync, existsSync, symlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { join, dirname, basename } from 'node:path';
+import { join } from 'node:path';
 const here = fileURLToPath(new URL('.', import.meta.url)), base = fileURLToPath(new URL('../', import.meta.url)), root = fileURLToPath(new URL('../../../', import.meta.url));
 const hash = x => createHash('sha256').update(x).digest('hex');
-export async function withRecurring(check, { baseline = false, resumeDirectory } = {}) {
+export async function withRecurring(check, { baseline = false } = {}) {
     assert.equal(JSON.parse(readFileSync(root + 'node_modules/convex/package.json')).version, '1.46.0');
     if (!existsSync(here + 'node_modules'))
         symlinkSync(root + 'node_modules', here + 'node_modules', 'dir');
@@ -17,42 +17,17 @@ export async function withRecurring(check, { baseline = false, resumeDirectory }
     };
     verify();
     mkdirSync(here + 'private', { recursive: true, mode: 0o700 });
-    let cwd;
-    if (resumeDirectory) {
-        assert.equal(baseline, false);
-        cwd = realpathSync(resumeDirectory);
-        assert.equal(dirname(cwd), realpathSync(here + 'private'), 'Owned local proof directory required');
-        assert(/^local-[A-Za-z0-9]+$/.test(basename(cwd)), 'Owned local proof directory required');
-        assert.equal(realpathSync(cwd + '/.convex'), cwd + '/.convex', 'Local state must remain inside the proof directory');
-        const localEnv = new Map();
-        for (const line of readFileSync(cwd + '/.env.local', 'utf8').split('\n')) {
-            const match = /^([A-Z_]+)=(.*)$/.exec(line);
-            if (match) {
-                assert(['CONVEX_DEPLOYMENT', 'CONVEX_URL', 'CONVEX_SITE_URL', 'VITE_CONVEX_URL'].includes(match[1]), 'Unapproved local environment key');
-                assert(!localEnv.has(match[1]), 'Repeated local environment key');
-                localEnv.set(match[1], match[2]);
-            }
-        }
-        assert(localEnv.get('CONVEX_DEPLOYMENT')?.startsWith('anonymous:'), 'Only anonymous local proof state may resume');
+    const cwd = mkdtempSync(here + 'private/local-');
+    cpSync(base + 'convex', cwd + '/convex', { recursive: true });
+    if (!baseline) {
+        cpSync(cwd + '/convex/schema.ts', cwd + '/convex/payment_schema.ts');
         for (const n of ['schema.ts', 'recurring.ts', 'recurringFixture.ts', 'cadence.ts'])
-            assert.equal(hash(readFileSync(cwd + '/convex/' + n)), hash(readFileSync(here + n)), 'Local proof source changed: ' + n);
-        assert.equal(hash(readFileSync(cwd + '/convex/payment_schema.ts')), hash(readFileSync(base + 'convex/schema.ts')));
-        for (const [name,digest] of Object.entries(frozen.files))
-            if (name.startsWith('convex/') && name !== 'convex/schema.ts' && !name.startsWith('convex/_generated/'))
-                assert.equal(hash(readFileSync(cwd + '/' + name)),digest,'Restored payment source changed: ' + name);
-    } else {
-        cwd = mkdtempSync(here + 'private/local-');
-        cpSync(base + 'convex', cwd + '/convex', { recursive: true });
-        if (!baseline) {
-            cpSync(cwd + '/convex/schema.ts', cwd + '/convex/payment_schema.ts');
-            for (const n of ['schema.ts', 'recurring.ts', 'recurringFixture.ts', 'cadence.ts'])
-                cpSync(here + n, cwd + '/convex/' + n);
-        }
-        cpSync(base + 'tsconfig.json', cwd + '/tsconfig.json');
-        writeFileSync(cwd + '/package.json', readFileSync(here + 'package.json'));
-        writeFileSync(cwd + '/convex.json', '{"functions":"convex"}');
-        symlinkSync(root + 'node_modules', cwd + '/node_modules', 'dir');
+            cpSync(here + n, cwd + '/convex/' + n);
     }
+    cpSync(base + 'tsconfig.json', cwd + '/tsconfig.json');
+    writeFileSync(cwd + '/package.json', readFileSync(here + 'package.json'));
+    writeFileSync(cwd + '/convex.json', '{"functions":"convex"}');
+    symlinkSync(root + 'node_modules', cwd + '/node_modules', 'dir');
     const cli = root + 'node_modules/convex/bin/main.js', env = {
         PATH: process.env.PATH,
         HOME: process.env.HOME,

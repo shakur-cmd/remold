@@ -1,0 +1,26 @@
+AssertionError [ERR_ASSERTION]: Invoice changed during traversal
++ actual - expected
+
+  {
+    amount_due: 301,
+    amount_paid: 301,
+    auto_advance: false,
+    billing_reason: 'subscription_create',
+    currency: 'usd',
+    customer: 'cus_c0ee1f09-7540-4e84-aaeb-85375f48bb8f',
++   hosted_invoice_url: 'https://example.invalid/hosted-4',
+-   hosted_invoice_url: 'https://example.invalid/hosted-3',
+    id: 'in_ks7ar42rfk5fsm7rqhggmerzfh8f2j55_0',
++   invoice_pdf: 'https://example.invalid/pdf-4',
+-   invoice_pdf: 'https://example.invalid/pdf-3',
+    lines: {
+      data: [
+        {
+          amount: 301,
+          currency: 'usd',
+
+    at Object.observe (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/adapter.mjs:338:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:851:13
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:84:16)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:13:5

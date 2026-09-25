@@ -1,0 +1,26 @@
+PASS Pinned test platform and healthy connected accounts; signed forwarding ready
+Waiting for F sandbox clock
+PASS Connected F clock create/advance, exact ownership and clock-filtered customer containment
+Waiting for F sandbox clock
+STOP: Invoice changed during traversal
++ actual - expected
+... Skipped lines
+
+  {
+    account_country: 'US',
+    account_name: 'accessible.stripe',
+    account_tax_ids: null,
+    amount_due: 301,
+...
+    from_invoice: null,
++   hosted_invoice_url: '[redacted signed invoice URL]',
+-   hosted_invoice_url: '[redacted signed invoice URL]',
+    id: 'in_1UJPLpJL8hhTtG1owAaKsAZx',
++   invoice_pdf: '[redacted signed invoice URL]',
+-   invoice_pdf: '[redacted signed invoice URL]',
+    issuer: {
+      type: 'self'
+    },
+    last_finalization_error: null,
+    latest_revision: null,
+

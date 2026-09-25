@@ -3,15 +3,8 @@ export const D = 'acct_1UJIndJL8hhTtG1o', E = 'acct_1UJL2DR59Pk6MTFE';
 export const RUN = 'p4-recurring-finite-2026-09-24-1';
 export const CAPS = Object.freeze({clock:2,advance:14,customer:2,product:1,price:1,setup:4,activate:3,card:2,cancel:2});
 const keys = (params, names) => assert.deepEqual(Object.keys(params).sort(), [...names].sort(), 'Unexpected sandbox write fields');
-export function boundedRecurringProvider(raw, journal, registry, start, prior = {}) {
-    const provider = journal.wrap(raw), counts = Object.fromEntries(Object.keys(CAPS).map(k => [k, prior.counts?.[k] ?? 0])), used = new Set(prior.keys ?? []), advances = new Map(prior.advances ?? []);
-    for (const [kind,count] of Object.entries(counts)) assert(Number.isInteger(count) && count >= 0 && count <= CAPS[kind], 'Invalid prior write count');
-    assert(Object.keys(prior.counts ?? {}).every(k => Object.hasOwn(CAPS,k)), 'Unknown prior write category');
-    assert.equal(used.size,(prior.keys ?? []).length,'Duplicate prior key');
-    assert.equal(used.size,Object.values(counts).reduce((n,c)=>n+c,0),'Prior keys and counts disagree');
-    assert.equal(advances.size,(prior.advances ?? []).length,'Duplicate prior clock count');
-    for (const [id,count] of advances) assert(registry.clocks.has(id) && Number.isInteger(count) && count >= 0 && count <= (registry.clocks.get(id).label === 'F' ? 8 : 6), 'Invalid prior clock count');
-    assert.equal([...advances.values()].reduce((n,c)=>n+c,0),counts.advance,'Prior clock advances disagree');
+export function boundedRecurringProvider(raw, journal, registry, start) {
+    const provider = journal.wrap(raw), counts = Object.fromEntries(Object.keys(CAPS).map(k => [k, 0])), used = new Set(), advances = new Map();
     return { ...provider, counts, request: async (method, path, params = {}, account, key, options) => {
         assert([undefined, D, E].includes(account), 'Account outside sandbox fixture');
         if (method === 'GET') return provider.request(method, path, params, account);

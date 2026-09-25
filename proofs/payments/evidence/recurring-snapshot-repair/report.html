@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recurring sandbox stop and repair</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Recurring sandbox stop and repair</h1><div class="meta">2026-09-25 UTC · SANDBOX Stripe, SERVICE local Convex, SIM terms · exact continuation independently approved; provider run pending</div>
+<div class="decisions"><h2>Current boundary</h2><p>The original run is spent. Preserve its journal, clocks, customers and first paid invoice. The continuation needs exact source approval before further provider writes. No live funds, recipients or commercial pricing are involved.</p></div>
+<div class="status"><h2>Done and proven</h2><p>The first sandbox run made 11 successful writes and collected one synthetic 301-cent payment. Root and Opus 5.5 independently read back the same invoice, payment, fee result and clocks. It stopped before the failed-renewal or H sequences.</p><p>The repaired adapter passes 19 local groups. Twelve guard and error tests pass. The original local ledger resumed unchanged, with zero paid and903 reserved until provider reconciliation. Opus5.5 independently repeated19groups and12guards, exercised checkpoint tampering, and approved the exact75-file continuation. <a href="../recurring-sandbox-continuation/independent-review.json">Independent review</a>. A private0600 archive preserves the original local state before continuation. The original backend.log was overwritten by the earlier root resume check and is unavailable.</p></div>
+<h2>Before and after</h2><table><tr><th>Before</th><th>After</th></tr><tr><td>Stripe rotated hosted_invoice_url and invoice_pdf between reads. Whole-object equality stopped despite unchanged financial fields. <a href="../recurring-sandbox-driver/invoice-link-rotation.json">Readback</a> · <a href="red.txt">Local reproduction</a>.</td><td>Only those two top-level delivery links may differ. All remaining fields compare exactly. Money, status, period, nested and unknown-field changes still refuse. <a href="green.txt">19-group replay</a>.</td></tr><tr><td>The assertion message copied signed delivery links into uncommitted proof output. Raw originals were moved to private mode600 evidence; public copies were redacted. <a href="error-red.txt">Failing error-path check</a>.</td><td>Raw diagnostics stay in an exclusive mode600 file. Public failure output contains only a fixed category, bounded name/status and diagnostic hash. <a href="continuation-unit.txt">Passing checks</a>.</td></tr><tr><td>A new driver would otherwise reset the consumed budget.</td><td>The continuation pins the old journal and checkpoints, retains all11 old keys and counts, restores the same local state, and reconciles the original301 before any new provider POST. Only20 further writes remain. <a href="cumulative-cap-red.txt">Red</a> · <a href="cumulative-cap-green.txt">Green</a> · <a href="local-resume.txt">Actual resume</a>.</td></tr></table>
+<h2>Evidence and remaining work</h2><p><a href="../recurring-sandbox-driver/first-stop-consultation.json">Independent stop consultation</a> · <a href="../recurring-sandbox-driver/first-stop-readback.json">Root provider readback</a> · <a href="../recurring-sandbox-driver/first-stop-independent-readback.json">Independent provider readback</a> · <a href="../recurring-sandbox-continuation/source.json">75-file continuation candidate</a>.</p><p>The original maxima remain31 logical writes,2709 reserved and1806 collected synthetic USD minor units. F has six advances left and H has six. No new clocks, customers, product or price. Provider renewal, retry, exhaustion, replacement and cancellation remain unproven. Future-start, monthly cadence, durable signed recurring ingestion and full P4/I1/I7 remain open.</p></body></html>

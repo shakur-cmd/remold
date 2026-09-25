@@ -17,7 +17,7 @@ try {
         for (const name of ['A', 'B'])
             run('paymentFixture:role', { actor: f[name].actors.owner, role: 'finance' });
         const customers = new Map(), schedules = new Map(), subs = new Map(), invoices = new Map(), pis = new Map(), charges = new Map(), setups = new Map(), pms = new Map(), payments = new Map(), posts = [];
-        let omitId = null, rotatingInvoiceLinks = false;
+        let omitId = null;
         let counter = 0, lose = false, dirtyItems = false, badPrice = false, unknownSchedule = false, invoiceDrift = false, invoiceReads = 0;
         const start = Math.floor(Date.now() / 1000), phase = (params) => ({
             start_date: Number(params.start_date),
@@ -158,7 +158,6 @@ try {
                 }
                 if (!value)
                     throw Error('Missing loopback object');
-                if (rotatingInvoiceLinks && req.method === 'GET' && u.pathname.startsWith('/v1/invoices/')) value = { ...value, hosted_invoice_url: 'https://example.invalid/hosted-' + (++invoiceReads), invoice_pdf: 'https://example.invalid/pdf-' + invoiceReads };
                 if (invoiceDrift && req.method === 'GET' && u.pathname.startsWith('/v1/invoices/')) {
                     invoiceReads++;
                     if (invoiceReads === 2)
@@ -251,8 +250,6 @@ try {
             const schedule = [...schedules.values()].find(s => s.metadata.remold_commitment === a.id), invoice = 'in_' + a.id + '_' + n, pi = 'pi_' + invoice, ip = 'inpay_' + invoice, ch = 'ch_' + pi;
             invoices.set(invoice, {
                 id: invoice,
-                hosted_invoice_url: null,
-                invoice_pdf: null,
                 customer: schedule.customer,
                 livemode: false,
                 currency: 'usd',
@@ -848,12 +845,6 @@ try {
             assert.equal(posts.length, beforeReplacement + 1);
             results.push('A replacement refuses a complete-looking list that omits its known prior schedule or subscription');
 
-            const linked = await agreement();
-            await adapter.execute(linked.command);cycle(linked, 0);rotatingInvoiceLinks = true;
-            await adapter.observe(linked.id);rotatingInvoiceLinks = false;
-            const linkedState = (await inspect(linked.id)).commitment;
-            assert.equal(linkedState.paidMinor, 301);assert.equal(linkedState.reservedMinor, 602);assert.equal(linkedState.complete, true);
-            results.push('Changing invoice delivery links cannot block an otherwise identical financial snapshot');
             assert.ok(posts.every(p => p.account === f.A.key.account));
             assert.ok(posts.every(p => !p.path.includes('/pay') && !p.path.includes('payment_intents')));
             assert.ok(posts.every(p => !Object.keys(p.params).some(k => k.includes('application_fee'))));

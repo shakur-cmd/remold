@@ -1,0 +1,30 @@
+✔ only the two top-level delivery links may differ between invoice reads (0.89225ms)
+✖ the actual driver catch stores raw diagnostics privately and emits no message, URL or object diff (1.44625ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 37.216667
+
+✖ failing tests:
+
+test at proofs/payments/recurring/provider-evidence.test.mjs:4:1
+✖ the actual driver catch stores raw diagnostics privately and emits no message, URL or object diff (1.44625ms)
+  AssertionError [ERR_ASSERTION]: Raw provider details reached public output
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/provider-evidence.test.mjs:4:989)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
