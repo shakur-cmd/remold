@@ -1,0 +1,70 @@
+## genuine receipt, genuine backup (expect PASS) | receipt=R-fixture.json backup=fixture.zip
+{"snapshot":"restored-and-validated","snapshotSha256":"92bf7d75904ddf993a9afbfd4fb6cc0ecde04479053fced95690826a969408a1","deploymentAuthorized":false}
+exit=0
+## genuine receipt, byte-identical copy under another name (expect PASS) | receipt=R-fixture.json backup=fixture-copy.zip
+{"snapshot":"restored-and-validated","snapshotSha256":"92bf7d75904ddf993a9afbfd4fb6cc0ecde04479053fced95690826a969408a1","deploymentAuthorized":false}
+exit=0
+## earlier break: emptied snapshot | receipt=R-emptied.json backup=fixture.zip
+Snapshot receipt restored empty app tables but the expected backup has data
+exit=1
+## earlier break: schema-valid edit | receipt=R-tampered.json backup=fixture.zip
+Snapshot receipt is not for the expected backup
+exit=1
+## earlier break: random 64-hex | receipt=X-rand.json backup=fixture.zip
+Snapshot receipt is not for the expected backup
+exit=1
+## new: partially emptied (records only) | receipt=R-partial.json backup=fixture.zip
+Snapshot receipt is not for the expected backup
+exit=1
+## new: only users kept | receipt=R-usersonly.json backup=fixture.zip
+Snapshot receipt is not for the expected backup
+exit=1
+## new: rate-limiter-only snapshot (drill FAIL receipt) | receipt=R-rlonly.json backup=fixture.zip
+Snapshot receipt did not pass restored-snapshot validation
+exit=1
+## new: rate-limiter-only receipt forged to PASS | receipt=X-rl-pass.json backup=fixture.zip
+Snapshot receipt restored empty app tables but the expected backup has data
+exit=1
+## new: genuine receipt vs a different real backup | receipt=R-fixture.json backup=fixture2.zip
+Snapshot receipt is not for the expected backup
+exit=1
+## new: other backup's genuine receipt vs expected backup | receipt=R-fixture2.json backup=fixture.zip
+Snapshot receipt is not for the expected backup
+exit=1
+## right hash, wrong releaseSha | receipt=X-rel.json backup=fixture.zip
+Snapshot receipt release SHA does not match artifact
+exit=1
+## right hash, wrong manifestSha256 | receipt=X-man.json backup=fixture.zip
+Snapshot receipt manifest digest does not match pinned artifact
+exit=1
+## right hash, wrong schema | receipt=X-sch.json backup=fixture.zip
+Snapshot receipt schema digest does not match artifact
+exit=1
+## right hash, result FAIL | receipt=X-fail.json backup=fixture.zip
+Snapshot receipt did not pass restored-snapshot validation
+exit=1
+## right hash, canonical removed | receipt=X-nocanon.json backup=fixture.zip
+Snapshot receipt restored empty app tables but the expected backup has data
+exit=1
+## right hash, canonical counts zeroed | receipt=X-zero.json backup=fixture.zip
+Snapshot receipt restored empty app tables but the expected backup has data
+exit=1
+## no backup argument | receipt=R-fixture.json backup=none
+Persisted preflight requires the expected backup
+exit=1
+## missing backup file | receipt=R-fixture.json backup=nope.zip
+ENOENT: no such file or directory, open '/tmp/i2iv/r2/z/nope.zip'
+exit=1
+--- trust-model probes (operator chooses the backup; receipt is plain JSON)
+## GAP: emptied receipt with emptied file named as the backup | receipt=R-emptied.json backup=emptied.zip
+{"snapshot":"restored-and-validated","snapshotSha256":"2f5a7e5595b251b4af90dab4e3eb0e6dbcdc4a899f5507d1f316b2b5dfc0e0d5","deploymentAuthorized":false}
+exit=0
+## GAP: partial receipt with partial file named as the backup | receipt=R-partial.json backup=partial.zip
+{"snapshot":"restored-and-validated","snapshotSha256":"c152bd62532dfb1790e6c3feb512b1facb89045321ede5607c72e4bd0b22976a","deploymentAuthorized":false}
+exit=0
+## GAP: hand-written receipt with the real backup hash, no drill run | receipt=X-handmade.json backup=fixture.zip
+{"snapshot":"restored-and-validated","snapshotSha256":"92bf7d75904ddf993a9afbfd4fb6cc0ecde04479053fced95690826a969408a1","deploymentAuthorized":false}
+exit=0
+## GAP: rate-limiter-only receipt forged PASS, rate-limiter-only file named as backup | 
+{"snapshot":"restored-and-validated","snapshotSha256":"2f8e463de40c6fbb78a88bacecb18c602760bf85089114268ee848cc56562f2f","deploymentAuthorized":false}
+exit=0

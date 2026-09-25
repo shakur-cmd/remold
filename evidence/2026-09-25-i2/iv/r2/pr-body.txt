@@ -1,0 +1,11 @@
+7a8a95329c62cb2cb69946a3a263b586e0912ed6 draft=true
+Builder PR for the I2 rows that need no new account. Independent verification of f1ae237 came back PARTIAL (`evidence/2026-09-25-i2/iv/report.html` on `i2/iv-2026-09-25`). The backup-gate gap it found is fixed here and needs re-verification.
+
+- Restored-snapshot release gate: `ops/release/snapshot.mjs`, `snapshot-drill.mjs`. A persisted release passes `preflight` only with a PASS receipt bound to its SHA, schema and pinned manifest, and (fix d4e45b9, 5b652bc) only when the receipt's snapshot hash matches the backup file the operator passes in, with no emptied app tables. Emptied, schema-valid edited and random-hash receipts were accepted before the fix and are refused now. Deployment stays unauthorized.
+- Real old browser in the migration rehearsal: independent PASS (SERVICE-local, synthetic).
+- PR3 close-one cleanup: hosting deleted, independently confirmed by GET. PR4 was confirmed present by GET; its signed-in state was observed only by the builder. WorkOS entry removal waits for Shakur's confirmation.
+- `ops/release/notes.json` rollback target is 3339517. Choosing 3339517 or bfb37cb is Shakur's call.
+
+Owner asks are in `evidence/2026-09-25-i2/builder-handover.html`.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

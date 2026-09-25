@@ -22,10 +22,38 @@
 </head>
 <body>
 <h1>I2 release rails: independent verification</h1>
-<div class="meta">2026-09-25 · PR #6 head <code>f1ae237</code> · checked by a fresh Opus 5.5 session, not the builder, in its own clean worktree · local and read-only only</div>
+<div class="meta">2026-09-25 · r2 on PR #6 head <code>7a8a953</code> (r1 was on <code>f1ae237</code>) · checked by a fresh Opus 5.5 session, not the builder, in its own clean worktree · local and read-only only</div>
 
 <div class="decisions">
-<h2>Verdict and your calls</h2>
+<h2>r2 verdict (backup-binding fix at <code>7a8a953</code>)</h2>
+<ul>
+  <li><b>Backup-binding fix: PASS.</b> This moves claim 1 from PARTIAL to PASS. Every earlier break is now refused, and so is every new bypass I tried. The genuine receipt still passes. The residual trust is the one the handover names: the operator picks the backup file, and the receipt is unsigned. <b>Overall I2 builder claims: PASS.</b> One limit remains: "PR4 still signed in" is observed by the builder only.</li>
+  <li><b>Your call, unchanged:</b> the rollback target, <code>3339517</code> or <code>bfb37cb</code>.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>r2: what I ran</h2>
+<p>I built an artifact at <code>7a8a953</code> and made seven local backups. Five are cut from the 250-record synthetic fixture: the full backup, emptied, title-edited, partial (records emptied), and users-only. There is also a rate-limiter-only backup, plus a second real seeded backup. I ran the real <code>snapshot</code> command on each to get genuine receipts, then ran <code>preflight … receipt.json backup.zip</code>. Everything is in <code>r2/preflight.txt</code>.</p>
+<table>
+<tr><th>Case (expected backup = full fixture)</th><th>Result</th></tr>
+<tr><td>Genuine receipt. The same bytes under another file name.</td><td>PASS (should pass)</td></tr>
+<tr><td>Earlier breaks: emptied snapshot, schema-valid edit, random 64-hex hash</td><td>All refused: empty app tables / not for the expected backup ×2</td></tr>
+<tr><td>Partially emptied (records only), users-only</td><td>Refused: not for the expected backup</td></tr>
+<tr><td>Rate-limiter-only snapshot: the drill itself FAILs. Then the receipt is forged to PASS.</td><td>Refused: did not pass / empty app tables</td></tr>
+<tr><td>Genuine receipt against a different real backup, and the other backup's genuine receipt against this one</td><td>Both refused: not for the expected backup</td></tr>
+<tr><td>Right hash with a wrong receipt field: releaseSha, manifestSha, schema, result=FAIL, <code>canonical</code> removed, counts zeroed</td><td>All six refused, each with its own message</td></tr>
+<tr><td>No backup argument, or a missing backup file</td><td>Refused / ENOENT, exit 1</td></tr>
+<tr><td><i>Trust model:</i> the operator names the emptied, partial or rate-limiter-only file as "the backup", with that file's own receipt. Also, a hand-written receipt carrying the real backup's hash.</td><td>PASS, as designed and disclosed. Preflight cannot know which file is the current production backup, and the receipt is not signed.</td></tr>
+</table>
+<p>Deleting each new check made 1 unit test fail each time. The four deletions were the emptiness check, the hash check, the requires-backup check, and counting <code>_tables</code> as app data (<code>r2/mutations.txt</code>). Ops tests 35/35 passed, <code>pnpm test</code> 73/73 passed, typecheck and build exit 0. CI 36144530880 succeeded on <code>7a8a953</code>.</p>
+<p>One observation, not a defect. For a genuine receipt, the emptiness check is redundant with the hash check, because an emptied file always has a different hash. It only adds anything against a forged receipt that carries the right hash but empty counts.</p>
+<p><b>Wording.</b> The PR body, <code>builder-handover.html</code> and <code>execution.json</code> now match the evidence. They drop "tampered snapshot caught", note that the PR4 export is tiny, say that PR4's signed-in state is builder-only, name the operator-chosen-backup limit, and list the rollback target as your call. <code>backup-binding/release-cli-e2e.txt</code> was run at <code>5b652bc</code>. The only later commit is evidence and wording.</p>
+</div>
+
+<h2>r1 (f1ae237), kept for the record</h2>
+<div class="decisions">
+<h2>r1 verdict and your calls</h2>
 <ul>
   <li><b>Overall: PARTIAL.</b> Claims 2 and 4 pass. Claim 1 works as a schema check, but one part is overstated. Claim 3 passes for hosting. I did not re-check the "still signed in" part myself.</li>
   <li><b>Snapshot gate gap (your call on whether to fix before merge).</b> Preflight checks that the receipt matches the commit, schema and manifest. It never checks <i>which</i> snapshot was restored. I got a PASS receipt, and a passing preflight, from a snapshot with every app table emptied (0 users, 0 records). A schema-valid edited snapshot also passes. So "tampered snapshot caught" only means the hash changes. Nothing refuses it. The smallest fix is for preflight to take the expected backup's SHA-256 from the operator and compare it to <code>snapshotSha256</code>.</li>

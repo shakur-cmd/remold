@@ -1,0 +1,43 @@
+✔ only the declared expand release with its retained schema can be a rollback target (0.41475ms)
+✔ two PR plans have distinct stable origins while retaining one staging identity realm (0.799875ms)
+✔ preview configuration cannot carry production routes, bindings or another account (1.042959ms)
+✔ child environment drops inherited production targets and provider secrets (0.111666ms)
+✔ AuthKit add preserves existing origins, homepage and default; repeated add is idempotent (0.101583ms)
+✔ close A removes only its owned entries and exact backend; B and concurrent additions survive (0.160291ms)
+✔ cleanup never removes AuthKit entries that predated this receipt (0.061291ms)
+✔ cleanup refuses wrong tenant, prod, reused backend name, changed identity or another PR receipt (0.283166ms)
+✔ an already absent exact backend does not generate another deletion (0.050583ms)
+✔ resuming an owned AuthKit add retains ownership for later cleanup (0.066625ms)
+✔ cleanup refuses a pre-existing or replaced Cloudflare preview (0.487958ms)
+✔ Convex child uses the same project preview key for selection and authorization (0.157416ms)
+✔ cleanup refuses false or missing backend absence ownership (0.329542ms)
+✔ provider detail with null identifier is reconciled only with its exact project-list identity (0.771459ms)
+✔ Wrangler progress output binds the actual preview identity and exact candidate before ownership (0.651917ms)
+✔ replacement requires the exact previously owned frontend and refuses a reused name (0.256625ms)
+✔ recovery binds the originally empty attempt to its exact allocation and cannot repeat (1.817291ms)
+✔ Cloudflare recognizes an absent preview but refuses an absent shared parent (11.356625ms)
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.987542ms)
+✔ changed, missing and injected artifact bytes are refused (1.414208ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (57.20125ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (0.993083ms)
+✔ version metadata must name the artifact commit (0.622416ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.726125ms)
+✔ failed real process halts checks before a later process can run (21.242834ms)
+✔ successful real processes run in order (41.60175ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.212667ms)
+✔ missing metadata and destructive contraction are refused (0.091583ms)
+✔ a rollback to a schema without the expanded fields is refused (0.1075ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.410375ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (32.502042ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.043542ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (18.35125ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (19.6065ms)
+✔ PR changes use their common ancestor when the target branch advances independently (214.949292ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 457.887042

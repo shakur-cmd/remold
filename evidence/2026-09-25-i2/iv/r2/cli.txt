@@ -1,0 +1,14 @@
+build exit=0
+HEAD=7a8a95329c62cb2cb69946a3a263b586e0912ed6 PIN=e797e3a7203c6a7d408bbf47df722527f307faed99a1c6eefb340d9e933983a1
+snapshot fixture exit=0 result=PASS appDocs 299 
+snapshot emptied exit=0 result=PASS appDocs 0 
+snapshot tampered exit=0 result=PASS appDocs 299 
+snapshot partial exit=0 result=PASS appDocs 49 
+snapshot rlonly exit=1 result=FAIL appDocs 0 restore faithful
++ actual - expected
+... Skipped lines
+
+  {
++   sha256: 'e5e5b00
+snapshot usersonly exit=0 result=PASS appDocs 1 
+snapshot fixture2 exit=0 result=PASS appDocs 299 
