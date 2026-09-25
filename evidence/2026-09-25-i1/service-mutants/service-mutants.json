@@ -1,0 +1,94 @@
+{
+  "level": "SERVICE local backend / synthetic data only",
+  "results": [
+    {
+      "name": "instances",
+      "file": "convex/integrations/connections.ts",
+      "suites": "instances",
+      "originalSha256": "ee611af39a6b50b7c351cee577882cffb12d7922b1e6431f68c570607cc9322a",
+      "mutantSha256": "abbd347a82cf8905e10833bb0eee3b510085d819b2d24ca86f9e7ac5583da4ec",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "secret-format",
+      "file": "convex/integrations/connections.ts",
+      "suites": "secrets",
+      "originalSha256": "ee611af39a6b50b7c351cee577882cffb12d7922b1e6431f68c570607cc9322a",
+      "mutantSha256": "3d653d36f18f4f90a8faed3829a92528d76f150b557abbe04d9e7e70ee64af06",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "secret-log",
+      "file": "convex/integrations/connections.ts",
+      "suites": "secrets",
+      "originalSha256": "ee611af39a6b50b7c351cee577882cffb12d7922b1e6431f68c570607cc9322a",
+      "mutantSha256": "9f8d5e1fd3f40cf368d8b2b438a7c83d70b3f9d1793d48235432ab53948d2775",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "readonly-sweep",
+      "file": "convex/agentApi.ts",
+      "suites": "sweeps",
+      "originalSha256": "a889c2bd32a783f5642545d84d0f654566c2ce970b83d1f874ccdb02e9b37eb3",
+      "mutantSha256": "178d26d629950abfae5cf704b54b8c6e81635f37e118d0d1008e1a478b9091b4",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "readonly-human",
+      "file": "convex/orgs.ts",
+      "suites": "sweeps",
+      "originalSha256": "6b2e41d2eb2388bf6b30ca289f04217a6f4bbf3634c38451fcdaf7f0de817caf",
+      "mutantSha256": "78a19d56441bbadc3cf47b05cfcc32ab92f144626c38717fe34a5dc301e71f79",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "wildcard-cutoff",
+      "file": "convex/identity.ts",
+      "originalSha256": "627ca3d400f9c3b67bb95a40e36d01f5a7bb1d2d9cbd1e26d6e00d5912768ce1",
+      "mutantSha256": "5f39fc3b7fedbdf16ac470bf3346addd424212573f3ed711bdb5b32c3b6c7a3d",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "mask-sweep",
+      "file": "convex/authority/reads.ts",
+      "suites": "sweeps",
+      "originalSha256": "5e600f2f063b6d77b45698e08de3c07c8a6f29fda7a8971ba5da4dda63a165b3",
+      "mutantSha256": "1f6f56ed53c9b7264da69ad1a2fa89cee3409910d3396218b60bafc09a91ca0a",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "h0-final-permit",
+      "file": "convex/integrations/dispatch.ts",
+      "suites": "h0",
+      "originalSha256": "75b7b09a85562bfada04d885e7f9a2277147501129663f12247777059688845c",
+      "mutantSha256": "8e0c45c9d1a5f0c76860c661d0c4bfead16ab59bbae079de22bdb69e1e01397b",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    },
+    {
+      "name": "h0-grant-expiry",
+      "file": "convex/authority/grants.ts",
+      "suites": "h0",
+      "originalSha256": "1bd5d05378316c7dd2ad851b873c31e5e5a9aadf70f4f3701dd8e7cbf788f3e0",
+      "mutantSha256": "ae297f2dbab6b76339afc5ab1be60fc3303945f1b7ccf7f3f1e070287987960f",
+      "exitCode": 1,
+      "signal": null,
+      "caught": true
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I1 builder handover: production authority and integration core</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 900px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 13px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>I1 builder handover: production authority and integration core</h1>
+<div class="meta">2026-09-25 · branch <code>wip/i1-authority</code> · evidence source revision <code>95dd149ed4f25a7eb157cdc6379f46f46cdf4e2d</code> · status: <b>awaiting independent verification</b>. The builder has not certified I1 and nobody else has checked it yet.</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Rollback target.</b> The tested rollback goes back to the expanded I1 schema and code, which is the recovery the plan names. Rolling all the way back to the pre-I1 code (<code>3339517</code>) after migration is not safe. That code matches grants by object <i>key</i>, so an object created later under a reused key could widen access again. My recommendation: forbid pre-I1 code rollback after the freeze. Confirm or overrule.</li>
+  <li><b>What stays allowed in readonly.</b> This is what the sweep observed. Owners can still revoke agents and grants, narrow masks, cancel operations, disconnect integrations, remove members, and dismiss suggestions. Members can leave. Agents can cancel their own work. Operators can record provisional absence, and the human safety refund path still works. Everything else is refused, and the refused calls leave the data unchanged. Confirm this is the readonly you want.</li>
+  <li><b>Who verifies.</b> I1 needs an independent verifier: a fresh session or Opus 5.5 with no builder context, using the attack list below. Name who runs it.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven by the builder (not independent)</h2>
+<ul>
+  <li>Merged <code>build/unified-remold-2026-09-24</code> (bfb37cb) into the I1 work. The two frontend conflicts keep the UX cleanup's look and I1's shared-inbox and note-audience controls. The wildcard UI option now reads "All current objects", which is what it always did.</li>
+  <li>Typecheck passes. App tests: 73/73. Authority unit tests: 60/60. MCP package build plus 2/2 tests. <code>pnpm build</code> passes. Logs are in <code>evidence/2026-09-25-i1/*.log</code>.</li>
+  <li>SERVICE replay on an isolated anonymous local Convex backend (127.0.0.1:3480/3481) with synthetic JWTs and data: <b>63/63 PASS</b>. Log: <code>evidence/2026-09-25-i1/service/service.log</code>. Before this session it was 47; the new tests are same-ID instances, secrets (2), H0 parity (11) and sweeps (2).</li>
+  <li>Migration SERVICE replay: PASS. It uses the pre-I1 backend <code>3339517</code> and an MCP client compiled from that revision's source. Evidence: <code>evidence/2026-09-25-i1/migration/</code>.</li>
+  <li>Every new test can fail. 9 one-line production mutants were all caught by the intended assertion (<code>service-mutants/</code>), and the earlier 5 unit-level mutants are still caught (<code>unit-mutants/</code>). No production <code>convex/</code> code changed this session. Everything the new tests assert was already implemented, so the red is shown by mutants rather than by a pre-fix failure.</li>
+  <li>No real providers, no production deployment, no spend, no sends. The harness asserts that <code>.env.local</code> is unchanged after every run. Secret scans of the branch and the evidence found no keys.</li>
+</ul>
+</div>
+
+<h2>Check-by-check status</h2>
+<table>
+<tr><th>I1 check</th><th>Builder status</th><th>Evidence</th><th>Limits an IV should probe</th></tr>
+<tr><td>1. All H0 adversarial cases pass on production, including stale worker/approval/role downgrade and same-ID different-provider-instance</td>
+<td>All 43 H0 groups are mapped to named production SERVICE tests (table below) and pass. A read-only audit found 29 groups only partly covered, so 11 targeted H0 tests were added. Every refusal is pinned to its reason, so a test cannot pass on an unrelated validation error.</td>
+<td><code>ops/authority/service-h0.mjs</code>, <code>service-instances.mjs</code>, <code>h0-parity.json</code> (checked by <code>h0-parity.test.ts</code>), <code>service/service.log</code></td>
+<td>The mapping was written by the builder. The IV should re-derive it from <code>proofs/contract/replay.mjs</code>. The financial safety adapter is still SIM: the production finality registry is deliberately empty.</td></tr>
+<tr><td>2. Old MCP/REST clients keep exactly their authorized record operations; wildcards expand to pre-migration object IDs; no widening via migration or rollback</td>
+<td>PASS. The old client's normalized MCP and REST transcript is identical at baseline, after freeze, after migration and after rollback. A legacy wildcard admin agent is refused on an object created after the freeze in three phases: frozen before backfill, migrated, and after rollback. The refusals cover REST create, update, delete, get and list, plus MCP apply and propose. The database is unchanged by those refusals. The same agent gets no <code>agent.manage</code>, no fire and no external-effect proposals. Reusing a key does not widen access. A new agent with <code>*</code> covers only the objects that exist when it is created.</td>
+<td><code>ops/authority/migration-service.mjs</code>, <code>evidence/2026-09-25-i1/migration/migration-service.json</code>. Mutant <code>wildcard-cutoff</code> is caught.</td>
+<td>The old client sees an extra <code>objectId</code> on each grant from <code>/me</code>. This is an additive field, and the transcript normalizes it away. Rollback was tested to the expanded code only (see Your calls).</td></tr>
+<tr><td>3. Human, agent, internal and scheduler paths cannot bypass readonly, masks or external-action authorization; a hidden field leaves an open subscription within 2 s</td>
+<td>PASS for every public mutation and action (44) and every agent REST write under readonly. PASS for a hidden-field canary against every public query (25) and every agent GET route. The subscription loses the masked field in <b>15.7 ms</b>.</td>
+<td><code>ops/authority/service-sweeps.mjs</code>, <code>inventory.json</code> + <code>inventory.test.ts</code> (184 functions, routes, crons and scheduled targets; a new route or function fails the test), <code>service/service.log</code> line <code>MEASURE</code></td>
+<td>Readonly labels on <i>internal</i> rows are declared by the builder, not swept. Internal rows are reached only through the swept routes or by operator CLI. One inventory GAP remains: <code>GET /api/v1/_probe</code>, which returns only <code>{ok:true}</code>. The mask sweep hides one field; record-scoped restrictions are covered by the existing read-boundary tests.</td></tr>
+<tr><td>4. Invalid provider or secret reference fails closed; callback and ops logs reveal no secrets</td>
+<td>PASS. Each of these fails closed: a raw-looking credential as the handle, another org's reference, a disabled provider (at connect and at claim), a reference whose account changed, a revoked reference, and a malformed or unknown adapter key (401, no state change). A canary vault handle, the adapter key and the agent key appear nowhere in HTTP responses and errors, backend or function logs, or any exported table except <code>secretReferences</code>.</td>
+<td><code>ops/authority/service-secrets.mjs</code>. Mutants <code>secret-format</code> and <code>secret-log</code> are caught.</td>
+<td>The log scan covers the local backend's tailed function logs. A hosted deployment's log sink was not tested, because none is allowed yet.</td></tr>
+</table>
+
+<h2>How to reproduce</h2>
+<pre>git clone https://github.com/shakur-cmd/remold &amp;&amp; cd remold &amp;&amp; git checkout 95dd149ed4f25a7eb157cdc6379f46f46cdf4e2d
+pnpm install &amp;&amp; (cd packages/mcp &amp;&amp; pnpm install &amp;&amp; pnpm build &amp;&amp; pnpm test)
+pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm build
+# SERVICE runs need ports 3480/3481 free. Synthetic data only; nothing leaves 127.0.0.1.
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/service.mjs             # 63 PASS, about 70 s
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/migration-service.mjs   # 1 composite PASS
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutations.mjs           # 5 unit mutants CAUGHT
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutants-service.mjs     # 9 SERVICE mutants CAUGHT (needs clean convex/)
+# Subsets: I1_SUITES=h0,sweeps  and  I1_ONLY='H0#7 '  (regex on test name)</pre>
+
+<h2>Attack cases for the independent verifier</h2>
+<p>This is authorized defensive testing of the owner's own application. Run it on an isolated local backend with synthetic data only. Write your own probes rather than reusing the builder's tests.</p>
+<ol>
+  <li><b>Old wildcard agent writing a newly added object.</b> Take a legacy agent with <code>create/update/delete:*</code> at <code>3339517</code>. Freeze, then create a new object before backfill, after <code>migrateAgent</code>, and after a schema rollback and restore. Try REST <code>/changes</code>, the baseline-built MCP <code>remold_apply_change</code> and <code>remold_propose_change</code>, a proposal that a human later applies, CSV import, and the related-record paths. Also try reusing an old object key and renaming an object to a pre-freeze key.</li>
+  <li><b>Role downgrade.</b> An admin approves a queued operation, then is downgraded to member (or removed and re-invited) between claim and permit. A manager agent's <code>agent.manage</code> or parent grant is revoked, or the manager is fired, while a delegated child holds a claim. Try it at step 2 of a continuation and after a retryable failure and reclaim. The permit must be refused.</li>
+  <li><b>Stale approval.</b> Edit any material payload field after approval. Let the approval expire between claim and permit. Approve a fired agent's original proposal (must be refused; adoption must create a new attributed command). Replay an old fence or an old permit after a reclaim.</li>
+  <li><b>Hidden field in an open subscription.</b> Hold a live <code>records.get</code> or <code>records.list</code> subscription as a member, and hide a field via <code>authority/policies:setMember</code>. Measure how long until the value disappears (target under 2 s). Also try to infer the hidden value through sort or filter on the hidden field, search text, CSV export, duplicate detection in capture or import, event history, suggestion diffs, lookup titles and inbox links.</li>
+  <li><b>Invalid secret reference.</b> Register a raw credential as a handle. Connect with another org's reference. Disable the provider after connect. Change the reference's account, environment or provider. Revoke the reference while work is queued. Then grep the backend log, the export and every error body for the handle and keys.</li>
+  <li><b>Same ID, different provider instance.</b> Bind one <code>externalId</code> under different accounts, environments, provider names and orgs. Use each adapter key against the others' bindings, operations, intents and cursors across all 15 adapter endpoints. Send suppression callbacks and confirm only the owning binding's recipient changes.</li>
+  <li><b>Readonly bypass.</b> Set <code>flags.readonly</code>, then try every public mutation, agent REST POST and adapter endpoint. Anything besides the reductions and settlements listed under Your calls must be refused with no data change. Check the scheduler paths (lifecycle sweep and expiry, safety send) for new external sends.</li>
+</ol>
+
+<h2>H0 group to production test mapping</h2>
+<table><tr><th>#</th><th>H0 group (proofs/contract/replay.mjs)</th><th>Production test(s)</th></tr>
+<tr><td>1</td><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>H0#1 foreign owners cannot mutate known IDs and actor injection is rejected<br>Same external ID under different provider instances stays isolated per connection</td></tr>
+<tr><td>2</td><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor</td></tr>
+<tr><td>3</td><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor</td></tr>
+<tr><td>4</td><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>5</td><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>6</td><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>7</td><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td>H0#7 expired grant denies final permit without a lifecycle sweep</td></tr>
+<tr><td>8</td><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>9</td><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple</td></tr>
+<tr><td>10</td><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>11</td><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td>Global spend, concurrency and per-run ceilings serialize across distinct tenants</td></tr>
+<tr><td>12</td><td>Per-run/global spend and global concurrency caps bound both tenants</td><td>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>13</td><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>14</td><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>15</td><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>16</td><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>17</td><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td>Every approval material field invalidates the reviewed version</td></tr>
+<tr><td>18</td><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>19</td><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>20</td><td>Provisioning durable intents preserve delete-before/create-before races</td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple</td></tr>
+<tr><td>21</td><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>22</td><td>Durable cancellation survives rejection, absence, expiry and model continuation</td><td>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>23</td><td>Scoped adapter sees cancellation signal and records one late accepted tail</td><td>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>24</td><td>Late consumed outcome settles once after provisional or final absent lookup</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>25</td><td>Per-call remaining exposure, missing usage and actual overruns fence final dispatch</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>26</td><td>Conflicting provider reference refuses durably and holds spend without rolling back anomaly</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>27</td><td>Per-recipient and per-purpose suppression never changes another contact or tenant</td><td>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>28</td><td>Server scheduler recovers adapter crashes without a callback or manual expiry call</td><td>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>29</td><td>Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>30</td><td>Unresolved consumed attempt survives sweep and holds global exposure</td><td>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>31</td><td>Unresolved consumed attempt survives expiry and holds global exposure</td><td>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>32</td><td>Unresolved consumed attempt survives failure and holds global exposure</td><td>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>33</td><td>Cancellation cannot release confirmed work with missing usage</td><td>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>34</td><td>Unconsumed unknown is ignored and scheduler recovers false</td><td>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>35</td><td>Unconsumed unknown is ignored and scheduler recovers true</td><td>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>36</td><td>Single-step accepted overrun remains confirmed false</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>37</td><td>Single-step accepted overrun remains confirmed true</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>38</td><td>Exhausted successful continuation settles and releases its slot</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>39</td><td>Suppression without an existing purpose/channel row is durable</td><td>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>40</td><td>Settled-step provisional absence cannot settle a later unresolved step</td><td>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>41</td><td>Settled-step final absence cannot settle a later unresolved step</td><td>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>42</td><td>Old consumed fence for the same unresolved step still supports provisional absence</td><td>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
+<tr><td>43</td><td>Old consumed fence for the same unresolved step still supports final absence</td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
+</table>
+
+<h2>What was not done</h2>
+<ul>
+  <li>No independent verification, and no Fable or Opus review of this session's diff.</li>
+  <li>No hosted, preview or production run, and no real provider. Financial finality uses scratch-only SIM adapters.</li>
+  <li>Codex (gpt-5.6-terra, high) wrote the first drafts of the new harness pieces. Its sandbox kills commands after about 30 s, so it could not run the backend. The builder reviewed its drafts, rewrote the weak parts (unpinned refusals, a missing pre-backfill check, a test that only covered part of the sweep) and ran every SERVICE suite.</li>
+  <li>Prior-builder evidence in <code>ops/authority/evidence/</code> was left untouched. This session's evidence is in <code>evidence/2026-09-25-i1/</code>, and <code>baseline-rerun/</code> is the untouched WIP re-run after the merge (47 SERVICE PASS).</li>
+</ul>
+</body>
+</html>
