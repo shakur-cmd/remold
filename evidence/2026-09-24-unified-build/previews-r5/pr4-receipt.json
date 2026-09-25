@@ -1,0 +1,107 @@
+{
+  "phase": "frontend-ready",
+  "plan": {
+    "sha": "31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+    "accountId": "949fc86de7efe057aac100389701d2b4",
+    "worker": "remold-i2-preview",
+    "subdomain": "shakur-949.workers.dev",
+    "team": "shakur-46299",
+    "project": "remold",
+    "projectId": 3049070,
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "format": 1,
+    "pr": 4,
+    "baseSha": "3db0e6ccdaab19bc7c996d759b1a06167a571503",
+    "name": "pr-4",
+    "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+    "callback": "https://pr-4-remold-i2-preview.shakur-949.workers.dev/callback"
+  },
+  "planSha256": "c6d7441678679c4132e0a0434e203f45271a15fd4a9e6b19ddd4baaf96324085",
+  "configSha256": "014dde32e70bddb790aa40ecabe1b8cd82b8c5e729e3b2a4ac436423d552eed5",
+  "checkout": "/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-previews-session-124k6nlp/pr4",
+  "backend": {
+    "id": 5679128,
+    "name": "kindred-hyena-171",
+    "createTime": 1790299599732,
+    "projectId": 3049070,
+    "deploymentType": "preview",
+    "kind": "cloud",
+    "isDefault": false,
+    "reference": "preview/pr-4",
+    "previewIdentifier": "pr-4",
+    "deploymentUrl": "https://kindred-hyena-171.convex.cloud",
+    "expiresAt": 1790731599749
+  },
+  "cloudflare": {
+    "id": "567c0b1448364e4786f2bafb238b372d",
+    "name": "pr-4",
+    "worker": "remold-i2-preview",
+    "accountId": "949fc86de7efe057aac100389701d2b4",
+    "absentBefore": true
+  },
+  "workosOwned": {
+    "callback": true,
+    "cors": true
+  },
+  "artifact": {
+    "manifestSha256": "775eb90871ef205d9a236931c1ac44dae63b3154eeefd80efbc5c5e8ca8a9d0d",
+    "sha": "31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+    "ci": {
+      "conclusion": "success",
+      "event": "pull_request",
+      "headSha": "31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+      "status": "completed",
+      "url": "https://github.com/shakur-cmd/remold/actions/runs/36085479573",
+      "workflowName": "Verify release candidate"
+    },
+    "configSha256": "014dde32e70bddb790aa40ecabe1b8cd82b8c5e729e3b2a4ac436423d552eed5"
+  },
+  "backendAbsentBefore": true,
+  "clientIdVerified": true,
+  "cloudflareAbsentBefore": true,
+  "workosBefore": {
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "redirectUris": [
+      "http://localhost:5173/callback"
+    ],
+    "corsOrigins": [
+      "http://localhost:5173"
+    ],
+    "homepage": "http://localhost:5173",
+    "defaultRedirect": "http://localhost:5173/callback"
+  },
+  "workosAfter": {
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "redirectUris": [
+      "http://localhost:5173/callback",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev/callback"
+    ],
+    "corsOrigins": [
+      "http://localhost:5173",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "homepage": "http://localhost:5173",
+    "defaultRedirect": "http://localhost:5173/callback"
+  },
+  "ci": {
+    "conclusion": "success",
+    "event": "pull_request",
+    "headSha": "31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+    "status": "completed",
+    "url": "https://github.com/shakur-cmd/remold/actions/runs/36085479573",
+    "workflowName": "Verify release candidate"
+  },
+  "sourceUpgrade": {
+    "previous": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-b-b703lrnx/prepared",
+    "previousReceiptSha256": "0d2a3546f1b32dbf0283a9e3b398119930558b1645c05a07a54c92d02b335739",
+    "previousSha": "c666909bfe07af46732a56671858b65f748a4744",
+    "backendSourceUnchanged": true,
+    "providerWrites": 0
+  },
+  "frontendExitStatus": 0,
+  "versionReadback": {
+    "sha": "31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+    "url": "https://pr-4-remold-i2-preview.shakur-949.workers.dev/version.json",
+    "checkedAt": "2026-09-25T02:23:37.578Z"
+  }
+}

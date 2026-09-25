@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export const scope = Object.freeze({
-  sha: '3db0e6ccdaab19bc7c996d759b1a06167a571503',
+  sha: '73b060d97cf506a5ddff9ccc00ab8e475b19a462',
   accountId: '949fc86de7efe057aac100389701d2b4',
   worker: 'remold-i2-preview',
   subdomain: 'shakur-949.workers.dev',
@@ -21,7 +21,7 @@ export function assertPreviewConfig(config) {
   assert.equal(config.assets.not_found_handling, 'single-page-application');
 }
 
-export const candidateHeads = Object.freeze({3: '954bdfb792fcfcd8c857482cc174828f616d03eb', 4: '31c8434d140d4e241ea03b305c39a1a29d85fb9e'});
+export const candidateHeads = Object.freeze({3: 'fd85becf56e728a699947966c4e248dab0a3d3f1', 4: 'c666909bfe07af46732a56671858b65f748a4744'});
 
 export function previewPlan(pr, sha = scope.sha) {
   assert(Number.isSafeInteger(pr) && pr > 0, 'Real positive PR number required');
@@ -49,7 +49,7 @@ export function childEnvironment(host, additions = {}) {
     if (host[name] !== undefined) env[name] = host[name];
   }
   for (const name of Object.keys(additions)) {
-    assert(['CONVEX_DEPLOY_KEY', 'WORKOS_CLIENT_ID', 'VITE_CONVEX_URL', 'VITE_WORKOS_CLIENT_ID', 'VITE_WORKOS_REDIRECT_URI', 'VITE_AUTH_SESSION_MODE'].includes(name), 'Unapproved child variable');
+    assert(['CONVEX_DEPLOY_KEY', 'WORKOS_CLIENT_ID', 'VITE_CONVEX_URL', 'VITE_WORKOS_CLIENT_ID'].includes(name), 'Unapproved child variable');
   }
   return { ...env, ...additions, WRANGLER_SEND_METRICS: 'false', CI: '1' };
 }
@@ -110,23 +110,6 @@ export function frontendReceipt(plan, stdout, current) {
   assert.deepEqual(returned.preview.urls, [plan.origin]);
   assert.equal(returned.deployment.annotations['workers/message'], `I2 PR${plan.pr} ${plan.sha}`);
   return {...current, absentBefore: true};
-}
-
-export function assertFrontendReplacement(plan, receipt, current, id) {
-  assert.equal(receipt.cloudflare?.absentBefore, true);
-  assert.equal(receipt.cloudflare.id, id);
-  assert.deepEqual(current, {id, name: plan.name, worker: scope.worker, accountId: scope.accountId}, 'Only the exact owned preview may be replaced');
-}
-
-export function assertBackendRecovery(plan, receipt, backend, name, id) {
-  assert.equal(receipt.phase, 'backend-attempted');
-  assert.equal(receipt.backendAbsentBefore, true);
-  assert.equal(receipt.backend, null);
-  assert(!receipt.clientIdVerified);
-  assertBackend(plan, backend);
-  assert.equal(backend.name, name);assert.equal(backend.id, id);
-  const elapsed = backend.createTime - Date.parse(receipt.attemptedAt);
-  assert(elapsed >= -5000 && elapsed <= 600000, 'Allocation is outside the original attempt');
 }
 
 export function cleanupPlan(plan, receipt, currentBackend, currentWorkos, currentCloudflare) {

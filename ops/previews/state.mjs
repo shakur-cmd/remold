@@ -34,8 +34,8 @@ export function verifyCI(plan) {
  const pr=JSON.parse(execFileSync('gh',['pr','view',String(plan.pr),'--json','state,headRefOid,baseRefName'],{encoding:'utf8'}));
  assert.equal(pr.state,'OPEN','Preview creation requires an open PR');
  assert.equal(pr.headRefOid,plan.sha,'Current PR head differs from exact candidate');
- assert.equal(pr.baseRefName,'i2/preview-base-73b060d','Current PR base differs from rehearsal base');
- const run=plan.pr===3?36079125382:36079129341;
+ assert.equal(pr.baseRefName,'i2/preview-base-b9345f8','Current PR base differs from rehearsal base');
+ const run=plan.pr===3?36085477177:36085479573;
  const ci=JSON.parse(execFileSync('gh',['run','view',String(run),'--json','headSha,conclusion,status,url,event,workflowName'],{encoding:'utf8'}));
  assert.equal(ci.headSha,plan.sha);assert.equal(ci.status,'completed');assert.equal(ci.conclusion,'success');return ci;
 }

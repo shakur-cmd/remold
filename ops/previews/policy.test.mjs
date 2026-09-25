@@ -44,7 +44,7 @@ test('provider detail with null identifier is reconciled only with its exact pro
 
 test('Wrangler progress output binds the actual preview identity and exact candidate before ownership',async()=>{
  const {frontendReceipt}=await import('./policy.mjs');
- const plan=previewPlan(4,'c666909bfe07af46732a56671858b65f748a4744'),stdout=readFileSync(new URL('../../evidence/2026-09-24-unified-build/previews-reconciliation/r3/pr4-frontend-deploy.log',import.meta.url),'utf8');
+ const plan={...previewPlan(4),sha:'c666909bfe07af46732a56671858b65f748a4744'},stdout=readFileSync(new URL('../../evidence/2026-09-24-unified-build/previews-reconciliation/r3/pr4-frontend-deploy.log',import.meta.url),'utf8');
  const current={id:'567c0b1448364e4786f2bafb238b372d',name:plan.name,worker:scope.worker,accountId:scope.accountId};
  assert.deepEqual(frontendReceipt(plan,stdout,current),{...current,absentBefore:true});
  const parsed=JSON.parse(stdout.slice(stdout.indexOf('\n{')+1));
@@ -53,4 +53,34 @@ test('Wrangler progress output binds the actual preview identity and exact candi
  }
  for(const text of ['',stdout+'trailing garbage',stdout+'\n{}'])assert.throws(()=>frontendReceipt(plan,text,current));
  assert.throws(()=>frontendReceipt(plan,stdout,{...current,id:'replaced'}));
+});
+
+test('replacement requires the exact previously owned frontend and refuses a reused name',async()=>{
+ const {assertFrontendReplacement}=await import('./policy.mjs');
+ const p=previewPlan(4),current={id:'owned-id',name:p.name,worker:scope.worker,accountId:scope.accountId};
+ const r={cloudflare:{...current,absentBefore:true}};
+ assertFrontendReplacement(p,r,current,'owned-id');
+ for(const changed of [{...current,id:'new-id'},{...current,worker:'other'},{...current,accountId:'other'},null])assert.throws(()=>assertFrontendReplacement(p,r,changed,'owned-id'));
+ for(const cloudflare of [null,{...current,absentBefore:false},{...current,id:'other',absentBefore:true}])assert.throws(()=>assertFrontendReplacement(p,{cloudflare},current,'owned-id'));
+});
+
+test('recovery binds the originally empty attempt to its exact allocation and cannot repeat',async()=>{
+ const {assertBackendRecovery}=await import('./policy.mjs');
+ const witness=JSON.parse(readFileSync(new URL('../../evidence/2026-09-24-unified-build/previews-reconciliation/independent-metadata.json',import.meta.url)));
+ const p=previewPlan(3),b=witness.relevantPreviewMatches[0],r={phase:'backend-attempted',backend:null,backendAbsentBefore:true,attemptedAt:'2026-09-25T01:19:23.976Z'};
+ assertBackendRecovery(p,r,b,'neat-squid-188',5678975);
+ for(const change of [{phase:'backend-recovery-attempted'},{backend:b},{backendAbsentBefore:false},{clientIdVerified:true},{attemptedAt:'bad'},{attemptedAt:'2026-09-26T00:00:00Z'},{attemptedAt:'2026-09-24T00:00:00Z'}])assert.throws(()=>assertBackendRecovery(p,{...r,...change},b,'neat-squid-188',5678975));
+ assert.throws(()=>assertBackendRecovery(p,r,b,'other',5678975));assert.throws(()=>assertBackendRecovery(p,r,b,'neat-squid-188',123));
+});
+
+test('Cloudflare recognizes an absent preview but refuses an absent shared parent',async t=>{
+ const {cfPreview}=await import('./frontend.mjs');
+ for(const code of [10025]){
+  const mock=t.mock.method(globalThis,'fetch',async()=>new Response(JSON.stringify({success:false,result:null,errors:[{code}]}),{status:404}));
+  assert.equal(await cfPreview(previewPlan(3),'synthetic'),null);mock.mock.restore();
+ }
+ for(const [status,code] of [[403,10025],[404,10007],[404,12345],[500,10007]]){
+  const mock=t.mock.method(globalThis,'fetch',async()=>new Response(JSON.stringify({success:false,errors:[{code}]}),{status}));
+  await assert.rejects(cfPreview(previewPlan(3),'synthetic'));mock.mock.restore();
+ }
 });

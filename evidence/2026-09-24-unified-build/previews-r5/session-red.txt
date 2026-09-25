@@ -1,0 +1,24 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ src/lib/identity-session.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/identity-session.test.ts [ src/lib/identity-session.test.ts ]
+Error: Cannot find module './identity-session' imported from /Users/urkel/Documents/CodeMyVibe/Projects/remold/src/lib/identity-session.test.ts
+ ❯ src/lib/identity-session.test.ts:2:1
+      1| import { describe, expect, it } from "vitest";
+      2| import { authSessionOptions } from "./identity-session";
+       | ^
+      3|
+      4| const staging = "client_01M3AAH302D3TVVDJN9SBNYARF";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  22:11:11
+   Duration  73ms (worker 96%, environment 4%)
+

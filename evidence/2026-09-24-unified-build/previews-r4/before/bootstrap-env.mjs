@@ -5,14 +5,13 @@ import {scope,assertBackend,reconcileBackend,convexEnvironment} from './policy.m
 import {load,save} from './state.mjs';
 import {api} from './backend.mjs';
 try {
- const {dir,receipt,plan}=load(process.argv[2]);assert(['backend-attempted','backend-recovery-attempted'].includes(receipt.phase));assert.equal(receipt.backendAbsentBefore,true);
+ const {dir,receipt,plan}=load(process.argv[2]);assert.equal(receipt.phase,'backend-attempted');assert.equal(receipt.backendAbsentBefore,true);
  const url=new URL(process.env.PREVIEW_CONVEX_URL);assert.equal(url.protocol,'https:');assert(/^[a-z][a-z0-9-]+\.convex\.cloud$/.test(url.hostname));
  const key=process.env.CONVEX_DEPLOY_KEY;assert.equal(process.env.CONVEX_OVERRIDE_ACCESS_TOKEN,key);
  const name=url.hostname.slice(0,-'.convex.cloud'.length);
  const metadata=reconcileBackend(plan,await api(`/deployments/${name}`,key),await api(`/projects/${scope.projectId}/list_deployments`,key));
  const backend=Object.fromEntries(['id','name','createTime','projectId','deploymentType','kind','isDefault','reference','previewIdentifier','deploymentUrl','expiresAt'].map(k=>[k,metadata[k]]));
  assertBackend(plan,backend);assert(backend.createTime>=Date.parse(receipt.attemptedAt)-5000,'Unexpected older backend');
- if(receipt.phase==='backend-recovery-attempted')for(const field of ['id','name','createTime','reference','deploymentUrl'])assert.equal(backend[field],receipt.recovery.expectedBackend[field],'Recovery claim identity changed');
  receipt.backend=backend;save(dir,receipt);
  const cli=join(receipt.checkout,'node_modules/.bin/convex'),env=convexEnvironment(process.env,key);
  const set=spawnSync(cli,['env','set','WORKOS_CLIENT_ID',scope.clientId,'--preview-name',plan.name],{cwd:receipt.checkout,env,encoding:'utf8'});assert.equal(set.status,0,'Setting staging client ID failed');

@@ -1,0 +1,34 @@
+{
+  "result": "**Verdict: APPROVE** creating the first PR3 frontend and replacing the PR4 frontend it already owns, from `prepared-pr3` and `prepared-pr4`. This approves the source only. Hosted readback, sign-in, refresh, sign-out, fixtures and cleanup haven't run yet and aren't approved. Evidence level: SOURCE plus read-only SERVICE (GitHub).\n\n**What I checked**\n\n- **Source hashes:** I recomputed all 7 hashes in `successor-source.json`, including `prepare-successors.mjs`, and every one matches. I didn't run the script.\n- **GitHub (read-only):**\n  - PR3 is open (draft). Its head is `954bdfb` and its base is `i2/preview-base-b9345f8` at `3db0e6c`.\n  - PR4 is open (draft). Its head is `31c8434` on the same base.\n  - Runs 36085477177 and 36085479573 are completed and green. Each ran on `pull_request` against its PR's exact head.\n- **Checkouts:** Both are clean and at the right heads. `3db0e6c` is an ancestor of both, and each head is a merge of that base onto the old head. From old head to new head, nothing under `convex/` or `packages/contracts` changed. Only 4 frontend files changed: `.env.example` and three in `src/lib/identity*`.\n- **Old outputs kept:** Both original receipts hash exactly to the recorded values (PR3 `a46ed8cd\u2026`, PR4 `0d2a3546\u2026`) and match the archived copies in r5. The old directories and logs are still in place.\n- **Identities copied over:** In both PRs, these fields are byte-identical between the old and new receipts: `backend`, `backendAbsentBefore`, `clientIdVerified`, `cloudflare`, `cloudflareAbsentBefore`, the three `workos*` fields.\n  - PR3 keeps backend 5678975 (`neat-squid-188`) and has no Cloudflare frontend, so this really is a first creation.\n  - PR4 keeps backend 5679128 (`kindred-hyena-171`) and Cloudflare frontend `567c0b14\u2026`. That's the same ID the old receipt's `unresolvedCloudflare` and `reconciliation` fields recorded, so the replacement targets the frontend it owns.\n- **Artifacts:** Each `wrangler.json` points at its own artifact directory and has empty `routes`. Each `version.json` holds the right commit.\n  - Each bundle has explicit `mode:'preview-local'`, the pinned client ID, and an exact `redirectUri` of `https://pr-N-remold-i2-preview.shakur-949.workers.dev/callback`.\n  - Neither bundle mentions the other preview's hostname.\n  - Each bundle's Convex URL is its own backend. `happy-otter-123` also appears, but only as example text in a Convex SDK error message.\n- **Tests:** `node --test ops/previews/policy.test.mjs` passed 17 of 17.\n- **`verifyArtifact`:** I called it from each checkout's own `ops/release/release.mjs`.\n  - With the correct commit and digest, both artifacts pass.\n  - With the other PR's digest, both fail with \"Release manifest digest mismatch\".\n  - With the other PR's commit, both fail with \"Release commit mismatch\".\n\nSo the check can fail, and it binds each artifact to its own commit.\n\n**Minor gaps (none block approval)**\n\n1. **Unhashed helpers:** `prepare-successors.mjs` imports `prepare.mjs` and `backend.mjs`, but neither is in `successor-source.json`. `backend.mjs` also has uncommitted changes. In the script, `backend.mjs` is only used for read-only GETs. It would be cleaner to hash it too.\n2. **Missing artifact-step record:**\n   - The script leaves receipts at `phase:'backend-ready'`, but they now say `artifact-ready`.\n   - `successor-artifacts.json` was written by a later build step with no saved script or log hash in r5.\n   - The artifacts verify on their own, so this is a record-keeping gap, not a safety problem.\n3. **Dropped history fields:** The new receipts leave out `hostedEffects`, `recovery`, `reconciliation`, `versionReadback` and `unresolvedCloudflare`. That history survives in the preserved old receipts, which the new ones link to by hash.\n4. **Script read a key:** `prepare-successors.mjs` read `ops/previews/.private/convex-preview-key` for its own read-only API calls. I didn't open that file.\n\nI made no edits or provider writes and delegated nothing. My only network calls were the four authorized `gh` commands.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2121,
+      "outputTokens": 14,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0021910000000000002,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 20,
+      "outputTokens": 8124,
+      "cacheReadInputTokens": 220716,
+      "cacheCreationInputTokens": 28948,
+      "webSearchRequests": 0,
+      "costUSD": 0.43828720000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1638,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

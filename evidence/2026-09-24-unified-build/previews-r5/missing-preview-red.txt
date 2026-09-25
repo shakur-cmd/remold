@@ -1,0 +1,42 @@
+✔ two PR plans have distinct stable origins while retaining one staging identity realm (0.60125ms)
+✔ preview configuration cannot carry production routes, bindings or another account (0.816125ms)
+✔ child environment drops inherited production targets and provider secrets (0.095875ms)
+✔ AuthKit add preserves existing origins, homepage and default; repeated add is idempotent (0.089208ms)
+✔ close A removes only its owned entries and exact backend; B and concurrent additions survive (0.14125ms)
+✔ cleanup never removes AuthKit entries that predated this receipt (0.051375ms)
+✔ cleanup refuses wrong tenant, prod, reused backend name, changed identity or another PR receipt (0.257625ms)
+✔ an already absent exact backend does not generate another deletion (0.050416ms)
+✔ resuming an owned AuthKit add retains ownership for later cleanup (0.058709ms)
+✔ cleanup refuses a pre-existing or replaced Cloudflare preview (0.432334ms)
+✔ Convex child uses the same project preview key for selection and authorization (0.131375ms)
+✔ cleanup refuses false or missing backend absence ownership (0.16225ms)
+✔ provider detail with null identifier is reconciled only with its exact project-list identity (0.625ms)
+✔ Wrangler progress output binds the actual preview identity and exact candidate before ownership (0.581083ms)
+✔ replacement requires the exact previously owned frontend and refuses a reused name (0.243375ms)
+✔ recovery binds the originally empty attempt to its exact allocation and cannot repeat (1.641209ms)
+✖ Cloudflare recognizes only observed missing-parent or missing-preview 404 responses (9.942208ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 50.586625
+
+✖ failing tests:
+
+test at ops/previews/policy.test.mjs:76:1
+✖ Cloudflare recognizes only observed missing-parent or missing-preview 404 responses (9.942208ms)
+  AssertionError [ERR_ASSERTION]: Cloudflare GET failed: 404
+      at cfPreview (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/previews/frontend.mjs:20:2)
+      at async TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/previews/policy.test.mjs:80:16)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

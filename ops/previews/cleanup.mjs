@@ -13,7 +13,7 @@ export async function cleanup(directory,wrangler,workosCurrentFile) {
  return await locked(resolve(directory),async()=>{
   const {dir,receipt,plan}=load(directory);
   const pr=JSON.parse(execFileSync('gh',['pr','view',String(plan.pr),'--json','state,headRefOid,baseRefName'],{encoding:'utf8'}));
-  assert.equal(pr.state,'CLOSED','Close only the owned rehearsal PR after acceptance');assert.equal(pr.headRefOid,plan.sha);assert.equal(pr.baseRefName,'i2/preview-base-73b060d');
+  assert.equal(pr.state,'CLOSED','Close only the owned rehearsal PR after acceptance');assert.equal(pr.headRefOid,plan.sha);assert.equal(pr.baseRefName,'i2/preview-base-b9345f8');
   const key=readFileSync(join(here,'.private/convex-preview-key'),'utf8').trim();convexEnvironment({},key);
   const current=await fetch(`https://api.convex.dev/v1/deployments/${receipt.backend.name}`,{headers:{Authorization:`Bearer ${key}`}});
   assert(current.ok||current.status===404,`Backend readback failed: ${current.status}`);
