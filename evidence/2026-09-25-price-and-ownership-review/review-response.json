@@ -1,0 +1,34 @@
+{
+  "result": "I wrote a report and a verdict file. The $49 price report gets **APPROVE**, and the kiosk-mode fix for the Mautic form problem is **CONDITIONAL**. I made no edits, service or browser changes, mail, spend or commits.\n\n## 1. Price report: APPROVE\nThis covers the report's facts and reasoning only. It is not approval of live billing, profit or customer acceptance.\n- **Rates:** I fetched all 9 official pricing pages linked in the report today, and every quoted rate matches the page:\n  - **Competitors:** Attio Plus is $44 monthly or $35 annual, Close Essentials is $49 or $35, and Twenty Cloud Pro is $9 per user billed yearly.\n  - **Stripe fees:** 2.9% + $0.30 per card payment, and Billing adds 0.7%.\n  - **Other rates:** the Convex, Cloudflare Workers, DigitalOcean and SES prices match.\n- **Arithmetic:** recomputed exactly. At $49 the net after fees is $46.936; at $29 it is $27.656 and at $79 it is $75.856. Taking off the hypothetical $20 leaves $26.936 at $49.\n- **Consistency:** it fits the flat workspace price, the 14-day cardless trial and the no-free-tier decision (`docs/launch/PLAN.md:11`, `PLAN-REVIEW-LOG.md:37`, `jobs.json:449`). The $20 variable cost is clearly marked as hypothetical.\n- **Minor notes, not blocking:**\n  - `jobs.json` calls the trial terms a \"proposal\", while the report calls them \"approved\".\n  - Attio Plus is capped at 10 seats.\n  - Stripe's extra 0.5% for manually entered cards isn't mentioned.\n\n## 2. Mautic form ownership: CONDITIONAL\n**Why the contact was replaced and DNC lost** (installed 7.2.1 source; paths are under `app/bundles/`):\n- The test submits without a tracking cookie, so Mautic creates a new anonymous contact (`ContactTracker.php:266`).\n- The email then matches the real contact, and Mautic merges the real contact *into* the new anonymous one (`SubmissionModel.php:1042,1056`). The new ID wins.\n- The merge deletes the original contact (`ContactMerger.php:75`). The DNC record is deleted with it (`DoNotContact.php:78`), and nothing in the merge code copies DNC across.\n- A merge record makes the old ID point to the new contact (`ContactMerger.php:276-288`). That's why `GET /contacts/175` returned data from 176. `replay.mjs` never checks that the returned ID equals the requested one.\n\n**What kiosk mode fixes:** it uses the matching contact without merging (`SubmissionModel.php:950-955,1042-1044`). With first name unmapped, only the email is written. When exactly one contact has that email, this removes the merge that deleted the DNC.\n\n**Your kiosk run hit a new problem (runtime result not yet independently checked):** `kiosk-console.txt` shows tenant A failing at `kiosk-replay.mjs:30` with 176 contacts instead of 175. The earlier checks on that tenant passed: canonical profile, DNC and lead ID were unchanged. Source explains the extra contact: `SubmissionModel.php:305` asks the tracker for a contact before the kiosk branch runs, which creates an anonymous one. Tenant B never ran. Tenant A is marked started but not complete, so read its state before any retry.\n\n**Gates before adopting kiosk mode**, all on both A and B, then a fresh independent check:\n- **N1, extra anonymous contact:** confirm it has no email, no DNC and isn't the submission's contact. Then either expect exactly one extra anonymous contact, or test having the edge set the `Blocked-Tracking` cookie so none is created.\n- **N2, duplicate emails:** Mautic sorts matches newest first (`LeadRepository.php:253-254`), so it picks the newest duplicate without warning. Remold should bind by its stored Mautic ID and refuse when an email has more than one match.\n- **N3, simultaneous first submissions:** two at once for a new email can create duplicates. Run a parallel test. Never clean up with Mautic's merge, because it drops DNC.\n- **N4, merged IDs:** every contact read must assert that the returned ID equals the requested one. The fixture IDs A 175 and B 28 now point to 177 and 29.\n- **N5, suppression at send time:** Remold should hold the source of truth for suppression and check it at send time. The public edge should route only approved kiosk forms and refuse form 1 without changing it. Also prove no campaign is triggered by a kiosk form.\n- **N6, IP tracking:** `track_contact_by_ip` must be off, since all submissions come through the edge's IP. Every form also needs at least one mapped field.\n- **N7, restore limits:** the name and DNC restore works only for the synthetic test contacts. Re-adding DNC creates a new record, so the original history is gone.\n\nFiles are in `evidence/2026-09-25-price-and-ownership-review/`:\n- report.html\n- verdict.json",
+  "is_error": false,
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 3042,
+      "outputTokens": 19,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003137,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 58,
+      "outputTokens": 23613,
+      "cacheReadInputTokens": 1097654,
+      "cacheCreationInputTokens": 70234,
+      "webSearchRequests": 0,
+      "costUSD": 1.2538948000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6660,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  }
+}

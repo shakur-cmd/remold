@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Price review and native ownership consultation</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Price review and native ownership consultation</h1>
+<div class="meta">2026-09-25 · Opus 5.5 read-only consultation · scope: (1) pricing-recommendation.html facts and reasoning, (2) Mautic 7.2.1 form ownership blocker · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><strong>Price:</strong> whether to test US$49/workspace/month. Report verdict is <strong>APPROVE</strong> for facts and reasoning only. This is not approval of live billing, profit or customer acceptance.</li>
+  <li><strong>Native forms:</strong> no call needed from you yet. The kiosk approach is <strong>CONDITIONAL</strong>: it fixes the merge that deleted suppression, but it must pass the gates below before adoption.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>All 9 price sources linked in the report were fetched today (HTTP 200, public, read-only). Every quoted rate matched the page text (table below).</li>
+  <li>Fee arithmetic recomputed in Python Decimal: 29 → 27.656, 49 → 46.936, 79 → 75.856; minus the hypothetical $20 → 7.656, 26.936, 55.856. Matches the report after rounding to cents.</li>
+  <li>Traced why Mautic 7.2.1 dropped the email DNC, using installed source (paths, lines and sha256 below). The kiosk branch does avoid that merge.</li>
+  <li>New builder finding, not independently verified: root's kiosk run (<code>kiosk-console.txt</code>) failed at <code>kiosk-replay.mjs:30</code>, contact count 176 vs 175 on tenant A. It had already passed the checks for canonical profile, DNC and lead id (lines 28-29). Source explains this (see N1). Tenant B was not attempted.</li>
+</ul>
+</div>
+
+<h2>1 · Price report: APPROVE</h2>
+<table>
+<tr><th>Claim</th><th>Primary source (fetched 2026-09-25)</th><th>Page text</th><th>Result</th></tr>
+<tr><td>Attio Plus $44 monthly / $35 annual, per user</td><td><a href="https://attio.com/pricing/usd">attio.com/pricing/usd</a></td><td>"Plus $ 44 35 Save 20 % Per user/month, billed monthly annually … Up to 10 seats"</td><td>Match</td></tr>
+<tr><td>Close Essentials $49 monthly / $35 annual</td><td><a href="https://close.com/pricing">close.com/pricing</a></td><td>"Monthly Annually … Essentials $49 per user / month $35 per user / month"</td><td>Match</td></tr>
+<tr><td>Twenty Cloud Pro $9/user/month billed yearly, MCP</td><td><a href="https://twenty.com/pricing">twenty.com/pricing</a></td><td>"Cloud Pro is $9/user/month (yearly)"; "Every Cloud workspace ships with a native MCP server"</td><td>Match</td></tr>
+<tr><td>Stripe 2.9% + $0.30 domestic card</td><td><a href="https://stripe.com/pricing">stripe.com/pricing</a></td><td>"2.9% + 30¢ per successful transaction for domestic cards"</td><td>Match</td></tr>
+<tr><td>Stripe Billing 0.7% pay-as-you-go</td><td><a href="https://stripe.com/billing/pricing">stripe.com/billing/pricing</a></td><td>"Pay as you go … 0.7% of Billing volume"</td><td>Match</td></tr>
+<tr><td>Convex Professional $25/developer/month</td><td><a href="https://www.convex.dev/pricing">convex.dev/pricing</a></td><td>"Professional … $25 per developer/month"</td><td>Match</td></tr>
+<tr><td>Workers Paid $5</td><td><a href="https://developers.cloudflare.com/workers/platform/pricing/">developers.cloudflare.com/workers/platform/pricing</a></td><td>"minimum charge of $5 USD per month for an account"</td><td>Match</td></tr>
+<tr><td>2GiB/1vCPU Droplet $12</td><td><a href="https://www.digitalocean.com/pricing/droplets">digitalocean.com/pricing/droplets</a></td><td>size <code>s-1vcpu-2gb</code> row "$12.00"</td><td>Match</td></tr>
+<tr><td>SES Essentials $0.16/1,000</td><td><a href="https://aws.amazon.com/ses/pricing/">aws.amazon.com/ses/pricing</a></td><td>"Essentials … 0 – 10M emails / month $0.16 per 1,000 emails"</td><td>Match</td></tr>
+</table>
+<p><strong>Consistency:</strong> <code>docs/launch/PLAN.md:11</code> says "one flat workspace plan after a 14-day cardless trial; the monthly number is yours". <code>docs/launch/PLAN-REVIEW-LOG.md:37</code> records no free tier as Shakur's decision. <code>jobs.json:449</code> carries the flat-workspace, cardless 14-day trial into billing and keeps price as an owner gate. The report respects all three: it recommends, sets no price, adds no per-seat charge and creates no Stripe object.</p>
+<p><strong>Assumptions are labeled:</strong> the $20 variable cost is marked hypothetical. The buyer is marked as a positioning assumption. Exclusions are stated: international cards, conversion, tax, disputes and rounding.</p>
+<p><strong>Non-blocking notes:</strong> (a) <code>jobs.json:449</code> calls the trial terms a "proposal". The report calls them "approved", which PLAN.md supports, but "the plan's" would be more exact. (b) Attio Plus caps at 10 seats, so its three-person comparison holds but it doesn't scale without limit. (c) Stripe also adds 0.5% for manually entered cards, which the report doesn't mention. The per-transaction Billing fee is modeled correctly.</p>
+
+<h2>2 · Native ownership consultation: CONDITIONAL</h2>
+<p>Source: <code>docker --context colima-remold-proof exec remold-marketing-proof-web-a</code>, read-only, <code>app/release_metadata.json</code> version 7.2.1. All paths below are under <code>/var/www/html/docroot/app/bundles/</code>.</p>
+<h3>Why A 175 became 176 then 177, and DNC disappeared</h3>
+<ol>
+<li>The replay submits server-side without a tracking cookie. For a non-kiosk form, <code>FormBundle/Model/SubmissionModel.php:941-947</code> uses <code>contactTracker-&gt;getContact()</code>. Because nothing is tracked, <code>LeadBundle/Tracker/ContactTracker.php:266,269-290</code> persists a <em>new anonymous contact</em> (176).</li>
+<li>Mapped email matches the fixture: <code>SubmissionModel.php:1021-1031</code>. The anonymous contact has no unique fields, so there is no conflict and it has an id. <code>:1042</code> is false, and <code>:1056</code> calls <code>merge($lead = anonymous, $foundLead = canonical)</code>. The <strong>new anonymous contact wins</strong>.</li>
+<li><code>LeadBundle/Deduplicate/ContactMerger.php:46-77</code> (sha256 <code>1b26e282…</code>) merges fields, owners, points, tags and companies, then <code>:75</code> deletes the loser. No merge step or post-merge listener moves DNC. <code>LeadBundle/EventListener/LeadSubscriber.php:273-312</code> moves event log, points log, lists, notes and devices. <code>EmailBundle/EventListener/LeadSubscriber.php:43-49</code> moves stats only. <code>LeadBundle/Entity/DoNotContact.php:78</code> is <code>addLead(true,'CASCADE',…)</code>, so the suppression is <strong>deleted with the loser</strong>.</li>
+<li><code>ContactMerger.php:276-288</code> writes a merge record. That is why <code>GET /contacts/175</code> returned the 176 data. <code>replay.mjs</code> <code>contact()</code> never checks <code>returned.id === requested id</code>, so <code>before.json</code> labels merged 176 data as contact 175.</li>
+<li>Unmapping firstname stops <code>:1108</code> from writing the name. The merge still happens because it is driven by the email match plus the tracked anonymous contact, which explains <code>177 !== 175</code>.</li>
+</ol>
+<h3>What kiosk mode changes</h3>
+<p><code>SubmissionModel.php:950-955</code> skips the tracked contact. <code>:1042-1044</code> uses the found contact <em>without merging</em>. <code>:1066</code> skips the new-contact-on-conflict path. <code>:1098</code> skips the IP link. <code>:1160-1166</code> sets a system contact with no cookies. With firstname unmapped, <code>:1108</code> writes only the email, which is unchanged. For a <strong>single exact match</strong>, this removes the merge that deleted the DNC. <code>Form.php:273-276,371</code> confirms <code>inKioskMode</code> is a persisted, API-serialized field. The historical form 1 is not touched.</p>
+<h3>Why that is not enough to adopt yet</h3>
+<table>
+<tr><th>#</th><th>Risk</th><th>Source</th><th>Gate before adoption</th></tr>
+<tr><td>N1</td><td>Orphan anonymous contact per submission, even in kiosk mode. <code>SubmissionModel.php:305</code> calls <code>getContact()</code> before the kiosk branch, which persists a new contact (<code>ContactTracker.php:62-64,266</code>). This is consistent with root's builder result 176 vs 175.</td><td>SubmissionModel.php:305; ContactTracker.php:49-78,246-267</td><td>Do a read-only check that the extra contact is anonymous (no email, no DNC, not the submission lead), then assert exactly +1 anonymous and 0 identified. Alternatively, test edge-set <code>Blocked-Tracking</code> (<code>ContactTracker.php:51</code>) as a candidate. Neither is proven.</td></tr>
+<tr><td>N2</td><td>Duplicate email ambiguity. Lookup orders by <code>dateAdded DESC, id DESC</code> and kiosk takes <code>$leads[0]</code>, so the <strong>newest</strong> duplicate silently becomes the target.</td><td>LeadRepository.php:234-271; SubmissionModel.php:1031,1044</td><td>Add a proof with 2 same-email contacts that shows which one gets the submission. Remold must bind by its stored Mautic id and refuse or queue for review when an email has more than 1 match. Never "first match". Map only <code>email</code> as a unique identifier.</td></tr>
+<tr><td>N3</td><td>Concurrent new contacts. With no match, kiosk creates a contact (<code>:952,1158</code>). There is no lock and no unique email constraint, so parallel first submissions can create duplicates, which then triggers N2.</td><td>SubmissionModel.php:952,1021,1158</td><td>Add a parallel same-new-email proof on A and B, plus a Remold reconciliation that picks a deterministic canonical contact. Never repair with Mautic merge, because <code>ContactMerger</code> drops DNC.</td></tr>
+<tr><td>N4</td><td>Capture ID aliases. Merge records make old ids resolve to the winner.</td><td>ContactMerger.php:276-288</td><td>Every contact read must assert <code>returned.id === requested id</code> and treat a mismatch as a merge event, then re-bind with an attributed event. Fix <code>replay.mjs</code> <code>contact()</code> the same way. Existing fixture bindings (A 175, B 28) are now aliases of 177 and 29.</td></tr>
+<tr><td>N5</td><td>Send-time consent. Native DNC can be silently deleted by any merge, including tracking and identification paths outside forms. Form 1 stays non-kiosk and still merges.</td><td>DoNotContact.php:78; ContactMerger.php:75</td><td>Remold (Convex) must be the source of suppression truth and be checked at send time, with native DNC only as a second line. The public edge must route only allowlisted kiosk form ids and refuse form 1 without modifying it. Also prove that no campaign uses kiosk forms as a trigger: the system contact still runs events (<code>:1165</code>).</td></tr>
+<tr><td>N6</td><td>IP tracking. If <code>track_contact_by_ip</code> is on, <code>getContact()</code> can return an existing contact by IP, and every proxied submission shares the edge IP.</td><td>ContactTracker.php:255-263</td><td>Read the config and require it off on both tenants. Also require at least one mapped field so <code>:328</code> always runs: without mapped fields, <code>:331,338</code> attach the submission to the tracker contact.</td></tr>
+<tr><td>N7</td><td>The fixture restore is synthetic-only. Re-adding DNC creates a new record with a new date and comment, so the original DNC history is gone.</td><td>kiosk-replay.mjs:20-21</td><td>Label it as a synthetic repair and never generalize it to real contacts. The A kiosk phase is marked started but not complete (the <code>kioskStarted</code> guard), so reconcile A read-only before any retry.</td></tr>
+</table>
+<p><strong>Assessment of the next approach:</strong> it addresses the root cause shown in the source (tracked anonymous contact plus email match leads to a merge that deletes DNC) for the single-match case. The proof design is sound: exact-email single-match check, restore from retained intent, profile and DNC deepEqual, submission lead equals canonical, form 1 hash unchanged. It fails today only on the contact-count assertion (N1). Adopt kiosk plus capture-only fields only after N1-N6 pass on both A and B and a fresh IV confirms them. All runtime results from root's kiosk run are builder evidence until then.</p>
+
+<h2>Before / after and who checked</h2>
+<table>
+<tr><th>Before</th><th>After</th></tr>
+<tr><td>The price report said "independent review pending".</td><td>This session independently checked the 9 sources and the arithmetic: APPROVE. This is still not live-billing approval.</td></tr>
+<tr><td>Native form merge cause was not traced in source.</td><td>Traced to source lines above. The kiosk fix is conditional on N1-N6. Runtime is builder-only; fresh IV is still pending.</td></tr>
+</table>
+<p>Checked by: Opus 5.5 read-only session (this report). No code edits, no service, browser or form mutations, no mail, no spend, no commits. Page fetches were public GETs, saved as temporary files in <code>/tmp</code>.</p>
+</body>
+</html>

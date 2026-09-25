@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-25",
+  "reviewer": "claude-opus-5-5 read-only consultation",
+  "pricing": {
+    "verdict": "APPROVE",
+    "scope": "factual accuracy and rationale of docs/unified-launch/pricing-recommendation.html only; not live billing, profitability or customer acceptance",
+    "sources_matched": ["https://attio.com/pricing/usd", "https://close.com/pricing", "https://twenty.com/pricing", "https://stripe.com/pricing", "https://stripe.com/billing/pricing", "https://www.convex.dev/pricing", "https://developers.cloudflare.com/workers/platform/pricing/", "https://www.digitalocean.com/pricing/droplets", "https://aws.amazon.com/ses/pricing/"],
+    "arithmetic": {"29": "27.656", "49": "46.936", "79": "75.856", "minus_hypothetical_20": {"29": "7.656", "49": "26.936", "79": "55.856"}},
+    "consistency": ["docs/launch/PLAN.md:11", "docs/launch/PLAN-REVIEW-LOG.md:37", "docs/unified-launch/jobs.json:449"],
+    "non_blocking_notes": ["jobs.json:449 calls trial terms a proposal; report says approved", "Attio Plus capped at 10 seats", "Stripe +0.5% manually entered cards not listed"]
+  },
+  "native_ownership": {
+    "verdict": "CONDITIONAL",
+    "mautic_version": "7.2.1",
+    "root_cause": "Untracked submit persists anonymous contact (ContactTracker.php:266); email match merges canonical as loser into it (SubmissionModel.php:1042,1056); ContactMerger.php:75 deletes loser; DoNotContact.php:78 cascades; no merge listener moves DNC.",
+    "kiosk_effect": "SubmissionModel.php:950-955,1042-1044,1160-1166 use found lead without merge; with firstname unmapped only email is written (:1108).",
+    "source_sha256": {"FormBundle/Model/SubmissionModel.php": "041db937f8770e13e43991e406933a4fd882823c9be00282da5698ff3e9550d3", "LeadBundle/Deduplicate/ContactMerger.php": "1b26e282180c3d011a9f0b30fb09739ec19626d7a727a308a454da2ad6704f60", "LeadBundle/Tracker/ContactTracker.php": "ab4f1d71bdceaf6579fac13a056f7e5d9ebc9e26be74d69118faed73881a6f7c"},
+    "builder_finding_unverified": "kiosk-console.txt: kiosk-replay.mjs:30 contacts 176!=175 on A after profile/DNC/lead-id checks passed; B not attempted; A kioskStarted without kioskComplete requires read-only reconciliation",
+    "adoption_gates": ["N1 orphan anonymous contact from SubmissionModel.php:305", "N2 duplicate email picks newest (LeadRepository.php:253-254)", "N3 concurrent new-email duplicates", "N4 merge-record ID aliasing; assert returned id equals requested", "N5 Remold-owned send-time suppression; edge allowlists kiosk forms only; no form-triggered campaigns", "N6 track_contact_by_ip off and at least one mapped field", "N7 synthetic-only DNC restore"],
+    "requires": "fresh independent verification on both A and B"
+  },
+  "mutations_by_reviewer": "none; only this report.html and verdict.json written"
+}
