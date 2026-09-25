@@ -21,7 +21,11 @@
     "proof:flags": "node ops/rehearsal/flags.mjs",
     "proof:version": "node ops/release/version-service.mjs",
     "proof:migration": "node ops/migrations/rehearse.mjs",
-    "proof:contract": "pnpm --dir proofs/contract proof"
+    "proof:contract": "pnpm --dir proofs/contract proof",
+    "test:authority": "vitest run --config ops/authority/vitest.config.ts",
+    "proof:authority": "node ops/authority/service.mjs",
+    "proof:authority-migration": "node ops/authority/migration-service.mjs",
+    "proof:authority-mutants": "node ops/authority/mutations.mjs"
   },
   "dependencies": {
     "@convex-dev/rate-limiter": "^0.4.0",

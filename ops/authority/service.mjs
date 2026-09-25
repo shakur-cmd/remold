@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { anyApi } from 'convex/server';
 import { writeFileSync } from 'node:fs';
-import { withAuthority } from './local.mjs';
+import { withAuthority, evidencePath } from './local.mjs';
 import { tenant } from './service-fixture.mjs';
 import { replayReads } from './service-reads.mjs';
 import { replayAuthorityBoundaries } from './service-authority-boundaries.mjs';
@@ -10,6 +10,8 @@ import { replayFaults } from './service-faults.mjs';
 import { replayAgents } from './service-agents.mjs';
 import { replaySafety } from './service-safety.mjs';
 import { replayOperations } from './service-operations.mjs';
+import { replayInstances } from './service-instances.mjs';
+import { replaySecrets } from './service-secrets.mjs';
 const report = await withAuthority(async f => {
   const results = [], fixtures = [];
   const test = async (name, fn) => { await fn(); results.push({ name, status: 'PASS', level: 'SERVICE local backend and verified synthetic JWT / SIM provider' }); console.log('PASS', name); };
@@ -44,14 +46,11 @@ const report = await withAuthority(async f => {
     assert.deepEqual(snapshot().budgets.filter(x => x.key === orgA).map(x => [x.reserved, x.active, x.spent]), [[0, 0, 2]]);
   });
   f.run('integrations/budgets:configure', { cap: 10000, maxConcurrent: 1000, maxPerRun: 1000, maxSteps: 5, maxRecipients: 100 });
-  await replayOperations({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
-  await replaySafety({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
-  await replayAuthorityBoundaries({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
-  await replayConnections({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
-  await replayReads({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
-  await replayAgents({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
-  await replayFaults({ runtime: f, tenant: (name, limits) => tenant(f, name, limits), test });
+  // I1_SUITES=instances,secrets runs a subset (used by SERVICE mutants); default runs every suite.
+  const suites = { operations: replayOperations, safety: replaySafety, authorityBoundaries: replayAuthorityBoundaries, connections: replayConnections, instances: replayInstances, reads: replayReads, agents: replayAgents, faults: replayFaults, secrets: replaySecrets };
+  const selected = process.env.I1_SUITES ? process.env.I1_SUITES.split(',') : Object.keys(suites);
+  for (const name of selected) { assert.ok(suites[name], 'Unknown suite ' + name); await suites[name]({ runtime: f, tenant: (label, limits) => tenant(f, label, limits), test }); }
   const exportedFixture = f.exportFixture();
-  return { exportedFixture, status: 'PARTIAL SERVICE REPLAY', results, fixtures, snapshot: snapshot(), scratch: f.scratch };
+  return { exportedFixture, status: process.env.I1_SUITES ? 'SUBSET ' + selected.join(',') : 'FULL SERVICE REPLAY', suites: selected, results, fixtures, snapshot: snapshot(), scratch: f.scratch };
 }, { safetySim: true });
-writeFileSync('ops/authority/evidence/service.json', JSON.stringify(report, null, 2) + '\n');
+writeFileSync(evidencePath('service.json'), JSON.stringify(report, null, 2) + '\n');

@@ -15,3 +15,4 @@ export const dump = internalQuery({ args: { orgId: v.id('orgs') }, handler: asyn
 }) });
 export const bumpMember = internalMutation({ args: { orgId: v.id('orgs'), userId: v.id('users') }, handler: async (ctx, args) => { const member = await ctx.db.query('members').withIndex('by_org_user', q => q.eq('orgId', args.orgId).eq('userId', args.userId)).unique(); if (!member) throw Error('Synthetic member missing'); await ctx.db.patch(member._id, { authorityEpoch: (member.authorityEpoch ?? 0) + 1 }); } });
 export const revokeSecret = internalMutation({ args: { id: v.id('secretReferences') }, handler: async (ctx, args) => ctx.db.patch(args.id, { active: false }) });
+export const patchSecretAccount = internalMutation({ args: { id: v.id('secretReferences'), account: v.string() }, handler: async (ctx, args) => ctx.db.patch(args.id, { account: args.account }) });

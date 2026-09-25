@@ -1,19 +1,24 @@
 import assert from 'node:assert/strict';
 import { anyApi } from 'convex/server';
 import { cpSync, readFileSync, writeFileSync, mkdirSync, symlinkSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { Client } from '../../packages/mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js';
 import { StdioClientTransport } from '../../packages/mcp/node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js';
-import { withAuthority } from './local.mjs';
+import { withAuthority, evidencePath } from './local.mjs';
 const report = await withAuthority(async f => {
   const human = f.client('migration-owner'); await human.mutation(anyApi.users.store, {}); const orgId = await human.mutation(anyApi.orgs.create, { name: 'Authority migration synthetic' });
   const legacy = await human.action(anyApi.agents.create, { orgId, name: 'Retained legacy agent', role: 'admin', grants: ['create', 'update', 'delete'].map(action => ({ action, objectKey: '*' })) });
   const objects = await human.query(anyApi.objects.list, { orgId }), company = objects.find(o => o.key === 'company');
   const keys = objects.map(o => o.key).sort(), transcript = [];
   const rest = async (method, path, body) => { const response = await fetch(f.site + '/api/v1/' + path, { method, headers: { authorization: 'Bearer ' + legacy.key, 'content-type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }); const data = await response.json(); return { status: response.status, data }; };
-  const oldMcp = join(f.scratch, 'old-mcp'); cpSync(join(f.root, 'packages/mcp/dist'), oldMcp, { recursive: true }); writeFileSync(join(oldMcp, 'package.json'), '{"type":"module"}'); symlinkSync(join(f.root, 'packages/mcp/node_modules'), join(oldMcp, 'node_modules'), 'dir');
+  const archive = execFileSync('git', ['archive', '3339517', 'packages/mcp/src', 'packages/mcp/tsconfig.json', 'packages/mcp/package.json'], { cwd: f.root });
+  execFileSync('tar', ['-x', '-C', f.scratch], { input: archive });
+  const oldMcp = join(f.scratch, 'packages/mcp');
+  symlinkSync(join(f.root, 'packages/mcp/node_modules'), join(oldMcp, 'node_modules'), 'dir');
+  execFileSync(join(f.root, 'packages/mcp/node_modules/.bin/tsc'), ['-p', join(oldMcp, 'tsconfig.json')], { cwd: oldMcp, stdio: 'pipe' });
   const mcp = new Client({ name: 'retained-authority-migration-client', version: '1' });
-  await mcp.connect(new StdioClientTransport({ command: process.execPath, args: [join(oldMcp, 'index.js')], env: { PATH: process.env.PATH, REMOLD_URL: f.site, REMOLD_KEY: legacy.key }, stderr: 'pipe' }));
+  await mcp.connect(new StdioClientTransport({ command: process.execPath, args: [join(oldMcp, 'dist/index.js')], env: { PATH: process.env.PATH, REMOLD_URL: f.site, REMOLD_KEY: legacy.key }, stderr: 'pipe' }));
   const call = async (phase, name, args = {}) => { const response = await mcp.callTool({ name, arguments: args }); assert.ok(!response.isError, JSON.stringify(response)); const data = JSON.parse(response.content[0].text); transcript.push({ phase, name, args, data }); return data; };
   function normalize(value, ids = {}) {
     if (Array.isArray(value)) return value.map(x => normalize(x, ids));
@@ -65,8 +70,8 @@ const report = await withAuthority(async f => {
     f.run('authorityFixture:keyReuse', { objectId: company._id, key: 'old-company' });
     await human.mutation(anyApi.objects.create, { orgId, key: 'company', label: 'Replacement company', labelPlural: 'Replacement companies' });
     assert.equal((await rest('POST', 'changes', { action: 'create', object: 'company', values: { name: 'key reuse denied' }, reason: 'identity ceiling' })).status, 403);
-    return { status: 'PASS bounded migration and old-client compatibility', level: 'SERVICE local backend / synthetic JWT and data', baselineRevision: '3339517', oldMcpHash: f.sha(readFileSync(join(oldMcp, 'index.js'))), cutoff, baselineSnapshot, migratedSnapshot, transcript, normalizedTranscript: { baseline, fallback, after, rollback }, schemaFailure, fixture: f.exportFixture(), scratch: f.scratch };
+    return { status: 'PASS bounded migration and old-client compatibility', level: 'SERVICE local backend / synthetic JWT and data', baselineRevision: '3339517', oldMcpHash: f.sha(readFileSync(join(oldMcp, 'dist/index.js'))), cutoff, baselineSnapshot, migratedSnapshot, transcript, normalizedTranscript: { baseline, fallback, after, rollback }, schemaFailure, fixture: f.exportFixture(), scratch: f.scratch };
   } finally { await mcp.close(); }
 }, { sourceRevision: '3339517' });
-writeFileSync('ops/authority/evidence/migration-service.json', JSON.stringify(report, null, 2) + '\n');
+writeFileSync(evidencePath('migration-service.json'), JSON.stringify(report, null, 2) + '\n');
 console.log('PASS migration, retained old MCP/REST transcript, schema refusal, enforcing rollback, key reuse');
