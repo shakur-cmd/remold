@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I1 independent verification: production authority and integration core</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 900px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .verdict { background: #fdecea; border-left: 4px solid #c62828; padding: 12px 16px; margin-bottom: 20px; }
+  .verdict h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 13px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+  .pass { color: #1b5e20; font-weight: 600; } .fail { color: #b71c1c; font-weight: 600; } .partial { color: #9a6700; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>I1 independent verification: production authority and integration core</h1>
+<div class="meta">2026-09-25 · target d2c8744 on wip/i1-authority (evidence from 95dd149) · verifier: Opus 5.5, fresh session, not the builder · level: SERVICE (isolated local Convex on 127.0.0.1:3490/3491, synthetic JWTs and data, no providers, no spend, no sends)</div>
+
+<div class="verdict">
+<h2>Verdict: revise, not certified</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>One line</th></tr>
+<tr><td>1. All 43 H0 groups pass on production code</td><td class="pass">PASS</td><td>Every attack I wrote was refused. The H0 map in <code>h0-parity.json</code> points 18 of 43 groups at tests that don't exercise them. Other passing tests do cover those groups.</td></tr>
+<tr><td>2. Old wildcard agent keeps exactly its prior abilities; refused on post-freeze objects at every phase</td><td class="partial">PARTIAL</td><td>Holds on the enforcing code, and my old-MCP build matches the builder's byte for byte. The builder's "after rollback" phase never rolled code back. A real pre-I1 code rollback drops masks and scoped read limits.</td></tr>
+<tr><td>3. Readonly, masks, 2 s subscription, 184-row inventory</td><td class="partial">PARTIAL</td><td>Readonly, field masks and subscriptions hold. <b>Three real defects</b>: record-scope existence oracles in CSV import, browser capture and agent lookup-by-title. The inventory's readonly labels on internal rows are wrong.</td></tr>
+<tr><td>4. Invalid provider or secret reference fails closed; no secret in responses, logs or exports</td><td class="pass">PASS</td><td>Holds for every secret the server holds. One gap: malformed adapter and REST bodies are logged in full, together with the adapter key's SHA-256.</td></tr>
+</table>
+</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Rollback floor.</b> I rolled the code back to pre-I1 (3339517, expanded schema kept) after migration. Hidden fields showed again. A scoped agent created after I1 could read every object. Legacy agents could get, list, propose on and search the post-freeze object. Writes stayed refused. Nothing in the code stops that deploy. I agree with the builder: forbid pre-I1 rollback after the freeze. It needs a release-gate check, not just a note. Confirm.</li>
+  <li><b>Readonly tail.</b> A permit issued just before readonly can still be consumed. That is one send, bounded by the 1 s permit window, and it matches the H0 contract. Confirm this is acceptable.</li>
+  <li><b>Fix before certifying?</b> I recommend the builder fixes the three oracles (D1 to D3) and corrects the inventory and parity map (D4 to D6). Then this suite gets rerun: <code>evidence/2026-09-25-i1/iv/iv-service.mjs</code> should go 24/24.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by this verifier, from worktree remold-i1-iv at d2c8744)</h2>
+<ul>
+  <li>Typecheck passed. App tests 73/73, authority unit tests 60/60, <code>pnpm build</code> passed, MCP package build plus 2/2 tests. Logs: <code>logs/{typecheck,test,authunit,build,mcp}.log</code>.</li>
+  <li>Builder SERVICE replay reproduced: 63/63 PASS (<code>logs/service.log</code>). Migration replay: PASS (<code>logs/migration.log</code>).</li>
+  <li>My own attack suite: 24 checks, 21 pass and 3 fail. The 3 failures are the defects below (<code>logs/ivfinal.log</code>, <code>data/iv-service.json</code>).</li>
+  <li>My own migration attack used an old MCP client I built from 3339517 with that commit's own lockfile. Its dist/index.js sha256 is <code>5c43101c…a9246e</code>, identical to the builder's. The ability matrix is identical at baseline, pre-backfill and migrated: 3 agents × 7 objects × create, update, delete, list and propose (<code>data/iv-migration.json</code>).</li>
+  <li>I made 7 deliberate breaks in production <code>convex/</code>, and a test caught all 7 (details below). The builder's suite missed 2 of them: filtering by a hidden field, and a secret-reference environment change.</li>
+  <li>Function inventory regenerated independently with <code>convex function-spec</code> from the deployed backend: 137 functions, exact match with inventory.json on id, kind and visibility. Route branches recounted by hand from http.ts: 23 agent plus 15 adapter = 38. Plus 6 scheduled targets and 2 crons, 184 total. Matches.</li>
+</ul>
+</div>
+
+<h2>Defects (with repro)</h2>
+<p>All repros run on the isolated backend: <code>I1_EVIDENCE_DIR=/tmp/x IV_ONLY='C3-M[456]' node evidence/2026-09-25-i1/iv/iv-service.mjs</code> (needs <code>ops/authority/fixture-iv.ts</code> in place and ports 3490/3491 free; see <code>local-ports.patch</code>).</p>
+<table>
+<tr><th>#</th><th>Severity</th><th>Defect</th><th>Repro and observed</th><th>Suggested fix</th></tr>
+<tr><td>D1</td><td>Medium</td><td><b>CSV import duplicate check is an existence oracle across record scopes.</b> <code>csv:importRows</code> with <code>skipDuplicates</code> calls <code>findByTitle</code> over the whole object before the create-scope check.</td><td>A member restricted to one company imports two rows: an existing title they cannot read, and a made-up one. Result: <code>{"created":0,"skipped":1,"errors":[{"row":3,"message":"Record scope does not authorize new records"}]}</code>. The hidden title is "skipped" and the made-up one errors. (C3-M4)</td><td>Dedupe only against records <code>canReadRecord</code> allows, or require all-record create scope before any duplicate lookup.</td></tr>
+<tr><td>D2</td><td>Medium</td><td><b>Browser capture duplicate check is an existence oracle.</b> <code>capture.companyFor</code> finds by title, then <code>requireRecordRead</code>.</td><td>Same restricted member: an unreadable existing name returns <code>NOT_FOUND "Record not found"</code>. A missing name returns <code>FORBIDDEN "Record scope does not authorize new records"</code>. (C3-M5)</td><td>Check create scope first. Treat unreadable matches exactly like no match.</td></tr>
+<tr><td>D3</td><td>Medium</td><td><b>Agent lookup-by-title is an existence oracle.</b> <code>lib/values.related()</code> runs <code>findByTitle</code> across the target object, then <code>requireRecordRead</code>. On <code>POST /suggestions</code> this runs before the propose-scope check, so a read-only scoped agent can probe.</td><td>An agent with read on one person and one company proposes <code>company: "Secret Merger Target"</code> and gets <code>404 Record not found</code>. With a made-up name it gets <code>400 No Company named "…"</code>. (C3-M6)</td><td>Filter title hits by <code>canReadRecord</code>. Unreadable gets the same VALIDATION message as missing.</td></tr>
+<tr><td>D4</td><td>Low</td><td><b>Inventory readonly labels on internal rows are wrong.</b> The builder calls them "declared, not swept".</td><td>Under readonly, <code>registerSecret</code>, <code>budgets:configure</code>, <code>ops:setFlag</code> and <code>seed:ensureStandard</code> all succeed, but are labelled <code>refused</code> (C3-R3). <code>ops:setFlag</code> must succeed, because it lifts readonly. Internal rows behind settlement routes are also labelled <code>refused</code> while their HTTP routes are <code>settlement-allowed</code>: <code>outcomes:reconcile</code>, <code>callbacks:receive</code>, <code>lifecycle:expire</code>, <code>telemetry:record</code>. The builder's own H0#18 test shows callbacks accepted in readonly.</td><td>Sweep internal rows the same way as public ones, or label them <code>operator</code>/<code>settlement-allowed</code>.</td></tr>
+<tr><td>D5</td><td>Low</td><td><b>Inventory guard misses new sub-routes.</b> The handover says "a new route or function fails the test".</td><td>I added <code>GET /api/v1/records/:id/dump</code> in http.ts and <code>inventory.test.ts</code> still passed 2/2 (<code>logs/inventory-gap.log</code>). A new exported function is caught (<code>logs/inventory-fn.log</code>).</td><td>Derive the route list from the dispatch branches, or fail on any unmatched <code>path[...]</code> condition.</td></tr>
+<tr><td>D6</td><td>Low</td><td><b>The H0 parity map is inaccurate, and its guard can't notice.</b></td><td>I mapped all 43 groups to "Real JWT verification…" and <code>h0-parity.test.ts</code> still passed (<code>logs/parity-gap.log</code>). 18 rows point at the wrong test (table below).</td><td>Point each row at the test that exercises it.</td></tr>
+<tr><td>D7</td><td>Low, operator-only</td><td><b>Explicit legacy grants follow object renames.</b> <code>migrateAgent</code> expands against current keys of pre-freeze objects, not the keys they had at freeze.</td><td>A legacy agent holds <code>update:vendor</code>, and no vendor existed at freeze. After an operator renames the pre-freeze <code>campaign</code> object to <code>vendor</code>, the agent can update campaign records: pre-backfill 200, migrated 200 (<code>migrateAgent</code> reported <code>dropped: []</code>). No public rename exists.</td><td>Store keys in the freeze audit and expand against them.</td></tr>
+<tr><td>D8</td><td>Low</td><td><b>Validation failures log whole request bodies.</b></td><td>An adapter sent a malformed body with <code>providerSignature: &lt;canary&gt;</code>. The backend log shows <code>Object: {bindingId, credentialHash: &lt;adapter key sha256&gt;, providerSignature: &lt;canary&gt;}</code>. HTTP responses stay generic, and raw keys and the vault handle never appear (C4-S2).</td><td>Parse adapter bodies against an explicit shape inside the handler before <code>runMutation</code>, or accept <code>v.any()</code> and validate by hand.</td></tr>
+</table>
+
+<h2>Overstated by the builder</h2>
+<ul>
+  <li><b>"Refused … after rollback" and "no widening via rollback."</b> In <code>migration-service.mjs</code> the "compatible-enforcing-rollback" phase tries the baseline schema, which is refused, restores the expanded schema, and keeps running the same I1 code. No code rolled back. On a real code rollback to 3339517 with the expanded schema, <code>exposure</code> read <code>{"W_seesHiddenCity":true,"S_companyList":200,"S_vendorList":200,"W_vendorCreate":403}</code>. Writes stay bounded because migrated grants are concrete keys. Reads, masks and proposals widen.</li>
+  <li><b>"All 43 H0 groups are mapped to named production tests."</b> True as a string match only. 18 rows name a test that does not exercise the group. Coverage exists elsewhere in the 63 passing tests.</li>
+  <li><b>"Mutant wildcard-cutoff is caught."</b> Removing the freeze cutoff in <code>identity.granted</code> causes no widening: the separate cutoff in <code>reads.scopes</code> still refuses. The builder's test notices only because 403 became 404. I added two breaks that do widen (below). Both suites catch them.</li>
+  <li><b>"A new route or function fails the test."</b> Functions yes. Sub-routes under an existing path, no (D5).</li>
+  <li><b>Inventory readonly column.</b> Internal-row labels are wrong in several places (D4).</li>
+</ul>
+
+<h2>Deliberate breaks in production code</h2>
+<table>
+<tr><th>Claim</th><th>Break (one line, restored after)</th><th>My tests</th><th>Builder's tests</th></tr>
+<tr><td>1</td><td><code>core.ts checked()</code>: approver role/epoch/membership recheck replaced with <code>false</code></td><td class="pass">caught (C1-A)</td><td class="pass">caught</td></tr>
+<tr><td>2</td><td><code>identity.granted</code>: legacy freeze cutoff removed</td><td>not caught; no widening (reads cutoff refuses, 404)</td><td>caught only by the status code</td></tr>
+<tr><td>2</td><td><code>migration.migrateAgent</code>: expand against all objects, not only pre-freeze ones</td><td class="pass">caught (migrated phase)</td><td class="pass">caught</td></tr>
+<tr><td>2</td><td><code>reads.scopes</code>: legacy read cutoff removed</td><td class="pass">caught (pre-backfill get/list)</td><td class="pass">caught</td></tr>
+<tr><td>3</td><td><code>agentApi.inboxAdd</code>: <code>writable()</code> removed</td><td>not targeted</td><td class="pass">caught (readonly sweep)</td></tr>
+<tr><td>3</td><td><code>lib/list.ts</code>: <code>requireQueryField</code> on sort/filter removed</td><td class="pass">caught (C3-M1, C3-M2)</td><td class="fail">NOT caught</td></tr>
+<tr><td>4</td><td><code>connections.usable</code>: environment check removed</td><td class="pass">caught (C4-S1)</td><td class="fail">NOT caught</td></tr>
+</table>
+<p>Records: <code>data/iv-mutants.json</code>, <code>data/iv-mutants-claim2.json</code>, <code>logs/mutants.log</code>, <code>logs/mutants2.log</code>. <code>git diff -- convex</code> was clean after every run.</p>
+
+<h2>Claim-by-claim detail</h2>
+<h3>1. H0 adversarial cases (PASS)</h3>
+<ul>
+  <li>Role downgrade mid-flight. All were refused at permit: approver admin→member between claim and permit (the role-change sweep paused the op; permit says "Stale claim"), approver removed and re-invited, approver bounced admin→member→admin, grantor owner downgraded to admin while an agent held a claim, and human proposer downgraded after approval and claim.</li>
+  <li>Stale approval. All were refused: approval expired between claim and permit, payload edited after approval (claim refused), an expired permit consumed, and an old permit replayed after reclaim.</li>
+  <li>Same external ID in different provider instances. There were 4 instances, all bound to <code>same-external-id</code>: another account, another environment with the same account string, another provider name, and another org. 83 cross-key calls over 11 endpoints (callback, page, safety-begin, permit, status, unknown, fail, reconcile, resolve-unknown, bind, consume) all returned 404, and both victim orgs' full table dumps were unchanged. A suppression callback changed only the owning binding's consent.</li>
+  <li>Parity map rows that name the wrong test. The better covering test is in brackets. Group 6 [Actual human, REST, history … share current masks]; 8 [External scoped agent … preserves one issued tail]; 10 [Missing usage pauses cheaper work]; 12 [Global spend, concurrency and per-run ceilings]; 14, 28 [One-use expiring permit and server scheduled crash recovery]; 20 [Provision deletion wins before and after acknowledgement]; 22 [Durable cancellation survives rejection and absence]; 26 [Receipt collisions persist a durable anomaly]; 30–32 [Unresolved prior consumed attempt survives sweep/expiry/failure]; 33 [Single-step overrun … cannot be cancelled away]; 34, 35 [Unconsumed unknown does not manufacture provider uncertainty]; 38 [Continuation reduces per-call exposure]; 40, 41 [Final absence targets only the current unresolved logical step].</li>
+  <li>Limit: the financial finality adapter is still SIM with an empty production registry, as the builder says.</li>
+</ul>
+<h3>2. Old clients, wildcards, migration, rollback (PARTIAL)</h3>
+<ul>
+  <li>Old MCP from 3339517: built independently with that commit's lockfile (SDK 1.30.0). Its hash is identical to the builder's. <code>packages/mcp</code> and <code>agentApi.ts</code> are identical between origin/main and 3339517. Since 3339517, only one MCP tool description has changed.</li>
+  <li>Ability matrix (status codes for create/update/delete/list/propose on all 7 standard objects for a wildcard admin, an explicit-key member and a no-grant member): identical at baseline, pre-backfill and migrated. Old-MCP abilities are identical too.</li>
+  <li>Post-freeze object <code>vendor</code>. Before backfill, after migration and after roll-forward, all three agents were refused create, update, get, list and propose. Also refused: a note with <code>about</code> pointing at the vendor record, and the related-list read. Search did not reveal the record. Old MCP apply was refused.</li>
+  <li>Key reuse: a post-freeze object renamed onto the pre-freeze <code>project</code> key was refused for the wildcard agent (pre-backfill and migrated). Capability grants did not follow a renamed-and-recreated key (C2-K1).</li>
+  <li>Failed: real pre-I1 rollback (see Overstated) and rename-following explicit grants (D7).</li>
+</ul>
+<h3>3. Readonly, masks, subscription, inventory (PARTIAL)</h3>
+<ul>
+  <li>Builder readonly sweep reproduced (all 44 public writes, agent REST writes). My additions: no send is scheduled under readonly; claim and permit are refused. A permit issued before readonly can still be consumed once (C3-R1, a decision above). <code>ops:setFlag</code> readonly does not call <code>pauseWork</code>, but the permit-time check still refuses.</li>
+  <li>Field masks held against every inference path I tried: agent and member filter/sort by hidden field (refused), hidden title via search, byRef, lookup titles, CSV export, today, events, suggestion diffs, and capture duplicate check with a hidden title (refused before lookup).</li>
+  <li>Subscription, non-owner member, <code>records.list</code>: hidden field gone in 10.1 ms, and a record moved out of scope gone in 16.6 ms (target 2 s). The builder measured 14.7 ms on <code>records.get</code> in my rerun.</li>
+  <li>Failed: D1 to D3 (record-scope oracles), D4 (labels), D5 (route guard).</li>
+</ul>
+<h3>4. Secrets (PASS)</h3>
+<ul>
+  <li>Fails closed: secret reference environment changed, provider changed (C4-S1). The builder's cases were also reproduced: raw handle, foreign org, disabled provider, account change, revoked reference, malformed or unknown adapter key.</li>
+  <li>The raw agent key, raw adapter key and vault handle appear in no HTTP response, backend log or exported table (other than <code>secretReferences</code>). Key SHA-256s appear in logs and in the <code>agents</code>/<code>integrationConnections</code> tables, as designed. D8 covers body logging.</li>
+  <li>Limit: only the local backend's log stream was checked. Hosted log sinks were not.</li>
+</ul>
+
+<h2>How to rerun</h2>
+<pre>git -C remold worktree add --detach ../remold-iv d2c8744 &amp;&amp; cd ../remold-iv &amp;&amp; pnpm install
+git checkout i1/iv-2026-09-25 -- evidence/2026-09-25-i1/iv
+git apply evidence/2026-09-25-i1/iv/local-ports.patch          # harness to 3490/3491
+cp evidence/2026-09-25-i1/iv/fixture-iv.ts ops/authority/      # IV scratch-only fixture
+I1_EVIDENCE_DIR=/tmp/iv node evidence/2026-09-25-i1/iv/iv-service.mjs     # 24 checks, currently 21/3
+# old MCP: git archive 3339517 | tar -x -C /tmp/old; (cd /tmp/old &amp;&amp; pnpm i --frozen-lockfile &amp;&amp; cd packages/mcp &amp;&amp; pnpm i &amp;&amp; pnpm build)
+IV_OLD_MCP=/tmp/old/packages/mcp I1_EVIDENCE_DIR=/tmp/iv node evidence/2026-09-25-i1/iv/iv-migration.mjs
+I1_EVIDENCE_DIR=/tmp/iv node evidence/2026-09-25-i1/iv/iv-mutants.mjs     # edits convex/ and restores it</pre>
+<p>Nothing else in the checkout was changed: only the port patch and the fixture copy, neither committed outside this folder. The builder's branch was not modified.</p>
+</body>
+</html>

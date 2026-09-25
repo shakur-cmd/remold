@@ -1,0 +1,11 @@
+approver-recheck | IV C1-A (role downgrade/re-invite) | CAUGHT
+approver-recheck | builder: approver role downgrade | CAUGHT
+legacy-freeze-cutoff | IV migration attack (pre-backfill future object) | NOT CAUGHT
+legacy-freeze-cutoff | builder migration-service | CAUGHT
+readonly-agent-inbox | builder readonly sweep | CAUGHT
+mask-filter-on-hidden-field | IV C3-M1/M2 (filter/sort by hidden field) | CAUGHT
+mask-filter-on-hidden-field | builder mask sweep + reads | NOT CAUGHT
+secret-environment-check | IV C4-S1 (environment/provider change) | CAUGHT
+secret-environment-check | builder secrets suite | NOT CAUGHT
+convex/ restored clean
+exit 0

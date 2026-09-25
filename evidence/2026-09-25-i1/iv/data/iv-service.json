@@ -1,0 +1,505 @@
+{
+  "results": [
+    {
+      "id": "C1-A1",
+      "claim": 1,
+      "name": "Human approver downgraded admin->member between claim and permit: permit refused",
+      "status": "PASS",
+      "observed": {
+        "permit": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Stale claim\"}}",
+        "state": "paused"
+      },
+      "ms": 483
+    },
+    {
+      "id": "C1-A2",
+      "claim": 1,
+      "name": "Approver removed and re-invited as admin between claim and permit: permit refused",
+      "status": "PASS",
+      "observed": {
+        "status": 403,
+        "text": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Stale claim\"}}"
+      },
+      "ms": 491
+    },
+    {
+      "id": "C1-A3",
+      "claim": 1,
+      "name": "Approver downgraded then restored (admin->member->admin) mid-flight: permit refused (epoch moved)",
+      "status": "PASS",
+      "observed": {
+        "status": 403,
+        "text": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Stale claim\"}}"
+      },
+      "ms": 461
+    },
+    {
+      "id": "C1-A4",
+      "claim": 1,
+      "name": "Grantor owner downgraded to admin while agent holds a claim: direct grant dies, permit refused",
+      "status": "PASS",
+      "observed": {
+        "status": 403,
+        "text": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"External capability denied\"}}"
+      },
+      "ms": 485
+    },
+    {
+      "id": "C1-A5",
+      "claim": 1,
+      "name": "Human proposer downgraded admin->member after approval and claim: permit refused",
+      "status": "PASS",
+      "observed": {
+        "status": 403,
+        "text": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Stale claim\"}}"
+      },
+      "ms": 453
+    },
+    {
+      "id": "C1-B1",
+      "claim": 1,
+      "name": "Approval expires between claim and permit: permit refused",
+      "status": "PASS",
+      "observed": {
+        "status": 403,
+        "text": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Approval changed or expired\"}}"
+      },
+      "ms": 1756
+    },
+    {
+      "id": "C1-B2",
+      "claim": 1,
+      "name": "Payload edited after approval: claim and permit refused",
+      "status": "PASS",
+      "observed": {
+        "ok": false,
+        "error": "{\"code\":\"FORBIDDEN\",\"message\":\"Approval changed or expired\"}"
+      },
+      "ms": 476
+    },
+    {
+      "id": "C1-B3",
+      "claim": 1,
+      "name": "Spent or expired permit cannot be consumed; old fence after reclaim cannot consume",
+      "status": "PASS",
+      "observed": {
+        "late": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Invalid or spent permit\"}}",
+        "replay": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Invalid or spent permit\"}}"
+      },
+      "ms": 2898
+    },
+    {
+      "id": "C1-D1",
+      "claim": 1,
+      "name": "Same external ID across accounts, environments, provider names and orgs: every foreign adapter key is refused on 11 endpoints, no data change",
+      "status": "PASS",
+      "observed": {
+        "calls": 83,
+        "statuses": [
+          404
+        ]
+      },
+      "ms": 3610
+    },
+    {
+      "id": "C1-D2",
+      "claim": 1,
+      "name": "Suppression callback on one binding changes only that binding recipient, not the same recipient/external ID elsewhere",
+      "status": "PASS",
+      "observed": {
+        "t1": 1,
+        "t2": [
+          {
+            "_id": "jn706qsvaa9v7jsgn9fqwj6b918f2dpt",
+            "at": 1790347122803,
+            "channel": "email",
+            "orgId": "p57fv8m6zx5q02d58jvd73yw718f2f9g",
+            "purpose": "marketing",
+            "recipient": "same@example.test",
+            "source": "synthetic explicit test consent",
+            "suppressed": false,
+            "version": 1
+          }
+        ]
+      },
+      "ms": 2269
+    },
+    {
+      "id": "C2-K1",
+      "claim": 2,
+      "name": "Read/record grants bound to an object do not follow its key to a recreated object; legacy explicit grant does not either",
+      "status": "PASS",
+      "observed": {
+        "scopedList": 404,
+        "scopedCreate": 403,
+        "legacyCreate": 403,
+        "scopedOldStillReadable": 200
+      },
+      "ms": 1137
+    },
+    {
+      "id": "C3-R1",
+      "claim": 3,
+      "name": "Readonly set after permit, before consume: observe whether the in-flight send can still be consumed (bounded tail)",
+      "status": "PASS",
+      "observed": {
+        "consumeAfterReadonly": 200,
+        "note": "already-permitted step still consumable for <=1s permit window (H0 bounded tail)"
+      },
+      "ms": 656
+    },
+    {
+      "id": "C3-R2",
+      "claim": 3,
+      "name": "Readonly: queued/approved work is not dispatched by scheduler; claim, permit and new proposals refused; no send scheduled",
+      "status": "PASS",
+      "observed": {
+        "claim": "{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}",
+        "permit": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}",
+        "pendingSafetySends": 0
+      },
+      "ms": 1184
+    },
+    {
+      "id": "C3-R3",
+      "claim": 3,
+      "name": "Readonly: operator-internal functions behave as inventory labels them (labels are declared, not swept)",
+      "status": "PASS",
+      "observed": {
+        "observed": {
+          "integrations/connections:registerSecret": "allowed",
+          "integrations/budgets:configure": "allowed",
+          "ops:setFlag": "allowed",
+          "seed:ensureStandard": "allowed",
+          "integrations/callbacks:receive (via HTTP callback)": "refused 400"
+        },
+        "mismatches": [
+          {
+            "id": "integrations/connections:registerSecret",
+            "label": "refused",
+            "observed": "allowed"
+          },
+          {
+            "id": "integrations/budgets:configure",
+            "label": "refused",
+            "observed": "allowed"
+          },
+          {
+            "id": "ops:setFlag",
+            "label": "refused",
+            "observed": "allowed"
+          },
+          {
+            "id": "seed:ensureStandard",
+            "label": "refused",
+            "observed": "allowed"
+          }
+        ]
+      },
+      "ms": 1415
+    },
+    {
+      "id": "C3-M1",
+      "claim": 3,
+      "name": "Agent cannot filter or sort by a hidden field (no inference of hidden value by presence)",
+      "status": "PASS",
+      "observed": {
+        "hit": "404 {\"error\":{\"code\":\"NOT_FOUND\",\"message\":\"Field not found\"}}",
+        "miss": "404 {\"error\":{\"code\":\"NOT_FOUND\",\"message\":\"Field not found\"}}",
+        "sort": 404
+      },
+      "ms": 476
+    },
+    {
+      "id": "C3-M2",
+      "claim": 3,
+      "name": "Member with hidden field cannot filter, sort, search, export, or read events/suggestions to recover it",
+      "status": "PASS",
+      "observed": {
+        "filter": "{\"code\":\"NOT_FOUND\",\"message\":\"Field not found\"}",
+        "sort": "{\"code\":\"NOT_FOUND\",\"message\":\"Field not found\"}",
+        "leaks": []
+      },
+      "ms": 517
+    },
+    {
+      "id": "C3-M3",
+      "claim": 3,
+      "name": "Hidden TITLE field: search, byRef, lookup titles, export and capture duplicate check do not reveal it",
+      "status": "PASS",
+      "observed": {
+        "leaks": [],
+        "capHit": {
+          "ok": false,
+          "error": "{\"code\":\"NOT_FOUND\",\"message\":\"Field not found\"}"
+        },
+        "capMiss": {
+          "ok": false,
+          "error": "{\"code\":\"NOT_FOUND\",\"message\":\"Field not found\"}"
+        }
+      },
+      "ms": 521
+    },
+    {
+      "id": "C3-M4",
+      "claim": 3,
+      "name": "Record-scoped member: CSV import duplicate check does not reveal titles of records outside scope",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: import result distinguishes an unreadable existing title from a missing one: {\"ok\":true,\"value\":{\"created\":0,\"errors\":[{\"message\":\"Record scope does not authorize new records\",\"row\":3}],\"skipped\":1}}\n\ntrue !== false\n\n    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:280:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async check (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:27:28)\n    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:271:3\n    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/ops/authority/local.mjs:75:20)\n    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:22:16",
+      "ms": 474
+    },
+    {
+      "id": "C3-M5",
+      "claim": 3,
+      "name": "Record-scoped member: browser capture duplicate check does not reveal titles of records outside scope",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: capture distinguishes: {\"hit\":{\"ok\":false,\"error\":\"{\\\"code\\\":\\\"NOT_FOUND\\\",\\\"message\\\":\\\"Record not found\\\"}\"},\"miss\":{\"ok\":false,\"error\":\"{\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Record scope does not authorize new records\\\"}\"}}\n\nfalse !== true\n\n    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:290:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async check (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:27:28)\n    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:283:3\n    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/ops/authority/local.mjs:75:20)\n    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:22:16",
+      "ms": 476
+    },
+    {
+      "id": "C3-M6",
+      "claim": 3,
+      "name": "Record-scoped agent: lookup-by-title in a proposal does not reveal titles of records outside its read scope",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: status distinguishes existence: {\"hit\":\"404 {\\\"error\\\":{\\\"code\\\":\\\"NOT_FOUND\\\",\\\"message\\\":\\\"Record not found\\\"}}\",\"miss\":\"400 {\\\"error\\\":{\\\"code\\\":\\\"VALIDATION\\\",\\\"fieldKey\\\":\\\"company\\\",\\\"message\\\":\\\"No Company named \\\\\\\"Nonexistent 398b\\\\\\\"\\\"}}\"}\n\n404 !== 400\n\n    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:306:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async check (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:27:28)\n    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:293:3\n    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/ops/authority/local.mjs:75:20)\n    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv/evidence/2026-09-25-i1/iv/iv-service.mjs:22:16",
+      "ms": 491
+    },
+    {
+      "id": "C3-M7",
+      "claim": 3,
+      "name": "Open subscription of a non-owner member: records.list loses a newly hidden field, and a newly out-of-scope record, within 2 s",
+      "status": "PASS",
+      "observed": {
+        "fieldMs": 9.5,
+        "recordMs": 12.4
+      },
+      "ms": 510
+    },
+    {
+      "id": "C4-S1",
+      "claim": 4,
+      "name": "Secret reference environment or provider changed after connect: claim fails closed",
+      "status": "PASS",
+      "observed": {
+        "environment": {
+          "ok": false,
+          "error": "{\"code\":\"FORBIDDEN\",\"message\":\"Integration requires reconnection\"}"
+        },
+        "provider": {
+          "ok": false,
+          "error": "{\"code\":\"FORBIDDEN\",\"message\":\"Integration requires reconnection\"}"
+        }
+      },
+      "ms": 1665
+    },
+    {
+      "id": "C4-S2",
+      "claim": 4,
+      "name": "Secret canaries never appear in adapter/REST validation errors, backend logs or exports",
+      "status": "PASS",
+      "observed": {
+        "found": {
+          "rawAgentKey": {
+            "responses": false,
+            "logs": false,
+            "export": false
+          },
+          "rawAdapterKey": {
+            "responses": false,
+            "logs": false,
+            "export": false
+          },
+          "vaultHandle": {
+            "responses": false,
+            "logs": false,
+            "export": false
+          },
+          "forwardedProviderMaterial": {
+            "responses": false,
+            "logs": true,
+            "export": false
+          },
+          "agentKeyHash": {
+            "responses": false,
+            "logs": true,
+            "export": true
+          },
+          "adapterKeyHash": {
+            "responses": false,
+            "logs": true,
+            "export": true
+          }
+        },
+        "logSample": [
+          "Object: {bindingId: \"k1746kr1yansxpg9mjnnqg75q58f3r59\", credentialHash: \"<ADAPTER_KEY_SHA256>\", providerSignature: \"<CANARY>\"}",
+          "Object: {bindingId: \"k1746kr1yansxpg9mjnnqg75q58f3r59\", credentialHash: \"<ADAPTER_KEY_SHA256>\", providerSignature: \"<CANARY>\"}",
+          "Object: {bindingId: \"k1746kr1yansxpg9mjnnqg75q58f3r59\", credentialHash: \"<ADAPTER_KEY_SHA256>\", providerSignature: \"<CANARY>\"}"
+        ],
+        "responseSample": [
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"ArgumentValidationError: Object contains extra field `apiKey` that is not in the validator.\"}}",
+          "{\"error\":{\"code\":\"VALIDATION\",\"message\":\"ArgumentValidationError: Object is missing the required field `action`. Consider wrapping the field validator in `v.optional(...)` if this is expected.\"}}",
+          "{\"code\":\"NOT_FOUND\",\"message\":\"Secret reference not found\"}"
+        ]
+      },
+      "ms": 3001
+    },
+    {
+      "id": "INV-1",
+      "claim": 3,
+      "name": "Function inventory regenerated with `convex function-spec` from the deployed backend matches inventory.json",
+      "status": "PASS",
+      "observed": {
+        "savedBytes": 158330
+      },
+      "ms": 202
+    }
+  ],
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-DXc7if",
+  "sourceManifest": {
+    "convex/agentApi.ts": "a889c2bd32a783f5642545d84d0f654566c2ce970b83d1f874ccdb02e9b37eb3",
+    "convex/agents.ts": "3aebc5324cb4614dcc1e3b2d797d8a3e7a412fff57ef9ad501055e7d9075b4ec",
+    "convex/auth.config.ts": "c8e137ec7b75e6ee5d4a2eebd11c7d2a46a77ba4f759befbd95ba1e00e3d2e61",
+    "convex/authorityFixture.ts": "efacda4106b788a9a9ff714288c52f4b5a45e6708baf7f912ad60ed43b41e50d",
+    "convex/authorityFixtureH0.ts": "fdbd8ff8513771ccecf06fff70a2a0c1e49ffd2748a6540d725bf41f3e1ce4b8",
+    "convex/authorityFixtureIv.ts": "6a3d02da4aae13012b6757a60b15331c602c241aa913051d2fbf06f8cfa05cf9",
+    "convex/authorityFixtureSweeps.ts": "78f655fd9e47f63af25eb83e4ceea3291f7df90ee06325655c0e1131ba924d8c",
+    "convex/capture.ts": "d862d486f972adc0a71ac6791c3df9c1cb11d8725cbaf7719608f24a41ea1532",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.ts": "6ae377d60296de3dc94eb30c53e09a14f986e7454a6e6b7a63fadad466aab098",
+    "convex/errors.ts": "499423efb133eff7ea0cf31b9c5d87d684ffa2f47f45187af94e2cb6778e9a66",
+    "convex/events.ts": "0c27600f59fc9bc4a5af81d85acd1aad75146b7f2566edb0e78a5be895cad91e",
+    "convex/fields.ts": "d39b4c3582e9bfb1109f4d0b97dddb0c0d0ac3ebc8c20f3af9d43709c280021e",
+    "convex/http.ts": "6460e9816c8d811fbe7345f19718ff947a7c122d42f903a574ed012016462b09",
+    "convex/identity.ts": "627ca3d400f9c3b67bb95a40e36d01f5a7bb1d2d9cbd1e26d6e00d5912768ce1",
+    "convex/inbox.ts": "faac5f30990e0623061fd8235f949dca57f30ada3b5e4200b2875ba568f0b2db",
+    "convex/invites.ts": "c191f04b6be5d9de8a943c53511e86c596d461f54b146bc5a8097a1e8fee2f3e",
+    "convex/objects.ts": "c2c9badd9b4590c2775d47e923e8b883ab12fcef3db26f4fe4835e3ed66acc13",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "6b2e41d2eb2388bf6b30ca289f04217a6f4bbf3634c38451fcdaf7f0de817caf",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "5c08630f1bc0a2dd0ef8433f48e63248fffdb7c95c1ab2861c0d1952d6938e7a",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/schema.ts": "23e21c1f559329b155baa789ec245c1949e8f7c4b9282891640ca1e2fa0f22da",
+    "convex/seed.ts": "e47a71007a23a5d7675c8f3beb41e64c7f989979e3f9e383038ffba62a005e19",
+    "convex/suggestions.ts": "9645e04bbe46243c087b10a8f8044b60bba385c96f7845e9a4c0fa90ad7ddb5f",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/today.ts": "1af85ab53ce4343f59ad2b64dfba834e4f84c6567339a996c571b72b72bd2bf5",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "077e5c17bd4b46adc406f54a2de7018b5ecdd82b36b36cfe440e3785d86bd1cf",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/authority/grants.ts": "1bd5d05378316c7dd2ad851b873c31e5e5a9aadf70f4f3701dd8e7cbf788f3e0",
+    "convex/authority/inbox.ts": "e58244c4ad9ff91ce53b37d0af24fbadccdf50a787cbc85ebc09e1edbc7052e4",
+    "convex/authority/migration.ts": "1e650dcdf5bc229ecb2f260adeb34a1421dfe04c3b0143d1af547170ff36f463",
+    "convex/authority/policies.ts": "c120d03444ae3bf3417cd3d99249c2e904748fc4cf33a4341bced13f79c76d1f",
+    "convex/authority/readonly.ts": "8be51e982ba0c20583d03b947e8f03290e4b209f868bfbe6f08c6ee5bf5f011d",
+    "convex/authority/reads.ts": "5e600f2f063b6d77b45698e08de3c07c8a6f29fda7a8971ba5da4dda63a165b3",
+    "convex/integrations/bindings.ts": "e1ad0a3699d985c16b3db45b92e109a10e141b0e24379294cb9193727316230e",
+    "convex/integrations/budgets.ts": "9ea0325f3d1cb6e29c5f5698deeea57bdb55b07c5c0660f693b1f3ce784c2c46",
+    "convex/integrations/callbacks.ts": "a135380048d8f40fc3d3e2980f72ef6d41ae7787a4ba271cf26516aa3821d24f",
+    "convex/integrations/commands.ts": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+    "convex/integrations/connections.ts": "ee611af39a6b50b7c351cee577882cffb12d7922b1e6431f68c570607cc9322a",
+    "convex/integrations/core.ts": "6054e86765db12050eee4d3e651a3ce46f722bb64bf4a2b7cbf466ae100cf2f9",
+    "convex/integrations/dispatch.ts": "75b7b09a85562bfada04d885e7f9a2277147501129663f12247777059688845c",
+    "convex/integrations/http.ts": "ef3ba8ec3aa2f10a3b498039d09df0f557935a010287972d18e7d2b3e2dea2f4",
+    "convex/integrations/lifecycle.ts": "617f60334b74d16b85fe9e840beb11bb4c934055a807907faefcfb962eab0b5f",
+    "convex/integrations/lookups.ts": "13fa88c6deb6f004155bbb1ec15acf49d79db7dadc1720a4009702e3cec375b6",
+    "convex/integrations/outcomes.ts": "22f0ef2e283179b1f7dae6f4fa09cc17ec51ab9088c37e5e9c054044ff0565bd",
+    "convex/integrations/receipts.ts": "187e1c4f0052aed6104ff7086b1a15c1d1ebf879c8f0a8bc9c912cecf962f3d6",
+    "convex/integrations/safety.ts": "e5abbde2777eb9dd34987d4b2a92f23717a767fc886398bc52fbe64c883de923",
+    "convex/integrations/safetyAdapters.ts": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc",
+    "convex/integrations/safetyFinality.ts": "a8c5d379c039af7c05a905b76a5cce46fbb7c958235e523d6457a610ace46f0d",
+    "convex/integrations/tables.ts": "556d1dfcb641617b25014b000053ab87b72b0cd8169d2599ce87fcbcd875b5d6",
+    "convex/lib/applyChange.ts": "61bcc9776ee48c1d7b21cd42685662b744f0c0a565aa002636a52b63d934e069",
+    "convex/lib/find.ts": "5741338c3d15b6759b0cff8c80437ac0d06785b6a6f0ef3de65f648dc58cc1ef",
+    "convex/lib/list.ts": "ba20c645009b336fd9d41ac960dfaaee1028185c617fbbbc890f2145396dde8e",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "3c826c091a3d54b006aa2c53cf18b9d7175a60f0a4e307e6f5e3698ceecaad7d",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "eae72f25923c2cea4330398f4a30b6c70ed13c0703bd981e523f2ca01e2e0338"
+  },
+  "finalSourceManifest": {
+    "convex/agentApi.ts": "a889c2bd32a783f5642545d84d0f654566c2ce970b83d1f874ccdb02e9b37eb3",
+    "convex/agents.ts": "3aebc5324cb4614dcc1e3b2d797d8a3e7a412fff57ef9ad501055e7d9075b4ec",
+    "convex/auth.config.ts": "c8e137ec7b75e6ee5d4a2eebd11c7d2a46a77ba4f759befbd95ba1e00e3d2e61",
+    "convex/authorityFixture.ts": "efacda4106b788a9a9ff714288c52f4b5a45e6708baf7f912ad60ed43b41e50d",
+    "convex/authorityFixtureH0.ts": "fdbd8ff8513771ccecf06fff70a2a0c1e49ffd2748a6540d725bf41f3e1ce4b8",
+    "convex/authorityFixtureIv.ts": "6a3d02da4aae13012b6757a60b15331c602c241aa913051d2fbf06f8cfa05cf9",
+    "convex/authorityFixtureSweeps.ts": "78f655fd9e47f63af25eb83e4ceea3291f7df90ee06325655c0e1131ba924d8c",
+    "convex/capture.ts": "d862d486f972adc0a71ac6791c3df9c1cb11d8725cbaf7719608f24a41ea1532",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.ts": "6ae377d60296de3dc94eb30c53e09a14f986e7454a6e6b7a63fadad466aab098",
+    "convex/errors.ts": "499423efb133eff7ea0cf31b9c5d87d684ffa2f47f45187af94e2cb6778e9a66",
+    "convex/events.ts": "0c27600f59fc9bc4a5af81d85acd1aad75146b7f2566edb0e78a5be895cad91e",
+    "convex/fields.ts": "d39b4c3582e9bfb1109f4d0b97dddb0c0d0ac3ebc8c20f3af9d43709c280021e",
+    "convex/http.ts": "6460e9816c8d811fbe7345f19718ff947a7c122d42f903a574ed012016462b09",
+    "convex/identity.ts": "627ca3d400f9c3b67bb95a40e36d01f5a7bb1d2d9cbd1e26d6e00d5912768ce1",
+    "convex/inbox.ts": "faac5f30990e0623061fd8235f949dca57f30ada3b5e4200b2875ba568f0b2db",
+    "convex/invites.ts": "c191f04b6be5d9de8a943c53511e86c596d461f54b146bc5a8097a1e8fee2f3e",
+    "convex/objects.ts": "c2c9badd9b4590c2775d47e923e8b883ab12fcef3db26f4fe4835e3ed66acc13",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "6b2e41d2eb2388bf6b30ca289f04217a6f4bbf3634c38451fcdaf7f0de817caf",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "5c08630f1bc0a2dd0ef8433f48e63248fffdb7c95c1ab2861c0d1952d6938e7a",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/schema.ts": "23e21c1f559329b155baa789ec245c1949e8f7c4b9282891640ca1e2fa0f22da",
+    "convex/seed.ts": "e47a71007a23a5d7675c8f3beb41e64c7f989979e3f9e383038ffba62a005e19",
+    "convex/suggestions.ts": "9645e04bbe46243c087b10a8f8044b60bba385c96f7845e9a4c0fa90ad7ddb5f",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/today.ts": "1af85ab53ce4343f59ad2b64dfba834e4f84c6567339a996c571b72b72bd2bf5",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "077e5c17bd4b46adc406f54a2de7018b5ecdd82b36b36cfe440e3785d86bd1cf",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/authority/grants.ts": "1bd5d05378316c7dd2ad851b873c31e5e5a9aadf70f4f3701dd8e7cbf788f3e0",
+    "convex/authority/inbox.ts": "e58244c4ad9ff91ce53b37d0af24fbadccdf50a787cbc85ebc09e1edbc7052e4",
+    "convex/authority/migration.ts": "1e650dcdf5bc229ecb2f260adeb34a1421dfe04c3b0143d1af547170ff36f463",
+    "convex/authority/policies.ts": "c120d03444ae3bf3417cd3d99249c2e904748fc4cf33a4341bced13f79c76d1f",
+    "convex/authority/readonly.ts": "8be51e982ba0c20583d03b947e8f03290e4b209f868bfbe6f08c6ee5bf5f011d",
+    "convex/authority/reads.ts": "5e600f2f063b6d77b45698e08de3c07c8a6f29fda7a8971ba5da4dda63a165b3",
+    "convex/integrations/bindings.ts": "e1ad0a3699d985c16b3db45b92e109a10e141b0e24379294cb9193727316230e",
+    "convex/integrations/budgets.ts": "9ea0325f3d1cb6e29c5f5698deeea57bdb55b07c5c0660f693b1f3ce784c2c46",
+    "convex/integrations/callbacks.ts": "a135380048d8f40fc3d3e2980f72ef6d41ae7787a4ba271cf26516aa3821d24f",
+    "convex/integrations/commands.ts": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+    "convex/integrations/connections.ts": "ee611af39a6b50b7c351cee577882cffb12d7922b1e6431f68c570607cc9322a",
+    "convex/integrations/core.ts": "6054e86765db12050eee4d3e651a3ce46f722bb64bf4a2b7cbf466ae100cf2f9",
+    "convex/integrations/dispatch.ts": "75b7b09a85562bfada04d885e7f9a2277147501129663f12247777059688845c",
+    "convex/integrations/http.ts": "ef3ba8ec3aa2f10a3b498039d09df0f557935a010287972d18e7d2b3e2dea2f4",
+    "convex/integrations/lifecycle.ts": "617f60334b74d16b85fe9e840beb11bb4c934055a807907faefcfb962eab0b5f",
+    "convex/integrations/lookups.ts": "13fa88c6deb6f004155bbb1ec15acf49d79db7dadc1720a4009702e3cec375b6",
+    "convex/integrations/outcomes.ts": "22f0ef2e283179b1f7dae6f4fa09cc17ec51ab9088c37e5e9c054044ff0565bd",
+    "convex/integrations/receipts.ts": "187e1c4f0052aed6104ff7086b1a15c1d1ebf879c8f0a8bc9c912cecf962f3d6",
+    "convex/integrations/safety.ts": "e5abbde2777eb9dd34987d4b2a92f23717a767fc886398bc52fbe64c883de923",
+    "convex/integrations/safetyAdapters.ts": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc",
+    "convex/integrations/safetyFinality.ts": "a8c5d379c039af7c05a905b76a5cce46fbb7c958235e523d6457a610ace46f0d",
+    "convex/integrations/tables.ts": "556d1dfcb641617b25014b000053ab87b72b0cd8169d2599ce87fcbcd875b5d6",
+    "convex/lib/applyChange.ts": "61bcc9776ee48c1d7b21cd42685662b744f0c0a565aa002636a52b63d934e069",
+    "convex/lib/find.ts": "5741338c3d15b6759b0cff8c80437ac0d06785b6a6f0ef3de65f648dc58cc1ef",
+    "convex/lib/list.ts": "ba20c645009b336fd9d41ac960dfaaee1028185c617fbbbc890f2145396dde8e",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "3c826c091a3d54b006aa2c53cf18b9d7175a60f0a4e307e6f5e3698ceecaad7d",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "eae72f25923c2cea4330398f4a30b6c70ed13c0703bd981e523f2ca01e2e0338"
+  },
+  "safetyAdapter": {
+    "level": "unimplemented production registry",
+    "productionHash": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc",
+    "effectiveHash": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc"
+  }
+}

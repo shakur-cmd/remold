@@ -1,0 +1,42 @@
+[
+  {
+    "claim": 2,
+    "id": "expand-ignores-freeze-cutoff",
+    "file": "convex/authority/migration.ts",
+    "from": "const objects = await snapshot(ctx, agent.orgId, org.authorityFrozenAt), keys",
+    "to": "const objects = await snapshot(ctx, agent.orgId), keys",
+    "checks": {
+      "IV migration attack (migrated future object)": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FINDINGS [\n  \"issue\": \"W create on post-freeze object allowed/leaked\",\n  \"issue\": \"W update on post-freeze object allowed/leaked\",\n  \"issue\": \"W get on post-freeze object allowed/leaked\",\n  \"issue\": \"W list on post-freeze object allowed/leaked\",\n  \"issue\": \"W propose on post-freeze object allowed/leaked\",\n  \"issue\": \"W noteAbout on post-freeze object allowed/leaked\",\n  \"issue\": \"W related on post-freeze object allowed/leaked\",\n  \"issue\": \"K update on post-freeze object allowed/leaked\",\n  \"issue\": \"K get on post-freeze object allowed/leaked\",\n  \"issue\": \"K list on post-freeze object allowed/leaked\",\n  \"issue\": \"K propose on post-freeze object allowed/leaked\","
+      },
+      "builder migration-service": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+      }
+    },
+    "findings": true
+  },
+  {
+    "claim": 2,
+    "id": "legacy-read-cutoff",
+    "file": "convex/authority/reads.ts",
+    "from": "const a = principal.agent, allowed = a.authorityVersion === 1 ? a.readObjectIds?.includes(object._id) : principal.org.authorityFrozenAt !== undefined && object._creationTime <= principal.org.authorityFrozenAt;",
+    "to": "const a = principal.agent, allowed = a.authorityVersion === 1 ? a.readObjectIds?.includes(object._id) : principal.org.authorityFrozenAt !== undefined;",
+    "checks": {
+      "IV migration attack (pre-backfill future object)": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FINDINGS [\n  \"issue\": \"W get on post-freeze object allowed/leaked\",\n  \"issue\": \"W list on post-freeze object allowed/leaked\",\n  \"issue\": \"W noteAbout on post-freeze object allowed/leaked\",\n  \"issue\": \"W searchLeak on post-freeze object allowed/leaked\",\n  \"issue\": \"W related on post-freeze object allowed/leaked\",\n  \"issue\": \"K get on post-freeze object allowed/leaked\",\n  \"issue\": \"K list on post-freeze object allowed/leaked\",\n  \"issue\": \"K searchLeak on post-freeze object allowed/leaked\",\n  \"issue\": \"K related on post-freeze object allowed/leaked\",\n  \"issue\": \"R get on post-freeze object allowed/leaked\",\n  \"issue\": \"R list on post-freeze object allowed/leaked\","
+      },
+      "builder migration-service": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: frozen-before-backfill list"
+      }
+    },
+    "findings": true
+  }
+]

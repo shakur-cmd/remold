@@ -1,0 +1,116 @@
+baseline               matrix {"W:company":"200 200 200 200 201","W:person":"200 200 200 200 201","W:opportunity":"200 200 200 200 201","W:project":"200 200 200 200 201","W:task":"200 200 200 200 201","W:note":"200 200 200 200 201","W:campaign":"200 200 200 200 201","K:company":"200 403 403 200 201","K:person":"403 403 403 200 2
+baseline               oldMcp {"W_me":false,"W_objects":"campaign,company,note,opportunity,person,project,task","W_apply":false,"R_apply":true,"R_propose":false}
+pre-backfill           matrix {"W:company":"200 200 200 200 201","W:person":"200 200 200 200 201","W:opportunity":"200 200 200 200 201","W:project":"200 200 200 200 201","W:task":"200 200 200 200 201","W:note":"200 200 200 200 201","W:campaign":"200 200 200 200 201","K:company":"200 403 403 200 201","K:person":"403 403 403 200 2
+pre-backfill           oldMcp {"W_me":false,"W_objects":"campaign,company,note,opportunity,person,project,task","W_apply":false,"R_apply":true,"R_propose":false}
+pre-backfill           future-object probe {"W":{"create":403,"update":403,"get":404,"list":404,"propose":404,"noteAbout":404,"searchLeak":false,"related":404},"K":{"create":403,"update":403,"get":404,"list":404,"propose":404,"noteAbout":403,"searchLeak":false,"related":404},"R":{"create":403,"update":403,"get":404,"list":404,"propose":404,"
+pre-backfill           rename probe (org2) {"W2_createOnRenamedPostFreeze":403,"K2_updatePreFreezeRenamedIntoItsKey":200}
+migrated               org2 migrate results {"j9735xatrx1kvy87dsagsy3c5x8f2jv1":{"changed":true,"dropped":[]},"j97e0h1x9jbkynbzc0548hv6zd8f3kmd":{"changed":true,"dropped":[]}}
+migrated               matrix {"W:company":"200 200 200 200 201","W:person":"200 200 200 200 201","W:opportunity":"200 200 200 200 201","W:project":"200 200 200 200 201","W:task":"200 200 200 200 201","W:note":"200 200 200 200 201","W:campaign":"200 200 200 200 201","K:company":"200 403 403 200 201","K:person":"403 403 403 200 2
+migrated               future-object probe {"W":{"create":403,"update":403,"get":404,"list":404,"propose":404,"noteAbout":404,"searchLeak":false,"related":404},"K":{"create":403,"update":403,"get":404,"list":404,"propose":404,"noteAbout":403,"searchLeak":false,"related":404},"R":{"create":403,"update":403,"get":404,"list":404,"propose":404,"
+migrated               rename probe (org2) {"W2_createOnRenamedPostFreeze":403,"K2_updatePreFreezeRenamedIntoItsKey":200}
+migrated               exposure {"W_seesHiddenCity":false,"S_companyList":404,"S_vendorList":404,"W_vendorCreate":403}
+pre-I1-rollback        deploy "deployed"
+pre-I1-rollback        exposure {"W_seesHiddenCity":true,"S_companyList":200,"S_vendorList":200,"W_vendorCreate":403}
+pre-I1-rollback        future-object probe {"W":{"create":403,"update":403,"get":200,"list":200,"propose":429,"noteAbout":429,"searchLeak":true,"related":200},"K":{"create":403,"update":403,"get":200,"list":200,"propose":201,"noteAbout":403,"searchLeak":true,"related":200},"R":{"create":403,"update":403,"get":200,"list":200,"propose":201,"no
+pre-I1-rollback        rename probe (org2) {"W2_createOnRenamedPostFreeze":403,"K2_updatePreFreezeRenamedIntoItsKey":200}
+roll-forward           exposure {"W_seesHiddenCity":false,"S_companyList":404,"S_vendorList":404,"W_vendorCreate":403}
+roll-forward           future-object probe {"W":{"create":403,"update":429,"get":404,"list":404,"propose":429,"noteAbout":429,"searchLeak":false,"related":404},"K":{"create":403,"update":403,"get":404,"list":404,"propose":404,"noteAbout":403,"searchLeak":false,"related":404},"R":{"create":403,"update":403,"get":404,"list":404,"propose":404,"
+schema-rollback        baseline schema deploy "refused by schema validation (as expected)"
+
+FINDINGS [
+ {
+  "phase": "pre-backfill",
+  "severity": "low/operator-only",
+  "issue": "explicit legacy grant for a key that matched nothing at freeze follows an operator rename onto a pre-freeze object"
+ },
+ {
+  "phase": "migrated",
+  "severity": "low/operator-only",
+  "issue": "explicit legacy grant for a key that matched nothing at freeze follows an operator rename onto a pre-freeze object"
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "rolling code back to pre-I1 after migration drops masks and scoped-agent read limits",
+  "rolledExposure": {
+   "W_seesHiddenCity": true,
+   "S_companyList": 200,
+   "S_vendorList": 200,
+   "W_vendorCreate": 403
+  }
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "W get on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "W list on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "W searchLeak on post-freeze object allowed/leaked",
+  "status": true
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "W related on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "K get on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "K list on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "K propose on post-freeze object allowed/leaked",
+  "status": 201
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "K searchLeak on post-freeze object allowed/leaked",
+  "status": true
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "K related on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "R get on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "R list on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "R propose on post-freeze object allowed/leaked",
+  "status": 201
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "R searchLeak on post-freeze object allowed/leaked",
+  "status": true
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "issue": "R related on post-freeze object allowed/leaked",
+  "status": 200
+ },
+ {
+  "phase": "pre-I1-rollback",
+  "severity": "low/operator-only",
+  "issue": "explicit legacy grant for a key that matched nothing at freeze follows an operator rename onto a pre-freeze object"
+ }
+]

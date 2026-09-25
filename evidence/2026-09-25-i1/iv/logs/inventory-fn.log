@@ -1,0 +1,46 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1-iv
+
+ ❯ ops/authority/inventory.test.ts (2 tests | 1 failed) 210ms
+   ❯ authority inventory (2)
+     × lists every registered function, concrete HTTP branch, cron and scheduled target 186ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/inventory.test.ts > authority inventory > lists every registered function, concrete HTTP branch, cron and scheduled target
+AssertionError: expected [ …(184) ] to deeply equal [ …(185) ]
+
+- Expected
++ Received
+
+@@ -1076,17 +1076,10 @@
+      "principal": "human",
+      "visibility": "public",
+      "writes": false,
+    },
+    {
+-     "id": "records:ivProbe",
+-     "kind": "query",
+-     "principal": "human",
+-     "visibility": "public",
+-     "writes": false,
+-   },
+-   {
+      "id": "records:list",
+      "kind": "query",
+      "principal": "human",
+      "visibility": "public",
+      "writes": false,
+
+ ❯ ops/authority/inventory.test.ts:71:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  10:38:23
+   Duration  281ms (tests 90%, transform 7%, import 3%, worker 1%)
+
+exit 1
