@@ -25,23 +25,37 @@ async function registeredFunctions() {
   return rows;
 }
 
+// Derives every agent REST route from the dispatch() branches themselves, so a new
+// branch (including a sub-route under an existing path) must get an inventory row.
+function agentRoutes(http: string) {
+  const body = http.slice(http.indexOf('async function dispatch'), http.indexOf('async function responseFor'));
+  const commandSets = [...body.matchAll(/const commands: Record<string, string> = \{([^}]*)\}/g)].map(m => [...m[1]!.matchAll(/(\w+):/g)].map(k => k[1]!));
+  const routes: { method: string; path: string }[] = [];
+  let block = '', handled = 0;
+  for (const line of body.split('\n')) {
+    if (/^  \}\s*$/.test(line)) { block = ''; continue; }
+    const opened = /^\s*if \(path\[0\] === "(\w+)"[^{]*\{\s*$/.exec(line); if (opened) { block = line; continue; }
+    if (!/\breturn\b/.test(line)) continue;
+    if (/_probe/.test(line)) { routes.push({ method: 'GET', path: '/api/v1/_probe' }); handled++; continue; }
+    if (!/return json\(/.test(line)) continue;
+    const context = block + line, method = /request\.method === "(GET|POST)"/.exec(context)?.[1], first = /path\[0\] === "(\w+)"/.exec(context)?.[1], length = Number(/path\.length === (\d)/.exec(line)?.[1] ?? 1), third = /path\[2\] === "(\w+)"/.exec(line)?.[1];
+    expect(method && first, 'unparsed dispatch branch: ' + line.trim()).toBeTruthy();
+    handled++;
+    if (/commands\[path\[2\]\]/.test(line)) { for (const name of commandSets.shift()!) routes.push({ method: method!, path: `/api/v1/${first}/:id/${name}` }); continue; }
+    if (/commands\[path\[1\]\]/.test(line)) { for (const name of commandSets.shift()!) routes.push({ method: method!, path: `/api/v1/${first}/${name}` }); continue; }
+    routes.push({ method: method!, path: `/api/v1/${first}` + (length >= 2 ? '/:id' : '') + (third ? `/${third}` : '') });
+  }
+  // Every return in dispatch() is either a parsed route or one of three known non-routes.
+  const returns = [...body.matchAll(/\breturn\b/g)].length;
+  expect(returns - 3, 'dispatch() has a return branch the route parser did not understand').toBe(handled);
+  return routes;
+}
+
 function httpRoutes() {
   const http = readFileSync(join(root, 'convex/http.ts'), 'utf8');
   const integration = readFileSync(join(root, 'convex/integrations/http.ts'), 'utf8');
   const requireSource = (source: string, token: string) => expect(source, `missing route branch ${token}`).toContain(token);
-  const agent = [
-    route('GET', '/api/v1/_probe', false), route('GET', '/api/v1/operations/:id', false), route('POST', '/api/v1/operations', true),
-    ...['edit', 'claim', 'cancel'].map(name => route('POST', `/api/v1/operations/:id/${name}`, true)),
-    ...['grant', 'revoke', 'fire'].map(name => route('POST', `/api/v1/authority/${name}`, true)),
-    ...['me', 'objects', 'records', 'search', 'today', 'suggestions', 'inbox'].map(name => route('GET', `/api/v1/${name}`, false)),
-    route('GET', '/api/v1/records/:id', false), route('GET', '/api/v1/records/:id/events', false), route('GET', '/api/v1/records/:id/related', false),
-    ...['suggestions', 'changes', 'inbox'].map(name => route('POST', `/api/v1/${name}`, true)), route('POST', '/api/v1/inbox/:id/resolve', true),
-  ];
-  // A new top-level path or command in dispatch() must appear in the route list above.
-  const firstSegments = new Set([...http.matchAll(/path\[0\] === "(\w+)"/g)].map(m => m[1]));
-  expect([...firstSegments].sort()).toEqual([...new Set(agent.map(r => r.id.split('/')[3]).filter(x => x !== '_probe'))].sort());
-  const commandKeys = [...http.matchAll(/const commands: Record<string, string> = \{([^}]*)\}/g)].flatMap(m => [...m[1].matchAll(/(\w+):/g)].map(k => k[1]));
-  expect(commandKeys.sort()).toEqual(['cancel', 'claim', 'edit', 'fire', 'grant', 'revoke']);
+  const agent = agentRoutes(http).map(({ method, path }) => route(method, path, method === 'POST'));
   for (const token of ['_probe', 'operations', 'authority', 'me', 'objects', 'records', 'search', 'today', 'suggestions', 'changes', 'inbox', 'editAgent', 'claimAgent', 'cancelAgent', 'grantAgent', 'revokeAgent', 'fireAgent']) requireSource(http, token);
   const mutationTable = /const mutations:[\s\S]*?= \{([\s\S]*?)\};/.exec(integration)?.[1] ?? '';
   const mutationNames = [...mutationTable.matchAll(/(?:^|,)\s*['"]?([a-z-]+)['"]?\s*:/g)].map(match => match[1]);
@@ -78,7 +92,7 @@ describe('authority inventory', () => {
     for (const entry of inventory) {
       expect(['public', 'internal', 'http', 'cron', 'scheduled']).toContain(entry.visibility);
       expect(['human', 'agent', 'adapter', 'operator', 'scheduler', 'none']).toContain(entry.principal);
-      expect(['refused', 'reduction-only', 'settlement-allowed', 'not-a-write', 'outside-workspace']).toContain(entry.readonly);
+      expect(['refused', 'reduction-only', 'settlement-allowed', 'not-a-write', 'outside-workspace', 'operator-override']).toContain(entry.readonly);
       expect(['projected', 'no-record-data', 'n/a']).toContain(entry.masks);
       if (entry.proof === 'GAP') gaps++;
       else if (entry.proof.startsWith('operator-only:')) {

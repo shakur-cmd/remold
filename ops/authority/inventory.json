@@ -245,9 +245,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "Delegation revocation changes actual REST read projection while independent human grants survive"
+    "proof": "Delegation revocation changes actual REST read projection while independent human grants survive",
+    "reason": "removes a delegated grant"
   },
   {
     "id": "authority/grants:fireAgent",
@@ -255,9 +256,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail"
+    "proof": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail",
+    "reason": "fires a managed agent"
   },
   {
     "id": "authority/migration:freeze",
@@ -265,9 +267,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "migration, retained old MCP/REST transcript"
+    "proof": "migration, retained old MCP/REST transcript",
+    "reason": "freezes legacy wildcard authority at current objects"
   },
   {
     "id": "authority/migration:migrateAgent",
@@ -275,9 +278,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "migration, retained old MCP/REST transcript"
+    "proof": "migration, retained old MCP/REST transcript",
+    "reason": "replaces a legacy wildcard with concrete pre-freeze objects"
   },
   {
     "id": "authority/policies:setMember",
@@ -445,7 +449,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient"
   },
@@ -465,9 +469,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "operator-override",
     "masks": "n/a",
-    "proof": "operator-only: internal function with no HTTP route or public caller"
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operator releases a spending hold; readonly still refuses claims and permits"
   },
   {
     "id": "integrations/callbacks:callback",
@@ -475,7 +480,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
   },
@@ -485,7 +490,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
   },
@@ -495,7 +500,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
@@ -585,9 +590,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write",
+    "reason": "stops the agent's own work"
   },
   {
     "id": "integrations/commands:adopt",
@@ -625,9 +631,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "operator-only: internal function with no HTTP route or public caller"
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "global provider registry, not workspace data"
   },
   {
     "id": "integrations/connections:registerSecret",
@@ -695,7 +702,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
   },
@@ -725,7 +732,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
   },
@@ -735,7 +742,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Unresolved prior consumed attempt survives ' + path + ' and releases only after final current-step absence"
   },
@@ -755,7 +762,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
@@ -765,7 +772,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
@@ -775,7 +782,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
   },
@@ -785,7 +792,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
   },
@@ -795,7 +802,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
   },
@@ -805,7 +812,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
   },
@@ -825,7 +832,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -835,7 +842,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -845,7 +852,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -855,7 +862,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -895,7 +902,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -905,7 +912,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -915,7 +922,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
@@ -935,7 +942,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
   },
@@ -945,7 +952,7 @@
     "visibility": "internal",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
     "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
   },
@@ -1015,9 +1022,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "operator-override",
     "masks": "n/a",
-    "proof": "operator-only: internal function with no HTTP route or public caller"
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "sets or lifts the readonly flag itself; must stay available"
   },
   {
     "id": "orgs:create",
@@ -1105,9 +1113,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "limits writes per key without starving reads or other agents"
+    "proof": "limits writes per key without starving reads or other agents",
+    "reason": "per-key rate counter, no workspace data"
   },
   {
     "id": "records:list",
@@ -1305,9 +1314,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "schedules only bounded operational fields and survives scheduler failure"
+    "proof": "schedules only bounded operational fields and survives scheduler failure",
+    "reason": "operational metrics only"
   },
   {
     "id": "telemetry:recordProbe",
@@ -1315,9 +1325,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "schedules only bounded operational fields and survives scheduler failure"
+    "proof": "schedules only bounded operational fields and survives scheduler failure",
+    "reason": "operational metrics only"
   },
   {
     "id": "telemetry:probe",
@@ -1325,9 +1336,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "operator-only: internal function with no HTTP route or public caller"
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operational metrics only"
   },
   {
     "id": "telemetry:purge",
@@ -1335,9 +1347,10 @@
     "visibility": "internal",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
+    "reason": "operational metrics only"
   },
   {
     "id": "telemetry:report",
@@ -1425,9 +1438,10 @@
     "visibility": "scheduled",
     "writes": true,
     "principal": "scheduler",
-    "readonly": "settlement-allowed",
+    "readonly": "outside-workspace",
     "masks": "no-record-data",
-    "proof": "schedules only bounded operational fields and survives scheduler failure"
+    "proof": "schedules only bounded operational fields and survives scheduler failure",
+    "reason": "operational metrics only"
   },
   {
     "id": "cron REST telemetry probe",
@@ -1435,9 +1449,10 @@
     "visibility": "cron",
     "writes": true,
     "principal": "scheduler",
-    "readonly": "settlement-allowed",
+    "readonly": "outside-workspace",
     "masks": "no-record-data",
-    "proof": "operator-only: internal function with no HTTP route or public caller"
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operational metrics only"
   },
   {
     "id": "cron Expire operational metrics",
@@ -1445,9 +1460,10 @@
     "visibility": "cron",
     "writes": true,
     "principal": "scheduler",
-    "readonly": "settlement-allowed",
+    "readonly": "outside-workspace",
     "masks": "no-record-data",
-    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
+    "reason": "operational metrics only"
   },
   {
     "id": "HTTP GET /api/v1/_probe",
@@ -1685,7 +1701,7 @@
     "visibility": "http",
     "writes": true,
     "principal": "adapter",
-    "readonly": "settlement-allowed",
+    "readonly": "refused",
     "masks": "no-record-data",
     "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
   },
@@ -1835,9 +1851,10 @@
     "visibility": "scheduled",
     "writes": true,
     "principal": "scheduler",
-    "readonly": "settlement-allowed",
+    "readonly": "outside-workspace",
     "masks": "no-record-data",
-    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
+    "reason": "operational metrics only"
   },
   {
     "id": "lib/shape:idsBelong",

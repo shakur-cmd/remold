@@ -37,7 +37,7 @@ export const registerProvider = internalMutation({ args: { provider: v.string(),
   return existing ? ctx.db.patch(existing._id, { enabled: args.enabled, finalityRules: args.finalityRules ?? [] }) : ctx.db.insert('integrationProviders', { ...args, finalityRules: args.finalityRules ?? [] });
 } });
 export const registerSecret = internalMutation({ args: { orgId: v.id('orgs'), provider: v.string(), environment: v.string(), account: v.string(), handle: v.string() }, handler: async (ctx, args) => {
-  await provider(ctx, args.provider); if (!(await ctx.db.get(args.orgId))) fail('NOT_FOUND');
+  await provider(ctx, args.provider); await writable(ctx, args.orgId);
   if (!/^vault:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(args.handle)) fail('VALIDATION', 'Opaque vault reference required');
   return ctx.db.insert('secretReferences', { ...args, active: true, version: 1 });
 } });

@@ -156,4 +156,44 @@ export async function replaySweeps({ runtime, tenant, test }) {
       assert.ok(response.status < 500, path + ' failed: ' + text); assert.ok(!text.includes(canary), path + ' leaked a hidden field value');
     }
   });
+
+  await test('Operator-internal and adapter paths behave under readonly exactly as the inventory labels them', async () => {
+    const w = await workspace(runtime, tenant, 'internal-sweep'), { t } = w, orgId = t.orgId;
+    const legacyAgent = w.agent.agentId;
+    const cli = (fn, args) => () => runtime.run(fn, args);
+    const adapter = (name, body) => async () => { const r = await request(runtime, t.adapterKey, 'POST', '/api/integrations/v1/' + name, body); if (!r.ok) throw new Error(r.status + ' ' + await r.text()); };
+    const intentId = await t.human.mutation(anyApi['integrations/bindings'].provision, { orgId, connectionId: t.connectionId, logical: 'late-bind', kind: 'model', remove: false });
+    const recipientIntent = await t.human.mutation(anyApi['integrations/bindings'].provision, { orgId, connectionId: t.connectionId, logical: 'sweep-recipient', recipient: 'sweep-recipient', kind: 'recipient', remove: false });
+    const recipientBinding = (await (await request(runtime, t.adapterKey, 'POST', '/api/integrations/v1/bind', { intentId: recipientIntent, externalId: 'sweep-recipient' })).json()).bindingId;
+    const cursorArgs = { resource: 'sweep', traversal: 'one', from: 0, page: 1, items: [], end: true, checkpoint: 1 };
+    const calls = {
+      'integrations/connections:registerSecret': cli('integrations/connections:registerSecret', { orgId, provider: 'fake', environment: 'test', account: 'ro-' + randomUUID(), handle: 'vault:' + randomUUID() }),
+      'integrations/budgets:configure': cli('integrations/budgets:configure', { orgId, cap: 11, maxConcurrent: 3, maxPerRun: 8, maxSteps: 3, maxRecipients: 10 }),
+      'seed:ensureStandard': cli('seed:ensureStandard', { orgId }),
+      'seed:backfillRefs': cli('seed:backfillRefs', { orgId }),
+      'seed:releaseStandardSlots': cli('seed:releaseStandardSlots', { orgId }),
+      'seed:demoAs': cli('seed:demoAs', { orgId, userId: t.userId }),
+      'agents:createAs': cli('agents:createAs', { orgId, userId: t.userId, name: 'denied' }),
+      'authority/migration:freeze': cli('authority/migration:freeze', { orgId }),
+      'authority/migration:migrateAgent': cli('authority/migration:migrateAgent', { agentId: legacyAgent }),
+      'integrations/budgets:clearAnomaly': cli('integrations/budgets:clearAnomaly', { orgId }),
+      'integrations/connections:registerProvider': cli('integrations/connections:registerProvider', { provider: 'fake', enabled: true }),
+      'HTTP POST /api/integrations/v1/bind': adapter('bind', { intentId, externalId: 'late-bind' }),
+      'HTTP POST /api/integrations/v1/page': adapter('page', cursorArgs),
+      'HTTP POST /api/integrations/v1/callback': adapter('callback', { bindingId: recipientBinding, eventId: 'ro', body: '{"version":1,"state":"suppressed","channel":"email","purpose":"marketing"}' }),
+      // Last, because it lifts the hold.
+      'ops:setFlag': cli('ops:setFlag', { orgId, flag: 'readonly', enabled: false, reason: 'sweep:lift' }),
+    };
+    runtime.run('authorityFixture:flags', { orgId, readonly: true });
+    const observed = {};
+    for (const [id, call] of Object.entries(calls)) {
+      const row = inventory.find(entry => entry.id === id); assert.ok(row, 'inventory row missing for ' + id);
+      let text; try { await call(); text = 'allowed'; } catch (error) { text = 'refused: ' + String(error?.stderr || error?.message || error).slice(0, 300); }
+      observed[id] = text;
+      if (row.readonly === 'refused') assert.match(text, /read only/, id + ' is labelled refused but was: ' + text.slice(0, 200));
+      else assert.equal(text, 'allowed', id + ' is labelled ' + row.readonly + ' but was: ' + text.slice(0, 200));
+    }
+    assert.equal((await t.human.query(anyApi.orgs.get, { orgId })).flags?.readonly, false, 'ops:setFlag lifts readonly');
+    console.log('INTERNAL READONLY SWEEP', JSON.stringify(observed));
+  });
 }
