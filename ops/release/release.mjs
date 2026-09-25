@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, lstatSync, mkdirSync, existsSync, realpathSync } from 'node:fs';
 import { resolve, join, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { restoreDrill } from './snapshot.mjs';
+import { restoreDrill, canonical } from './snapshot.mjs';
 
 const manifestName = 'release-manifest.json';
 export const digest = value => createHash('sha256').update(value).digest('hex');
@@ -63,7 +63,8 @@ export function validateReleaseNotes(notes, changedFiles) {
   if (notes.class === 'ui-only' && changedFiles.some(path => !cosmetic(path))) throw new Error('Potentially persisted behavior cannot use a UI-only snapshot exemption');
   return { class: notes.class, rollbackTarget: notes.rollbackTarget };
 }
-export function preflight(manifest, targetSha, targetSchemaDigest, snapshotReceipt, manifestSha256) {
+const appDocuments = canonical => Object.values(canonical?.tables ?? {}).reduce((sum, table) => sum + table.count, 0);
+export function preflight(manifest, targetSha, targetSchemaDigest, snapshotReceipt, manifestSha256, expectedBackup) {
   requireSha(targetSha);
   if (targetSha !== manifest.release.rollbackTarget) throw new Error('Rollback target is not the declared compatible commit');
   if (targetSchemaDigest !== manifest.schemaSha256) throw new Error('Rollback schema differs; destructive or earlier schema rollback is unsupported');
@@ -75,6 +76,9 @@ export function preflight(manifest, targetSha, targetSchemaDigest, snapshotRecei
     if (!/^[a-f0-9]{64}$/.test(manifestSha256 ?? '')) throw new Error('Snapshot receipt requires the pinned manifest digest');
     if (snapshotReceipt.manifestSha256 !== manifestSha256) throw new Error('Snapshot receipt manifest digest does not match pinned artifact');
     if (!/^[a-f0-9]{64}$/.test(snapshotReceipt.snapshotSha256 ?? '')) throw new Error('Snapshot receipt has no valid snapshot SHA256');
+    if (!/^[a-f0-9]{64}$/.test(expectedBackup?.snapshotSha256 ?? '') || !expectedBackup.canonical) throw new Error('Persisted preflight requires the expected backup');
+    if (appDocuments(expectedBackup.canonical) > 0 && appDocuments(snapshotReceipt.canonical) === 0) throw new Error('Snapshot receipt restored empty app tables but the expected backup has data');
+    if (snapshotReceipt.snapshotSha256 !== expectedBackup.snapshotSha256) throw new Error('Snapshot receipt is not for the expected backup');
     return { snapshot: 'restored-and-validated', snapshotSha256: snapshotReceipt.snapshotSha256, deploymentAuthorized: false };
   }
   return { snapshot: 'not-required', deploymentAuthorized: false };
@@ -141,7 +145,9 @@ if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToP
       const manifest = verifyArtifact(directory, sha, third);
       const schema = execFileSync('git', ['show', `${manifest.release.rollbackTarget}:convex/schema.ts`]);
       const receipt = notes ? JSON.parse(readFileSync(notes, 'utf8')) : undefined;
-      console.log(JSON.stringify(preflight(manifest, manifest.release.rollbackTarget, digest(schema), receipt, third)));
+      // The operator names the real backup file; its bytes, not the receipt, define the expected snapshot.
+      const expected = snapshot ? { snapshotSha256: digest(readFileSync(snapshot)), canonical: canonical(snapshot) } : undefined;
+      console.log(JSON.stringify(preflight(manifest, manifest.release.rollbackTarget, digest(schema), receipt, third, expected)));
     } else if (command === 'snapshot') {
       const manifest = verifyArtifact(directory, sha, third);
       assertClean(notes, sha);
@@ -149,7 +155,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToP
       const drill = await restoreDrill({ source: notes, snapshot });
       const receipt = { releaseSha: sha, manifestSha256: third, snapshotSha256: drill.snapshotSha256, candidateSchemaSha256: drill.candidateSchemaSha256, result: drill.result, ...(drill.reason ? { reason: drill.reason } : {}), canonical: drill.canonical, at: new Date().toISOString() };
       writeFileSync(receiptOut, JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' }); console.log(JSON.stringify(receipt)); if (drill.result !== 'PASS') process.exitCode = 1;
-    } else throw new Error('Usage: release.mjs base <head-sha> <base-sha> <pull_request|push> | build <new-external-output> <sha> <base-sha> <notes.json> | verify|preflight <artifact> <sha> <pinned-manifest-sha256> [receipt.json] | snapshot <artifact> <sha> <pinned-manifest-sha256> <checkout-dir> <snapshot.zip> <receipt-out.json>');
+    } else throw new Error('Usage: release.mjs base <head-sha> <base-sha> <pull_request|push> | build <new-external-output> <sha> <base-sha> <notes.json> | verify|preflight <artifact> <sha> <pinned-manifest-sha256> [receipt.json expected-backup.zip] | snapshot <artifact> <sha> <pinned-manifest-sha256> <checkout-dir> <snapshot.zip> <receipt-out.json>');
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;
