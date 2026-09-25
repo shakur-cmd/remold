@@ -1,0 +1,33 @@
+## receipt releaseSha changed to another commit
+Snapshot receipt release SHA does not match artifact
+exit=1
+## receipt manifestSha256 changed
+Snapshot receipt manifest digest does not match pinned artifact
+exit=1
+## receipt candidateSchemaSha256 changed
+Snapshot receipt schema digest does not match artifact
+exit=1
+## receipt result FAIL
+Snapshot receipt did not pass restored-snapshot validation
+exit=1
+## receipt snapshotSha256 malformed
+Snapshot receipt has no valid snapshot SHA256
+exit=1
+## good receipt but wrong pinned manifest digest on command line
+Release manifest digest mismatch
+exit=1
+## GAP PROBE: receipt with arbitrary snapshotSha256 and no canonical data
+{"snapshot":"restored-and-validated","snapshotSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","deploymentAuthorized":false}
+exit=0
+## GAP PROBE: hand-written receipt, no drill ever run
+{"snapshot":"restored-and-validated","snapshotSha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","deploymentAuthorized":false}
+exit=0
+## snapshot command with a wrong pin
+Release manifest digest mismatch
+exit=1
+## GAP PROBE: snapshot command over an emptied snapshot (0 users, 0 records)
+exit=0
+receipt result PASS records {'count': 0, 'sha256': '4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945'} users {'count': 0, 'sha256': '4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945'}
+## GAP PROBE: preflight with the emptied-snapshot receipt
+{"snapshot":"restored-and-validated","snapshotSha256":"2f5a7e5595b251b4af90dab4e3eb0e6dbcdc4a899f5507d1f316b2b5dfc0e0d5","deploymentAuthorized":false}
+exit=0

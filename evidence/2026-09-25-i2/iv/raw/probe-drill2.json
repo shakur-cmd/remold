@@ -1,0 +1,52 @@
+{
+  "rezipUnchanged": {
+    "result": "PASS",
+    "snapshotSha256": "579607ebb3f4d58627b3ec81ba2f73404b90da361654c1a266df9056c33f1077",
+    "records": {
+      "count": 250,
+      "sha256": "cbc274a768c9e9552d9e8c94aa5765ed2bd07e007fc7a19cd10c257a8a373ced"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "7a7121db0f329e17ac78060f65733ade6338fce786032fab88218382d9fab7f6"
+    }
+  },
+  "tamperedTitle": {
+    "result": "PASS",
+    "snapshotSha256": "c7d7b764a5264a643b025e02ea0c4048b19cf048021c94c5f932226272afa412",
+    "records": {
+      "count": 250,
+      "sha256": "d970a36d8a39bf24ec12bc301c08266f84fb392736767b77fb0fc05a8a27c0c4"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "7a7121db0f329e17ac78060f65733ade6338fce786032fab88218382d9fab7f6"
+    }
+  },
+  "invalidDoc": {
+    "result": "FAIL",
+    "reason": "✖ Schema validation failed.",
+    "snapshotSha256": "405067a7451b889db4c8fe32c8e3560d334b31cc5ff3d0b11d6d558b6b63a114",
+    "records": {
+      "count": 250,
+      "sha256": "2f39d3806160d438ad31f2990bec8a82fa93bf472ae9bf058e58b29ca4cb919f"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "7a7121db0f329e17ac78060f65733ade6338fce786032fab88218382d9fab7f6"
+    }
+  },
+  "emptiedAppTables": {
+    "result": "PASS",
+    "snapshotSha256": "2f5a7e5595b251b4af90dab4e3eb0e6dbcdc4a899f5507d1f316b2b5dfc0e0d5",
+    "records": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "users": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "originalSnapshotSha256": "92bf7d75904ddf993a9afbfd4fb6cc0ecde04479053fced95690826a969408a1"
+}

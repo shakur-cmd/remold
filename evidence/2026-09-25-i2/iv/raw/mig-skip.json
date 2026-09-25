@@ -1,0 +1,75 @@
+{
+  "sourceRootSha": "f1ae2371aba05185c9bb2473d4aa81db376762d1",
+  "sourceRootDirty": true,
+  "result": "FAIL",
+  "level": "SERVICE-local; synthetic fixture",
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-DuSgrF",
+  "checks": {
+    "wrapperRefusedEarlierTarget": true,
+    "rollbackWhilePartiallyMigrated": true
+  },
+  "limitations": [
+    "Managed backup snapshot restore is not tested",
+    "Production identities are not tested; old browser is a headless Chromium ConvexClient bundle built from the baseline source, not the full React app",
+    "No production deployment or release authorization"
+  ],
+  "baseline": {
+    "sourceHash": "f4392a4028242f472dd1e7c5979507952d92756b6c43370d371eb6e09c915f67",
+    "records": 1000,
+    "canonicalHash": "eb47e5fd0051aa49701cc3f507e1a8bd89a7ca1d25de7aa641425314bd40a9fb",
+    "schemaHash": "f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243"
+  },
+  "oldBrowser": {
+    "bundleSha256": "ca6c17254876003b36e13f0871d5ffdc84e9aa0f08b57cf25d19d90beb9dfa84",
+    "baselineSourceHash": "f4392a4028242f472dd1e7c5979507952d92756b6c43370d371eb6e09c915f67",
+    "auth": "data-uri JWKS",
+    "binary": {
+      "protocolVersion": "1.3",
+      "product": "HeadlessChrome/151.0.7922.34",
+      "revision": "@782af9cb30a53f54487e5d2e44738645a8ec457c",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+      "jsVersion": "15.1.206.8"
+    },
+    "loadId": "f8093a0a-fcee-4ef3-aa0c-5f09a066e517"
+  },
+  "oldMcpSourceHash": "5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e",
+  "expand": {
+    "sourceHash": "f173a14343f0df08634d16f600865444d4aa38d5696c27c840a165a866b6125f",
+    "schemaHash": "78d004c2139f314b8b292fdf5edb539d4a2644133bf91dc7056914ec80c54115"
+  },
+  "interruption": {
+    "cursor": "[1790344171481.0103,\"kh7c0rt16qwvdc9jqy2rp469fx8f2zdv\"]",
+    "error": "Uncaught Error: REHEARSAL_INTERRUPTED_400\n    at migrateOne (../convex/migrationBackfill.ts:11:105)\n    at async doOne (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:483:24)\n    at async handler (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:498:14)\n",
+    "isDone": false,
+    "latestStart": 1790344175315,
+    "name": "migrationBackfill:markRecords",
+    "processed": 400,
+    "state": "failed",
+    "markedRecords": 360,
+    "canonicalHash": "bd37bd0ff7b9e527f6efc4621b2ab6979c276830664a63c89ca329be4fc11f87"
+  },
+  "behavior": {
+    "expand": {
+      "effectiveRevision": 0,
+      "title": "Migration fixture 0000"
+    },
+    "migrate": {
+      "effectiveRevision": 1,
+      "title": "Migration fixture 0000"
+    },
+    "pending": {
+      "effectiveRevision": 0,
+      "title": "Migration fixture 0900"
+    },
+    "rollback": {
+      "effectiveRevision": 0,
+      "title": "Migration fixture 0000"
+    }
+  },
+  "migrate": {
+    "sourceHash": "cf3fe4b56461cd172cfdab78fcaa2b328290f2b7af9b5543e2e81fa1e3996f04",
+    "schemaHash": "78d004c2139f314b8b292fdf5edb539d4a2644133bf91dc7056914ec80c54115"
+  },
+  "error": "Expected values to be strictly equal:\n\n904 !== 1004\n",
+  "rootDeploymentConfigUnchanged": true
+}

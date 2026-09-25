@@ -1,0 +1,319 @@
+{
+  "level": "SERVICE-local; synthetic fixture",
+  "sourceSha": "f1ae2371aba05185c9bb2473d4aa81db376762d1",
+  "dirty": true,
+  "results": {
+    "seed": {
+      "out": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-MvG3dw/fixture.zip",
+      "sha256": "7cc9d8218f8801ac016546d1303cc8743c4457ebdb377dd7802e21daa4af7035",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "02147e3e26c6d8dd31590165522919ac1d188c806e7a1089c460d0220754e1ea"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "c2cf0633a5c714cdb7c0ccc6f4587b6c8af39ddc0c9dc710dd4cb691bdf27c28"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "6738dc3b035083c7339a5bfb42804163adbab36e12fd8d3eff8a3c72c6e42e82"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "ce9ff80ea767683efbc8bbefff0e1041bc5a79a4238cb865e0bd1a59b378a765"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "14946035ab7e4b962878c7d1f63e9575cf67fe522a1ed8678fbb8dab36d315ea"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "eab985c8f2ec42890763aa9b28d6137286242ed768686059664f433e882d0659"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "f14af19dd681c866c8db8331b522ad4e7493891b620818fac4d410054fb5a033"
+          }
+        },
+        "sha256": "4f80e929175ad65daa732d8b8e8113f27cbaece4576bc69e4a7c34111967e173",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      }
+    },
+    "green": {
+      "result": "PASS",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "02147e3e26c6d8dd31590165522919ac1d188c806e7a1089c460d0220754e1ea"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "c2cf0633a5c714cdb7c0ccc6f4587b6c8af39ddc0c9dc710dd4cb691bdf27c28"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "6738dc3b035083c7339a5bfb42804163adbab36e12fd8d3eff8a3c72c6e42e82"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "ce9ff80ea767683efbc8bbefff0e1041bc5a79a4238cb865e0bd1a59b378a765"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "14946035ab7e4b962878c7d1f63e9575cf67fe522a1ed8678fbb8dab36d315ea"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "eab985c8f2ec42890763aa9b28d6137286242ed768686059664f433e882d0659"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "f14af19dd681c866c8db8331b522ad4e7493891b620818fac4d410054fb5a033"
+          }
+        },
+        "sha256": "4f80e929175ad65daa732d8b8e8113f27cbaece4576bc69e4a7c34111967e173",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      },
+      "snapshotSha256": "7cc9d8218f8801ac016546d1303cc8743c4457ebdb377dd7802e21daa4af7035",
+      "candidateSchemaSha256": "f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243",
+      "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-iqD946"
+    },
+    "red": {
+      "result": "PASS",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "02147e3e26c6d8dd31590165522919ac1d188c806e7a1089c460d0220754e1ea"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "c2cf0633a5c714cdb7c0ccc6f4587b6c8af39ddc0c9dc710dd4cb691bdf27c28"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "6738dc3b035083c7339a5bfb42804163adbab36e12fd8d3eff8a3c72c6e42e82"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "ce9ff80ea767683efbc8bbefff0e1041bc5a79a4238cb865e0bd1a59b378a765"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "14946035ab7e4b962878c7d1f63e9575cf67fe522a1ed8678fbb8dab36d315ea"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "eab985c8f2ec42890763aa9b28d6137286242ed768686059664f433e882d0659"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "f14af19dd681c866c8db8331b522ad4e7493891b620818fac4d410054fb5a033"
+          }
+        },
+        "sha256": "4f80e929175ad65daa732d8b8e8113f27cbaece4576bc69e4a7c34111967e173",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      },
+      "snapshotSha256": "7cc9d8218f8801ac016546d1303cc8743c4457ebdb377dd7802e21daa4af7035",
+      "candidateSchemaSha256": "f93446e90dba39941bef49463e0de182b0830c8281c17fc3ad87544285f969af",
+      "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-36LIx1"
+    }
+  },
+  "limitations": [
+    "Loopback local Convex only; no cloud deployment or customer data",
+    "Synthetic fixture does not prove a managed backup export or independent verification"
+  ],
+  "error": "Incompatible schema unexpectedly accepted\n\n'PASS' !== 'FAIL'\n"
+}

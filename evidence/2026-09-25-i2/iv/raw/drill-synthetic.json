@@ -1,0 +1,426 @@
+{
+  "level": "SERVICE-local; synthetic fixture",
+  "sourceSha": "f1ae2371aba05185c9bb2473d4aa81db376762d1",
+  "dirty": false,
+  "results": {
+    "seed": {
+      "out": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-Alko7Q/fixture.zip",
+      "sha256": "33b1a5954835ccbbd6951fb01c3cb4d9cecc098f1e7254ed331c79c16958b133",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "59942f3b8ede0007b7cebe9be79a012422c3630ef5065850c13294db5d479d87"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "dd930aeb4ac95bc5ab5dfcffa3076cc8f744dcbf583c3b14838574e9fe09c138"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "dce8ead7718918af10a4c1d4ec61d0b8468cbe4c7d66f3fdd008f1d2c9a6997e"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "8fcbf4a2bae125462773126d46cb5f280930a5c281d40066fce1235548bd6667"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "0bc9631a431e4873f15185b83155adc53ff9fb8bfd3c2fa3ad3bceedea85ecc1"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "150227cc22b2ce42f48badf7fb5b8cb6cc29edbf01e8f8e16cb65c1045de78d3"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "4dce8dc24ae0482777404735776bd7d4b580325a9e53ac5dc11fbef4b4c9d820"
+          }
+        },
+        "sha256": "0db7c16de6801a80e07b2b5395c4d7ce44b89a64dadb312b37159caa971f0ad3",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      }
+    },
+    "green": {
+      "result": "PASS",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "59942f3b8ede0007b7cebe9be79a012422c3630ef5065850c13294db5d479d87"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "dd930aeb4ac95bc5ab5dfcffa3076cc8f744dcbf583c3b14838574e9fe09c138"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "dce8ead7718918af10a4c1d4ec61d0b8468cbe4c7d66f3fdd008f1d2c9a6997e"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "8fcbf4a2bae125462773126d46cb5f280930a5c281d40066fce1235548bd6667"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "0bc9631a431e4873f15185b83155adc53ff9fb8bfd3c2fa3ad3bceedea85ecc1"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "150227cc22b2ce42f48badf7fb5b8cb6cc29edbf01e8f8e16cb65c1045de78d3"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "4dce8dc24ae0482777404735776bd7d4b580325a9e53ac5dc11fbef4b4c9d820"
+          }
+        },
+        "sha256": "0db7c16de6801a80e07b2b5395c4d7ce44b89a64dadb312b37159caa971f0ad3",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      },
+      "snapshotSha256": "33b1a5954835ccbbd6951fb01c3cb4d9cecc098f1e7254ed331c79c16958b133",
+      "candidateSchemaSha256": "f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243",
+      "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-Bpd5FB"
+    },
+    "red": {
+      "result": "FAIL",
+      "reason": "✖ Schema validation failed.",
+      "snapshotSha256": "33b1a5954835ccbbd6951fb01c3cb4d9cecc098f1e7254ed331c79c16958b133",
+      "candidateSchemaSha256": "a1e0ebe5b5098eea34f7eda4e1b9d0ddb89107355dca007d5c4b151c3f3e669f",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "59942f3b8ede0007b7cebe9be79a012422c3630ef5065850c13294db5d479d87"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "dd930aeb4ac95bc5ab5dfcffa3076cc8f744dcbf583c3b14838574e9fe09c138"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "dce8ead7718918af10a4c1d4ec61d0b8468cbe4c7d66f3fdd008f1d2c9a6997e"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "8fcbf4a2bae125462773126d46cb5f280930a5c281d40066fce1235548bd6667"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "0bc9631a431e4873f15185b83155adc53ff9fb8bfd3c2fa3ad3bceedea85ecc1"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "150227cc22b2ce42f48badf7fb5b8cb6cc29edbf01e8f8e16cb65c1045de78d3"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "4dce8dc24ae0482777404735776bd7d4b580325a9e53ac5dc11fbef4b4c9d820"
+          }
+        },
+        "sha256": "0db7c16de6801a80e07b2b5395c4d7ce44b89a64dadb312b37159caa971f0ad3",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      },
+      "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-xvplTX"
+    },
+    "expansion": {
+      "result": "PASS",
+      "canonical": {
+        "tables": {
+          "_tables": {
+            "count": 15,
+            "sha256": "fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"
+          },
+          "agentInbox": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "agents": {
+            "count": 1,
+            "sha256": "59942f3b8ede0007b7cebe9be79a012422c3630ef5065850c13294db5d479d87"
+          },
+          "events": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "fields": {
+            "count": 38,
+            "sha256": "dd930aeb4ac95bc5ab5dfcffa3076cc8f744dcbf583c3b14838574e9fe09c138"
+          },
+          "invites": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "links": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "members": {
+            "count": 1,
+            "sha256": "dce8ead7718918af10a4c1d4ec61d0b8468cbe4c7d66f3fdd008f1d2c9a6997e"
+          },
+          "objects": {
+            "count": 7,
+            "sha256": "8fcbf4a2bae125462773126d46cb5f280930a5c281d40066fce1235548bd6667"
+          },
+          "opsEvents": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsMetrics": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "opsProbes": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "orgs": {
+            "count": 1,
+            "sha256": "0bc9631a431e4873f15185b83155adc53ff9fb8bfd3c2fa3ad3bceedea85ecc1"
+          },
+          "records": {
+            "count": 250,
+            "sha256": "150227cc22b2ce42f48badf7fb5b8cb6cc29edbf01e8f8e16cb65c1045de78d3"
+          },
+          "suggestions": {
+            "count": 0,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          "users": {
+            "count": 1,
+            "sha256": "4dce8dc24ae0482777404735776bd7d4b580325a9e53ac5dc11fbef4b4c9d820"
+          }
+        },
+        "sha256": "0db7c16de6801a80e07b2b5395c4d7ce44b89a64dadb312b37159caa971f0ad3",
+        "skipped": [
+          "README.md",
+          "_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/documents.jsonl",
+          "_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl",
+          "_components/rateLimiter/_tables/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/documents.jsonl",
+          "_components/rateLimiter/pendingUpdates/generated_schema.jsonl",
+          "_components/rateLimiter/rateLimits/documents.jsonl",
+          "_components/rateLimiter/rateLimits/generated_schema.jsonl",
+          "agentInbox/generated_schema.jsonl",
+          "agents/generated_schema.jsonl",
+          "events/generated_schema.jsonl",
+          "fields/generated_schema.jsonl",
+          "invites/generated_schema.jsonl",
+          "links/generated_schema.jsonl",
+          "members/generated_schema.jsonl",
+          "objects/generated_schema.jsonl",
+          "opsEvents/generated_schema.jsonl",
+          "opsMetrics/generated_schema.jsonl",
+          "opsProbes/generated_schema.jsonl",
+          "orgs/generated_schema.jsonl",
+          "records/generated_schema.jsonl",
+          "suggestions/generated_schema.jsonl",
+          "users/generated_schema.jsonl"
+        ]
+      },
+      "snapshotSha256": "33b1a5954835ccbbd6951fb01c3cb4d9cecc098f1e7254ed331c79c16958b133",
+      "candidateSchemaSha256": "f93446e90dba39941bef49463e0de182b0830c8281c17fc3ad87544285f969af",
+      "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-fuVcbb"
+    },
+    "tamper": {
+      "originalSha256": "0db7c16de6801a80e07b2b5395c4d7ce44b89a64dadb312b37159caa971f0ad3",
+      "tamperedSha256": "83c2f22e14201b853e5402683557368927a52cb8b68347b198501bdb83b08911"
+    }
+  },
+  "limitations": [
+    "Loopback local Convex only; no cloud deployment or customer data",
+    "Synthetic fixture does not prove a managed backup export or independent verification"
+  ]
+}

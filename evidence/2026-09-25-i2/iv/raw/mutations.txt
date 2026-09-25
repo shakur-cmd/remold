@@ -1,0 +1,24 @@
+ ops/release/snapshot-drill.mjs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+## drill with red candidate weakened to optional
+exit=1
+error: Incompatible schema unexpectedly accepted
+
+'PASS' !== 'FAIL'
+
+## mutant: s|if (snapshotReceipt.releaseSha !== manifest.sha) throw|if (false) throw|
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+ℹ pass 15
+ℹ fail 1
+## mutant: s|if (snapshotReceipt.manifestSha256 !== manifestSha256) throw|if (false) throw|
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+ℹ pass 15
+ℹ fail 1
+## mutant: s|if (snapshotReceipt.candidateSchemaSha256 !== manifest.schemaSha256) throw|if (false) throw|
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+ℹ pass 15
+ℹ fail 1
+## mutant: s|if (!snapshotReceipt) throw|if (false) throw|
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+ℹ pass 15
+ℹ fail 1

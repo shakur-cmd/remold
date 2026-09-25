@@ -1,0 +1,246 @@
+$ node ops/release/release.mjs build /tmp/i2iv/art f1ae2371aba05185c9bb2473d4aa81db376762d1 bfb37cb4c1e4d141e27ab910ec84d77788074ab0 ops/release/notes.json
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv[39m
+
+ [32m✓[39m convex/members.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 107[2mms[22m[39m
+ [32m✓[39m convex/applyChange.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 136[2mms[22m[39m
+ [32m✓[39m convex/capture.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 151[2mms[22m[39m
+ [32m✓[39m convex/csv.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 152[2mms[22m[39m
+ [32m✓[39m convex/rest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 220[2mms[22m[39m
+ [32m✓[39m convex/suggestions.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 236[2mms[22m[39m
+[90mstderr[2m | convex/telemetry.test.ts[2m > [22m[2mschedules only bounded operational fields and survives scheduler failure
+[22m[39mOperational metric scheduling failed
+
+ [32m✓[39m convex/telemetry.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m convex/fixes.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 272[2mms[22m[39m
+ [32m✓[39m convex/ops.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m convex/agentSafety.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 338[2mms[22m[39m
+ [32m✓[39m convex/invites.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m convex/agents.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m convex/diff.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m convex/refs.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+ [32m✓[39m convex/slots.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m convex/identity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/lib/fields.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m convex/seed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m src/lib/identity-route.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m convex/inbox.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m convex/related.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32m✓[39m src/lib/csv.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m convex/isolation.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 50[2mms[22m[39m
+ [32m✓[39m src/lib/identity-session.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m convex/rateLimit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 596[2mms[22m[39m
+   [33m[2m✓[22m[39m limits writes per key without starving reads or other agents[33m 454[2mms[22m[39m
+[90mstderr[2m | file:/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1076:21
+[22m[39mError when running scheduled function telemetry:record Error: Invalid operational span
+    at handler [90m(/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mconvex/telemetry.ts:16:228[90m)[39m
+    at [90mfile:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/[4mconvex-test[24m/dist/index.js:1970:83
+[90m    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)[39m
+    at runWithGlobalOverrides [90m(file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/[4mconvex-test[24m/dist/index.js:1667:35[90m)[39m
+    at handler [90m(file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/[4mconvex-test[24m/dist/index.js:1970:24[90m)[39m
+    at invokeFunction [90m(file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/[4mconvex[24m/dist/esm/server/impl/registration_impl.js:56:36[90m)[39m
+    at invokeMutation [90m(file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/[4mconvex[24m/dist/esm/server/impl/registration_impl.js:42:24[90m)[39m
+    at Function.func.invokeMutation [90m(file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/[4mconvex[24m/dist/esm/server/impl/registration_impl.js:125:38[90m)[39m
+    at invokeRaw [90m(file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/[39mnode_modules/[4m.pnpm[24m/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/[4mconvex-test[24m/dist/index.js:1987:39[90m)[39m
+[90m    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)[39m
+
+
+[2m Test Files [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m      Tests [22m [1m[32m73 passed[39m[22m[90m (73)[39m
+[2m   Start at [22m 09:46:25
+[2m   Duration [22m 835ms[2m (tests 66%, import 16%, transform 16%, worker 2%)[22m
+
+$ tsc -b && tsc --noEmit -p convex
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.263959ms)
+✔ changed, missing and injected artifact bytes are refused (1.3425ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (49.683167ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.112667ms)
+✔ version metadata must name the artifact commit (0.748709ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.697417ms)
+✔ failed real process halts checks before a later process can run (21.053458ms)
+✔ successful real processes run in order (39.984666ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.219041ms)
+✔ missing metadata and destructive contraction are refused (0.081292ms)
+✔ a rollback to a schema without the expanded fields is refused (0.100208ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.389875ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.032375ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (25.664208ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (19.756458ms)
+✔ PR changes use their common ancestor when the target branch advances independently (206.334458ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 404.761875
+$ vitest run src
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv/packages/mcp[39m
+
+ [32m✓[39m src/client.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 09:46:30
+[2m   Duration [22m 80ms[2m (transform 41%, tests 38%, import 16%, worker 5%)[22m
+
+$ tsc
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 2113 modules transformed.
+
+(!) outDir /tmp/i2iv/art is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../../../../../../tmp/i2iv/art/index.html                                              0.45 kB │ gzip:   0.28 kB
+../../../../../../tmp/i2iv/art/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+../../../../../../tmp/i2iv/art/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+../../../../../../tmp/i2iv/art/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+../../../../../../tmp/i2iv/art/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+../../../../../../tmp/i2iv/art/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+../../../../../../tmp/i2iv/art/assets/index-DDQvmeqM.css                              67.96 kB │ gzip:  12.37 kB
+../../../../../../tmp/i2iv/art/assets/index-Dak1Uwcs.js                              665.95 kB │ gzip: 204.17 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 373ms
+{"sha":"f1ae2371aba05185c9bb2473d4aa81db376762d1","manifestSha256":"18ca03af2bc23615210c34cf6e025d6620b9e74dd40a014afac855f155afc504","output":"/tmp/i2iv/art","deploymentAuthorized":false}
+exit=0
+PIN=18ca03af2bc23615210c34cf6e025d6620b9e74dd40a014afac855f155afc504
+$ node ops/release/release.mjs preflight /tmp/i2iv/art f1ae2371aba05185c9bb2473d4aa81db376762d1 18ca03af2bc23615210c34cf6e025d6620b9e74dd40a014afac855f155afc504
+Blocked: actual restored-snapshot validation and independent evidence integration are not available
+exit=1
+$ node ops/release/release.mjs snapshot /tmp/i2iv/art f1ae2371aba05185c9bb2473d4aa81db376762d1 18ca03af2bc23615210c34cf6e025d6620b9e74dd40a014afac855f155afc504 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-iv /tmp/i2iv/fixture.zip /tmp/i2iv/r-good.json
+- Importing /tmp/i2iv/fixture.zip (20.8 KiB)
+
+- Importing /tmp/i2iv/fixture.zip (20.8 KiB)
+
+Import change summary:
+table       | create | delete |
+-------------------------------
+agentInbox  | 0      | 0 of 0 |
+agents      | 1      | 0 of 0 |
+events      | 0      | 0 of 0 |
+fields      | 38     | 0 of 0 |
+invites     | 0      | 0 of 0 |
+links       | 0      | 0 of 0 |
+members     | 1      | 0 of 0 |
+objects     | 7      | 0 of 0 |
+opsEvents   | 0      | 0 of 0 |
+opsMetrics  | 0      | 0 of 0 |
+opsProbes   | 0      | 0 of 0 |
+orgs        | 1      | 0 of 0 |
+records     | 250    | 0 of 0 |
+suggestions | 0      | 0 of 0 |
+users       | 1      | 0 of 0 |
+Component rateLimiter
+table          | create | delete |
+----------------------------------
+pendingUpdates | 0      | 0 of 0 |
+rateLimits     | 0      | 0 of 0 |
+Component rateLimiter/batchWorker
+table       | create | delete |
+-------------------------------
+workerState | 0      | 0 of 0 |
+workers     | 0      | 0 of 0 |
+Once the import has started, it will run in the background.
+Interrupting `npx convex import` will not cancel it.
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+✔ Imported "workers" in 'rateLimiter/batchWorker' (0 documents)
+- Importing "pendingUpdates" in 'rateLimiter'
+
+✔ Imported "pendingUpdates" in 'rateLimiter' (0 documents)
+✔ Imported "workerState" in 'rateLimiter/batchWorker' (0 documents)
+- Importing "opsProbes"
+
+✔ Imported "opsProbes" (0 documents)
+✔ Imported "links" (0 documents)
+✔ Imported "opsMetrics" (0 documents)
+- Importing "opsMetrics"
+
+✔ Imported "agentInbox" (0 documents)
+- Importing "suggestions"
+
+✔ Imported "suggestions" (0 documents)
+✔ Imported "invites" (0 documents)
+- Importing "invites"
+
+✔ Imported "rateLimits" in 'rateLimiter' (0 documents)
+- Importing "events"
+
+✔ Imported "events" (0 documents)
+✔ Imported "opsEvents" (0 documents)
+- Importing "opsEvents"
+
+✔ Imported "users" (1 documents)
+- Imported "users" (1 documents)
+
+- Importing "orgs"
+
+✔ Imported "orgs" (1 documents)
+- Importing "members"
+
+✔ Imported "members" (1 documents)
+- Importing "agents"
+
+✔ Imported "agents" (1 documents)
+✔ Imported "objects" (7 documents)
+- Imported "objects" (7 documents)
+
+- Importing "fields"
+
+✔ Imported "fields" (38 documents)
+- Imported "fields" (38 documents)
+
+- Importing "records"
+
+✔ Imported "records" (250 documents)
+- Imported "records" (250 documents)
+
+✔ Added 299 documents.
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790343993633049000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-gdejBf/restored.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-gdejBf/restored.zip
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790343995307248000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-gdejBf/candidate.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-gdejBf/candidate.zip
+{"releaseSha":"f1ae2371aba05185c9bb2473d4aa81db376762d1","manifestSha256":"18ca03af2bc23615210c34cf6e025d6620b9e74dd40a014afac855f155afc504","snapshotSha256":"92bf7d75904ddf993a9afbfd4fb6cc0ecde04479053fced95690826a969408a1","candidateSchemaSha256":"f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243","result":"PASS","canonical":{"tables":{"_tables":{"count":15,"sha256":"fb2b519bd4e9a3b6fad01e1677eedd22810243e81c2198a75885988e3297a3e4"},"agentInbox":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"agents":{"count":1,"sha256":"942db70c37dbaf1ec41bcce88bbc9919107e8003f68173ec7651e358c05590c7"},"events":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"fields":{"count":38,"sha256":"09be3cd4b0fafde80ca239e09db3ea8e033ae268229faa183187f1b2f39cafe8"},"invites":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"links":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"members":{"count":1,"sha256":"6dd6d16311094ea507a9c641f62b5b1f8c11bb16bb027d26e91d564a84ac4ee2"},"objects":{"count":7,"sha256":"74db33dacc94dbc021b9a28abebf20b59af0f2fc4c6d66b841fe99e696f9f828"},"opsEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsMetrics":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsProbes":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"orgs":{"count":1,"sha256":"86031d74d80f778aabaca16a0a4737c6557babb258577eefe436a8d814dccb33"},"records":{"count":250,"sha256":"cbc274a768c9e9552d9e8c94aa5765ed2bd07e007fc7a19cd10c257a8a373ced"},"suggestions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"users":{"count":1,"sha256":"7a7121db0f329e17ac78060f65733ade6338fce786032fab88218382d9fab7f6"}},"sha256":"e609a03dd97986a7c81dbfed5cb8d0e605124d7e920e0fe813269758146ec15a","skipped":["README.md","_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl","_components/rateLimiter/_components/batchWorker/workers/documents.jsonl","_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl","_components/rateLimiter/_tables/documents.jsonl","_components/rateLimiter/pendingUpdates/documents.jsonl","_components/rateLimiter/pendingUpdates/generated_schema.jsonl","_components/rateLimiter/rateLimits/documents.jsonl","_components/rateLimiter/rateLimits/generated_schema.jsonl","agentInbox/generated_schema.jsonl","agents/generated_schema.jsonl","events/generated_schema.jsonl","fields/generated_schema.jsonl","invites/generated_schema.jsonl","links/generated_schema.jsonl","members/generated_schema.jsonl","objects/generated_schema.jsonl","opsEvents/generated_schema.jsonl","opsMetrics/generated_schema.jsonl","opsProbes/generated_schema.jsonl","orgs/generated_schema.jsonl","records/generated_schema.jsonl","suggestions/generated_schema.jsonl","users/generated_schema.jsonl"]},"at":"2026-09-25T13:46:35.369Z"}
+exit=0
+$ node ops/release/release.mjs preflight /tmp/i2iv/art f1ae2371aba05185c9bb2473d4aa81db376762d1 18ca03af2bc23615210c34cf6e025d6620b9e74dd40a014afac855f155afc504 /tmp/i2iv/r-good.json
+{"snapshot":"restored-and-validated","snapshotSha256":"92bf7d75904ddf993a9afbfd4fb6cc0ecde04479053fced95690826a969408a1","deploymentAuthorized":false}
+exit=0

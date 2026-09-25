@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 release rails: independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>I2 release rails: independent verification</h1>
+<div class="meta">2026-09-25 · PR #6 head <code>f1ae237</code> · checked by a fresh Opus 5.5 session, not the builder, in its own clean worktree · local and read-only only</div>
+
+<div class="decisions">
+<h2>Verdict and your calls</h2>
+<ul>
+  <li><b>Overall: PARTIAL.</b> Claims 2 and 4 pass. Claim 1 works as a schema check, but one part is overstated. Claim 3 passes for hosting. I did not re-check the "still signed in" part myself.</li>
+  <li><b>Snapshot gate gap (your call on whether to fix before merge).</b> Preflight checks that the receipt matches the commit, schema and manifest. It never checks <i>which</i> snapshot was restored. I got a PASS receipt, and a passing preflight, from a snapshot with every app table emptied (0 users, 0 records). A schema-valid edited snapshot also passes. So "tampered snapshot caught" only means the hash changes. Nothing refuses it. The smallest fix is for preflight to take the expected backup's SHA-256 from the operator and compare it to <code>snapshotSha256</code>.</li>
+  <li><b>Rollback target.</b> <code>3339517</code> is valid. <code>bfb37cb</code>, the release base, also passes and would roll back 37 fewer commits. Keep it or switch it. Neither was checked against a real deployed release.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Per claim</h2>
+<table>
+<tr><th>Claim</th><th>Rerun</th><th>Altered control (should fail)</th><th>Verdict</th></tr>
+<tr><td>1. Backups/restore gate</td><td>Unit tests 34/34 passed. The synthetic drill passed: green PASS, required field refused (<code>Schema validation failed</code>), optional PASS, hashes differ. The drill also ran on the builder's PR4 export: same snapshot SHA <code>3f6c1b02…</code> and the same results. End to end in the CLI: preflight Blocked without a receipt, then snapshot PASS, then preflight <code>restored-and-validated</code>, <code>deploymentAuthorized:false</code>.</td><td>All of these failed as they should: receipt releaseSha, manifestSha, schemaSha, result=FAIL, malformed snapshotSha, wrong pin on the command line, wrong pin to <code>snapshot</code>. The builder's own mutant (red made optional) exited 1. Deleting each of the 4 binding checks in <code>preflight</code> made 1 unit test fail each time. My extra candidates were refused: a type change (<code>title: v.number()</code>), removing <code>users.name</code>, and a snapshot doc with an invalid type.<br><b>These passed but should arguably be refused:</b> an emptied snapshot, a title-edited snapshot, a receipt with any 64-hex snapshotSha, and a hand-written receipt. The builder disclosed the hand-written one.</td><td><b>PARTIAL</b></td></tr>
+<tr><td>2. Old-browser migration/rollback</td><td>PASS. 1004 records, 400 migrated at the interruption, then rollback and resume. Same load id throughout, 10 browser writes, 12 subscription updates. Browser writes succeeded in the baseline, interrupted, migrate, rollback and resume phases, including while <code>inProgress</code> at 490, 651 and 835 processed. The red control (wrong key) FAILED with <code>UNAUTHENTICATED</code> before any observation was recorded.</td><td>M1: the backfill silently skipped titles ending in 7, and the run FAILED (<code>904 !== 1004</code>). M2: the expansion was made a required field, and the run FAILED (the expand deploy timed out). M3: reloading the page mid-run FAILED on the next browser write. The load-id assertion was not isolated, because the concurrent write loop trips first.</td><td><b>PASS</b> (SERVICE-local, synthetic)</td></tr>
+<tr><td>3. PR3 close-one cleanup</td><td>PR3 is CLOSED at <code>954bdfb</code>. <code>pr-3</code> root and <code>/version.json</code> return 404 (the Cloudflare no-worker page). <code>neat-squid-188.convex.cloud/version</code> returns 404. PR4 <code>/version.json</code> returns 200 <code>31c8434</code>, and <code>kindred-hyena-171</code> returns 200.</td><td>A made-up <code>pr-99</code> gets the same 404 page as pr-3. An unknown PR4 path gets a different 404 (<code>Not found</code>). A made-up Convex name returns 404. So the GETs can tell present from absent.</td><td><b>PASS</b> for hosting. "PR4 still signed in" is builder-observed only. I used no browser session.</td></tr>
+<tr><td>4. Rollback target <code>bedff74 → 3339517</code></td><td><code>notes.json</code> was written at <code>63d7d92</code>. <code>149a4e6</code> (flags) and <code>3339517</code> (telemetry) expanded the schema after that, so <code>bedff74</code> went stale. The schema at <code>3339517</code> is byte-identical to HEAD (<code>f91f43df…</code>).</td><td>I built an artifact with <code>bedff74</code> as the target, and preflight refused it: <code>Rollback schema differs</code>. <code>bfb37cb</code> gets past the rollback checks.</td><td><b>PASS</b></td></tr>
+</table>
+<p>Also ran: <code>pnpm typecheck</code> exit 0, <code>pnpm test</code> 73/73 passed, <code>pnpm build</code> exit 0, ops tests 34/34 passed. CI "Verify release candidate" succeeded on both <code>f1b197b</code> (36142463556) and <code>f1ae237</code> (36142652753).</p>
+</div>
+
+<h2>What the builder overstated</h2>
+<ul>
+  <li><b>"A tampered snapshot changes the canonical hash."</b> This is true, but nothing acts on it. An edited snapshot that is still schema-valid restores, passes the drill, gets a PASS receipt and passes preflight. Only a tamper that breaks the schema is refused. See <code>raw/probe-drill2.json</code>: <code>tamperedTitle</code> PASS, <code>emptiedAppTables</code> PASS, <code>invalidDoc</code> FAIL.</li>
+  <li><b>"Passes only with a receipt bound to its commit/schema/build."</b> That binding holds. But the receipt is not bound to a real or current backup. The gate proves "some snapshot restored under this schema", not "production data restores under this schema". See <code>raw/release-alterations.txt</code>.</li>
+  <li><b>"Real free-plan exports of both previews."</b> They are real exports, but tiny. The PR4 export has 1 user and 1 record. The 250-record synthetic fixture is the larger test.</li>
+  <li><b>"Old browser."</b> This is a page loaded before expansion. It uses the same <code>convex</code> client version as the new code, not an older client library. The builder disclosed that it is not the React/AuthKit app.</li>
+</ul>
+
+<h2>Detail</h2>
+<p>Worktree: <code>../remold-i2-iv</code> at detached <code>f1ae237</code>, clean before and after every mutation (<code>git checkout --</code> after each). The builder's worktree and the main checkout were not touched, except that I read the builder's ignored PR4 export. I copied it to <code>/tmp</code>, deleted the copy after, and did not commit it.</p>
+<p>Not done (outside the limits): a fresh Convex export, a PR4 browser sign-in, reading Cloudflare's API for the pr-3 version listing, and WorkOS entries (still pending your yes, per the builder).</p>
+<p>Two harmless false starts, kept in <code>raw/</code>. <code>probe-drill.json</code>: my first tamper probes failed only because re-zipping added directory entries. They were redone with <code>zip -D</code> in <code>probe-drill2.json</code>. <code>mig-reload.json</code> (not kept): the first reload mutant also failed on the write loop.</p>
+<p>Raw files: <code>raw/</code>. The logs are <code>ops-tests.txt</code>, <code>test.txt</code>, <code>typecheck.txt</code>, <code>build.txt</code>, <code>release-cli.txt</code>, <code>release-alterations.txt</code>, <code>mutations.txt</code>, <code>migration-mutants.txt</code>, <code>cleanup-readonly.txt</code> and <code>rollback-target.txt</code>. The JSON outputs are the drill, probe and receipt files, and the old-browser green and red runs. The probe scripts are <code>probe.mjs</code> and <code>probe2.mjs</code>.</p>
+</body>
+</html>

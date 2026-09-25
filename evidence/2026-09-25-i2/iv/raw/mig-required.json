@@ -1,0 +1,35 @@
+{
+  "sourceRootSha": "f1ae2371aba05185c9bb2473d4aa81db376762d1",
+  "sourceRootDirty": true,
+  "result": "FAIL",
+  "level": "SERVICE-local; synthetic fixture",
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-Y3Ds2u",
+  "checks": {},
+  "limitations": [
+    "Managed backup snapshot restore is not tested",
+    "Production identities are not tested; old browser is a headless Chromium ConvexClient bundle built from the baseline source, not the full React app",
+    "No production deployment or release authorization"
+  ],
+  "baseline": {
+    "sourceHash": "fdb67123a71b3aed199c3f6bf494ad145a6c7167be0bbc12d6473ebed7b114c3",
+    "records": 1000,
+    "canonicalHash": "e369f73b5c6b2f008805245f4b8f910731f4f9a39cb73b5c09fc34df834d358a",
+    "schemaHash": "f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243"
+  },
+  "oldBrowser": {
+    "bundleSha256": "450ba68ab14332b4c008cbedbfbad3d19b664024b77f8c25931b0bfc3feae5c7",
+    "baselineSourceHash": "fdb67123a71b3aed199c3f6bf494ad145a6c7167be0bbc12d6473ebed7b114c3",
+    "auth": "data-uri JWKS",
+    "binary": {
+      "protocolVersion": "1.3",
+      "product": "HeadlessChrome/151.0.7922.34",
+      "revision": "@782af9cb30a53f54487e5d2e44738645a8ec457c",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+      "jsVersion": "15.1.206.8"
+    },
+    "loadId": "c9af2c62-5ff2-4e7c-bec3-6b7f557d72cf"
+  },
+  "oldMcpSourceHash": "5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e",
+  "error": "Timed out: deploy expand; inspect private scratch backend.log",
+  "rootDeploymentConfigUnchanged": true
+}

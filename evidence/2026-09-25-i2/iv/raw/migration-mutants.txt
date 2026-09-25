@@ -1,0 +1,18 @@
+## M1 backfill silently skips titles ending in 7
+ ops/migrations/backfill.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+exit=1
+FAIL Expected values to be strictly equal:  904 !== 1004 
+## M2 expansion adds a required field
+ ops/migrations/rehearse.mjs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+exit=1
+FAIL Timed out: deploy expand; inspect private scratch backend.log
+## M3 browser page reloaded and re-started after migrate deploy
+ ops/migrations/rehearse.mjs | 1 +
+ 1 file changed, 1 insertion(+)
+exit=1
+FAIL TypeError: window.start is not a function     at <anonymous>:1:8
+## M3b same, with 2s pause so the reload completes before re-start
+exit=1
+FAIL Old browser write failed: TypeError: Cannot read properties of undefined (reading 'mutation')

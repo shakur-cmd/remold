@@ -1,0 +1,51 @@
+{
+  "seed": {
+    "count": 250,
+    "sha256": "f6f5f1c224b570959b9861dbdd6e3236ec071d7e053c34e20009754d3f4922ae"
+  },
+  "typeChange": {
+    "result": "FAIL",
+    "reason": "✖ Schema validation failed.",
+    "snapshotSha256": "d4aee61ccf7b50017c495dd7c73655fc740618620550d34b9c94637c10556000",
+    "records": {
+      "count": 250,
+      "sha256": "f6f5f1c224b570959b9861dbdd6e3236ec071d7e053c34e20009754d3f4922ae"
+    }
+  },
+  "removeField": {
+    "result": "FAIL",
+    "reason": "✖ Schema validation failed.",
+    "snapshotSha256": "d4aee61ccf7b50017c495dd7c73655fc740618620550d34b9c94637c10556000",
+    "records": {
+      "count": 250,
+      "sha256": "f6f5f1c224b570959b9861dbdd6e3236ec071d7e053c34e20009754d3f4922ae"
+    }
+  },
+  "tamperedDrill": {
+    "result": "FAIL",
+    "reason": "restore faithful\n+ actual - expected\n\n  {\n    sha256: 'a33f3d5582d0881638caace69b71ea7c38ecbcf932580fe19eba05b25a5de356',\n    skipped: [\n      'README.md',\n-     '_components/',\n-     '_components/rateLimiter/',\n-     '_components/rateLimiter/_components/',\n-     '_components/rateLimiter/_components/batchWorker/',\n-     '_components/rateLimiter/_components/batchWorker/_tables/',\n      '_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl',\n-     '_components/rateLimiter/_compo",
+    "snapshotSha256": "6b228c9d182e2319288cf605f8429899a0e07a583f58a9056019c47cbadb9cf0",
+    "records": {
+      "count": 250,
+      "sha256": "0e7bee7f9bd76a7aed23aee4f86c341e4b6b6e819292a56ab34ae6bdcb9d69d7"
+    }
+  },
+  "invalidDocDrill": {
+    "result": "FAIL",
+    "reason": "restore faithful\n+ actual - expected\n\n  {\n    sha256: '50609c11cac71a056f87c2bdc9adb3bd56fb98daacd1c70be780b9d7065ca84b',\n    skipped: [\n      'README.md',\n-     '_components/',\n-     '_components/rateLimiter/',\n-     '_components/rateLimiter/_components/',\n-     '_components/rateLimiter/_components/batchWorker/',\n-     '_components/rateLimiter/_components/batchWorker/_tables/',\n      '_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl',\n-     '_components/rateLimiter/_compo",
+    "snapshotSha256": "bbcf754b2e17cf60e14cc11918c931a673b8296eadd6ae418351bba37e17be7c",
+    "records": {
+      "count": 250,
+      "sha256": "b4b70c49cfb0a08866ccb0bdedb811ebaa6a270160a962b457a49ec57d80ee60"
+    }
+  },
+  "emptyDrill": {
+    "result": "FAIL",
+    "reason": "restore faithful\n+ actual - expected\n\n  {\n+   sha256: '533bdf2927dc738bf7553ff2145d8a31dbc74fea0e55293a193b2ecd24651b5d',\n-   sha256: 'e023c3e2c1c20426d9d34cb4903f3e2eb11e38a062eab5510174c53b73a25b42',\n    skipped: [\n+     'README.md',\n+     '_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl',\n+     '_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl',\n+     '_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl',\n+     ",
+    "snapshotSha256": "5c2d8a5670882fa618e0cbeff299231c8cdd8a0b7c5494b992646c72b6ba23ef",
+    "records": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  }
+}
