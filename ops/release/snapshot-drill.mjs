@@ -10,7 +10,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const [output, flag, provided] = process.argv.slice(2);
 if (!output || (flag && (flag !== '--snapshot' || !provided))) throw new Error('Usage: snapshot-drill.mjs <evidence.json> [--snapshot <snapshot.zip>]');
 const temp = mkdtempSync(join(tmpdir(), 'remold-snapshot-drill-'));
-const results = {}, evidence = { level: 'SERVICE-local; synthetic fixture', sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim()), results, limitations: ['Loopback local Convex only; no cloud deployment or customer data', 'Synthetic fixture does not prove a managed backup export or independent verification'] };
+const results = {}, evidence = { level: flag ? 'SANDBOX snapshot restored into local scratch' : 'SERVICE-local; synthetic fixture', sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim()), results, limitations: ['Loopback local Convex only; no cloud deployment or customer data', 'Synthetic fixture does not prove a managed backup export or independent verification'] };
 function candidate(name, change) {
   const source = join(temp, name); cpSync(join(root, 'convex'), join(source, 'convex'), { recursive: true });
   const schema = join(source, 'convex/schema.ts'), before = readFileSync(schema, 'utf8'), after = change(before);
@@ -29,7 +29,9 @@ try {
   results.expansion = await restoreDrill({ source: expansion, snapshot, ports: [3474, 3475] });
   assert.equal(results.expansion.result, 'PASS', results.expansion.reason);
   const unpacked = join(temp, 'tampered'); execFileSync('unzip', ['-q', snapshot, '-d', unpacked]);
-  execFileSync('sed', ['-i', '', 's/Snapshot fixture 0000/Tampered fixture 0000/', join(unpacked, 'records/documents.jsonl')]);
+  const records = join(unpacked, 'records/documents.jsonl'), original = readFileSync(records, 'utf8');
+  writeFileSync(records, original.replace('"title":"', '"title":"Tampered '));
+  assert.notEqual(readFileSync(records, 'utf8'), original, 'Tamper needs at least one record title');
   const tampered = join(temp, 'tampered.zip'); execFileSync('zip', ['-qr', tampered, '.'], { cwd: unpacked });
   results.tamper = { originalSha256: canonical(snapshot).sha256, tamperedSha256: canonical(tampered).sha256 };
   assert.notEqual(results.tamper.originalSha256, results.tamper.tamperedSha256, 'Tampering did not change canonical data');
