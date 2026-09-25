@@ -4,6 +4,7 @@ import { ConvexProviderWithAuthKit } from "@convex-dev/workos";
 import type { ConvexReactClient } from "convex/react";
 import { useLocation, useNavigate } from "react-router";
 import { authReturnTarget } from "./identity-route";
+import { authSessionOptions } from "./identity-session";
 
 export function IdentityProvider({ client, children }: { client: ConvexReactClient; children: ReactNode }) {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export function IdentityProvider({ client, children }: { client: ConvexReactClie
   return (
     <AuthKitProvider
       clientId={clientId}
+      {...authSessionOptions({ hostname: window.location.hostname, clientId, mode: import.meta.env.VITE_AUTH_SESSION_MODE, apiHostname: import.meta.env.VITE_WORKOS_API_HOSTNAME })}
       redirectUri={import.meta.env.VITE_WORKOS_REDIRECT_URI as string}
       onRedirectCallback={({ state }) => navigate(authReturnTarget(state?.returnTo, window.location.origin), { replace: true })}
     >
