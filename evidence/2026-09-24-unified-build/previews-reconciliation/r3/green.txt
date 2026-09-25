@@ -1,0 +1,21 @@
+✔ two PR plans have distinct stable origins while retaining one staging identity realm (1.182041ms)
+✔ preview configuration cannot carry production routes, bindings or another account (0.963708ms)
+✔ child environment drops inherited production targets and provider secrets (0.1055ms)
+✔ AuthKit add preserves existing origins, homepage and default; repeated add is idempotent (0.093416ms)
+✔ close A removes only its owned entries and exact backend; B and concurrent additions survive (0.153208ms)
+✔ cleanup never removes AuthKit entries that predated this receipt (0.0575ms)
+✔ cleanup refuses wrong tenant, prod, reused backend name, changed identity or another PR receipt (0.269625ms)
+✔ an already absent exact backend does not generate another deletion (0.054375ms)
+✔ resuming an owned AuthKit add retains ownership for later cleanup (0.06725ms)
+✔ cleanup refuses a pre-existing or replaced Cloudflare preview (0.143709ms)
+✔ Convex child uses the same project preview key for selection and authorization (0.443375ms)
+✔ cleanup refuses false or missing backend absence ownership (0.171209ms)
+✔ provider detail with null identifier is reconciled only with its exact project-list identity (0.704667ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 71.488209

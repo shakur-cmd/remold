@@ -1,0 +1,34 @@
+{
+  "result": "**Verdict: APPROVE.** This covers only the metadata repair: `reconcileBackend`, how bootstrap and cleanup now use it, and the fixed absence check in `backend.mjs`. It is not an approval of recovery, resume or the full preview lifecycle. I made no edits, wrote no files, sent no provider requests and delegated nothing. I did not run the Python wrapper at the end of your message; that's the caller's harness.\n\n## What changed (compared with `r3/before`)\n- **`policy.mjs`:** new `reconcileBackend(plan, detail, deployments)`. It needs exactly one project-list row with the same `id`. That row must pass `assertBackend` and have `reference === \"preview/pr-N\"`. The detail and list responses must agree on `id, name, createTime, projectId, deploymentType, kind, isDefault, reference, deploymentUrl`. The detail's `previewIdentifier` may be `null` or match the listed one. The result carries the listed identifier.\n- **`bootstrap-env.mjs:12`:** now passes the detail and the project list through `reconcileBackend`. `assertBackend` and the freshness check still run afterward.\n- **`cleanup.mjs:20`:** runs the same `reconcileBackend` on a non-404 readback. It uses the same function, the same preview key and the same list endpoint as bootstrap, so the two paths validate identity the same way.\n- **`backend.mjs:26`:** the absence check now compares `reference` against `preview/${plan.name}`, not the bare `plan.name`. The old comparison could never match, because the real value is `\"preview/pr-3\"` (see `provider-readback.json`). It still also checks `previewIdentifier === plan.name`.\n- **`policy.test.mjs`:** there is no before snapshot of this file. `red.txt` shows the new test failing against the old policy with \"reconcileBackend is not a function\", so the test can fail.\n\n## Tests I ran\n- `node --test ops/previews/policy.test.mjs`: **13 passed, 0 failed**, same as `green.txt`.\n- My own cases, run in memory with `node --input-type=module` and no file writes (14 expected outcomes, all matched):\n  - **Accepted:**\n    - null detail identifier with the exact list row\n    - the exact row among unrelated rows\n  - **Rejected:**\n    - detail identifier omitted, `'pr-4'` or `''`\n    - detail `reference` missing\n    - list reference given as bare `pr-3`\n    - list identifier also null\n    - `id` as a string\n    - `createTime` off by 1\n    - the same id listed as a default prod deployment\n    - a `pr-4` plan against `pr-3` rows\n    - wrong project on both endpoints\n    - URL host doesn't match the name (on both endpoints)\n- Feeding the reconciled backend into `cleanupPlan` produced only `POST /deployments/neat-squid-188/delete`.\n\n## Gaps (none block this repair)\n1. **Preview key access to the project list is unproven.** Bootstrap and cleanup now call `GET /projects/{id}/list_deployments` with the preview deploy key. That endpoint isn't in `convex-api-contract.json`, and `provider-readback.json` doesn't say which credential it used. If the key is refused, `api()` fails closed, which is safe, but the repair wouldn't work in practice. Record which credential the readback used, or do one read-only call with the preview key.\n2. **Duplicate references are accepted.** A second list row with the same `preview/pr-3` reference and a different `id` still passes, because rows are filtered by `id` only. Convex says `reference` is unique within a project, so this would take a provider fault. The cheap hardening is to also require exactly one row matching `reference` or `previewIdentifier`.\n3. **`expiresAt` isn't compared across the two endpoints.** The detail's value is saved to the receipt.\n4. **Cleanup after a 404 still trusts the single-deployment 404** and doesn't check the list for absence. This was already true before the change and is outside this scope.\n5. **Nothing here fixes the claimed PR3 deployment.** Its receipt is still at `backend-attempted` with `receipt.backend` unset, and no resume or recovery path exists (as you noted). `expiresAt` is 2026-09-30 01:19 UTC.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1825,
+      "outputTokens": 14,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001895,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 16,
+      "outputTokens": 6870,
+      "cacheReadInputTokens": 177360,
+      "cacheCreationInputTokens": 34852,
+      "webSearchRequests": 0,
+      "costUSD": 0.45175200000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1523,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

@@ -1,0 +1,64 @@
+Verified staging client ID before first backend push.
+▌ Deploying code to deployment:
+▌ [Preview] shakur-46299:remold:preview/pr-4 (dashboard: https://dashboard.convex.dev/t/shakur-46299/remold/kindred-hyena-171)
+▌ └─ https://kindred-hyena-171.convex.cloud
+- Running ''/Users/urkel/.nvm/versions/node/v24.18.0/bin/node' '/Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/previews/bootstrap-env.mjs' '/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-b-b703lrnx/prepared'' with environment variables "PREVIEW_CONVEX_URL" and "VITE_CONVEX_SITE_URL" set...
+
+✔ Ran "'/Users/urkel/.nvm/versions/node/v24.18.0/bin/node' '/Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/previews/bootstrap-env.mjs' '/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-b-b703lrnx/prepared'" with environment variables "PREVIEW_CONVEX_URL" and "VITE_CONVEX_SITE_URL" set
+- Deploying to https://kindred-hyena-171.convex.cloud...
+
+✔ Added table indexes:
+  [+] agentInbox.by_org_status   orgId, status, _creationTime
+  [+] agents.by_key_hash   keyHash, _creationTime
+  [+] agents.by_org   orgId, _creationTime
+  [+] events.by_org   orgId, _creationTime
+  [+] events.by_record   orgId, recordId, _creationTime
+  [+] fields.by_object   orgId, objectId, _creationTime
+  [+] fields.by_object_key   orgId, objectId, key, _creationTime
+  [+] invites.by_org   orgId, _creationTime
+  [+] invites.by_token   token, _creationTime
+  [+] links.by_from   orgId, fieldId, fromRecordId, _creationTime
+  [+] links.by_record_any   orgId, fromRecordId, _creationTime
+  [+] links.by_target_any   orgId, toRecordId, _creationTime
+  [+] links.by_to   orgId, fieldId, toRecordId, _creationTime
+  [+] members.by_org_user   orgId, userId, _creationTime
+  [+] members.by_user   userId, _creationTime
+  [+] objects.by_org   orgId, _creationTime
+  [+] objects.by_org_key   orgId, key, _creationTime
+  [+] opsEvents.by_org   orgId, _creationTime
+  [+] opsMetrics.by_minute   minute, _creationTime
+  [+] opsProbes.by_minute   minute, _creationTime
+  [+] records.by_b0   orgId, objectId, b0, _creationTime
+  [+] records.by_b1   orgId, objectId, b1, _creationTime
+  [+] records.by_b2   orgId, objectId, b2, _creationTime
+  [+] records.by_b3   orgId, objectId, b3, _creationTime
+  [+] records.by_d0   orgId, objectId, d0, _creationTime
+  [+] records.by_d1   orgId, objectId, d1, _creationTime
+  [+] records.by_d2   orgId, objectId, d2, _creationTime
+  [+] records.by_d3   orgId, objectId, d3, _creationTime
+  [+] records.by_n0   orgId, objectId, n0, _creationTime
+  [+] records.by_n1   orgId, objectId, n1, _creationTime
+  [+] records.by_n2   orgId, objectId, n2, _creationTime
+  [+] records.by_n3   orgId, objectId, n3, _creationTime
+  [+] records.by_n4   orgId, objectId, n4, _creationTime
+  [+] records.by_n5   orgId, objectId, n5, _creationTime
+  [+] records.by_n6   orgId, objectId, n6, _creationTime
+  [+] records.by_n7   orgId, objectId, n7, _creationTime
+  [+] records.by_object   orgId, objectId, _creationTime
+  [+] records.by_object_updated   orgId, objectId, updatedAt, _creationTime
+  [+] records.by_org_ref   orgId, ref, _creationTime
+  [+] records.by_s0   orgId, objectId, s0, _creationTime
+  [+] records.by_s1   orgId, objectId, s1, _creationTime
+  [+] records.by_s2   orgId, objectId, s2, _creationTime
+  [+] records.by_s3   orgId, objectId, s3, _creationTime
+  [+] records.by_s4   orgId, objectId, s4, _creationTime
+  [+] records.by_s5   orgId, objectId, s5, _creationTime
+  [+] records.by_s6   orgId, objectId, s6, _creationTime
+  [+] records.by_s7   orgId, objectId, s7, _creationTime
+  [+] records.search_title (text)   title, filters on objectId, orgId
+  [+] suggestions.by_org_status   orgId, status, _creationTime
+  [+] suggestions.by_record   orgId, recordId, _creationTime
+  [+] users.by_token   tokenIdentifier, _creationTime
+✔ Installed component rateLimiter.
+✔ Installed component rateLimiter/batchWorker.
+✔ Deployed Convex functions to https://kindred-hyena-171.convex.cloud

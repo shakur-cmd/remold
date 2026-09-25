@@ -1,0 +1,49 @@
+{
+  "verdict": "REVISE before hosted effects",
+  "at": "2026-09-25T01:06:35.521348+00:00",
+  "reviewer": "c0_verifier",
+  "sourceAggregate": "42696da5afbc81093a18c910dbf722fb85084d63957e3e6b5767bd705f910af1",
+  "sourceFiles": 12,
+  "sourceUnchanged": true,
+  "checks": [
+    {
+      "command": "node --test ops/previews/policy.test.mjs",
+      "exit": 0,
+      "tests": 11
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/previews-iv/offline.mjs",
+      "exit": 1,
+      "positiveGroups": 5,
+      "red": "Cleanup plans exact backend deletion with false or missing backendAbsentBefore"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/previews-iv/lifecycle.mjs",
+      "exit": 1,
+      "red": [
+        "Successful historical CI accepted even when mocked current PR is closed, head changed, or base changed",
+        "Relocated artifact-ready receipt/config passes load, while verified artifact and configured upload directory differ"
+      ]
+    }
+  ],
+  "providerCalls": 0,
+  "providerMutations": 0,
+  "sourceEdits": 0,
+  "rootPreviewOutputsChanged": false,
+  "proofLevel": "OFFLINE policy functions, actual local Git clones and sealed filesystem artifacts; mocked gh subprocess",
+  "scopeLimits": [
+    "No hosted deployment/delete/WorkOS mutation or key creation",
+    "No app/auth/I1 checks",
+    "Current CI receipts and provider API/CLI behavior reviewed as builder evidence, not independently contacted",
+    "Environment-specific rebuild is separate from exact-head CI; no tests-on-rebuilt-bytes certification"
+  ],
+  "evidenceHashes": {
+    "policy.txt": "9b42cef37c4d0a4cde825002d424196a5d08f709c0a68ab816bd6f06ac2f28ff",
+    "offline.mjs": "789ebe7b55d01942becf384a1a93f653c0b8e60e2d07a91dc602b4d73b677d62",
+    "offline-result.json": "366ffc51c0e47fbbd37b59bfe6d2330319a98a303344cf2a7c81353a9f66b66d",
+    "offline.txt": "53cb1a09ab47ed420ebdef753e9714265c43fd20d9f512926cf75cde406f901c",
+    "lifecycle.mjs": "89d40e60cb3abb569b26b608b0ee6ac6a90e975e64bad05880fc7c56ac460a5d",
+    "lifecycle-result.json": "5d0290378294041ca7bd63aec6a9032f6e97facd21a41ecfa207eced30602b3b",
+    "lifecycle.txt": "772cea10a9a31ad80daf6a43a056ca712ce71cd3edf07007ba99b94d3419bfc6"
+  }
+}

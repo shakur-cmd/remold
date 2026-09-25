@@ -1,0 +1,82 @@
+{
+  "providerCalls": 0,
+  "prCases": [
+    {
+      "pr": {
+        "state": "OPEN",
+        "headRefOid": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+        "baseRefName": "i2/preview-base-73b060d"
+      },
+      "refused": false
+    },
+    {
+      "pr": {
+        "state": "CLOSED",
+        "headRefOid": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+        "baseRefName": "i2/preview-base-73b060d"
+      },
+      "refused": true
+    },
+    {
+      "pr": {
+        "state": "OPEN",
+        "headRefOid": "c666909bfe07af46732a56671858b65f748a4744",
+        "baseRefName": "i2/preview-base-73b060d"
+      },
+      "refused": true
+    },
+    {
+      "pr": {
+        "state": "OPEN",
+        "headRefOid": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+        "baseRefName": "main"
+      },
+      "refused": true
+    }
+  ],
+  "ghCommands": [
+    [
+      "pr",
+      "view",
+      "3",
+      "--json",
+      "state,headRefOid,baseRefName"
+    ],
+    [
+      "run",
+      "view",
+      "36079125382",
+      "--json",
+      "headSha,conclusion,status,url,event,workflowName"
+    ],
+    [
+      "pr",
+      "view",
+      "3",
+      "--json",
+      "state,headRefOid,baseRefName"
+    ],
+    [
+      "pr",
+      "view",
+      "3",
+      "--json",
+      "state,headRefOid,baseRefName"
+    ],
+    [
+      "pr",
+      "view",
+      "3",
+      "--json",
+      "state,headRefOid,baseRefName"
+    ]
+  ],
+  "directoryAliasAccepted": true,
+  "relocation": {
+    "loadRefused": true,
+    "movedArtifactVerifies": true,
+    "configuredArtifactDoesNotVerify": true,
+    "configuredEqualsVerifiedDirectory": false,
+    "phase": "artifact-ready"
+  }
+}

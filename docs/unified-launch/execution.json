@@ -263,7 +263,8 @@
       "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
       "allowedPaths": [
         "ops/release/**",
-        ".github/workflows/**"
+        ".github/workflows/**",
+        "ops/previews/**"
       ],
       "environment": "local release checks; no cloud deploy",
       "selection": "not applicable",
@@ -282,7 +283,13 @@
       "additionalEvidence": "evidence/2026-09-24-unified-build/flags-version-verdict.json",
       "migrationEvidence": "ops/migrations/evidence/independent.html",
       "authEvidence": "evidence/2026-09-24-unified-build/authkit-iv/invite-report.html",
-      "telemetryEvidence": "evidence/2026-09-24-unified-build/telemetry-iv/report.html"
+      "telemetryEvidence": "evidence/2026-09-24-unified-build/telemetry-iv/report.html",
+      "previewOperatorEvidence": "evidence/2026-09-24-unified-build/previews-root/r2/report.html",
+      "previewIndependentEvidence": "evidence/2026-09-24-unified-build/previews-iv/r2/review.html",
+      "previewOperatorManifest": "d92702a0909fcbf7927b8bfa787be35f358bd3147b14bd896a9d2450217a5104",
+      "previewExternalAllowance": "Two named synthetic PR3/PR4 previews on existing free Cloudflare/Convex plans, exact staging AuthKit callbacks/origins and close-one owned cleanup. No production cutover or paid upgrade. Approved infrastructure allowance50USD/month.",
+      "previewReconciliationEvidence": "evidence/2026-09-24-unified-build/previews-reconciliation/r3/report.html",
+      "previewCurrentState": "PR4 frontend-ready after exact provider/CI/artifact/public-byte reconciliation, no repeated upload. Metadata root13/IV13+14 and Wrangler root14/IV14+26 bounded approval. Chrome shell works; missing VITE_WORKOS_REDIRECT_URI blocks signin. PR3 backend-attempted claim retained; explicit recovery, callback build/settings, two-browser/cleanup/fullI2 open."
     },
     {
       "id": "I3",
