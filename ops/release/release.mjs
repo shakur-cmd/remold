@@ -63,7 +63,8 @@ export function validateReleaseNotes(notes, changedFiles) {
   if (notes.class === 'ui-only' && changedFiles.some(path => !cosmetic(path))) throw new Error('Potentially persisted behavior cannot use a UI-only snapshot exemption');
   return { class: notes.class, rollbackTarget: notes.rollbackTarget };
 }
-const appDocuments = canonical => Object.values(canonical?.tables ?? {}).reduce((sum, table) => sum + table.count, 0);
+// Underscore tables are Convex system metadata, which survives even when every app table is emptied.
+const appDocuments = canonical => Object.entries(canonical?.tables ?? {}).reduce((sum, [name, table]) => name.startsWith('_') ? sum : sum + table.count, 0);
 export function preflight(manifest, targetSha, targetSchemaDigest, snapshotReceipt, manifestSha256, expectedBackup) {
   requireSha(targetSha);
   if (targetSha !== manifest.release.rollbackTarget) throw new Error('Rollback target is not the declared compatible commit');

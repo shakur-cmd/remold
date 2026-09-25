@@ -121,9 +121,10 @@ test('preflight refuses a receipt for any snapshot other than the expected backu
     execFileSync('zip', ['-qrD', `${name}.zip`, ...Object.keys(tables)], { cwd: tree }); return join(tree, `${name}.zip`);
   };
   const users = [{ _id: 'users:1', name: 'Fixture' }], records = [{ _id: 'records:1', title: 'Original' }, { _id: 'records:2', title: 'Second' }];
-  const backup = zip('backup', { users, records });
-  const emptied = zip('emptied', { users: [], records: [] });
-  const edited = zip('edited', { users, records: [{ ...records[0], title: 'Edited but schema-valid' }, records[1]] });
+  const _tables = [{ _id: '_tables:1', name: 'users' }, { _id: '_tables:2', name: 'records' }];
+  const backup = zip('backup', { _tables, users, records });
+  const emptied = zip('emptied', { _tables, users: [], records: [] });
+  const edited = zip('edited', { _tables, users, records: [{ ...records[0], title: 'Edited but schema-valid' }, records[1]] });
   const record = path => ({ snapshotSha256: digest(readFileSync(path)), canonical: canonical(path) });
   const expected = record(backup);
   const manifest = { sha, schemaSha256: schema, release: { class: 'expand', rollbackTarget: rollback } };
