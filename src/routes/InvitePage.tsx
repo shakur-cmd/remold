@@ -13,11 +13,11 @@ export function InvitePage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
-  if (invite === undefined) return <Loading />;
+  if (invite === undefined) return <Loading page />;
   const message = invite === null ? "This invite link is not valid." : invite.expired ? "This invite has expired. Ask for a new link." : null;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-4 px-4 text-center">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
       {message ? (
         <p className="text-muted-foreground">{message}</p>
       ) : (
@@ -25,7 +25,8 @@ export function InvitePage() {
           <h1 className="text-xl font-semibold">Join {invite!.orgName}</h1>
           <p className="text-sm text-muted-foreground">You will join as {invite!.role}.</p>
           <Button
-            className="justify-self-center"
+            size="lg"
+            className="w-48"
             onClick={async () => {
               try {
                 const orgId = await accept({ token });
@@ -40,7 +41,7 @@ export function InvitePage() {
         </>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button variant="link" onClick={() => navigate("/")}>
+      <Button variant="link" className="text-muted-foreground" onClick={() => navigate("/")}>
         Go to my organisations
       </Button>
     </div>
