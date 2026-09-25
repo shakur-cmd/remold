@@ -1,0 +1,23 @@
+## before fix: release.mjs at f1ae237
+emptiedSnapshot: ACCEPTED
+schemaValidEditedSnapshot: ACCEPTED
+random64Hex: ACCEPTED
+genuine: ACCEPTED
+## intermediate d4e45b9 (emptiness check counted Convex _tables metadata)
+emptiedSnapshot: REFUSED (Snapshot receipt is not for the expected backup)
+schemaValidEditedSnapshot: REFUSED (Snapshot receipt is not for the expected backup)
+random64Hex: REFUSED (Snapshot receipt is not for the expected backup)
+genuine: ACCEPTED
+## after fix
+emptiedSnapshot: REFUSED (Snapshot receipt restored empty app tables but the expected backup has data)
+schemaValidEditedSnapshot: REFUSED (Snapshot receipt is not for the expected backup)
+random64Hex: REFUSED (Snapshot receipt is not for the expected backup)
+genuine: ACCEPTED
+## unit test red before fix (new test against f1ae237 release.mjs)
+✖ preflight refuses a receipt for any snapshot other than the expected backup (27.91325ms)
+✖ preflight refuses a receipt for any snapshot other than the expected backup (27.91325ms)
+## mutation: remove each new check, unit suite must fail
+without 'empty app tables but': ℹ fail 1
+without 'is not for the expected backup': ℹ fail 1
+without 'requires the expected backup': ℹ fail 1
+without 'name.startsWith('_') ? sum': ℹ fail 1

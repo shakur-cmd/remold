@@ -1,0 +1,111 @@
+{
+  "phase": "hosting-deleted-workos-pending",
+  "plan": {
+    "sha": "954bdfb792fcfcd8c857482cc174828f616d03eb",
+    "accountId": "949fc86de7efe057aac100389701d2b4",
+    "worker": "remold-i2-preview",
+    "subdomain": "shakur-949.workers.dev",
+    "team": "shakur-46299",
+    "project": "remold",
+    "projectId": 3049070,
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "format": 1,
+    "pr": 3,
+    "baseSha": "3db0e6ccdaab19bc7c996d759b1a06167a571503",
+    "name": "pr-3",
+    "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+    "callback": "https://pr-3-remold-i2-preview.shakur-949.workers.dev/callback"
+  },
+  "planSha256": "018eb3997779e155d894c1fc2962a615e530b4e48eb41236894832058244c823",
+  "configSha256": "1726122659f235aa907e3946a8a063a125ea5fbcbe72587388b82319cc2a9c20",
+  "checkout": "/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-previews-session-124k6nlp/pr3",
+  "backend": {
+    "id": 5678975,
+    "name": "neat-squid-188",
+    "createTime": 1790299164306,
+    "projectId": 3049070,
+    "deploymentType": "preview",
+    "kind": "cloud",
+    "isDefault": false,
+    "reference": "preview/pr-3",
+    "previewIdentifier": "pr-3",
+    "deploymentUrl": "https://neat-squid-188.convex.cloud",
+    "expiresAt": 1790731164324
+  },
+  "cloudflare": {
+    "id": "b5c9aa6921914138b030d25c83b426f8",
+    "name": "pr-3",
+    "worker": "remold-i2-preview",
+    "accountId": "949fc86de7efe057aac100389701d2b4",
+    "absentBefore": true
+  },
+  "workosOwned": {
+    "callback": true,
+    "cors": true
+  },
+  "artifact": {
+    "manifestSha256": "ffb63afeb4dc6241154a94f96119b16888ee8a3a095ffc0082690fe4c7bc94c3",
+    "sha": "954bdfb792fcfcd8c857482cc174828f616d03eb",
+    "ci": {
+      "conclusion": "success",
+      "event": "pull_request",
+      "headSha": "954bdfb792fcfcd8c857482cc174828f616d03eb",
+      "status": "completed",
+      "url": "https://github.com/shakur-cmd/remold/actions/runs/36085477177",
+      "workflowName": "Verify release candidate"
+    },
+    "configSha256": "1726122659f235aa907e3946a8a063a125ea5fbcbe72587388b82319cc2a9c20"
+  },
+  "backendAbsentBefore": true,
+  "clientIdVerified": true,
+  "ci": {
+    "conclusion": "success",
+    "event": "pull_request",
+    "headSha": "954bdfb792fcfcd8c857482cc174828f616d03eb",
+    "status": "completed",
+    "url": "https://github.com/shakur-cmd/remold/actions/runs/36085477177",
+    "workflowName": "Verify release candidate"
+  },
+  "sourceUpgrade": {
+    "previous": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-a-xcxovlze/prepared",
+    "previousReceiptSha256": "a46ed8cd606242cc1cb2b3e2aa035f2d27f033c4eb09bb549726068cdb6041f2",
+    "previousSha": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+    "backendSourceUnchanged": true,
+    "providerWrites": 0
+  },
+  "cloudflareAbsentBefore": true,
+  "frontendExitStatus": 0,
+  "versionReadback": {
+    "sha": "954bdfb792fcfcd8c857482cc174828f616d03eb",
+    "url": "https://pr-3-remold-i2-preview.shakur-949.workers.dev/version.json",
+    "checkedAt": "2026-09-25T02:23:22.549Z"
+  },
+  "workosBefore": {
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "redirectUris": [
+      "http://localhost:5173/callback",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev/callback"
+    ],
+    "corsOrigins": [
+      "http://localhost:5173",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "homepage": "http://localhost:5173",
+    "defaultRedirect": "http://localhost:5173/callback"
+  },
+  "workosAfter": {
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "redirectUris": [
+      "http://localhost:5173/callback",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev/callback",
+      "https://pr-3-remold-i2-preview.shakur-949.workers.dev/callback"
+    ],
+    "corsOrigins": [
+      "http://localhost:5173",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+      "https://pr-3-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "homepage": "http://localhost:5173",
+    "defaultRedirect": "http://localhost:5173/callback"
+  }
+}
