@@ -6,6 +6,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loading } from "@/components/Loading";
 import { errorMessage } from "@/lib/errors";
@@ -19,20 +20,25 @@ export function CapturePage() {
   const [params] = useSearchParams();
   const orgs = useQuery(api.orgs.mine);
   const [orgId, setOrgId] = useState<Id<"orgs"> | null>(null);
-  if (orgs === undefined) return <Loading />;
-  if (orgs.length === 0) return <p className="p-6 text-sm">Create an organisation in Remold first.</p>;
+  if (orgs === undefined) return <Loading page />;
+  if (orgs.length === 0) return <p className="p-6 text-sm text-muted-foreground">Create an organisation in Remold first.</p>;
   const chosen = orgId ?? orgs[0]!.org._id;
   return (
     <div className="mx-auto grid max-w-md gap-4 p-4">
       <h1 className="text-lg font-semibold">Save to Remold</h1>
       {orgs.length > 1 && (
-        <select className="h-9 rounded-md border px-2 text-sm" value={chosen} onChange={(e) => setOrgId(e.target.value as Id<"orgs">)} aria-label="Organisation">
-          {orgs.map(({ org }) => (
-            <option key={org._id} value={org._id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
+        <Select value={chosen} onValueChange={(id) => setOrgId(id as Id<"orgs">)}>
+          <SelectTrigger className="w-full" aria-label="Organisation">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {orgs.map(({ org }) => (
+              <SelectItem key={org._id} value={org._id}>
+                {org.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
       <CaptureForm key={chosen} orgId={chosen} initial={Object.fromEntries(KEYS.map((k) => [k, params.get(k) ?? ""]))} initialKind={params.get("kind") === "company" ? "company" : "person"} />
     </div>
@@ -95,15 +101,15 @@ function CaptureForm({ orgId, initial, initialKind }: { orgId: Id<"orgs">; initi
 
   return (
     <form onSubmit={submit} className="grid gap-3">
-      <div className="flex rounded-md border p-0.5 text-sm">
+      <div className="grid grid-cols-2 rounded-md border bg-card p-0.5">
         {(["person", "company"] as const).map((option) => (
-          <button key={option} type="button" onClick={() => setKind(option)} className={`flex-1 rounded px-3 py-1 ${kind === option ? "bg-secondary font-medium" : "text-muted-foreground"}`}>
+          <Button key={option} type="button" size="sm" variant={kind === option ? "secondary" : "ghost"} aria-pressed={kind === option} onClick={() => setKind(option)}>
             {option === "person" ? "Person" : "Company"}
-          </button>
+          </Button>
         ))}
       </div>
       {field("name", "Name")}
-      {sameName && sameName.length > 0 && <p className="-mt-1 text-xs text-amber-700 dark:text-amber-400">Already have: {sameName.map((hit) => hit.title).join(", ")}</p>}
+      {sameName && sameName.length > 0 && <p className="-mt-1 text-xs text-muted-foreground">Already have: {sameName.map((hit) => hit.title).join(", ")}</p>}
       {kind === "person" && (
         <>
           {field("title", "Title")}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
+import { cn } from "cn";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
@@ -24,10 +25,12 @@ export function SuggestionCard({ orgId, row }: { orgId: Id<"orgs">; row: Suggest
   const dismiss = useMutation(api.suggestions.dismiss);
   const [busy, setBusy] = useState(false);
   const fields = new Map<string, Field>((detail?.fields ?? []).map((f) => [f._id, f]));
+  const order = [...fields.keys()];
+  const entries = Object.entries(suggestion.change.values).sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
   const pending = suggestion.status === "pending";
   const conflicted = suggestion.status === "conflicted";
   const target = suggestion.change.recordId ? (
-    <Link to={`/o/${orgId}/${objectKey}/${suggestion.change.recordId}`} className="underline decoration-muted-foreground/50 underline-offset-4">
+    <Link to={`/o/${orgId}/${objectKey}/${suggestion.change.recordId}`} className="font-medium underline decoration-border underline-offset-4 hover:decoration-primary">
       {recordTitle || recordRef || "a record"}
     </Link>
   ) : (
@@ -49,18 +52,20 @@ export function SuggestionCard({ orgId, row }: { orgId: Id<"orgs">; row: Suggest
   }
 
   return (
-    <div className="grid gap-3 rounded-lg border p-3 text-sm">
+    <div className={cn("grid gap-3 rounded-lg border p-3 text-sm", pending ? "border-primary/30 bg-accent/60" : "bg-card")}>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="font-medium">{agentName ?? "An agent"}</span>
         <span className="text-muted-foreground">{verb[suggestion.change.action]}</span>
         {target}
-        <Badge variant={conflicted ? "destructive" : pending ? "secondary" : "outline"} className="ml-auto">
-          {suggestion.status}
-        </Badge>
+        {!pending && (
+          <Badge variant={conflicted ? "destructive" : "outline"} className="ml-auto">
+            {conflicted ? "changed underneath" : suggestion.status}
+          </Badge>
+        )}
       </div>
       {suggestion.change.action !== "delete" && (
         <ul className="grid gap-1">
-          {Object.entries(suggestion.change.values).map(([fieldId, value]) => {
+          {entries.map(([fieldId, value]) => {
             const field = fields.get(fieldId);
             const was = suggestion.before[fieldId];
             const conflict = suggestion.conflicts?.find((c) => c.fieldId === fieldId);
@@ -71,7 +76,7 @@ export function SuggestionCard({ orgId, row }: { orgId: Id<"orgs">; row: Suggest
                   {suggestion.change.action === "update" && field && (
                     <>
                       <span className="text-muted-foreground line-through"><FieldValue orgId={orgId} field={field} value={was} plain /></span>
-                      <span className="text-muted-foreground">to</span>
+                      <span className="text-muted-foreground">→</span>
                     </>
                   )}
                   {field ? <FieldValue orgId={orgId} field={field} value={value} plain /> : String(value)}
@@ -86,15 +91,16 @@ export function SuggestionCard({ orgId, row }: { orgId: Id<"orgs">; row: Suggest
           })}
         </ul>
       )}
-      <p className="text-muted-foreground">{suggestion.reason}</p>
+      <p className="text-muted-foreground">“{suggestion.reason}”</p>
       {(pending || conflicted) && (
         <div className="flex gap-2">
           {pending && (
-            <Button size="sm" disabled={busy} onClick={() => act(() => apply({ orgId, suggestionId: suggestion._id }), "Applied")}>
+            // Outline, not filled: a page can hold several of these, and filled teal is kept to one per screen.
+            <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" disabled={busy} onClick={() => act(() => apply({ orgId, suggestionId: suggestion._id }), "Applied")}>
               Apply
             </Button>
           )}
-          <Button size="sm" variant="outline" disabled={busy} onClick={() => act(() => dismiss({ orgId, suggestionId: suggestion._id }), "Dismissed")}>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => act(() => dismiss({ orgId, suggestionId: suggestion._id }), "Dismissed")}>
             Dismiss
           </Button>
         </div>

@@ -22,7 +22,7 @@ export default function App() {
     <>
       <Toaster position="top-center" />
       <AuthLoading>
-        <Loading />
+        <Loading page />
       </AuthLoading>
       <Unauthenticated>
         <SignInPage />
@@ -61,7 +61,7 @@ function Stored({ children }: { children: ReactNode }) {
   useEffect(() => {
     store({ profile: { name, email, imageUrl } }).catch(console.error);
   }, [store, name, email, imageUrl]);
-  if (!me) return <Loading />;
+  if (!me) return <Loading page />;
   return children;
 }
 

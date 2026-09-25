@@ -21,7 +21,7 @@ export class ErrorBoundary extends Component<Props, State> {
       <div className="mx-auto grid max-w-md gap-3 px-4 py-16 text-center">
         <p className="font-medium">That link did not work.</p>
         <p className="text-sm text-muted-foreground">{errorMessage(this.state.error)}</p>
-        <Link to="/" className="text-sm underline">
+        <Link to="/" className="text-sm text-primary hover:underline">
           Go to my organisations
         </Link>
       </div>

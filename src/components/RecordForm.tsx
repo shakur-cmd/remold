@@ -24,12 +24,19 @@ type Props = {
   duplicates?: { objectId: Id<"objects">; titleFieldId?: Id<"fields"> };
 };
 
+// A first record should come fast: the first few fields show, the rest wait behind a toggle.
+const FIRST = 4;
+
 export function RecordForm({ orgId, fields, initial = {}, hidden = [], submitLabel = "Save", onSubmit, onCancel, duplicates }: Props) {
   const [values, setValues] = useState<Values>(initial);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [all, setAll] = useState(false);
   // Polymorphic lookups (no target object) are set by the page, never typed by hand.
-  const visible = fields.filter((f) => !f.retired && !hidden.includes(f._id) && !(f.type === "lookup" && !f.targetObjectId));
+  const writable = fields.filter((f) => !f.retired && !hidden.includes(f._id) && !(f.type === "lookup" && !f.targetObjectId));
+  // Required fields always show; a field someone already filled stays visible.
+  const visible = all ? writable : writable.filter((f, i) => i < FIRST || f.required || values[f._id] !== undefined);
+  const more = writable.length - visible.length;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -50,12 +57,17 @@ export function RecordForm({ orgId, fields, initial = {}, hidden = [], submitLab
         <div key={field._id} className="grid gap-1.5">
           <Label htmlFor={field._id}>
             {field.label}
-            {field.required && <span className="text-destructive"> *</span>}
+            {field.required && <span className="font-normal text-muted-foreground">required</span>}
           </Label>
           <FieldInput orgId={orgId} field={field} value={values[field._id]} onChange={(v) => setValues((prev) => ({ ...prev, [field._id]: v }))} />
           {duplicates && field._id === duplicates.titleFieldId && <Similar orgId={orgId} objectId={duplicates.objectId} text={String(values[field._id] ?? "")} />}
         </div>
       ))}
+      {more > 0 && (
+        <Button type="button" variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => setAll(true)}>
+          Show {more} more {more === 1 ? "field" : "fields"}
+        </Button>
+      )}
       {error && (
         <p className="text-sm text-destructive" role="alert">
           {error}
@@ -129,7 +141,8 @@ function Similar({ orgId, objectId, text }: { orgId: Id<"orgs">; objectId: Id<"o
   const hits = useQuery(api.records.search, text.trim().length >= 3 ? { orgId, objectId, text, limit: 3 } : "skip");
   if (!hits?.length) return null;
   return (
-    <p className="text-xs text-amber-700 dark:text-amber-400">
+    <p className="text-xs text-muted-foreground">
+      <span className="mr-1 inline-block size-1.5 rounded-full bg-warning align-middle" aria-hidden />
       Already have: {hits.map((hit) => hit.title || "Untitled").join(", ")}
     </p>
   );
