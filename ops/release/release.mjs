@@ -65,8 +65,10 @@ export function validateReleaseNotes(notes, changedFiles) {
 }
 // Underscore tables are Convex system metadata, which survives even when every app table is emptied.
 const appDocuments = canonical => Object.entries(canonical?.tables ?? {}).reduce((sum, [name, table]) => name.startsWith('_') ? sum : sum + table.count, 0);
-export function preflight(manifest, targetSha, targetSchemaDigest, snapshotReceipt, manifestSha256, expectedBackup) {
+export function preflight(manifest, targetSha, targetSchemaDigest, snapshotReceipt, manifestSha256, expectedBackup, targetHasAuthority) {
   requireSha(targetSha);
+  // Fails closed: the caller must prove the target contains the I1 authority core.
+  if (targetHasAuthority !== true) throw new Error('Rollback target predates the I1 authority core; after the I1 freeze it would drop masks and record scopes');
   if (targetSha !== manifest.release.rollbackTarget) throw new Error('Rollback target is not the declared compatible commit');
   if (targetSchemaDigest !== manifest.schemaSha256) throw new Error('Rollback schema differs; destructive or earlier schema rollback is unsupported');
   if (manifest.release.class !== 'ui-only') {
@@ -83,6 +85,13 @@ export function preflight(manifest, targetSha, targetSchemaDigest, snapshotRecei
     return { snapshot: 'restored-and-validated', snapshotSha256: snapshotReceipt.snapshotSha256, deploymentAuthorized: false };
   }
   return { snapshot: 'not-required', deploymentAuthorized: false };
+}
+// The I1 authority core (masks, record scopes, frozen legacy grants). Code without it reads
+// I1-era data as if every agent and member were unrestricted, so it is never a rollback target.
+const AUTHORITY_CORE = ['convex/authority/migration.ts', 'convex/authority/reads.ts'];
+export function authorityFloor(cwd, targetSha) {
+  requireSha(targetSha);
+  return AUTHORITY_CORE.every(path => spawnSync('git', ['cat-file', '-e', `${targetSha}:${path}`], { cwd }).status === 0);
 }
 function git(cwd, ...args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
@@ -148,7 +157,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToP
       const receipt = notes ? JSON.parse(readFileSync(notes, 'utf8')) : undefined;
       // The operator names the real backup file; its bytes, not the receipt, define the expected snapshot.
       const expected = snapshot ? { snapshotSha256: digest(readFileSync(snapshot)), canonical: canonical(snapshot) } : undefined;
-      console.log(JSON.stringify(preflight(manifest, manifest.release.rollbackTarget, digest(schema), receipt, third, expected)));
+      console.log(JSON.stringify(preflight(manifest, manifest.release.rollbackTarget, digest(schema), receipt, third, expected, authorityFloor(process.cwd(), manifest.release.rollbackTarget))));
     } else if (command === 'snapshot') {
       const manifest = verifyArtifact(directory, sha, third);
       assertClean(notes, sha);
