@@ -1,0 +1,95 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-rMpCQt[39m
+
+ [31m❯[39m ops/authority/oracles.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[32m 165[2mms[22m[39m
+[31m   [31m×[31m CSV import skips only readable duplicates; an unreadable existing name looks like a new one[39m[32m 73[2mms[22m[39m
+[31m   [31m×[31m CSV lookup columns treat an unreadable linked name like a missing one[39m[32m 8[2mms[22m[39m
+[31m   [31m×[31m browser capture treats an unreadable existing company like a missing one[39m[32m 9[2mms[22m[39m
+[31m   [31m×[31m agent proposals check proposal scope before resolving a lookup by name[39m[32m 75[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:10:47
+[2m   Duration [22m 283ms[2m (tests 70%, transform 22%, import 7%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/oracles.test.ts[2m > [22mCSV import skips only readable duplicates; an unreadable existing name looks like a new one
+[31m[1mAssertionError[22m: expected 2 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 2[39m
+
+[36m [2m❯[22m ops/authority/oracles.test.ts:[2m24:26[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/oracles.test.ts[2m > [22mCSV lookup columns treat an unreadable linked name like a missing one
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "Company: no Company named \"<name>\"",[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m ops/authority/oracles.test.ts:[2m32:29[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/oracles.test.ts[2m > [22mbrowser capture treats an unreadable existing company like a missing one
+[31m[1mAssertionError[22m: expected { ok: true, value: { …(3) } } to deeply equal { ok: false, error: { …(2) } }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "error": {[39m
+[32m-     "code": "FORBIDDEN",[39m
+[32m-     "message": "Record scope does not authorize new records",[39m
+[31m+   "ok": true,[39m
+[31m+   "value": {[39m
+[31m+     "companyCreated": false,[39m
+[31m+     "objectKey": "company",[39m
+[31m+     "recordId": "0000000000000000000010050records",[39m
+[2m    },[22m
+[32m-   "ok": false,[39m
+[2m  }[22m
+
+[36m [2m❯[22m ops/authority/oracles.test.ts:[2m38:30[22m[39m
+    [90m 36|[39m   const f = await scopedWorkspace(); await restrictToMine(f);
+    [90m 37|[39m   const save = (name: string) => outcome(() => f.client.mutation(api.c…
+    [90m 38|[39m   expect(await save(SECRET)).toEqual(await save(MISSING));
+    [90m   |[39m                              [31m^[39m
+    [90m 39|[39m   expect(await save('My Co')).toMatchObject({ ok: true, value: { compa…
+    [90m 40|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/oracles.test.ts[2m > [22magent proposals check proposal scope before resolving a lookup by name
+[31m[1mAssertionError[22m: expected 201 to be 400 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 400[39m
+[31m+ 201[39m
+
+[36m [2m❯[22m ops/authority/oracles.test.ts:[2m56:25[22m[39m
+    [90m 54|[39m   await grant('propose', person.object._id, [pat], [person.fields.comp…
+    [90m 55|[39m   const secret = await propose(SECRET);
+    [90m 56|[39m   expect(secret.status).toBe(400); expect(secret).toEqual(await propos…
+    [90m   |[39m                         [31m^[39m
+    [90m 57|[39m   expect((await propose('My Co')).status).toBe(201);
+    [90m 58|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+

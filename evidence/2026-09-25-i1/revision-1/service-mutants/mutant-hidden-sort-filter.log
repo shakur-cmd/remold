@@ -1,0 +1,21 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: member filter by a hidden field: allowed
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-sweeps.mjs:156:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:21:76)
+    at async Object.replaySweeps [as sweeps] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-sweeps.mjs:130:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:56:84)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:17:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'allowed',
+  expected: /refused: Field not found/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

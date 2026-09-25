@@ -1,0 +1,77 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (2 tests | 1 failed) 15ms
+   × every frozen H0 replay group maps to production tests that exercise its operations 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations
+AssertionError: expected [ …(43) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "A/B known-ID isolation, server-derived actors and full binding tuple collision: mapped tests never fire an actor, provision, bind, claim, issue a permit, consume a permit",
++   "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation: mapped tests never attempt an out-of-scope grant",
++   "Explicit manage lists cannot authorize firing or regranting an ancestor: mapped tests never fire an actor, attempt an out-of-scope grant",
++   "Direct mode executes without human approval; propose mode and invalidated direct grant refuse: mapped tests never revoke a grant, claim",
++   "Delegation ancestry revokes queued/read/model paths while independent human grant survives: mapped tests never fire an actor, claim",
++   "Read scopes restrict object/records/fields and every SIM surface has a leakable shape: mapped tests never fire an actor, attempt an out-of-scope grant",
++   "Final permit rechecks expired authority without a sweep and honors schedule: mapped tests never claim",
++   "Before-permit fire refuses; after-permit fire preserves one late outcome: mapped tests never fire an actor, claim, issue a permit, consume a permit",
++   "Scoped adapter cannot permit, consume, reconcile, callback or provision in B: mapped tests never claim, issue a permit, consume a permit",
++   "Lost acceptance response reconciles once; missing usage blocks cheaper new spend: mapped tests never mark outcome unknown, reconcile a provider result, claim, issue a permit, consume a permit",
++   "Concurrent logical calls/claims and org budget reservations serialize on real backend: mapped tests never claim",
++   "Per-run/global spend and global concurrency caps bound both tenants: mapped tests never claim",
++   "Model continuation rechecks authority, step/fence and remaining exposure: mapped tests never fire an actor, claim, issue a permit, consume a permit",
++   "Expired unconsumed permits retry safely; consumed crash becomes unknown: mapped tests never claim, issue a permit, consume a permit",
++   "Unknown authoritative absence never resends after firing; terminal rejection releases reservation: mapped tests never fire an actor, record provider absence, mark outcome unknown, fail an attempt, claim, issue a permit, consume a permit",
++   "Authoritative absence and retryable rejection preserve logical key and revalidate new permits: mapped tests never fire an actor, record provider absence, mark outcome unknown, fail an attempt, claim, issue a permit, consume a permit",
++   "Material edits, audience, currency and approval expiry invalidate immutable snapshot: mapped tests never edit a payload",
++   "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly: mapped tests never cancel, deliver a callback, set readonly, claim",
++   "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship: mapped tests never fire an actor, cancel, set readonly, claim, issue a permit, consume a permit",
++   "Provisioning durable intents preserve delete-before/create-before races: mapped tests never provision",
++   "Partial traversal commits only full checkpoints and later traversal resumes without regression: mapped tests never page a traversal",
++   "Durable cancellation survives rejection, absence, expiry and model continuation: mapped tests never record provider absence, mark outcome unknown, fail an attempt, cancel, claim, issue a permit, consume a permit",
++   "Scoped adapter sees cancellation signal and records one late accepted tail: mapped tests never fire an actor, cancel, claim, issue a permit, consume a permit",
++   "Late consumed outcome settles once after provisional or final absent lookup: mapped tests never fire an actor, record provider absence, mark outcome unknown, claim, issue a permit, consume a permit",
++   "Per-call remaining exposure, missing usage and actual overruns fence final dispatch: mapped tests never reconcile a provider result, clear an anomaly, claim, issue a permit, consume a permit",
++   "Conflicting provider reference refuses durably and holds spend without rolling back anomaly: mapped tests never reconcile a provider result, claim, issue a permit, consume a permit",
++   "Per-recipient and per-purpose suppression never changes another contact or tenant: mapped tests never deliver a callback, claim, issue a permit, consume a permit",
++   "Server scheduler recovers adapter crashes without a callback or manual expiry call: mapped tests never claim, issue a permit, consume a permit",
++   "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives: mapped tests never revoke a grant, claim",
++   "Unresolved consumed attempt survives sweep and holds global exposure: mapped tests never fire an actor, record provider absence, mark outcome unknown, fail an attempt, claim, issue a permit, consume a permit",
++   "Unresolved consumed attempt survives expiry and holds global exposure: mapped tests never fire an actor, record provider absence, mark outcome unknown, fail an attempt, claim, issue a permit, consume a permit",
++   "Unresolved consumed attempt survives failure and holds global exposure: mapped tests never fire an actor, record provider absence, mark outcome unknown, fail an attempt, claim, issue a permit, consume a permit",
++   "Cancellation cannot release confirmed work with missing usage: mapped tests never reconcile a provider result, cancel, claim, issue a permit, consume a permit",
++   "Unconsumed unknown is ignored and scheduler recovers false: mapped tests never mark outcome unknown, cancel, claim, issue a permit",
++   "Unconsumed unknown is ignored and scheduler recovers true: mapped tests never mark outcome unknown, cancel, claim, issue a permit",
++   "Single-step accepted overrun remains confirmed false: mapped tests never reconcile a provider result, claim, issue a permit, consume a permit",
++   "Single-step accepted overrun remains confirmed true: mapped tests never reconcile a provider result, claim, issue a permit, consume a permit",
++   "Exhausted successful continuation settles and releases its slot: mapped tests never claim, issue a permit, consume a permit",
++   "Suppression without an existing purpose/channel row is durable: mapped tests never deliver a callback",
++   "Settled-step provisional absence cannot settle a later unresolved step: mapped tests never record provider absence, mark outcome unknown, claim, issue a permit, consume a permit",
++   "Settled-step final absence cannot settle a later unresolved step: mapped tests never record provider absence, mark outcome unknown, claim, issue a permit, consume a permit",
++   "Old consumed fence for the same unresolved step still supports provisional absence: mapped tests never record provider absence, mark outcome unknown, cancel, claim, issue a permit, consume a permit",
++   "Old consumed fence for the same unresolved step still supports final absence: mapped tests never record provider absence, mark outcome unknown, cancel, claim, issue a permit, consume a permit",
++ ]
+
+ ❯ ops/authority/h0-parity.test.ts:61:16
+     59|     if (missing.length) gaps.push(`${row.h0}: mapped tests never ${mis…
+     60|   }
+     61|   expect(gaps).toEqual([]);
+       |                ^
+     62| });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  11:02:05
+   Duration  87ms (tests 45%, transform 37%, import 14%, worker 4%)
+

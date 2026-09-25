@@ -1,0 +1,20 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: backend/function log contains the forwarded body field: Object: {bindingId: "k17896qxkga6s8pe2dx90ba5fs8f3ptt", credentialHash: "f895f231d111eb57f2095ee678df3a61a7cc428b8c5c69f0622cef5d87e2d395", providerSignature: "<forwarded body field>"}
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-secrets.mjs:80:14
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:21:76)
+    at async Object.replaySecrets [as secrets] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-secrets.mjs:53:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:56:84)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:17:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

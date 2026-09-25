@@ -1,0 +1,35 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-rMpCQt[39m
+
+ [31m❯[39m ops/authority/oracles.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 160[2mms[22m[39m
+   [32m✓[39m CSV import skips only readable duplicates; an unreadable existing name looks like a new one[32m 72[2mms[22m[39m
+   [32m✓[39m CSV lookup columns treat an unreadable linked name like a missing one[32m 7[2mms[22m[39m
+   [32m✓[39m browser capture treats an unreadable existing company like a missing one[32m 8[2mms[22m[39m
+[31m   [31m×[31m agent proposals check proposal scope before resolving a lookup by name[39m[32m 72[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:10:47
+[2m   Duration [22m 278ms[2m (tests 71%, transform 21%, import 7%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/oracles.test.ts[2m > [22magent proposals check proposal scope before resolving a lookup by name
+[31m[1mAssertionError[22m: expected { status: 400, …(1) } to deeply equal { status: 403, …(1) }[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  {[22m
+[32m-   "body": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Proposal scope required\"}}",[39m
+[32m-   "status": 403,[39m
+[31m+   "body": "{\"error\":{\"code\":\"VALIDATION\",\"fieldKey\":\"company\",\"message\":\"No Company named \\\"<name>\\\"\"}}",[39m
+[31m+   "status": 400,[39m
+[2m  }[22m
+
+[36m [2m❯[22m ops/authority/oracles.test.ts:[2m51:33[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+

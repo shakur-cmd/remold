@@ -1,0 +1,45 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/inventory.test.ts (2 tests | 1 failed) 226ms
+   ❯ authority inventory (2)
+     × lists every registered function, concrete HTTP branch, cron and scheduled target 194ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/inventory.test.ts > authority inventory > lists every registered function, concrete HTTP branch, cron and scheduled target
+AssertionError: expected [ …(185) ] to deeply equal [ …(186) ]
+
+- Expected
++ Received
+
+@@ -334,17 +334,10 @@
+      "principal": "agent",
+      "visibility": "http",
+      "writes": false,
+    },
+    {
+-     "id": "HTTP GET /api/v1/records/:id/dump",
+-     "kind": "route",
+-     "principal": "agent",
+-     "visibility": "http",
+-     "writes": false,
+-   },
+-   {
+      "id": "HTTP GET /api/v1/records/:id/events",
+      "kind": "route",
+      "principal": "agent",
+      "visibility": "http",
+      "writes": false,
+
+ ❯ ops/authority/inventory.test.ts:85:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  10:58:06
+   Duration  310ms (tests 89%, transform 8%, import 3%, worker 1%)
+
