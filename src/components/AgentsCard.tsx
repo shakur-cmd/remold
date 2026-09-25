@@ -54,7 +54,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
                 <span className={agent.revokedAt ? "text-muted-foreground line-through" : "font-medium"}>{agent.name}</span>
                 <code className="text-xs text-muted-foreground">{agent.keyPrefix}…</code>
                 <Badge variant="outline">{agent.role}</Badge>
-                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "anything" : g.objectKey}`).join(", ")}` : "proposes only"}</span>
+                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "all pre-migration objects" : g.objectKey}`).join(", ")}` : "proposes only"}</span>
                 {admin && !agent.revokedAt && (
                   <span className="ml-auto flex gap-1">
                     <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => attempt(() => setSharedInbox({ orgId, agentId: agent._id, enabled: !agent.sharedInbox }), agent.sharedInbox ? "Shared inbox disabled" : "Shared inbox enabled for eligible reads")}>
@@ -118,7 +118,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
                   </tr>
                 </thead>
                 <tbody>
-                  {[{ key: "*", label: "Everything" }, ...objects.map((o) => ({ key: o.key, label: o.labelPlural }))].map((o) => (
+                  {[{ key: "*", label: "All current objects" }, ...objects.map((o) => ({ key: o.key, label: o.labelPlural }))].map((o) => (
                     <tr key={o.key} className="border-t">
                       <td className="py-1.5">{o.label}</td>
                       {ACTIONS.map((action) => (
