@@ -7,31 +7,31 @@ import {makeFunctionReference} from 'convex/server';
 import {withRecurring} from './local.mjs';
 import {recurringAdapter} from './adapter.mjs';
 import {preserveFailure} from './provider-evidence.mjs';
-import {settledCancellation} from './settled-cancellation.mjs';
 import {provider,credentials,API_VERSION,OutcomeUnknown} from '../stripe.mjs';
 import {claimJournal} from '../continuation.mjs';
 import {listen} from '../webhooks.mjs';
 import {proveNoPlatformFee} from '../invoice-contract.mjs';
 import {boundedRecurringProvider,D,E,RUN} from './sandbox-policy.mjs';
-import {loadSecondStop,NEXT_CONTINUATION as CONTINUATION} from './continuation.mjs';
+import {loadFirstStop,CONTINUATION} from './continuation.mjs';
 assert.deepEqual(process.argv.slice(2), ['--continue-reviewed-fixture'], 'Explicit reviewed fixture invocation required');
-const manifest = JSON.parse(readFileSync(new URL('../evidence/recurring-sandbox-continuation-2/source.json', import.meta.url)));
+const manifest = JSON.parse(readFileSync(new URL('../evidence/recurring-sandbox-continuation/source.json', import.meta.url)));
 for (const [file,hash] of Object.entries(manifest.files)) assert.equal(createHash('sha256').update(readFileSync(new URL(file,import.meta.url))).digest('hex'),hash,'Unreviewed fixture source');
 assert.equal(createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.keys(manifest.files).sort().map(file => [file,manifest.files[file]])))).digest('hex'),manifest.aggregate,'Source aggregate mismatch');
-const approval = JSON.parse(readFileSync(new URL('../evidence/recurring-sandbox-continuation-2/approval.json', import.meta.url)));
+const approval = JSON.parse(readFileSync(new URL('../evidence/recurring-sandbox-continuation/approval.json', import.meta.url)));
 assert.equal(approval.aggregate,manifest.aggregate); assert.equal(approval.localSource,'APPROVE'); assert.equal(approval.sandboxExecution,'APPROVE');
-const prior = loadSecondStop();
+const prior = loadFirstStop();
 const start = prior.start, raw = provider(credentials()), registry = prior.registry;
 const journal = claimJournal(fileURLToPath(new URL('./private/',import.meta.url)),CONTINUATION,{parentJournalSha256:prior.journalSha,sourceAggregate:manifest.aggregate,start,apiVersion:API_VERSION,accounts:{D,E},exposureMinor:2709,maxCollectedMinor:1806});
-const stripe = boundedRecurringProvider(raw,journal,registry,start,prior.spent), evidence = new URL('../evidence/recurring-sandbox-continuation-2/',import.meta.url);
+const stripe = boundedRecurringProvider(raw,journal,registry,start,prior.spent), evidence = new URL('../evidence/recurring-sandbox-continuation/',import.meta.url);
 mkdirSync(evidence,{recursive:true});
-const proof = {run:CONTINUATION,continues:prior.proof.run,priorJournalSha256:prior.journalSha,level:'SANDBOX Stripe; SERVICE isolated local Convex; SIM financial terms and identities',start,sourceAggregate:manifest.aggregate,objects:structuredClone(prior.proof.objects),knownSetupInventory:prior.setupInventory,checks:[],observations:[],invoiceSnapshots:[],feeEvidence:[],webhooks:[],receipts:raw.receipts,counts:stripe.counts,complete:false};
+const proof = {run:CONTINUATION,continues:RUN,priorJournalSha256:prior.journalSha,level:'SANDBOX Stripe; SERVICE isolated local Convex; SIM financial terms and identities',start,sourceAggregate:manifest.aggregate,objects:structuredClone(prior.proof.objects),checks:[],observations:[],invoiceSnapshots:[],feeEvidence:[],webhooks:[],receipts:raw.receipts,counts:stripe.counts,complete:false};
 const save = () => writeFileSync(new URL('provider.json',evidence),JSON.stringify(proof,null,2)+'\n');
 const pass = label => {proof.checks.push(label); save(); console.log('PASS '+label);};
 const get = (path,params={},account=D) => stripe.request('GET',path,params,account);
 const write = (path,params,label) => stripe.request('POST',path,params,D,CONTINUATION+':'+label);
 const completeList = async(path,params) => {const r=await get(path,{...params,limit:100});assert.equal(r.has_more,false);assert(Array.isArray(r.data)&&r.data.length<=100);assert.equal(new Set(r.data.map(x=>x.id)).size,r.data.length);return r.data;};
 const scopedRefusal = async path => {for(const account of [E,undefined])await assert.rejects(stripe.request('GET',path,{},account),error=>error.status===404&&error.code==='resource_missing');};
+const register = (kind,object,extra={}) => {assert.equal(object.livemode,false);assert(typeof object.id==='string');proof.objects.push({kind,id:object.id,...extra});save();};
 async function clockReady(clock,target) {
     for(let n=0;n<60;n++) {
         const result=await get('/v1/test_helpers/test_clocks/'+clock.id); assert.equal(result.id,clock.id); assert.equal(result.livemode,false); assert.equal(result.name,RUN+'-'+clock.label);
@@ -45,11 +45,13 @@ async function verifySetup(setupId,customer) {
     const exact=await get('/v1/setup_intents/'+setupId);assert.equal(exact.id,setupId);assert.equal(exact.status,'succeeded');assert.equal(exact.usage,'off_session');assert.equal(exact.customer,customer);assert.equal(exact.livemode,false);
     const pm=await get('/v1/payment_methods/'+exact.payment_method);assert.equal(pm.id,exact.payment_method);assert.equal(pm.customer,customer);assert.equal(pm.livemode,false);assert.equal(pm.type,'card');registry.paymentMethods.add(pm.id);return setupId;
 }
-
+async function setup(customer,label,method='pm_card_visa') {
+    const s=await write('/v1/setup_intents',{customer,usage:'off_session',payment_method:method,'payment_method_types[0]':'card',confirm:true},'setup-'+label);register('setup-intent',s,{customer});return verifySetup(s.id,customer);
+}
 let listener;
 try {
     proof.platform=await raw.verify();
-    await withRecurring(async({url,cwd,run})=>{
+    await withRecurring(async({url,cwd})=>{
         const client=new ConvexHttpClient(url,{logger:false}),m=(name,args)=>client.mutation(makeFunctionReference(name),args),q=(name,args)=>client.query(makeFunctionReference(name),args);
         const f=prior.fixture;journal.append({kind:'restored-local-fixture',cwd,parentJournalSha256:prior.journalSha});
         for(const [name,account] of [['A',D],['B',E]]) {
@@ -66,15 +68,13 @@ try {
         for(const [customer,clock] of [[customerF,F],[customerH,H]]){
             const c=await get('/v1/customers/'+customer);assert.equal(c.id,customer);assert.equal(c.livemode,false);assert.equal(c.test_clock,clock.id);assert.equal(c.email,null);assert.equal(c.balance,0);assert.equal(c.metadata.remold_fixture,RUN);
             const scoped=await completeList('/v1/customers',{test_clock:clock.id});assert.deepEqual(scoped.map(x=>x.id),[customer],'Clock contains another customer');
-            for(const [path,params,expected] of [['/v1/subscription_schedules',{customer},customer===customerF?[prior.commitment.schedule]:[]],['/v1/subscriptions',{customer,status:'all'},customer===customerF?[prior.commitment.subscription]:[]],['/v1/invoices',{customer},customer===customerF?prior.local.cycles.map(c=>c.invoice):[]]])assert.deepEqual((await completeList(path,params)).map(x=>x.id).sort(),expected.sort(),'Unexpected prior provider inventory');
+            for(const [path,params,expected] of [['/v1/subscription_schedules',{customer},customer===customerF?[prior.commitment.schedule]:[]],['/v1/subscriptions',{customer,status:'all'},customer===customerF?[prior.commitment.subscription]:[]],['/v1/invoices',{customer},customer===customerF?[prior.firstInvoice]:[]]])assert.deepEqual((await completeList(path,params)).map(x=>x.id),expected,'Unexpected prior provider inventory');
         }
         const product=await get('/v1/products/'+registry.product);assert.equal(product.id,registry.product);assert.equal(product.livemode,false);assert.equal(product.active,true);assert.equal(product.metadata.remold_fixture,RUN);
         const price=await get('/v1/prices/'+registry.price);assert.equal(price.id,registry.price);assert.equal(price.product,product.id);assert.equal(price.livemode,false);assert.equal(price.active,true);assert.equal(price.unit_amount,301);assert.equal(price.currency,'usd');assert.equal(price.recurring.interval,'day');assert.equal(price.recurring.interval_count,1);assert.equal(price.recurring.usage_type,'licensed');
         await verifySetup(prior.setupF,customerF);const goodH=await verifySetup(prior.setupH,customerH);
         const restored=await q('recurring:inspect',{token:f.A.sessions.owner,id:prior.commitment.local});assert.deepEqual(restored,{commitment:prior.local.commitment,commands:prior.local.commands,cycles:prior.local.cycles},'Existing local ledger changed');
         const initial=await q('recurring:context',{token:f.A.adapter,id:prior.commitment.local});assert.equal(initial.account,D);assert.equal(initial.environment,'SANDBOX');assert.equal(initial.plan.testClock,F.id);assert.equal(initial.plan.price,price.id);assert.equal(initial.plan.setupIntent,prior.setupF);assert.equal(initial.plan.start,start+60);assert.equal(initial.customer.externalId,customerF);
-        const orgs=run('harness:dump',{orgs:[f.A.org]}).orgs;assert.equal(orgs.length,1);assert.equal(orgs[0]._id,f.A.org);assert.equal(orgs[0].readonly,true,'F cancellation must reconcile while readonly');
-        for(const inventory of prior.setupInventory){const current=await completeList('/v1/setup_intents',{customer:inventory.customer});assert.deepEqual(current.map(i=>i.id).sort(),inventory.ids.slice().sort(),'Known setup inventory changed');}
         const localCustomer=new Map([[customerF,initial.customer._id]]);
         // H has no prior agreement, so registering its existing provider customer is local-only.
         localCustomer.set(customerH,await m('payments:registerCustomer',{token:f.A.adapter,binding:f.A.binding,externalId:customerH,name:'Synthetic recurring customer'}));
@@ -102,25 +102,20 @@ try {
                 for(const payment of cycle.payments)if(payment.status==='succeeded'&&!proof.feeEvidence.some(x=>x.paymentIntent===payment.id))proof.feeEvidence.push(await proveNoPlatformFee(stripe,{paymentIntent:payment.id,account:D,customer:contexts.get(a.id).customer,amountMinor:payment.amountMinor}));}
             save();assert(!snapshot.commitment.anomaly,'Provider recurring shape anomaly');if(!allowUnresolved)assert.equal(snapshot.commitment.complete,true);assert(snapshot.commitment.paidMinor<=903);return snapshot;
         }
-        async function cancel(a){
-            const cmd=await m('recurring:prepareCommand',{token:owner,id:a.id,kind:'cancel'});assert(cmd);await registerCommand(cmd);await adapter.execute(cmd);
-            const c=(await inspect(a.id)).commitment;
-            await settledCancellation(async()=>{const schedule=await get('/v1/subscription_schedules/'+c.schedule),subscription=await get('/v1/subscriptions/'+c.subscription),invoice=await get('/v1/invoices/'+contexts.get(a.id).firstInvoice);assert.equal(schedule.id,c.schedule);assert.equal(subscription.id,c.subscription);assert.equal(schedule.status,'canceled');assert.equal(subscription.status,'canceled');return{schedule,subscription,invoice};});
-            return observe(a,'cancelled-readback',{allowUnresolved:true});
-        }
+        async function changeCard(a,seti){const cmd=await m('recurring:prepareCommand',{token:owner,id:a.id,kind:'card',setupIntent:seti});await registerCommand(cmd);await adapter.execute(cmd);}
+        async function cancel(a){const cmd=await m('recurring:prepareCommand',{token:owner,id:a.id,kind:'cancel'});assert(cmd);await registerCommand(cmd);await adapter.execute(cmd);return observe(a,'cancelled-readback',{allowUnresolved:true});}
         const failed={id:prior.commitment.local},fstart=initial.plan.start;contexts.set(failed.id,{customer:customerF,clock:F,start:fstart,firstInvoice:prior.firstInvoice});
-        let fs=await observe(failed,'F confirmed cancellation reconciled before new effects');
-        assert.equal(fs.commitment.paidMinor,301);assert.equal(fs.commitment.reservedMinor,602);assert.equal(fs.commitment.state,'cancellationPending');assert.equal(fs.cycles.length,2);
-        assert(fs.cycles.some(c=>c.status==='open'&&c.autoAdvance===false));assert.equal(stripe.counts.activate,1);assert.equal(stripe.counts.advance,7);assert.equal(stripe.counts.cancel,1);
-        pass('F completed cancellation observed without repeating it; open invoice retains602 hold');
-        const priorInvoices=fs.cycles.map(c=>c.invoice).sort();proof.retryObserved=false;
-        await advance(F,fstart+172800+3900);fs=await observe(failed,'F after cancellation final advance');assert.deepEqual(fs.cycles.map(c=>c.invoice).sort(),priorInvoices);assert.equal(fs.commitment.paidMinor,301);assert.equal(fs.commitment.reservedMinor,602);
-        await m('harness:control',{token:owner,readonly:false});pass('F final clock advance creates no new invoice or payment; residual invoice remains open');
+        let fs=await observe(failed,'F original payment reconciled before new effects');assert.equal(fs.commitment.paidMinor,301);assert.equal(fs.commitment.reservedMinor,602);assert.equal(fs.cycles.length,1);assert.equal(stripe.counts.activate,1);assert.equal(stripe.counts.advance,2);pass('F original301 reconciled without another charge or advance');
+        const bad=await setup(customerF,'F-fail','pm_card_chargeCustomerFail');await changeCard(failed,bad);await advance(F,fstart+86400+3900);fs=await observe(failed,'F failed renewal');assert.equal(fs.commitment.paidMinor,301);assert.equal(fs.cycles.length,2);const unpaid=fs.cycles.find(x=>x.status==='open');assert(unpaid&&unpaid.payments.some(x=>x.status==='failed'));
+        const retry=await setup(customerF,'F-recovery');await changeCard(failed,retry);
+        for(let n=0;n<4&&fs.commitment.paidMinor===301;n++){const target=Math.min(F.time+21600,fstart+172800-1);if(target<=F.time)break;await advance(F,target);fs=await observe(failed,'F retry '+n);}
+        assert([301,602].includes(fs.commitment.paidMinor));proof.retryObserved=fs.commitment.paidMinor===602;const priorInvoices=fs.cycles.map(x=>x.invoice),priorGross=fs.commitment.paidMinor;
+        await m('harness:control',{token:owner,readonly:true});await cancel(failed);await advance(F,fstart+172800+3900);fs=await observe(failed,'F after cancellation',{allowUnresolved:true});assert.deepEqual(fs.cycles.map(x=>x.invoice).sort(),priorInvoices.sort());assert.equal(fs.commitment.paidMinor,priorGross);await m('harness:control',{token:owner,readonly:false});pass('F failed renewal, bounded automatic retry observation and readonly cancellation');
         const h1=await adopt(customerH,H,goodH,'finite-H');await activate(h1,true);const hstart=contexts.get(h1.id).start;
         for(let n=0;n<4;n++){await advance(H,hstart+n*86400+3900);const hs=await observe(h1,'H1 cycle '+n);assert.equal(hs.commitment.paidMinor,Math.min(n+1,3)*301);if(n===3){assert.equal(hs.commitment.state,'ended');assert.equal(hs.commitment.reservedMinor,0);assert.equal(hs.cycles.length,3);}}
         pass('H1 accepted response loss recovered without recreation; three cycles naturally exhausted');
         const h2=await adopt(customerH,H,goodH,'finite-H');await activate(h2);const h2start=contexts.get(h2.id).start;await advance(H,h2start+3900);let hs=await observe(h2,'H2 first payment');assert.equal(hs.commitment.paidMinor,301);await cancel(h2);await advance(H,h2start+86400+3900);hs=await observe(h2,'H2 after cancellation');assert.equal(hs.commitment.state,'cancelled');assert.equal(hs.commitment.paidMinor,301);assert.equal(hs.cycles.length,1);pass('H2 fresh accepted replacement and cancellation produce one cycle only');
-        proof.final=await Promise.all([failed,h1,h2].map(a=>inspect(a.id)));assert.equal(proof.final[0].commitment.state,'cancellationPending');assert.equal(proof.final[0].commitment.reservedMinor,602);assert.equal(proof.final[0].commitment.paidMinor,301);assert(proof.final[0].cycles.some(c=>c.status==='open'&&c.autoAdvance===false));assert(Object.values(stripe.counts).reduce((n,c)=>n+c,0)<=31);assert(proof.final.reduce((n,x)=>n+x.commitment.reservedMinor,0)<=2709);assert(proof.final.reduce((n,x)=>n+x.commitment.paidMinor,0)<=1806);const finalE=await get('/v1/test_helpers/test_clocks',{limit:100},E);assert.equal(finalE.has_more,false);proof.eClockIdsAfter=finalE.data.map(x=>x.id).sort();assert.deepEqual(proof.eClockIdsAfter,proof.eClockIdsBefore);proof.complete=true;proof.remaining=['future-start binding/cancellation','signed durable recurring ingestion','monthly cadence','independent provider readback','full P4/I1/I7 and live financial gates'];save();
+        proof.final=await Promise.all([failed,h1,h2].map(a=>inspect(a.id)));assert(proof.final.reduce((n,x)=>n+x.commitment.paidMinor,0)<=1806);const finalE=await get('/v1/test_helpers/test_clocks',{limit:100},E);assert.equal(finalE.has_more,false);proof.eClockIdsAfter=finalE.data.map(x=>x.id).sort();assert.deepEqual(proof.eClockIdsAfter,proof.eClockIdsBefore);proof.complete=true;proof.remaining=['future-start binding/cancellation','signed durable recurring ingestion','monthly cadence','independent provider readback','full P4/I1/I7 and live financial gates'];save();
     },{resumeDirectory:prior.local.cwd});
 } catch(error) {proof.failure=preserveFailure(journal,error);save();console.error('STOP: '+proof.failure.category+'; private diagnostic retained');process.exitCode=1;}
 finally {await listener?.stop();save();}
