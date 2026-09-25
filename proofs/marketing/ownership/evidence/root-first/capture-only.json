@@ -1,0 +1,168 @@
+{
+  "status": "PASS",
+  "level": "SERVICE raw capture-only native forms; no edge promotion or core Person reconciliation",
+  "evidence": [
+    {
+      "tenant": "a",
+      "formId": 5,
+      "responses": [
+        {
+          "status": 200,
+          "success": 1
+        },
+        {
+          "status": 200,
+          "success": 1
+        },
+        {
+          "status": 200,
+          "success": 1
+        },
+        {
+          "status": 200,
+          "success": 1
+        }
+      ],
+      "captured": [
+        {
+          "id": 20,
+          "contactId": null,
+          "results": {
+            "email": "ownership-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Existing suggestion 1"
+          }
+        },
+        {
+          "id": 21,
+          "contactId": null,
+          "results": {
+            "email": "intake-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Concurrent suggestion 2"
+          }
+        },
+        {
+          "id": 22,
+          "contactId": null,
+          "results": {
+            "email": "intake-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Concurrent suggestion 1"
+          }
+        },
+        {
+          "id": 23,
+          "contactId": null,
+          "results": {
+            "email": "ownership-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Existing suggestion 2"
+          }
+        }
+      ],
+      "before": {
+        "contacts": 176,
+        "anonymousContacts": 24,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 19,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "after": {
+        "contacts": 176,
+        "anonymousContacts": 24,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 23,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "existingContactId": 177,
+      "existingProfileAndSuppressionUnchanged": true,
+      "campaignMemberships": {
+        "before": 135,
+        "after": 135
+      },
+      "newEmailNativeContacts": 0
+    },
+    {
+      "tenant": "b",
+      "formId": 3,
+      "responses": [
+        {
+          "status": 200,
+          "success": 1
+        },
+        {
+          "status": 200,
+          "success": 1
+        },
+        {
+          "status": 200,
+          "success": 1
+        },
+        {
+          "status": 200,
+          "success": 1
+        }
+      ],
+      "captured": [
+        {
+          "id": 10,
+          "contactId": null,
+          "results": {
+            "email": "ownership-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Existing suggestion 1"
+          }
+        },
+        {
+          "id": 11,
+          "contactId": null,
+          "results": {
+            "email": "ownership-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Existing suggestion 2"
+          }
+        },
+        {
+          "id": 12,
+          "contactId": null,
+          "results": {
+            "email": "intake-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Concurrent suggestion 1"
+          }
+        },
+        {
+          "id": 13,
+          "contactId": null,
+          "results": {
+            "email": "intake-0f76f437-566b-42ac-a615-4d8816029e2d@example.invalid",
+            "firstname": "Concurrent suggestion 2"
+          }
+        }
+      ],
+      "before": {
+        "contacts": 28,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 9,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "after": {
+        "contacts": 28,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 13,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "existingContactId": 29,
+      "existingProfileAndSuppressionUnchanged": true,
+      "campaignMemberships": {
+        "before": 0,
+        "after": 0
+      },
+      "newEmailNativeContacts": 0
+    }
+  ]
+}

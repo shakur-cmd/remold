@@ -1,0 +1,206 @@
+{
+  "status": "PASS",
+  "level": "SERVICE bounded native kiosk form revision, no public-edge or CRM integration",
+  "rows": [
+    {
+      "tenant": "a",
+      "originalContactId": 179,
+      "canonicalContactId": 180,
+      "recoveryBefore": {
+        "id": 180,
+        "firstname": "Public replacement a",
+        "lastname": "Stable owner a",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": []
+      },
+      "before": {
+        "id": 180,
+        "firstname": "Remold owned a",
+        "lastname": "Stable owner a",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "id": 6,
+            "reason": 3,
+            "comments": "Restore owned synthetic suppression after demonstrated native merge",
+            "channel": "email",
+            "channelId": null
+          }
+        ]
+      },
+      "after": {
+        "id": 180,
+        "firstname": "Remold owned a",
+        "lastname": "Stable owner a",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "id": 6,
+            "reason": 3,
+            "comments": "Restore owned synthetic suppression after demonstrated native merge",
+            "channel": "email",
+            "channelId": null
+          }
+        ]
+      },
+      "formId": 6,
+      "kioskMode": true,
+      "fields": [
+        {
+          "alias": "email",
+          "mappedObject": "contact",
+          "mappedField": "email",
+          "leadField": "email",
+          "saveResult": true
+        },
+        {
+          "alias": "firstname",
+          "mappedObject": null,
+          "mappedField": null,
+          "leadField": null,
+          "saveResult": true
+        },
+        {
+          "alias": "submit",
+          "mappedObject": null,
+          "mappedField": null,
+          "leadField": null,
+          "saveResult": true
+        }
+      ],
+      "submission": {
+        "id": 25,
+        "leadId": 180,
+        "results": {
+          "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+          "firstname": "Kiosk suggestion a"
+        }
+      },
+      "beforeCounters": {
+        "contacts": 177,
+        "anonymousContacts": 24,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 24,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "countersAfter": {
+        "contacts": 177,
+        "anonymousContacts": 24,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 25,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "originalFormUnchanged": true
+    },
+    {
+      "tenant": "b",
+      "originalContactId": 30,
+      "canonicalContactId": 31,
+      "recoveryBefore": {
+        "id": 31,
+        "firstname": "Public replacement b",
+        "lastname": "Stable owner b",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": []
+      },
+      "before": {
+        "id": 31,
+        "firstname": "Remold owned b",
+        "lastname": "Stable owner b",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "id": 4,
+            "reason": 3,
+            "comments": "Restore owned synthetic suppression after demonstrated native merge",
+            "channel": "email",
+            "channelId": null
+          }
+        ]
+      },
+      "after": {
+        "id": 31,
+        "firstname": "Remold owned b",
+        "lastname": "Stable owner b",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "id": 4,
+            "reason": 3,
+            "comments": "Restore owned synthetic suppression after demonstrated native merge",
+            "channel": "email",
+            "channelId": null
+          }
+        ]
+      },
+      "formId": 4,
+      "kioskMode": true,
+      "fields": [
+        {
+          "alias": "email",
+          "mappedObject": "contact",
+          "mappedField": "email",
+          "leadField": "email",
+          "saveResult": true
+        },
+        {
+          "alias": "firstname",
+          "mappedObject": null,
+          "mappedField": null,
+          "leadField": null,
+          "saveResult": true
+        },
+        {
+          "alias": "submit",
+          "mappedObject": null,
+          "mappedField": null,
+          "leadField": null,
+          "saveResult": true
+        }
+      ],
+      "submission": {
+        "id": 15,
+        "leadId": 31,
+        "results": {
+          "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+          "firstname": "Kiosk suggestion b"
+        }
+      },
+      "beforeCounters": {
+        "contacts": 29,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 14,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "countersAfter": {
+        "contacts": 29,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 15,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "originalFormUnchanged": true
+    }
+  ]
+}
