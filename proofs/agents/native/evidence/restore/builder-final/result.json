@@ -1,0 +1,81 @@
+{
+  "pass": true,
+  "level": "SERVICE actual local Convex export/import/storage; SIM sessions,key,file,DB-backed provider receipt",
+  "results": [
+    {
+      "name": "Real separate empty deployment baseline has no task, session or receipt before import",
+      "pass": true
+    },
+    {
+      "name": "Table-only restore and missing key refused; full archive/key restores exact tables, file bytes and completed result",
+      "pass": true,
+      "tableDigest": "c3ca157d7b835753b9fffbb6c514c99af595f4392ade9378894abfa31ff93630",
+      "counts": {
+        "actors": 8,
+        "bindings": 4,
+        "budgets": 1,
+        "callbacks": 0,
+        "consent": 4,
+        "cursors": 0,
+        "events": 20,
+        "grants": 1,
+        "observations": 0,
+        "operations": 3,
+        "orgs": 2,
+        "provisions": 0,
+        "records": 4,
+        "reports": 0,
+        "sessions": 10,
+        "stubEffects": 2,
+        "tasks": 3
+      },
+      "filePlaintextSha256": "0516f87ac31efd90d38e56129eb19c88dc8809c2661c217008b53fd2756ea7ec",
+      "fileCiphertextSha256": "18a91389ce8bb0621d1ee691d50acf1ea4ecfc2ba3cc49e73131cd35266e6bc0",
+      "archiveSha256": "b39112b7d7cdcba92bd19162c0103663aae29ca4d1b6eada3731272cba2c1ffc",
+      "bundleSha256": "d1d777db686fcf612b14f188f2b3f944e91b7bac947e4c923e07f6d8df283bab"
+    },
+    {
+      "name": "Restore reconciliation uses same logical task/operation and retained receipt with no repeat fake effect; receipt-less operation remains unknown with reservation",
+      "pass": true,
+      "beforeEffects": 2,
+      "afterEffects": 2,
+      "recoveredAttempts": 1,
+      "recoveredReceiptCount": 1,
+      "unknownState": "outcomeUnknown",
+      "unknownReserved": 1,
+      "historyBefore": 20,
+      "historyAfter": 24
+    }
+  ],
+  "commands": [
+    {
+      "command": "export --path data-only.zip",
+      "result": ""
+    },
+    {
+      "command": "export --include-file-storage --path full.zip",
+      "result": ""
+    },
+    {
+      "command": "import data-only.zip into empty disposable target",
+      "result": ""
+    },
+    {
+      "command": "import full.zip --replace into same disposable target",
+      "result": ""
+    }
+  ],
+  "sourceKilled": "SIGKILL after stable unknown snapshot/export",
+  "distinctScratchDeployments": true,
+  "providerCalls": 0,
+  "paidModelCalls": 0,
+  "baselineFilesUnchanged": true,
+  "privateArchivePath": "/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/agents/native/.private/restore/builder-final",
+  "limitations": [
+    "No independently durable remote provider receipt",
+    "No reconciliation of effects accepted after backup snapshot",
+    "No upgrade pin rehearsal",
+    "No hosted or OS isolation proof",
+    "P1 remains open"
+  ]
+}

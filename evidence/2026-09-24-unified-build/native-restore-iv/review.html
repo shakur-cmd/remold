@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Native restore independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Native restore: independent verification</h1><p class="meta">2026-09-24 · verifier /root/i2_release · bounded SERVICE restore, synthetic provider and key</p>
+<div class="decisions"><h2>Verdict: approve bounded rehearsal</h2><p>Four-file candidate <code>b0caacbc0da80aef7af7fe250000b0fdf97aa530d9caa9cf10aa167c13eaeda4</code> passes independent replay and archive checks. This is not full P1 acceptance. No owner decision or account action is needed for this result.</p></div>
+<div class="status"><h2>Independently checked</h2><p>Read the complete additive runner, fixture and report, plus the existing recovery functions and schema. Repeated the actual two-deployment Convex export/import/storage sequence with a fresh label. All three groups and TypeScript passed. Four candidate hashes and all16 predecessor hashes remained unchanged.</p></div>
+<h2>Before and after</h2><table><tr><th>Observed baseline or refusal</th><th>Independent successful check</th></tr>
+<tr><td>New target has zero tasks/effects and rejects the source session before import.</td><td>All17 user tables restore exactly, including IDs and timestamps. Completed task data and prior audit rows persist.</td></tr>
+<tr><td>Table-only import cannot retrieve the stored file. Removing the key prevents decryption.</td><td>Full storage import plus the persisted synthetic key yields identical encrypted bytes and plaintext digest. An additional independent extraction from the ZIP matches the bundle. A changed key and changed ciphertext both fail authenticated decryption.</td></tr>
+<tr><td>Before export, two operations are unknown: one has a DB-backed provider effect and one has no receipt.</td><td>After source termination and restore, the first recovers the same operation, one attempt and one receipt. Duplicate recovery creates no additional effect; total remains2. The receipt-less operation stays unknown with reservation1.</td></tr>
+<tr><td>Independent static review and root both found <code>.private/</code> missing from Git ignore rules; check-ignore exited1. No private paths were tracked.</td><td>Builder added the minimal ignore rule and included it in the four-file freeze. Independent check-ignore now exits0. Private archives, synthetic sessions and keys remain excluded.</td></tr></table>
+<h2>Replay and evidence</h2><pre>node proofs/agents/native/restore-replay.mjs independent-b0caac
+pnpm --dir proofs/agents/native typecheck
+node evidence/2026-09-24-unified-build/native-restore-iv/archive-check.mjs</pre><p>All commands exit0. <a href="replay.txt">Replay output</a> · <a href="result.json">fresh result and table counts</a> · <a href="empty-target-baseline.json">empty target</a> · <a href="incomplete-restore-red.json">storage/key refusals</a> · <a href="archive-check.json">independent archive integrity checks</a> · <a href="typecheck.txt">TypeScript output</a> · <a href="before.json">initial source/ignore check</a> · <a href="verdict.json">final receipt</a> · <a href="source-manifest.json">four-file manifest</a>.</p>
+<h2>Scope limits</h2><p>The provider ledger is a synthetic table restored in the same snapshot. No independently durable remote provider or effect accepted after backup is tested. The source is killed after a stable export, not during a live provider call. This does not establish in-flight scheduler restoration, production key-vault recovery, managed backup retention, upgrades, OS isolation, hosted execution, I1 authorization or whole P1 completion. No provider or model call was made.</p><p>The earlier ten-group native result remains hash-preserved historical evidence; this review did not repeat that unchanged suite. Candidate and payment source files were not edited by this verifier. Ports3570–3573 are released; private archives remain available for inspection.</p></body></html>

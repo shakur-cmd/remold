@@ -1,0 +1,53 @@
+{
+  "gates": [
+    {
+      "id": "G-mail",
+      "blocks": [
+        "P2",
+        "P5",
+        "D0C",
+        "I5",
+        "I8"
+      ],
+      "status": "open",
+      "needed": "Full mail/calendar product integration and remaining P5/P2 criteria. Authorized A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests, plus A to additional recipient shakur@codemyvibe.com for same-sender P/Q fixture. Five FROM each A/B per rolling24h, existing durable ledger retained; no sends from new recipient, customer sends or broad history import.",
+      "accessUpdate": "LIVE reciprocal proof passed: Envoylogic Google sent1, Purelymail reply mailbox sent4, all5 received; reply cut off2planned follow-ups. Initial Message-ID receipt mismatch repaired via exact accepted message lookup, no sends repeated. One authorized primary Envoylogic event created,rescheduled,deleted with no guests; exact-ID GET confirmed cancelled tombstone. Fresh bounded review passed with independent exact-event GET; whole P5 remains open.",
+      "ownerBatch": "Owner answered email batch1a0d5d008fae474c: use shakur@codemyvibe.com as additional recipient. Permission gap resolved; same-sender fixture preparation and actual execution remain open."
+    },
+    {
+      "id": "G-social",
+      "blocks": [
+        "P3",
+        "D0S",
+        "I6"
+      ],
+      "status": "open",
+      "needed": "Provider/developer access and API connections for TikTok @shakur.abdullah5, Instagram @remoldcrm, own LinkedIn, Remold CRM Facebook Page and X @abdullah_s3854. Exact publication content/visibility allowance still needed. CodeMyVibe Instagram deferred.",
+      "accessUpdate": "Remold CRM Facebook Page61594926953344 created and owner controls verified; existing X @abdullah_s3854 recovered; own LinkedIn /in/abdulshakur-abdullah identified. Latest root CUA profile checks verified TikTok @shakur.abdullah5 owner Edit profile controls in Helium and Instagram @remoldcrm Edit profile/View archive in actual Google Chrome. Supersedes earlier signed-out checks. API connections remain unverified; no public posts.",
+      "ownerBatch": "Owner completed requested existing-account sign-ins. No repeat request needed. Evidence: evidence/2026-09-24-unified-build/owner-batch-response.json"
+    }
+  ],
+  "P5": {
+    "id": "P5",
+    "state": "dispatched",
+    "builder": "/root/c0_verifier",
+    "independentVerifier": "/root/h0_builder, bounded code/offline/evidence review and exact calendar GET",
+    "costCap": 0,
+    "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests, plus A\u2192shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Prior A1/B4 count conservatively. No sending from third mailbox. Calendar single event proof consumed; no replay.",
+    "depends": [
+      "H0"
+    ],
+    "allowedPaths": [
+      "proofs/communications/**"
+    ],
+    "environment": "isolated loopback3520/3521, OAuth callback3522, Google staging app only",
+    "scopeNote": "LIVE bounded proof PASS: A1/B4 accepted and observed; reply suppression; one event created/rescheduled/deleted. Fresh independent 29 offline checks and exact cancelled-event witness. Whole P5 open: same-sender two-recipient fixture (additional recipient now authorized), CRM integration, provider restart/watch/history and two-browser proof. Second Google mailbox is not required by sealed P5; prior extra gate corrected after exact Opus 5.5 consultation. Additive durable synthetic import602c2c passed root5groups/3restarts and independent5groups plus alternate6group/4restart replay; provider persistence/integration remains open.",
+    "evidence": "proofs/communications/handover.html",
+    "independentEvidence": "evidence/2026-09-24-unified-build/communications-iv/report.html",
+    "frozenManifest": "bdca8e23ecf927ed4e183ef0c2ae379f63009c99e4839c8a8ab9cc25dac9e069",
+    "scopeClarification": "evidence/2026-09-24-unified-build/opus-p5-mailbox-scope.json",
+    "durableImportManifest": "602c2c323fc2a6032d7ef0070ee013b19ad9c704eadca9d5f839e3db55eb0e56",
+    "durableImportEvidence": "evidence/2026-09-24-unified-build/communications-import-root/report.html",
+    "durableImportIndependentEvidence": "evidence/2026-09-24-unified-build/communications-import-iv/review.html"
+  }
+}
