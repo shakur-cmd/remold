@@ -28,7 +28,7 @@ export async function replayAuthorityBoundaries({ runtime, tenant, test }) {
     const invite = await t.human.mutation(anyApi.invites.create, { orgId: t.orgId, role: 'admin' }); await admin.mutation(anyApi.invites.accept, { token: invite.token });
     const id = await t.propose('approved', 1, 1); await admin.mutation(commands.approve, { orgId: t.orgId, id, expiresAt: Date.now() + 60000 });
     const claimed = await t.claim(id); await t.human.mutation(anyApi.orgs.setRole, { orgId: t.orgId, userId: adminId, role: 'member' });
-    await assert.rejects(t.adapter('permit', { id, ...claimed, worker: 'worker' }), /approval|authority|claim/i); await t.cancel(id);
+    await assert.rejects(t.adapter('permit', { id, ...claimed, worker: 'worker' }), /Approver authority changed/); await t.cancel(id);
   });
   await test('Final permit rechecks missing usage discovered after a different operation was claimed', async () => {
     const t = await tenant('final-missing'), one = await t.propose('first', 4, 1), two = await t.propose('second', 3, 1), c = await t.claim(two), sent = await t.start(one);

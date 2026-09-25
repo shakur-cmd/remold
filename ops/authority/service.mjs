@@ -12,9 +12,13 @@ import { replaySafety } from './service-safety.mjs';
 import { replayOperations } from './service-operations.mjs';
 import { replayInstances } from './service-instances.mjs';
 import { replaySecrets } from './service-secrets.mjs';
+import { replayH0Parity } from './service-h0.mjs';
+import { replaySweeps } from './service-sweeps.mjs';
 const report = await withAuthority(async f => {
   const results = [], fixtures = [];
-  const test = async (name, fn) => { await fn(); results.push({ name, status: 'PASS', level: 'SERVICE local backend and verified synthetic JWT / SIM provider' }); console.log('PASS', name); };
+  // I1_ONLY=<regex> skips non-matching tests inside the selected suites (setup still runs).
+  const only = process.env.I1_ONLY ? new RegExp(process.env.I1_ONLY) : null;
+  const test = async (name, fn) => { if (only && !only.test(name)) return; await fn(); results.push({ name, status: 'PASS', level: 'SERVICE local backend and verified synthetic JWT / SIM provider' }); console.log('PASS', name); };
   const a = f.client('owner-A'), b = f.client('owner-B');
   const userA = await a.mutation(anyApi.users.store, {}), userB = await b.mutation(anyApi.users.store, {});
   const orgA = await a.mutation(anyApi.orgs.create, { name: 'Synthetic A' }), orgB = await b.mutation(anyApi.orgs.create, { name: 'Synthetic B' });
@@ -47,7 +51,7 @@ const report = await withAuthority(async f => {
   });
   f.run('integrations/budgets:configure', { cap: 10000, maxConcurrent: 1000, maxPerRun: 1000, maxSteps: 5, maxRecipients: 100 });
   // I1_SUITES=instances,secrets runs a subset (used by SERVICE mutants); default runs every suite.
-  const suites = { operations: replayOperations, safety: replaySafety, authorityBoundaries: replayAuthorityBoundaries, connections: replayConnections, instances: replayInstances, reads: replayReads, agents: replayAgents, faults: replayFaults, secrets: replaySecrets };
+  const suites = { operations: replayOperations, safety: replaySafety, authorityBoundaries: replayAuthorityBoundaries, connections: replayConnections, instances: replayInstances, reads: replayReads, agents: replayAgents, faults: replayFaults, secrets: replaySecrets, h0: replayH0Parity, sweeps: replaySweeps };
   const selected = process.env.I1_SUITES ? process.env.I1_SUITES.split(',') : Object.keys(suites);
   for (const name of selected) { assert.ok(suites[name], 'Unknown suite ' + name); await suites[name]({ runtime: f, tenant: (label, limits) => tenant(f, label, limits), test }); }
   const exportedFixture = f.exportFixture();

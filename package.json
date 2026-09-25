@@ -25,7 +25,8 @@
     "test:authority": "vitest run --config ops/authority/vitest.config.ts",
     "proof:authority": "node ops/authority/service.mjs",
     "proof:authority-migration": "node ops/authority/migration-service.mjs",
-    "proof:authority-mutants": "node ops/authority/mutations.mjs"
+    "proof:authority-mutants": "node ops/authority/mutations.mjs",
+    "proof:authority-service-mutants": "node ops/authority/mutants-service.mjs"
   },
   "dependencies": {
     "@convex-dev/rate-limiter": "^0.4.0",

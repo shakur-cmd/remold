@@ -7,7 +7,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:objects",
@@ -17,7 +17,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:listRecords",
@@ -27,7 +27,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:getRecord",
@@ -37,7 +37,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:search",
@@ -47,7 +47,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:related",
@@ -57,7 +57,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:today",
@@ -67,7 +67,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:propose",
@@ -77,7 +77,7 @@
     "principal": "agent",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agentApi:change",
@@ -87,7 +87,7 @@
     "principal": "agent",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agentApi:listSuggestions",
@@ -97,7 +97,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:inbox",
@@ -107,7 +107,7 @@
     "principal": "agent",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agentApi:inboxAdd",
@@ -117,7 +117,7 @@
     "principal": "agent",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agentApi:inboxResolve",
@@ -127,7 +127,7 @@
     "principal": "agent",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agents:list",
@@ -137,7 +137,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "agents:create",
@@ -147,7 +147,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agents:insert",
@@ -157,7 +157,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agents:createAs",
@@ -167,7 +167,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "agents:setGrants",
@@ -177,7 +177,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agents:revoke",
@@ -185,9 +185,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agents:setSharedInbox",
@@ -197,7 +197,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "agents:createScoped",
@@ -207,7 +207,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "authority/grants:grant",
@@ -217,7 +217,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "authority/grants:grantAgent",
@@ -227,7 +227,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "authority/grants:revoke",
@@ -235,9 +235,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "authority/grants:revokeAgent",
@@ -247,7 +247,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Delegation revocation changes actual REST read projection while independent human grants survive"
   },
   {
     "id": "authority/grants:fireAgent",
@@ -257,7 +257,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail"
   },
   {
     "id": "authority/migration:freeze",
@@ -267,7 +267,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "migration, retained old MCP/REST transcript"
   },
   {
     "id": "authority/migration:migrateAgent",
@@ -277,7 +277,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "migration, retained old MCP/REST transcript"
   },
   {
     "id": "authority/policies:setMember",
@@ -285,9 +285,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "authority/policies:setAgentMasks",
@@ -295,9 +295,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "capture:save",
@@ -307,7 +307,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "csv:importRows",
@@ -317,7 +317,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "csv:exportPage",
@@ -327,7 +327,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "events:forRecord",
@@ -337,7 +337,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "events:forOrg",
@@ -347,7 +347,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "fields:list",
@@ -357,7 +357,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "fields:create",
@@ -367,7 +367,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "fields:update",
@@ -377,7 +377,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "fields:retire",
@@ -387,7 +387,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "inbox:audience",
@@ -397,7 +397,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "inbox:list",
@@ -407,7 +407,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "inbox:add",
@@ -417,7 +417,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "inbox:remove",
@@ -427,7 +427,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/bindings:provision",
@@ -437,7 +437,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/bindings:bind",
@@ -447,7 +447,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient"
   },
   {
     "id": "integrations/budgets:configure",
@@ -457,7 +457,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "integrations/budgets:clearAnomaly",
@@ -467,7 +467,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "integrations/callbacks:callback",
@@ -477,7 +477,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
   },
   {
     "id": "integrations/callbacks:receive",
@@ -487,7 +487,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
   },
   {
     "id": "integrations/callbacks:page",
@@ -497,7 +497,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
   {
     "id": "integrations/commands:proposeHuman",
@@ -507,7 +507,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:proposeAgent",
@@ -517,7 +517,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:editHuman",
@@ -527,7 +527,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:editAgent",
@@ -537,7 +537,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:approve",
@@ -547,7 +547,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:claimHuman",
@@ -557,7 +557,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:claimAgent",
@@ -567,7 +567,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:cancelHuman",
@@ -575,9 +575,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:cancelAgent",
@@ -587,7 +587,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:adopt",
@@ -597,7 +597,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/commands:getHuman",
@@ -607,7 +607,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "integrations/commands:getAgent",
@@ -617,7 +617,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
   },
   {
     "id": "integrations/connections:registerProvider",
@@ -627,7 +627,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "integrations/connections:registerSecret",
@@ -637,7 +637,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "integrations/connections:connect",
@@ -647,7 +647,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/connections:insert",
@@ -657,7 +657,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Invalid provider and secret references fail closed"
   },
   {
     "id": "integrations/connections:list",
@@ -667,7 +667,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "integrations/connections:disconnect",
@@ -675,9 +675,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/dispatch:permit",
@@ -687,7 +687,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
   },
   {
     "id": "integrations/dispatch:consume",
@@ -697,7 +697,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
   },
   {
     "id": "integrations/dispatch:status",
@@ -707,7 +707,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
   },
   {
     "id": "integrations/http:route",
@@ -715,9 +715,9 @@
     "visibility": "http",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
   },
   {
     "id": "integrations/lifecycle:expire",
@@ -727,7 +727,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
   },
   {
     "id": "integrations/lifecycle:sweep",
@@ -737,7 +737,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Unresolved prior consumed attempt survives ' + path + ' and releases only after final current-step absence"
   },
   {
     "id": "integrations/lookups:pages",
@@ -747,7 +747,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
   {
     "id": "integrations/lookups:seal",
@@ -757,7 +757,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
   {
     "id": "integrations/lookups:record",
@@ -767,7 +767,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
   },
   {
     "id": "integrations/outcomes:unknown",
@@ -777,7 +777,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
   },
   {
     "id": "integrations/outcomes:reconcile",
@@ -787,7 +787,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
   },
   {
     "id": "integrations/outcomes:fail",
@@ -797,7 +797,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
   },
   {
     "id": "integrations/outcomes:resolveUnknown",
@@ -807,7 +807,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
   },
   {
     "id": "integrations/outcomes:operatorResolveUnknown",
@@ -815,9 +815,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/receipts:observe",
@@ -827,7 +827,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/receipts:acknowledge",
@@ -837,7 +837,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safety:beginTarget",
@@ -847,7 +847,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safety:completeTarget",
@@ -857,7 +857,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safety:prepare",
@@ -865,9 +865,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/safety:consume",
@@ -875,9 +875,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "adapter",
-    "readonly": "refused",
+    "readonly": "settlement-allowed",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "integrations/safety:request",
@@ -887,7 +887,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safety:send",
@@ -897,7 +897,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safety:unknown",
@@ -907,7 +907,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safety:sendSettled",
@@ -917,7 +917,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "integrations/safetyFinality:inspect",
@@ -927,7 +927,7 @@
     "principal": "adapter",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
   },
   {
     "id": "integrations/safetyFinality:resolve",
@@ -937,7 +937,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
   },
   {
     "id": "integrations/safetyFinality:settle",
@@ -947,7 +947,7 @@
     "principal": "adapter",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
   },
   {
     "id": "invites:create",
@@ -957,7 +957,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "invites:get",
@@ -967,7 +967,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "invites:accept",
@@ -977,7 +977,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "objects:list",
@@ -987,7 +987,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "objects:get",
@@ -997,7 +997,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "objects:create",
@@ -1007,7 +1007,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "ops:setFlag",
@@ -1017,7 +1017,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "orgs:create",
@@ -1025,9 +1025,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Real JWT verification derives human identity and rejects invalid audience and expired tokens"
   },
   {
     "id": "orgs:mine",
@@ -1037,7 +1037,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "orgs:get",
@@ -1047,7 +1047,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "orgs:rename",
@@ -1057,7 +1057,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "orgs:members",
@@ -1067,7 +1067,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "orgs:setRole",
@@ -1077,7 +1077,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "orgs:removeMember",
@@ -1085,9 +1085,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "orgs:leave",
@@ -1095,9 +1095,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "rateLimit:take",
@@ -1107,7 +1107,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "limits writes per key without starving reads or other agents"
   },
   {
     "id": "records:list",
@@ -1117,7 +1117,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "records:get",
@@ -1127,7 +1127,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "records:related",
@@ -1137,7 +1137,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "records:reverseFields",
@@ -1147,7 +1147,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "records:create",
@@ -1157,7 +1157,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "records:update",
@@ -1167,7 +1167,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "records:remove",
@@ -1177,7 +1177,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "records:byRef",
@@ -1187,7 +1187,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "records:search",
@@ -1197,7 +1197,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "seed:demo",
@@ -1207,7 +1207,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "seed:demoAs",
@@ -1217,7 +1217,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "seed:ensureStandard",
@@ -1227,7 +1227,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "seed:backfillRefs",
@@ -1237,7 +1237,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "seed:releaseStandardSlots",
@@ -1247,7 +1247,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "suggestions:list",
@@ -1257,7 +1257,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "suggestions:forRecord",
@@ -1267,7 +1267,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "suggestions:apply",
@@ -1277,7 +1277,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "suggestions:dismiss",
@@ -1285,9 +1285,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "suggestions:adopt",
@@ -1297,7 +1297,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
     "id": "telemetry:record",
@@ -1307,7 +1307,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "schedules only bounded operational fields and survives scheduler failure"
   },
   {
     "id": "telemetry:recordProbe",
@@ -1317,7 +1317,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "schedules only bounded operational fields and survives scheduler failure"
   },
   {
     "id": "telemetry:probe",
@@ -1327,7 +1327,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "telemetry:purge",
@@ -1337,7 +1337,7 @@
     "principal": "human",
     "readonly": "refused",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
   },
   {
     "id": "telemetry:report",
@@ -1347,7 +1347,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "today:get",
@@ -1357,7 +1357,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "users:store",
@@ -1365,9 +1365,9 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "outside-workspace",
     "masks": "n/a",
-    "proof": "GAP"
+    "proof": "Real JWT verification derives human identity and rejects invalid audience and expired tokens"
   },
   {
     "id": "users:me",
@@ -1377,37 +1377,7 @@
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
-    "proof": "GAP"
-  },
-  {
-    "id": "HTTP GET /api/v1/*",
-    "kind": "route",
-    "visibility": "http",
-    "writes": false,
-    "principal": "agent",
-    "readonly": "not-a-write",
-    "masks": "projected",
-    "proof": "GAP"
-  },
-  {
-    "id": "HTTP POST /api/v1/*",
-    "kind": "route",
-    "visibility": "http",
-    "writes": true,
-    "principal": "agent",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "GAP"
-  },
-  {
-    "id": "HTTP POST /api/integrations/v1/*",
-    "kind": "route",
-    "visibility": "http",
-    "writes": true,
-    "principal": "adapter",
-    "readonly": "refused",
-    "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
     "id": "scheduled integrations/lifecycle:expire",
@@ -1417,7 +1387,7 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
   },
   {
     "id": "scheduled integrations/lifecycle:sweep",
@@ -1427,7 +1397,7 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "Unresolved prior consumed attempt survives ' + path + ' and releases only after final current-step absence"
   },
   {
     "id": "scheduled integrations/safety:send",
@@ -1437,7 +1407,7 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "scheduled integrations/safety:unknown",
@@ -1447,7 +1417,7 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
   },
   {
     "id": "scheduled telemetry:record",
@@ -1457,7 +1427,7 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "schedules only bounded operational fields and survives scheduler failure"
   },
   {
     "id": "cron REST telemetry probe",
@@ -1467,7 +1437,7 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
-    "proof": "GAP"
+    "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
     "id": "cron Expire operational metrics",
@@ -1477,7 +1447,396 @@
     "principal": "scheduler",
     "readonly": "settlement-allowed",
     "masks": "no-record-data",
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
+  },
+  {
+    "id": "HTTP GET /api/v1/_probe",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
     "proof": "GAP"
+  },
+  {
+    "id": "HTTP GET /api/v1/operations/:id",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations/:id/edit",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations/:id/claim",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations/:id/cancel",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/authority/grant",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/authority/revoke",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "Delegation revocation changes actual REST read projection while independent human grants survive"
+  },
+  {
+    "id": "HTTP POST /api/v1/authority/fire",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail"
+  },
+  {
+    "id": "HTTP GET /api/v1/me",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/objects",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records/:id",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records/:id/events",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records/:id/related",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/search",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/today",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/suggestions",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP POST /api/v1/suggestions",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/changes",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP GET /api/v1/inbox",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP POST /api/v1/inbox",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/inbox/:id/resolve",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/permit",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/consume",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/unknown",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/reconcile",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/fail",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-begin",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-complete",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-receipt",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/resolve-unknown",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/bind",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-resolve-unknown",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/lookup",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/callback",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/status",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/page",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "scheduled telemetry:purge",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows"
   }
 ]
-

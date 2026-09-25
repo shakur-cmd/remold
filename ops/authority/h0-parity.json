@@ -1,0 +1,263 @@
+[
+  {
+    "h0": "A/B known-ID isolation, server-derived actors and full binding tuple collision",
+    "production": [
+      "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple",
+      "H0#1 foreign owners cannot mutate known IDs and actor injection is rejected",
+      "Same external ID under different provider instances stays isolated per connection"
+    ]
+  },
+  {
+    "h0": "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation",
+    "production": [
+      "H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor"
+    ]
+  },
+  {
+    "h0": "Explicit manage lists cannot authorize firing or regranting an ancestor",
+    "production": [
+      "H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor"
+    ]
+  },
+  {
+    "h0": "Direct mode executes without human approval; propose mode and invalidated direct grant refuse",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Delegation ancestry revokes queued/read/model paths while independent human grant survives",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Read scopes restrict object/records/fields and every SIM surface has a leakable shape",
+    "production": [
+      "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+    ]
+  },
+  {
+    "h0": "Final permit rechecks expired authority without a sweep and honors schedule",
+    "production": [
+      "H0#7 expired grant denies final permit without a lifecycle sweep"
+    ]
+  },
+  {
+    "h0": "Before-permit fire refuses; after-permit fire preserves one late outcome",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Scoped adapter cannot permit, consume, reconcile, callback or provision in B",
+    "production": [
+      "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
+    ]
+  },
+  {
+    "h0": "Lost acceptance response reconciles once; missing usage blocks cheaper new spend",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Concurrent logical calls/claims and org budget reservations serialize on real backend",
+    "production": [
+      "Global spend, concurrency and per-run ceilings serialize across distinct tenants"
+    ]
+  },
+  {
+    "h0": "Per-run/global spend and global concurrency caps bound both tenants",
+    "production": [
+      "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles"
+    ]
+  },
+  {
+    "h0": "Model continuation rechecks authority, step/fence and remaining exposure",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Expired unconsumed permits retry safely; consumed crash becomes unknown",
+    "production": [
+      "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+    ]
+  },
+  {
+    "h0": "Unknown authoritative absence never resends after firing; terminal rejection releases reservation",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Authoritative absence and retryable rejection preserve logical key and revalidate new permits",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Material edits, audience, currency and approval expiry invalidate immutable snapshot",
+    "production": [
+      "Every approval material field invalidates the reviewed version"
+    ]
+  },
+  {
+    "h0": "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly",
+    "production": [
+      "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+    ]
+  },
+  {
+    "h0": "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship",
+    "production": [
+      "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+    ]
+  },
+  {
+    "h0": "Provisioning durable intents preserve delete-before/create-before races",
+    "production": [
+      "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
+    ]
+  },
+  {
+    "h0": "Partial traversal commits only full checkpoints and later traversal resumes without regression",
+    "production": [
+      "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
+    ]
+  },
+  {
+    "h0": "Durable cancellation survives rejection, absence, expiry and model continuation",
+    "production": [
+      "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
+    ]
+  },
+  {
+    "h0": "Scoped adapter sees cancellation signal and records one late accepted tail",
+    "production": [
+      "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
+    ]
+  },
+  {
+    "h0": "Late consumed outcome settles once after provisional or final absent lookup",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Per-call remaining exposure, missing usage and actual overruns fence final dispatch",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Conflicting provider reference refuses durably and holds spend without rolling back anomaly",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Per-recipient and per-purpose suppression never changes another contact or tenant",
+    "production": [
+      "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
+    ]
+  },
+  {
+    "h0": "Server scheduler recovers adapter crashes without a callback or manual expiry call",
+    "production": [
+      "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+    ]
+  },
+  {
+    "h0": "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Unresolved consumed attempt survives sweep and holds global exposure",
+    "production": [
+      "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles"
+    ]
+  },
+  {
+    "h0": "Unresolved consumed attempt survives expiry and holds global exposure",
+    "production": [
+      "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles"
+    ]
+  },
+  {
+    "h0": "Unresolved consumed attempt survives failure and holds global exposure",
+    "production": [
+      "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles"
+    ]
+  },
+  {
+    "h0": "Cancellation cannot release confirmed work with missing usage",
+    "production": [
+      "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles"
+    ]
+  },
+  {
+    "h0": "Unconsumed unknown is ignored and scheduler recovers false",
+    "production": [
+      "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+    ]
+  },
+  {
+    "h0": "Unconsumed unknown is ignored and scheduler recovers true",
+    "production": [
+      "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+    ]
+  },
+  {
+    "h0": "Single-step accepted overrun remains confirmed false",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Single-step accepted overrun remains confirmed true",
+    "production": [
+      "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
+    ]
+  },
+  {
+    "h0": "Exhausted successful continuation settles and releases its slot",
+    "production": [
+      "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
+    ]
+  },
+  {
+    "h0": "Suppression without an existing purpose/channel row is durable",
+    "production": [
+      "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+    ]
+  },
+  {
+    "h0": "Settled-step provisional absence cannot settle a later unresolved step",
+    "production": [
+      "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
+    ]
+  },
+  {
+    "h0": "Settled-step final absence cannot settle a later unresolved step",
+    "production": [
+      "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
+    ]
+  },
+  {
+    "h0": "Old consumed fence for the same unresolved step still supports provisional absence",
+    "production": [
+      "H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence"
+    ]
+  },
+  {
+    "h0": "Old consumed fence for the same unresolved step still supports final absence",
+    "production": [
+      "Provisional absence permits only same-key retry and old-fence truthful settlement",
+      "H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence"
+    ]
+  }
+]
