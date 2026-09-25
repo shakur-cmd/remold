@@ -1,0 +1,80 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/grants.test.ts (4 tests | 1 failed) 227ms
+   × a restricted human cannot widen authority through legacy agent creation, replacement, or explicit grants 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/grants.test.ts > a restricted human cannot widen authority through legacy agent creation, replacement, or explicit grants
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "agentId": "00000000000000000000010056agents",
++   "key": "rm_<redacted-test-key>",
+  }
+
+ ❯ ops/authority/grants.test.ts:48:92
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  ops/authority/grants.test.ts > a restricted human cannot widen authority through legacy agent creation, replacement, or explicit grants
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ ops/authority/grants.test.ts:49:157
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  ops/authority/grants.test.ts > a restricted human cannot widen authority through legacy agent creation, replacement, or explicit grants
+AssertionError: promise resolved "'0000000000010060capabilityGrants'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"0000000000010060capabilityGrants"
+
+ ❯ ops/authority/grants.test.ts:50:134
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  ops/authority/grants.test.ts > a restricted human cannot widen authority through legacy agent creation, replacement, or explicit grants
+AssertionError: promise resolved "'0000000000010062capabilityGrants'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"0000000000010062capabilityGrants"
+
+ ❯ ops/authority/grants.test.ts:51:63
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  16:29:11
+   Duration  470ms (tests 70%, transform 21%, import 8%, worker 1%)
+

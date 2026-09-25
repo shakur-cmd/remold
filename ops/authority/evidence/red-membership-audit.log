@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/metadata.test.ts (6 tests | 1 failed) 131ms
+   × membership authority changes retain an attributed audit after the membership row is removed 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/metadata.test.ts > membership authority changes retain an attributed audit after the membership row is removed
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   [
+-     "membershipRoleChanged",
+-     "user",
+-   ],
+-   [
+-     "membershipRemoved",
+-     "user",
+-   ],
+- ]
++ []
+
+ ❯ ops/authority/metadata.test.ts:52:130
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  17:35:28
+   Duration  262ms (tests 63%, transform 27%, import 9%, worker 1%)
+

@@ -2,11 +2,12 @@ import { mutation, query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { requireMember } from "./identity";
+import { requireWriter, requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
 import { findByTitle } from "./lib/find";
+import { canReadField, projectRecord, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle } from "./authority/reads";
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
 const US = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
@@ -27,12 +28,14 @@ async function resolveRecord(run: Run, field: Doc<"fields">, text: string): Prom
   const { ctx, orgId } = run;
   if (isRef(text.toLowerCase())) {
     const byRef = await ctx.db.query("records").withIndex("by_org_ref", (q) => q.eq("orgId", orgId).eq("ref", text.toLowerCase())).unique();
-    if (byRef) return byRef._id;
+    if (byRef) { const object = await ctx.db.get(byRef.objectId); if (!object) fail('NOT_FOUND'); requireRecordRead(run.membership, object, byRef); return byRef._id; }
   }
   if (!field.targetObjectId) throw new ConvexError({ code: "VALIDATION", message: `${field.label} links to any object, so use a record code` });
+  const target = await ctx.db.get(field.targetObjectId); if (!target) fail('NOT_FOUND'); requireObjectRead(run.membership, target);
+  const titleField = target.titleFieldId ? await ctx.db.get(target.titleFieldId) : null;
+  if (titleField) requireQueryField(run.membership, target, titleField);
   const found = await findByTitle(ctx, orgId, field.targetObjectId, text);
-  if (found) return found._id;
-  const target = await ctx.db.get(field.targetObjectId);
+  if (found) { requireRecordRead(run.membership, target, found); return found._id; }
   if (run.createMissing && target?.titleFieldId) {
     const titleField = await ctx.db.get(target.titleFieldId);
     if (titleField?.type === "text") return (await applyChange(ctx, run.membership, { action: "create", orgId, objectId: target._id, values: { [titleField._id]: text }, reason: "Created by CSV import" })).recordId;
@@ -69,10 +72,13 @@ export const importRows = mutation({
   args: { orgId: v.id("orgs"), objectId: v.id("objects"), columns: v.array(v.union(v.id("fields"), v.null())), rows: v.array(v.array(v.string())), firstRow: v.number(), skipDuplicates: v.boolean(), createMissing: v.boolean() },
   handler: async (ctx, args) => {
     if (args.rows.length > 100) fail("VALIDATION", "At most 100 rows per batch");
-    const membership = await requireMember(ctx, args.orgId);
+    const membership = await requireWriter(ctx, args.orgId);
     const { object, fields } = await fieldsOf(ctx, args.orgId, args.objectId);
+    requireObjectRead(membership, object);
     const byId = new Map(fields.map((f) => [f._id, f]));
     const columns = args.columns.map((id) => (id ? byId.get(id) ?? fail("VALIDATION", "Unknown column field") : null));
+    for (const field of columns) if (field) requireQueryField(membership, object, field);
+    if (args.skipDuplicates && object.titleFieldId) { const title = byId.get(object.titleFieldId); if (title) requireQueryField(membership, object, title); }
     const run: Run = { ctx, membership, orgId: args.orgId, createMissing: args.createMissing };
     const seen = new Set<string>();
     let created = 0, skipped = 0;
@@ -103,16 +109,19 @@ export const importRows = mutation({
 export const exportPage = query({
   args: { orgId: v.id("orgs"), objectId: v.id("objects"), cursor: v.union(v.string(), v.null()) },
   handler: async (ctx, args) => {
-    await requireMember(ctx, args.orgId);
-    const { fields } = await fieldsOf(ctx, args.orgId, args.objectId);
+    const principal = await requireMember(ctx, args.orgId);
+    const { object, fields: allFields } = await fieldsOf(ctx, args.orgId, args.objectId);
+    requireObjectRead(principal, object);
+    const fields = allFields.filter(f => canReadField(principal, object, f));
     const page = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)).paginate({ cursor: args.cursor, numItems: 200 });
     const titles = new Map<string, string>();
     const titleOf = async (id: string) => {
-      if (!titles.has(id)) { const normal = ctx.db.normalizeId("records", id); titles.set(id, (normal && (await ctx.db.get(normal))?.title) || ""); }
+      if (!titles.has(id)) { const normal = ctx.db.normalizeId("records", id); const record = normal ? await ctx.db.get(normal) : null; titles.set(id, record ? await visibleTitle(ctx, principal, record) : ""); }
       return titles.get(id)!;
     };
     const rows: string[][] = [];
-    for (const record of page.page) {
+    for (const raw of page.page) {
+      const record = await projectRecord(ctx, principal, raw); if (!record) continue;
       const row = [record.ref ?? ""];
       for (const field of fields) {
         const value = record.values[field._id];

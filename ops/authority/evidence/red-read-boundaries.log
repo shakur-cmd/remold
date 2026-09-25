@@ -1,0 +1,185 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/read-boundaries.test.ts (2 tests | 2 failed) 143ms
+   × daily task membership cannot reveal due or done fields denied for that particular record 108ms
+   × deleted-record suggestions remain scoped to the original record and cannot be adopted or inspected outside it 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record
+AssertionError: expected [ …(2) ] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+  [
+    "0000000000000000000010048records",
++   "0000000000000000000010050records",
+  ]
+
+ ❯ ops/authority/read-boundaries.test.ts:13:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record
+AssertionError: expected [ …(2) ] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+  [
+    "0000000000000000000010048records",
++   "0000000000000000000010050records",
+  ]
+
+ ❯ ops/authority/read-boundaries.test.ts:16:110
+     14|   const memberId = await f.t.run(async ctx => (await ctx.db.query('mem…
+     15|   await f.client.mutation(policies.setMember, { orgId: f.orgId, member…
+     16|   expect.soft((await f.client.query(api.today.get, { orgId: f.orgId, t…
+       |                                                                                                              ^
+     17| });
+     18| it('deleted-record suggestions remain scoped to the original record an…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > deleted-record suggestions remain scoped to the original record and cannot be adopted or inspected outside it
+AssertionError: expected [ { action: 'update', …(10) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "action": "update",
++     "agent": "writer",
++     "before": {
++       "name": "Retained secret",
++     },
++     "createdAt": 1790283641087,
++     "id": "000000000000000010054suggestions",
++     "object": "company",
++     "reason": "",
++     "record": null,
++     "resolvedAt": null,
++     "status": "pending",
++     "values": {
++       "name": "Future secret",
++     },
++   },
++ ]
+
+ ❯ ops/authority/read-boundaries.test.ts:28:81
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > deleted-record suggestions remain scoped to the original record and cannot be adopted or inspected outside it
+AssertionError: expected [ { agentName: 'writer', …(6) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "agentName": "writer",
++     "objectKey": "company",
++     "objectLabel": "Company",
++     "paused": false,
++     "recordRef": null,
++     "recordTitle": null,
++     "suggestion": {
++       "_creationTime": 1790283641087,
++       "_id": "000000000000000010054suggestions",
++       "agentId": "00000000000000000000010052agents",
++       "authorityEpoch": 0,
++       "before": {
++         "00000000000000000000010010fields": "Retained secret",
++       },
++       "change": {
++         "action": "update",
++         "objectId": "0000000000000000000010003objects",
++         "recordId": "0000000000000000000010050records",
++         "values": {
++           "00000000000000000000010010fields": "Future secret",
++         },
++       },
++       "orgId": "0000000000000000000000010001orgs",
++       "reason": "",
++       "recordId": "0000000000000000000010050records",
++       "status": "pending",
++     },
++   },
++ ]
+
+ ❯ ops/authority/read-boundaries.test.ts:31:79
+     29|   const memberId = await f.t.run(async ctx => (await ctx.db.query('mem…
+     30|   await f.client.mutation(policies.setMember, { orgId: f.orgId, member…
+     31|   expect.soft(await f.client.query(api.suggestions.list, { orgId: f.or…
+       |                                                                               ^
+     32|   await expect.soft(f.client.mutation(api.suggestions.apply, { orgId: …
+     33|   await expect.soft(f.client.mutation(api.suggestions.adopt, { orgId: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > deleted-record suggestions remain scoped to the original record and cannot be adopted or inspected outside it
+AssertionError: promise resolved "{ conflicts: [ { …(3) } ], …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "conflicts": [
++     {
++       "actual": null,
++       "expected": {
++         "00000000000000000000010010fields": "Retained secret",
++       },
++       "fieldId": "*",
++     },
++   ],
++   "status": "conflicted",
+  }
+
+ ❯ ops/authority/read-boundaries.test.ts:32:107
+     30|   await f.client.mutation(policies.setMember, { orgId: f.orgId, member…
+     31|   expect.soft(await f.client.query(api.suggestions.list, { orgId: f.or…
+     32|   await expect.soft(f.client.mutation(api.suggestions.apply, { orgId: …
+       |                                                                                                           ^
+     33|   await expect.soft(f.client.mutation(api.suggestions.adopt, { orgId: …
+     34| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > deleted-record suggestions remain scoped to the original record and cannot be adopted or inspected outside it
+AssertionError: promise resolved "'000000000000000010066suggestions'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"000000000000000010066suggestions"
+
+ ❯ ops/authority/read-boundaries.test.ts:33:107
+     31|   expect.soft(await f.client.query(api.suggestions.list, { orgId: f.or…
+     32|   await expect.soft(f.client.mutation(api.suggestions.apply, { orgId: …
+     33|   await expect.soft(f.client.mutation(api.suggestions.adopt, { orgId: …
+       |                                                                                                           ^
+     34| });
+     35|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  17:00:40
+   Duration  287ms (tests 63%, transform 26%, import 10%, worker 1%)
+

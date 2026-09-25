@@ -1,0 +1,28 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/read-boundaries.test.ts (3 tests | 1 failed) 171ms
+   × record-specific read masks also constrain proposal fields even when another record exposes the same field 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > record-specific read masks also constrain proposal fields even when another record exposes the same field
+AssertionError: expected 201 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 201
+
+ ❯ ops/authority/read-boundaries.test.ts:41:183
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  17:20:31
+   Duration  348ms (tests 61%, transform 28%, import 10%, worker 1%)
+

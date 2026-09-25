@@ -12,7 +12,7 @@ describe("deleting a record", () => {
     const got = await client.query(api.records.get, { orgId, recordId: ada.recordId });
     expect(got!.record.values[person.fields.company._id]).toBeUndefined();
     const [latest] = await client.query(api.events.forRecord, { orgId, recordId: ada.recordId });
-    expect(latest).toMatchObject({ action: "update", reason: "Linked Acme was deleted", after: { [person.fields.company._id]: null } });
+    expect(latest).toMatchObject({ action: "update", reason: "Linked record was deleted", after: { [person.fields.company._id]: null } });
   });
 
   it("clears untargeted 'about' lookups on notes too", async () => {

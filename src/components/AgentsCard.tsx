@@ -21,6 +21,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
   const agents = useQuery(api.agents.list, { orgId });
   const create = useAction(api.agents.create);
   const setGrants = useMutation(api.agents.setGrants);
+  const setSharedInbox = useMutation(api.agents.setSharedInbox);
   const revoke = useMutation(api.agents.revoke);
   const [name, setName] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -45,7 +46,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Agents</CardTitle>
-        <p className="text-sm text-muted-foreground">An agent is a team member with a key. It reads everything a member can and proposes changes; you apply them. Grant an action and it lands without asking.</p>
+        <p className="text-sm text-muted-foreground">New keys read the current workspace objects and propose changes. Future objects need new permission. Grant an action to allow direct changes. Shared notes need the separate inbox permission below.</p>
       </CardHeader>
       <CardContent className="grid gap-4">
         {agents?.map((agent) => (
@@ -56,6 +57,9 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
             <span className="text-xs text-muted-foreground">{agent.grants.length ? agent.grants.map((g) => `${g.action}:${g.objectKey}`).join(", ") : "proposes only"}</span>
             {admin && !agent.revokedAt && (
               <span className="ml-auto flex gap-1">
+                <Button size="sm" variant="ghost" onClick={() => setSharedInbox({ orgId, agentId: agent._id, enabled: !agent.sharedInbox }).then(() => toast.success(agent.sharedInbox ? "Shared inbox disabled" : "Shared inbox enabled for eligible reads"), (e) => toast.error(errorMessage(e)))}>
+                  {agent.sharedInbox ? "Disable shared inbox" : "Allow shared inbox"}
+                </Button>
                 {agent.grants.length > 0 && (
                   <Button size="sm" variant="ghost" onClick={() => setGrants({ orgId, agentId: agent._id, grants: [] }).then(() => toast.success("Grants removed"), (e) => toast.error(errorMessage(e)))}>
                     Remove grants

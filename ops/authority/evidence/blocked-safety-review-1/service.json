@@ -1,0 +1,783 @@
+{
+  "exportedFixture": {
+    "path": "/Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/evidence/service-remold-authority-T6eTQx-fixture.zip",
+    "sha256": "422de702a42961fb9ec843a1f634a95c52e1e48705235162488dbfb6b2cb977c"
+  },
+  "status": "PARTIAL SERVICE REPLAY",
+  "results": [
+    {
+      "name": "Real JWT verification derives human identity and rejects invalid audience and expired tokens",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Production dispatch records cancelled late acceptance exactly once",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "SERVICE transaction races reserve organization budget and concurrency once",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "SERVICE cross-tenant collision leaves the losing account and organization unchanged",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Payload edits invalidate immutable approval; destination and schedule are enforced",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Readonly between claim and permit stops sends but permits truthful receipt settlement",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Missing usage pauses cheaper work until authoritative usage settles exactly once",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Actual overrun records the full cost and blocks continuation and new spending",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Final absence targets only the current unresolved logical step, then late truth is held as anomaly",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Provisional absence permits only same-key retry and old-fence truthful settlement",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Receipt collisions persist a durable anomaly instead of rolling it back with an exception",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Human safety rejects expired JWT and same-transaction membership epoch changes (SIM provider)",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Client recurring cancel is a distinct zero-amount command with no new collection authority (SIM provider)",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Delegation revocation changes actual REST read projection while independent human grants survive",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    },
+    {
+      "name": "Existing human subscription loses masked field within the 2-second target on real backend",
+      "status": "PASS",
+      "level": "SERVICE local backend and verified synthetic JWT / SIM provider"
+    }
+  ],
+  "fixtures": [
+    {
+      "orgA": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+      "orgB": "nx775sz1aee32z1wykj1xya82x8f17bb",
+      "userA": "ns7a07a328q14m889y778cjk158f1hgm",
+      "userB": "ns7d3g8q07x024460t0a4c8wvx8f1jsz"
+    }
+  ],
+  "snapshot": {
+    "bindings": [
+      {
+        "_creationTime": 1790281931931.698,
+        "_id": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "account": "A",
+        "connected": true,
+        "connectionId": "k976hqt82q92wwkrb6fdgft52x8f0830",
+        "environment": "test",
+        "externalId": "model-A",
+        "kind": "model",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "provider": "fake"
+      }
+    ],
+    "budgets": [
+      {
+        "_creationTime": 1790281931182.9,
+        "_id": "nn74069zdarfdqd2ze56szjmnx8f0n6j",
+        "active": 0,
+        "cap": 10000,
+        "key": "global",
+        "maxConcurrent": 1000,
+        "maxPerRun": 1000,
+        "maxRecipients": 100,
+        "maxSteps": 5,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "reserved": 0,
+        "spent": 15
+      },
+      {
+        "_creationTime": 1790281931411.071,
+        "_id": "nn73h69z2z32vsdg61mezmw3658f1y05",
+        "active": 0,
+        "cap": 10,
+        "key": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "reserved": 0,
+        "spent": 2
+      },
+      {
+        "_creationTime": 1790281931640.22,
+        "_id": "nn74bacbeyve4wrk637d7g97458f08r3",
+        "active": 0,
+        "cap": 10,
+        "key": "nx775sz1aee32z1wykj1xya82x8f17bb",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx775sz1aee32z1wykj1xya82x8f17bb",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281932743.613,
+        "_id": "nn7ejp8qmw600sq9m3fbjrwt818f02n8",
+        "active": 0,
+        "cap": 10,
+        "key": "nx70kxg7aajwzd2kq5h4n0gepd8f1e1k",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx70kxg7aajwzd2kq5h4n0gepd8f1e1k",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281933863.003,
+        "_id": "nn7125eytgpr05dg93cttv41kh8f1q7a",
+        "active": 0,
+        "cap": 100,
+        "key": "nx7c9e9vqxef614wj7vrb8cv5x8f06zt",
+        "maxConcurrent": 1,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx7c9e9vqxef614wj7vrb8cv5x8f06zt",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281934535.821,
+        "_id": "nn71mwgk8jw5mcexf4aycvtm7d8f1c6c",
+        "active": 0,
+        "cap": 10,
+        "key": "nx75x31k48nc8vxvq6qxgj4cp98f0pj0",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx75x31k48nc8vxvq6qxgj4cp98f0pj0",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281935289.755,
+        "_id": "nn79qrzb0jr0gn0gjfwveabn3n8f1ggc",
+        "active": 0,
+        "cap": 10,
+        "key": "nx7aqg4dh5sj65b14kbbwa2vn98f1bv7",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx7aqg4dh5sj65b14kbbwa2vn98f1bv7",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281936469.742,
+        "_id": "nn79x495qdjr5t7nq4j2eeftfs8f1gzr",
+        "active": 0,
+        "cap": 10,
+        "key": "nx74x07mf2t41eyzqmwkcr2kfs8f0rmj",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx74x07mf2t41eyzqmwkcr2kfs8f0rmj",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281937207.561,
+        "_id": "nn7fkxtn6fqqgvm1zgamewqdph8f0x46",
+        "active": 0,
+        "cap": 10,
+        "key": "nx75ctb0f55d3ht8xkpsmsa3318f0ckx",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx75ctb0f55d3ht8xkpsmsa3318f0ckx",
+        "reserved": 0,
+        "spent": 1
+      },
+      {
+        "_creationTime": 1790281941906.445,
+        "_id": "nn7c8vy42pfy02ksdzrt3r0ej58f1jab",
+        "active": 0,
+        "cap": 10,
+        "key": "nx7e83rr5p3j939j7bs547p8pd8f1xgk",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx7e83rr5p3j939j7bs547p8pd8f1xgk",
+        "reserved": 0,
+        "spent": 1
+      },
+      {
+        "_creationTime": 1790281943417.747,
+        "_id": "nn7f4qpebtw418zzt2ed6ffakh8f0mxc",
+        "active": 0,
+        "cap": 10,
+        "key": "nx796fxvbhc5zcnw04mbftekf18f0qt3",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx796fxvbhc5zcnw04mbftekf18f0qt3",
+        "reserved": 0,
+        "spent": 2
+      },
+      {
+        "_creationTime": 1790281944517.206,
+        "_id": "nn7fsk076qygz50ch4852ms17h8f11es",
+        "active": 0,
+        "anomaly": "usageOverrun",
+        "cap": 10,
+        "key": "nx77bnsns29tgjg4amgjy5nwp98f0e24",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx77bnsns29tgjg4amgjy5nwp98f0e24",
+        "reserved": 0,
+        "spent": 4
+      },
+      {
+        "_creationTime": 1790281945339.639,
+        "_id": "nn78da88p5yx0yprpyj3tdyvc98f1kgb",
+        "active": 0,
+        "anomaly": "acceptedAfterFinalAbsence",
+        "cap": 10,
+        "key": "nx78mhezf2r876h92xvnt833818f01va",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx78mhezf2r876h92xvnt833818f01va",
+        "reserved": 0,
+        "spent": 3
+      },
+      {
+        "_creationTime": 1790281947446.617,
+        "_id": "nn73axxwjzf8hbtsjeq6t85aed8f14z4",
+        "active": 0,
+        "cap": 10,
+        "key": "nx70tg5yw85qtfgxfd8736pyk58f0pp1",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx70tg5yw85qtfgxfd8736pyk58f0pp1",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281948586.786,
+        "_id": "nn7cdstmhkyec05ktajdvp7hc98f1pyy",
+        "active": 0,
+        "anomaly": "providerResultCollision",
+        "cap": 10,
+        "key": "nx72qxhnjdvqw6qrvfegqx8t0d8f00mw",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx72qxhnjdvqw6qrvfegqx8t0d8f00mw",
+        "reserved": 0,
+        "spent": 1
+      },
+      {
+        "_creationTime": 1790281949616.678,
+        "_id": "nn72rsr76x5x839s4nwg1gax7h8f0tb5",
+        "active": 0,
+        "cap": 10,
+        "key": "nx7fkbjkvz4rc7wxn9dtdrm4nn8f1qy6",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx7fkbjkvz4rc7wxn9dtdrm4nn8f1qy6",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281950952.234,
+        "_id": "nn7d3qgchwvt05jj6vjrhr0a5x8f102f",
+        "active": 0,
+        "cap": 10,
+        "key": "nx77bd7at0rz8gspgpfeznxq9h8f1amq",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx77bd7at0rz8gspgpfeznxq9h8f1amq",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281952001.526,
+        "_id": "nn7eqyyfhtp2w66ac34ezfvnb58f1qmn",
+        "active": 0,
+        "cap": 10,
+        "key": "nx781f7f2h0e8ftgwt0j7txy418f10ng",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx781f7f2h0e8ftgwt0j7txy418f10ng",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281952956.323,
+        "_id": "nn74h6p3f118dfbsqq3p6gth0s8f1nzx",
+        "active": 0,
+        "cap": 10,
+        "key": "nx73nkbgk6zqmzj6159bx6rknx8f1g42",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx73nkbgk6zqmzj6159bx6rknx8f1g42",
+        "reserved": 0,
+        "spent": 1
+      },
+      {
+        "_creationTime": 1790281953989.817,
+        "_id": "nn7frzf0436k5s3pqfmr7p6zb58f0h5k",
+        "active": 0,
+        "cap": 10,
+        "key": "nx77hnkj93hjk5nxncfvhn79958f0b06",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx77hnkj93hjk5nxncfvhn79958f0b06",
+        "reserved": 0,
+        "spent": 0
+      },
+      {
+        "_creationTime": 1790281954628.26,
+        "_id": "nn7fhr9xbvkvaqaq1y2v6e8c298f17ef",
+        "active": 0,
+        "cap": 10,
+        "key": "nx7brzp8ctvtfggag94zm7yyfd8f033a",
+        "maxConcurrent": 3,
+        "maxPerRun": 8,
+        "maxRecipients": 10,
+        "maxSteps": 3,
+        "missingUsage": false,
+        "missingUsageCount": 0,
+        "orgId": "nx7brzp8ctvtfggag94zm7yyfd8f033a",
+        "reserved": 0,
+        "spent": 0
+      }
+    ],
+    "consent": [],
+    "events": [
+      {
+        "_creationTime": 1790281931918.7812,
+        "_id": "kh77gx5njwbec3t3xz95d6z6n18f1w1z",
+        "actor": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "at": 1790281931918,
+        "name": "provisionRequested",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1"
+      },
+      {
+        "_creationTime": 1790281931931.6982,
+        "_id": "kh7b60j9509wpzwvj3x8ycpqwh8f0kp2",
+        "actor": {
+          "id": "k976hqt82q92wwkrb6fdgft52x8f0830",
+          "kind": "adapter"
+        },
+        "at": 1790281931931,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "name": "bindingCreated",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1"
+      },
+      {
+        "_creationTime": 1790281931939.7253,
+        "_id": "kh79razbn3da0y0b02bd07d4f18f080b",
+        "actor": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "at": 1790281931939,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 0,
+        "from": "proposed",
+        "name": "proposed",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "proposed"
+      },
+      {
+        "_creationTime": 1790281931943.804,
+        "_id": "kh7d30d150yyq8qa4kc7f97mc58f0sd7",
+        "actor": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "at": 1790281931943,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 0,
+        "from": "proposed",
+        "name": "approved",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "approved"
+      },
+      {
+        "_creationTime": 1790281931948.592,
+        "_id": "kh7bqgskggbj5szqeyb5pm2kmn8f09jf",
+        "actor": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "at": 1790281931948,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 1,
+        "from": "approved",
+        "name": "claimed",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "queued"
+      },
+      {
+        "_creationTime": 1790281931958.384,
+        "_id": "kh787bnrxkcamy3setmc0d18318f1h1q",
+        "actor": {
+          "id": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+          "kind": "adapter"
+        },
+        "at": 1790281931958,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 1,
+        "from": "queued",
+        "name": "permitIssued",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "dispatching"
+      },
+      {
+        "_creationTime": 1790281931966.667,
+        "_id": "kh7axep1y0h2hmrsgszcmscbxh8f08zg",
+        "actor": {
+          "id": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+          "kind": "adapter"
+        },
+        "at": 1790281931966,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 1,
+        "from": "dispatching",
+        "name": "permitConsumed",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "dispatching"
+      },
+      {
+        "_creationTime": 1790281931971.509,
+        "_id": "kh7c0shbqqvs0z2ky0swvx5whh8f1ehn",
+        "actor": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "at": 1790281931971,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 1,
+        "from": "dispatching",
+        "name": "cancellationRequested",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "cancellationPending"
+      },
+      {
+        "_creationTime": 1790281931979.938,
+        "_id": "kh7cmqvy57ykfba0230t8rnc158f19vf",
+        "actor": {
+          "id": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+          "kind": "adapter"
+        },
+        "at": 1790281931979,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 2,
+        "from": "cancellationPending",
+        "name": "outcomeUnknown",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "outcomeUnknown"
+      },
+      {
+        "_creationTime": 1790281931992.377,
+        "_id": "kh7dncwgy8w71wc2e4720jd1ds8f0jte",
+        "actor": {
+          "id": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+          "kind": "adapter"
+        },
+        "at": 1790281931992,
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "fence": 2,
+        "from": "outcomeUnknown",
+        "name": "completedAfterCancellation",
+        "operationId": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "step": 1,
+        "to": "cancelled",
+        "usageDelta": 2,
+        "usageKnown": true
+      }
+    ],
+    "grants": [],
+    "operations": [
+      {
+        "_creationTime": 1790281931939.725,
+        "_id": "kx7f2vczb7vj7vx6afzpp6ajds8f1j7s",
+        "actor": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "actorEpoch": 0,
+        "actorMembershipId": "mh79bnfsat6441ges5223mgfth8f1c79",
+        "approval": {
+          "actorEpoch": 0,
+          "approver": {
+            "id": "ns7a07a328q14m889y778cjk158f1hgm",
+            "kind": "user"
+          },
+          "approverEpoch": 0,
+          "approverMembershipId": "mh79bnfsat6441ges5223mgfth8f1c79",
+          "expiresAt": 1790281991943,
+          "snapshot": {
+            "amountMinor": 0,
+            "audience": [],
+            "audienceVersion": 1,
+            "content": "synthetic",
+            "currency": "USD",
+            "destination": "A",
+            "schedule": 0,
+            "workflowVersion": 1
+          },
+          "version": 1
+        },
+        "attempts": 1,
+        "author": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "bindingId": "k175a9am83k1gyy9t8tsyt95n18f0mp6",
+        "cancelRequestedAt": 1790281931971,
+        "capability": "model.call",
+        "consumedPermits": [
+          {
+            "fence": 1,
+            "step": 1
+          }
+        ],
+        "fence": 2,
+        "late": true,
+        "leaseUntil": 0,
+        "logical": "cancel",
+        "maxSteps": 2,
+        "orgId": "nx71f5pqx5q9ytpjs9ces13djd8f11d1",
+        "overrun": false,
+        "owner": {
+          "id": "ns7a07a328q14m889y778cjk158f1hgm",
+          "kind": "user"
+        },
+        "payload": {
+          "amountMinor": 0,
+          "audience": [],
+          "audienceVersion": 1,
+          "content": "synthetic",
+          "currency": "USD",
+          "destination": "A",
+          "schedule": 0,
+          "workflowVersion": 1
+        },
+        "permitUntil": 1790281932958,
+        "permitUsed": false,
+        "providerRef": "late",
+        "receipts": [
+          {
+            "at": 1790281931992,
+            "late": true,
+            "providerRef": "late",
+            "step": 1,
+            "usage": 2
+          }
+        ],
+        "released": true,
+        "reservationUnits": 5,
+        "reserved": 5,
+        "state": "cancelled",
+        "step": 1,
+        "usage": 2,
+        "usageMissing": false,
+        "version": 1
+      }
+    ]
+  },
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-T6eTQx",
+  "sourceManifest": {
+    "convex/agentApi.ts": "b4e46cd623e282483664f9187bb1d92f1360c219542af5db6827ff034c2b47c5",
+    "convex/agents.ts": "03ab07d0b89bb292707fb9b8285116b05bf0c4411263bd33e3f721e88e5ad9da",
+    "convex/auth.config.ts": "4e88351ffcfc76e6e9978c9064130cb3ea8137a1c6492eef9b982d5ea04d6ffb",
+    "convex/authorityFixture.ts": "367dd57db5a4735ecef85961e6a13796ab7fd48ea1476427198993ecc655694e",
+    "convex/capture.ts": "ab608a83f8a2028397f473421f503d4735906cc328f137a0d776be07df989626",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.ts": "f3a753db1e885bebddb3c8b87a25f97897764e6a37a36c3b351d23269bbb536e",
+    "convex/errors.ts": "499423efb133eff7ea0cf31b9c5d87d684ffa2f47f45187af94e2cb6778e9a66",
+    "convex/events.ts": "0c27600f59fc9bc4a5af81d85acd1aad75146b7f2566edb0e78a5be895cad91e",
+    "convex/fields.ts": "338be42f2643667efbaadf5623f8a60efcf5f9ff1b10b0f07c8dd535a2b58dd0",
+    "convex/http.ts": "6460e9816c8d811fbe7345f19718ff947a7c122d42f903a574ed012016462b09",
+    "convex/identity.ts": "627ca3d400f9c3b67bb95a40e36d01f5a7bb1d2d9cbd1e26d6e00d5912768ce1",
+    "convex/inbox.ts": "6f1879a03af9ad2491d1cdb2d4b936c49354e1913f6886513f51a771a685657b",
+    "convex/invites.ts": "13170bf91bf3a66e95badae8b94dcd3afc83a709715a5127e0f15fa5200dde17",
+    "convex/objects.ts": "7a42b467dfed708d07ce381635b03b7fd0bb4d6ae17b868129820f3723fd3535",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "003c2946a6addd6b9977f0308803d1a55d9df39349cff964ea931817d7ad7a53",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "5c08630f1bc0a2dd0ef8433f48e63248fffdb7c95c1ab2861c0d1952d6938e7a",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/schema.ts": "cbc3a35cf3ed66e81feff428ca19f8c1a15ca7ce9b577a9064737cd4116e13ec",
+    "convex/seed.ts": "e47a71007a23a5d7675c8f3beb41e64c7f989979e3f9e383038ffba62a005e19",
+    "convex/suggestions.ts": "170c71b9e47271fa17c77f71d914f044c51e058ea64eb7929e62718501d5bd0b",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/today.ts": "3d085708b973147e7990c5733b8bd9a259821611b0a11c64064087835bbf7c6d",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "636c3eb94572dffda3a57248414a4a22ea5f405e264a10611a97d998099fff92",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/authority/grants.ts": "f96eaf9a0bc7e05d2e6bb1da59c776e55c663ca59e7c73a834ef419ff3b7afde",
+    "convex/authority/migration.ts": "13f30912390ea24bf3b909e396eea2084ff3f394fac2ba9b681175d72997b7f9",
+    "convex/authority/policies.ts": "5832d3d9f1bdd1435ae48d7e408919a0cbb0990f975cacb1e472363bd3766a76",
+    "convex/authority/readonly.ts": "8be51e982ba0c20583d03b947e8f03290e4b209f868bfbe6f08c6ee5bf5f011d",
+    "convex/authority/reads.ts": "d379907e2738ae898f771407d7ad2878b4353510452abe72bb8cb766023dc2e5",
+    "convex/integrations/bindings.ts": "fe8cccbe3c0bebc691e81daa58c0c46bad715b95d96036a9fcd6ddd557cd5128",
+    "convex/integrations/budgets.ts": "9ea0325f3d1cb6e29c5f5698deeea57bdb55b07c5c0660f693b1f3ce784c2c46",
+    "convex/integrations/callbacks.ts": "a135380048d8f40fc3d3e2980f72ef6d41ae7787a4ba271cf26516aa3821d24f",
+    "convex/integrations/commands.ts": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+    "convex/integrations/connections.ts": "ee611af39a6b50b7c351cee577882cffb12d7922b1e6431f68c570607cc9322a",
+    "convex/integrations/core.ts": "6054e86765db12050eee4d3e651a3ce46f722bb64bf4a2b7cbf466ae100cf2f9",
+    "convex/integrations/dispatch.ts": "1208ada3410b887b3e00df5d6b7f30280ea2093294bb293b6bd99c0f16c53631",
+    "convex/integrations/http.ts": "8f42e3615d120dde74e172dddcce46ede28570ac3c600c55b2f9d07a0da16789",
+    "convex/integrations/lifecycle.ts": "617f60334b74d16b85fe9e840beb11bb4c934055a807907faefcfb962eab0b5f",
+    "convex/integrations/outcomes.ts": "22f0ef2e283179b1f7dae6f4fa09cc17ec51ab9088c37e5e9c054044ff0565bd",
+    "convex/integrations/safety.ts": "d761a388731de4be78ee35cfa0602ec0e2b79333736845635fc8476b6be4a618",
+    "convex/integrations/safetyAdapters.ts": "4a926c0570a2aa90a98ae8802b5a6df9a8a11db7c9e027cf6d59b393d0084e3e",
+    "convex/integrations/tables.ts": "acfc1a281f62e693f03e375376e2d571a8d24a51ef87fc93f94040201d95c07d",
+    "convex/lib/applyChange.ts": "ce393aeff0960adf94c74288d4ca84952bb82c9cfae163ffd72379826f3fb236",
+    "convex/lib/find.ts": "5741338c3d15b6759b0cff8c80437ac0d06785b6a6f0ef3de65f648dc58cc1ef",
+    "convex/lib/list.ts": "ba20c645009b336fd9d41ac960dfaaee1028185c617fbbbc890f2145396dde8e",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "d619655383ab96378bddb3e4e87e3aa8710fdad17cada19f0892fd7ee5a11512",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "be5d13d6921dbc9e18c81598680620ef26c425fc8df7f91cebb5424fdd3163dc"
+  },
+  "safetyAdapter": {
+    "level": "SIM scratch-only",
+    "productionHash": "7ec433de0e249f064cdc44f7258b18b9547521b7e1055ddb0a1662ffbdef1e4b",
+    "effectiveHash": "4a926c0570a2aa90a98ae8802b5a6df9a8a11db7c9e027cf6d59b393d0084e3e"
+  }
+}

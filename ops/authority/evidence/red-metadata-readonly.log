@@ -1,0 +1,173 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/metadata.test.ts (2 tests | 2 failed) 133ms
+   × a restricted administrator cannot change invisible metadata or mint an unrestricted invite 100ms
+   × readonly refuses new metadata, invitations and grants while pure revocation remains available 33ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/metadata.test.ts > a restricted administrator cannot change invisible metadata or mint an unrestricted invite
+AssertionError: promise resolved "'0000000000000000000010050objects'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"0000000000000000000010050objects"
+
+ ❯ ops/authority/metadata.test.ts:8:137
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > a restricted administrator cannot change invisible metadata or mint an unrestricted invite
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "fieldId": "00000000000000000000010052fields",
++   "slot": {
++     "index": 3,
++     "kind": "s",
++   },
+  }
+
+ ❯ ops/authority/metadata.test.ts:9:156
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > a restricted administrator cannot change invisible metadata or mint an unrestricted invite
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ ops/authority/metadata.test.ts:10:136
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > a restricted administrator cannot change invisible metadata or mint an unrestricted invite
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ ops/authority/metadata.test.ts:11:112
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > a restricted administrator cannot change invisible metadata or mint an unrestricted invite
+AssertionError: promise resolved "{ expiresAt: 1790888982343, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "expiresAt": 1790888982343,
++   "token": "68a80c92-424a-42f2-96ce-86bfb0da331c",
+  }
+
+ ❯ ops/authority/metadata.test.ts:12:94
+     10|   await expect.soft(f.client.mutation(api.fields.update, { orgId: f.or…
+     11|   await expect.soft(f.client.mutation(api.fields.retire, { orgId: f.or…
+     12|   await expect.soft(f.client.mutation(api.invites.create, { orgId: f.o…
+       |                                                                                              ^
+     13| });
+     14| it('readonly refuses new metadata, invitations and grants while pure r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > readonly refuses new metadata, invitations and grants while pure revocation remains available
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ ops/authority/metadata.test.ts:17:89
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > readonly refuses new metadata, invitations and grants while pure revocation remains available
+AssertionError: promise resolved "{ expiresAt: 1790888982375, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "expiresAt": 1790888982375,
++   "token": "590b2943-462c-495a-ae6f-9e6b2aa71ed4",
+  }
+
+ ❯ ops/authority/metadata.test.ts:18:95
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > readonly refuses new metadata, invitations and grants while pure revocation remains available
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ ops/authority/metadata.test.ts:19:159
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  ops/authority/metadata.test.ts > readonly refuses new metadata, invitations and grants while pure revocation remains available
+AssertionError: promise resolved "'0000000000010053capabilityGrants'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"0000000000010053capabilityGrants"
+
+ ❯ ops/authority/metadata.test.ts:20:309
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  17:09:42
+   Duration  296ms (tests 58%, transform 30%, import 11%, worker 1%)
+
