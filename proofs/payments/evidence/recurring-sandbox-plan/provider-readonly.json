@@ -1,0 +1,166 @@
+{
+  "checkedAt": "2026-09-25T01:13:48.363Z",
+  "apiVersion": "2025-05-28.basil",
+  "sandbox": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "accounts": [
+    {
+      "fixture": "D",
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "type": "standard",
+      "controller": {
+        "fees": {
+          "payer": "account"
+        },
+        "is_controller": true,
+        "losses": {
+          "payments": "stripe"
+        },
+        "requirement_collection": "stripe",
+        "stripe_dashboard": {
+          "type": "full"
+        },
+        "type": "application"
+      },
+      "chargesEnabled": true,
+      "cardPayments": "active",
+      "balanceLivemode": false,
+      "requirements": {
+        "disabledReason": null,
+        "currentlyDueCount": 0,
+        "pastDueCount": 0,
+        "pendingVerificationCount": 0,
+        "errorCount": 0
+      },
+      "testClockList": {
+        "httpStatus": 200,
+        "count": 0,
+        "hasMore": false,
+        "allTest": true,
+        "statuses": []
+      }
+    },
+    {
+      "fixture": "E",
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "type": "standard",
+      "controller": {
+        "fees": {
+          "payer": "account"
+        },
+        "is_controller": true,
+        "losses": {
+          "payments": "stripe"
+        },
+        "requirement_collection": "stripe",
+        "stripe_dashboard": {
+          "type": "full"
+        },
+        "type": "application"
+      },
+      "chargesEnabled": true,
+      "cardPayments": "active",
+      "balanceLivemode": false,
+      "requirements": {
+        "disabledReason": null,
+        "currentlyDueCount": 0,
+        "pastDueCount": 0,
+        "pendingVerificationCount": 0,
+        "errorCount": 0
+      },
+      "testClockList": {
+        "httpStatus": 200,
+        "count": 0,
+        "hasMore": false,
+        "allTest": true,
+        "statuses": []
+      }
+    }
+  ],
+  "receiptCount": 8,
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_j6D69Apb06bdW1",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_BUHoXasbwg88hS",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJIndJL8hhTtG1o",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_Se1Atq753B99As",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_19YoOEM23rTHa4",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_FIywvfDPLSQJax",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJL2DR59Pk6MTFE",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_IJqMgZNUeh9yIF",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_kOGUB3qOXZWBmv",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_DF3obSU6c9aswm",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "scope": "GET only. Endpoint listing proves account-scoped read access, not clock creation/advancement or recurring execution support."
+}

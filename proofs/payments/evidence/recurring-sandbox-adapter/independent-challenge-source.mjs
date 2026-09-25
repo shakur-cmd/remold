@@ -4,8 +4,8 @@ import { createServer } from 'node:http';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { ConvexHttpClient } from 'convex/browser';
 import { makeFunctionReference } from 'convex/server';
-import { withRecurring } from './local.mjs';
-import { recurringAdapter, termEnd } from './adapter.mjs';
+import { withRecurring } from '../local.mjs';
+import { recurringAdapter, termEnd } from '../adapter.mjs';
 const results = [], secrets = [];
 const evidence = new URL(process.argv[2] ? process.argv[2].replace(/\/?$/, '/') : './evidence/', import.meta.url);
 mkdirSync(evidence, { recursive: true });
@@ -844,6 +844,91 @@ try {
             await adapter.execute(subsequent.command);
             assert.equal(posts.length, beforeReplacement + 1);
             results.push('A replacement refuses a complete-looking list that omits its known prior schedule or subscription');
+            { // ---- independent challenges ----
+            const ch = [];
+            const snap = async id => { const x = await inspect(id); const { observation, complete, ...rest } = x.commitment; return JSON.stringify({ rest, cycles: x.cycles.map(({ _creationTime, ...r }) => r) }); };
+            async function fresh(opts) { const a = await agreement(opts); await adapter.execute(a.command); const first = cycle(a, 0); await adapter.observe(a.id); const c = (await inspect(a.id)).commitment; return { a, first, c, schedule: schedules.get(c.schedule), sub: subs.get(c.subscription) }; }
+            async function tryObserve(kind, t, expect) {
+                const before = await snap(t.a.id), postsBefore = posts.length;
+                let accepted = true, err = null;
+                try { await adapter.observe(t.a.id); } catch (e) { accepted = false; err = String(e.message).slice(0, 80); }
+                const after = (await inspect(t.a.id)).commitment;
+                const unchanged = accepted ? null : (await snap(t.a.id)) === before;
+                const row = { kind, accepted, held: after.reservedMinor, recognized: after.recognizedMinor, complete: after.complete, state: after.state, unchangedAfterRefusal: unchanged, newPosts: posts.length - postsBefore, err };
+                ch.push(row);
+                for (const [k, v] of Object.entries(expect)) assert.deepEqual(row[k], v, kind + ' ' + k + ' ' + JSON.stringify(row));
+            }
+            const term = t => { t.schedule.status = 'canceled'; t.sub.status = 'canceled'; };
+            let t;
+            // partial-null terminal links
+            t = await fresh(); term(t); t.schedule.subscription = null;
+            await tryObserve('terminal-schedule-link-null-only', t, { accepted: true, held: 0, complete: true });
+            t = await fresh(); term(t); t.sub.schedule = null;
+            await tryObserve('terminal-sub-link-null-only', t, { accepted: true, held: 0, complete: true });
+            t = await fresh(); t.sub.status = 'canceled'; t.schedule.subscription = null; t.sub.schedule = null;
+            await tryObserve('null-links-schedule-active', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); t.schedule.status = 'completed'; t.schedule.subscription = null; t.sub.schedule = null;
+            await tryObserve('null-links-sub-active', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); term(t); delete t.schedule.subscription; t.sub.schedule = null;
+            await tryObserve('terminal-link-field-absent', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); term(t); t.schedule.subscription = null; t.sub.schedule = 'sub_sched_other';
+            await tryObserve('terminal-null-plus-foreign', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            // wrong identities
+            t = await fresh(); term(t); t.sub.livemode = true;
+            await tryObserve('live-subscription', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); term(t); customers.get(t.schedule.customer).livemode = true;
+            await tryObserve('live-customer', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); term(t); t.sub.customer = 'cus_other';
+            await tryObserve('foreign-sub-customer', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); term(t); t.sub.items.data[0].id = 'si_other';
+            await tryObserve('changed-item-terminal', t, { accepted: true, held: 602, complete: false });
+            t = await fresh(); term(t); t.schedule.released_subscription = 'sub_other';
+            await tryObserve('released-other', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh(); term(t); delete t.schedule.test_clock;
+            await tryObserve('schedule-clock-field-absent', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            t = await fresh({ testClock: 'clock_mine' }); term(t); t.schedule.test_clock = t.sub.test_clock = customers.get(t.schedule.customer).test_clock = null;
+            await tryObserve('clock-cleared-all', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            await assert.rejects(m('recurring:propose', { ...t.a.p.args, service: 'x', testClock: 'bad clock' }), /invalid recurring terms/);
+            // changed invoice-payment ID, same PI
+            t = await fresh(); term(t); payments.delete('inpay_' + t.first.invoice);
+            payments.set('inpay_new_' + t.first.invoice, { id: 'inpay_new_' + t.first.invoice, invoice: t.first.invoice, livemode: false, currency: 'usd', status: 'paid', amount_paid: 301, payment: { type: 'payment_intent', payment_intent: t.first.pi } });
+            await tryObserve('changed-inpay-same-pi', t, { accepted: false, held: 602, recognized: 301, unchangedAfterRefusal: true, newPosts: 0 });
+            t = await fresh(); term(t);
+            payments.set('inpay_dup_' + t.first.invoice, { id: 'inpay_dup_' + t.first.invoice, invoice: t.first.invoice, livemode: false, currency: 'usd', status: 'paid', amount_paid: 301, payment: { type: 'payment_intent', payment_intent: t.first.pi } });
+            await tryObserve('extra-inpay-same-pi', t, { accepted: false, held: 602, unchangedAfterRefusal: true });
+            // omitted older receipts: recognition retained, liability held, never settles
+            t = await fresh(); cycle(t.a, 1); await adapter.observe(t.a.id);
+            assert.equal((await inspect(t.a.id)).commitment.recognizedMinor, 602);
+            term(t); omitId = t.first.invoice;
+            await tryObserve('terminal-omits-first-invoice', t, { accepted: true, recognized: 602, held: 301, complete: false });
+            omitId = null;
+            t = await fresh(); cycle(t.a, 1); term(t); omitId = 'inpay_' + t.first.invoice;
+            await tryObserve('terminal-omits-first-inpay', t, { accepted: true, recognized: 602, held: 301, complete: false });
+            omitId = null;
+            t = await fresh(); cycle(t.a, 1); term(t);
+            await tryObserve('control-terminal-complete', t, { accepted: true, recognized: 602, held: 0, complete: true });
+            omitId = null;
+            // omitted older predecessor before second replacement
+            const g1 = await agreement(); await adapter.execute(g1.command);
+            const k1 = (await q('recurring:context', { token: f.A.adapter, id: g1.id })).commitment;
+            schedules.get(k1.schedule).status = 'completed'; subs.get(k1.subscription).status = 'canceled'; await adapter.observe(g1.id);
+            const g2 = await agreement({ customer: g1.p.customer._id, service: g1.p.args.service, begin: termEnd(g1.p.args) }); await adapter.execute(g2.command);
+            const k2 = (await q('recurring:context', { token: f.A.adapter, id: g2.id })).commitment;
+            schedules.get(k2.schedule).status = 'completed'; subs.get(k2.subscription).status = 'canceled'; await adapter.observe(g2.id);
+            const g3 = await agreement({ customer: g1.p.customer._id, service: g1.p.args.service, begin: termEnd(g2.p.args) });
+            const other = await agreement({ customer: g1.p.customer._id, begin: termEnd(g2.p.args) + 999999 });
+            for (const known of [k1.schedule, k1.subscription]) {
+                const n = posts.length, before = await snap(g3.id); omitId = known;
+                let refused = false; try { await adapter.execute(g3.command); } catch { refused = true; }
+                omitId = null;
+                ch.push({ kind: 'omit-oldest-predecessor ' + known.split('_')[0], accepted: !refused, newPosts: posts.length - n, unchangedAfterRefusal: (await snap(g3.id)) === before });
+                assert.ok(refused && posts.length === n && (await snap(g3.id)) === before);
+            }
+            { const n = posts.length; omitId = k1.schedule; let refused = false; try { await adapter.execute(other.command); } catch { refused = true; } omitId = null;
+              ch.push({ kind: 'omit-predecessor-of-other-service', accepted: !refused, newPosts: posts.length - n }); assert.ok(refused && posts.length === n); }
+            await adapter.execute(g3.command);
+            writeFileSync(process.env.CHALLENGE_OUT, JSON.stringify(ch, null, 2) + '\n');
+            results.push('independent challenges ' + ch.length); }
 
             assert.ok(posts.every(p => p.account === f.A.key.account));
             assert.ok(posts.every(p => !p.path.includes('/pay') && !p.path.includes('payment_intents')));

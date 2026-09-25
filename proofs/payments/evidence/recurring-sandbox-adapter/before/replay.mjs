@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { ConvexHttpClient } from 'convex/browser';
 import { makeFunctionReference } from 'convex/server';
 import { withRecurring } from './local.mjs';
 import { recurringAdapter, termEnd } from './adapter.mjs';
 const results = [], secrets = [];
-const evidence = new URL(process.argv[2] ? process.argv[2].replace(/\/?$/, '/') : './evidence/', import.meta.url);
-mkdirSync(evidence, { recursive: true });
 try {
     await withRecurring(async ({ url, run, restart }) => {
         const client = new ConvexHttpClient(url, { logger: false }), m = (name, args) => client.mutation(makeFunctionReference(name), args), q = (name, args) => client.query(makeFunctionReference(name), args), tokens = Array.from({ length: 10 }, () => randomUUID());
@@ -17,7 +15,6 @@ try {
         for (const name of ['A', 'B'])
             run('paymentFixture:role', { actor: f[name].actors.owner, role: 'finance' });
         const customers = new Map(), schedules = new Map(), subs = new Map(), invoices = new Map(), pis = new Map(), charges = new Map(), setups = new Map(), pms = new Map(), payments = new Map(), posts = [];
-        let omitId = null;
         let counter = 0, lose = false, dirtyItems = false, badPrice = false, unknownSchedule = false, invoiceDrift = false, invoiceReads = 0;
         const start = Math.floor(Date.now() / 1000), phase = (params) => ({
             start_date: Number(params.start_date),
@@ -50,8 +47,6 @@ try {
                             customer: params.customer,
                             livemode: false,
                             status: 'active',
-                            test_clock: customers.get(params.customer).test_clock ?? null,
-                            released_subscription: null,
                             metadata: { remold_commitment: params['metadata[remold_commitment]'], remold_plan: params['metadata[remold_plan]'] },
                             end_behavior: params.end_behavior,
                             default_settings: { collection_method: 'charge_automatically', automatic_tax: { enabled: false } },
@@ -64,7 +59,6 @@ try {
                             customer: params.customer,
                             livemode: false,
                             status: 'active',
-                            test_clock: customers.get(params.customer).test_clock ?? null,
                             default_payment_method: params['default_settings[default_payment_method]'],
                             items: { has_more: false, data: [{
                                         id: 'si_' + counter,
@@ -163,7 +157,6 @@ try {
                     if (invoiceReads === 2)
                         value = { ...value, currency: 'eur' };
                 }
-                if (omitId && Array.isArray(value.data)) value = { ...value, data: value.data.filter(x => x.id !== omitId) };
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify(value));
             }
@@ -186,14 +179,13 @@ try {
                 return response.json();
             } };
         const adapter = recurringAdapter(stripe, client, f.A.adapter), inspect = id => q('recurring:inspect', { token: who, id });
-        async function plan({ author = who, service = randomUUID(), begin = start, customer, testClock, setup = 'seti_' + randomUUID() } = {}) {
+        async function plan({ author = who, service = randomUUID(), begin = start, customer, setup = 'seti_' + randomUUID() } = {}) {
             if (!customer) {
                 const external = 'cus_' + randomUUID();
                 customers.set(external, {
                     id: external,
                     livemode: false,
-                    balance: 0,
-                    test_clock: testClock ?? null
+                    balance: 0
                 });
                 customer = await m('payments:registerCustomer', {
                     token: f.A.adapter,
@@ -224,7 +216,6 @@ try {
                 service,
                 price: 'price_fixture',
                 setupIntent: setup,
-                ...(testClock ? { testClock } : {}),
                 interval: 'day',
                 start: begin,
                 amountMinor: 301,
@@ -734,7 +725,7 @@ try {
                     anomaly: Boolean(state.anomaly)
                 });
             }
-            writeFileSync(new URL('recognition-cases.json', evidence), JSON.stringify(receiptCases, null, 2) + '\n');
+            writeFileSync(new URL('./evidence/recognition-cases.json', import.meta.url), JSON.stringify(receiptCases, null, 2) + '\n');
             const expectedReceipts = receiptCases.map(x => ({
                 kind: x.kind,
                 paid: x.kind.startsWith('duplicate-') ? 602 : x.kind === 'overpaid' ? 401 : x.kind === 'amount-regression' ? 100 : 301,
@@ -778,7 +769,7 @@ try {
                     anomaly: Boolean(state.anomaly)
                 });
             }
-            writeFileSync(new URL('line-cases.json', evidence), JSON.stringify(periodCases, null, 2) + '\n');
+            writeFileSync(new URL('./evidence/line-cases.json', import.meta.url), JSON.stringify(periodCases, null, 2) + '\n');
             assert.deepEqual(periodCases, periodCases.map(x => ({
                 kind: x.kind,
                 paid: 301,
@@ -786,65 +777,6 @@ try {
                 anomaly: x.kind !== 'valid-line-different-invoice-period'
             })), 'Only exact accepted recurring line may consume cycle reservation');
             results.push('Complete recurring line identity/price/cadence is required; invoice accumulation period may differ');
-            const lineageCases = [];
-            for (const kind of ['terminal-null', 'active-null', 'terminal-foreign-link', 'terminal-released', 'changed-schedule-clock', 'changed-subscription-clock', 'changed-customer-clock', 'missing-schedule', 'missing-subscription', 'missing-invoice', 'missing-invoice-payment']) {
-                const a = await agreement();
-                await adapter.execute(a.command);
-                const first = cycle(a, 0);
-                await adapter.observe(a.id);
-                const c = (await inspect(a.id)).commitment;
-                const schedule = schedules.get(c.schedule), sub = subs.get(c.subscription);
-                schedule.status = 'canceled'; sub.status = 'canceled';
-                if (kind === 'terminal-null') { schedule.subscription = null; sub.schedule = null; }
-                if (kind === 'active-null') { schedule.status = 'active'; sub.status = 'active'; schedule.subscription = null; }
-                if (kind === 'terminal-foreign-link') sub.schedule = 'sub_sched_other';
-                if (kind === 'terminal-released') schedule.released_subscription = c.subscription;
-                if (kind === 'changed-schedule-clock') schedule.test_clock = 'clock_other';
-                if (kind === 'changed-subscription-clock') sub.test_clock = 'clock_other';
-                if (kind === 'changed-customer-clock') customers.get(schedule.customer).test_clock = 'clock_other';
-                if (kind === 'missing-schedule') omitId = schedule.id;
-                if (kind === 'missing-subscription') omitId = sub.id;
-                if (kind === 'missing-invoice') omitId = first.invoice;
-                if (kind === 'missing-invoice-payment') omitId = 'inpay_' + first.invoice;
-                let accepted = true;
-                try { await adapter.observe(a.id); } catch { accepted = false; }
-                omitId = null;
-                const after = (await inspect(a.id)).commitment;
-                lineageCases.push({ kind, accepted, held: after.reservedMinor, complete: after.complete });
-            }
-            writeFileSync(new URL('lineage-cases.json', evidence), JSON.stringify(lineageCases, null, 2) + '\n');
-            assert.deepEqual(lineageCases, lineageCases.map(x => ({ kind: x.kind, accepted: x.kind === 'terminal-null' || x.kind.startsWith('missing-'), held: x.kind === 'terminal-null' ? 0 : 602, complete: x.kind === 'terminal-null' })), 'Only exact bound terminal identities and complete known-ID inventories may settle');
-            results.push('Terminal null links use immutable identities; changed clocks and omitted known provider IDs retain the hold');
-            const clocked = await agreement({ testClock: 'clock_fixture' });
-            await adapter.execute(clocked.command);
-            await adapter.observe(clocked.id);
-            await restart();
-            const clockContext = await q('recurring:context', { token: f.A.adapter, id: clocked.id });
-            assert.equal(clockContext.plan.testClock, 'clock_fixture');
-            await adapter.observe(clocked.id);
-            const clockSchedule = schedules.get(clockContext.commitment.schedule), clockSub = subs.get(clockContext.commitment.subscription);
-            clockSchedule.test_clock = clockSub.test_clock = customers.get(clockSchedule.customer).test_clock = 'clock_replaced';
-            await assert.rejects(adapter.observe(clocked.id), /clock binding changed/);
-            assert.equal((await inspect(clocked.id)).commitment.reservedMinor, 903);
-            results.push('Accepted clock binding persists through restart and cannot be replaced even when all provider objects change together');
-            const previous = await agreement();
-            await adapter.execute(previous.command);
-            const priorContext = await q('recurring:context', { token: f.A.adapter, id: previous.id });
-            schedules.get(priorContext.commitment.schedule).status = 'completed';
-            subs.get(priorContext.commitment.subscription).status = 'canceled';
-            await adapter.observe(previous.id);
-            const subsequent = await agreement({ customer: previous.p.customer._id, service: previous.p.args.service, begin: termEnd(previous.p.args) });
-            const beforeReplacement = posts.length;
-            for (const known of [priorContext.commitment.schedule, priorContext.commitment.subscription]) {
-                omitId = known;
-                await assert.rejects(adapter.execute(subsequent.command), /Known .* missing before activation/);
-                omitId = null;
-                assert.equal(posts.length, beforeReplacement);
-            }
-            await adapter.execute(subsequent.command);
-            assert.equal(posts.length, beforeReplacement + 1);
-            results.push('A replacement refuses a complete-looking list that omits its known prior schedule or subscription');
-
             assert.ok(posts.every(p => p.account === f.A.key.account));
             assert.ok(posts.every(p => !p.path.includes('/pay') && !p.path.includes('payment_intents')));
             assert.ok(posts.every(p => !Object.keys(p.params).some(k => k.includes('application_fee'))));
@@ -861,7 +793,7 @@ try {
     }, null, 2) + '\n';
     for (const token of secrets)
         assert.ok(!output.includes(token));
-    writeFileSync(new URL('local.json', evidence), output);
+    writeFileSync(new URL('./evidence/local.json', import.meta.url), output);
     console.log('PASS ' + results.length + ' recurring groups');
 }
 catch (e) {

@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-25T01:22:28.015713+00:00",
+  "reviewer": "i2_release primary-source desk check",
+  "opus": "opus-sandbox-plan.json",
+  "corrections": [
+    {
+      "point": "First schedule invoice",
+      "finding": "Opus conflated direct subscription creation with schedule creation. Schedule guide lines222\u2013224 explicitly describes first automatically collected schedule invoice as draft with asynchronous finalization about1hour later. Plan handles first invoice and renewals through clock advancement/readback; no immediate-paid assumption.",
+      "source": "https://docs.stripe.com/billing/subscriptions/subscription-schedules#creating-subscription-schedules"
+    },
+    {
+      "point": "Rate-limit remediation",
+      "finding": "Clock-advanced lines468\u2013472 says advance simulated time by minutes; wall-clock waiting alone is not documented remedy. Plan stops on rate limit rather than silently advancing beyond reviewed checkpoints.",
+      "source": "https://docs.stripe.com/billing/testing/test-clocks/api-advanced-usage#rate-limit-errors"
+    },
+    {
+      "point": "Clock retention",
+      "finding": "Current guide says30days but actual clock.deletes_after is authoritative; plan captures it, exports continuously and completes IV beforeactualexpiry.",
+      "source": "https://docs.stripe.com/api/test_clocks/object?api-version=2025-05-28.basil"
+    },
+    {
+      "point": "Fee proof inventory",
+      "finding": "Existing invoice-contract.mjs uses exact scoped PI and Charge GETs, plus platform application_fees filteredby exactcharge. No unfiltered charge inventory. Preserveexplicitnullfieldproof; scopedtestclockcontainmentstillmustbeobservedforapplicable lists."
+    }
+  ],
+  "sourceHeld": "28735f6b846e88b0fecaeee2866a568cf5662cc3baacfa5b2d5aed728bf4a57d",
+  "writes": 0
+}

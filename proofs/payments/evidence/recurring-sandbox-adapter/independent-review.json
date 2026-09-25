@@ -1,0 +1,34 @@
+{
+  "result": "# APPROVE (local source only)\n\nI did this review myself in this Opus 5.5 session. I did not run the Python wrapper you pasted: it starts a second `claude -p` session, which counts as the delegation the prompt forbids. So `independent-review.json` was not written. I made no provider or network calls, read no credentials, and edited no root Convex or source files.\n\n## Integrity\n- **Hashes:** all 9 file hashes in `candidate.json` match the current files. The aggregate `a9709ab8\u2026` is the SHA-256 of the file map as compact JSON with sorted keys.\n- **Changes since `before/`:** adapter +68/\u2212?, `recurring.ts` +13, `schema.ts` +2 (two optional fields: `testClock` and `invoicePayment`), `replay.mjs` +80.\n- **Contract vs code:** `schemaSha256` equals the `schema.ts` hash. All 4 argument validators and all 14 function signatures appear word for word in `recurring.ts`, and the 14 exports match the list. `contract.json` is written by hand; no script in the repo generates it.\n\n## Replay\n`node proofs/payments/recurring/replay.mjs ../evidence/recurring-sandbox-adapter/independent` exits 0 with **PASS 18 recurring groups**. The new `independent/lineage-cases.json` is identical to `green-r3`. The `red/` file shows 7 unsafe outcomes under the old source: terminal-released, all three changed clocks, and missing schedule/subscription all settled to 0. I read that file but did not reproduce it.\n\n## Code inspection\n- **Test clock:** the plan's `testClock` is written once when the plan is proposed and included in its hash. Nothing patches it afterwards. It must match `^clock_\u2026`.\n- **Clock checks:** the customer, schedule, subscription and each command result must match the accepted clock exactly, or `null` if none was set. A missing field fails.\n- **`lineage()`:**\n  - Links may be cleared only once the stored schedule is canceled or completed and the subscription is canceled.\n  - `released_subscription` must be exactly `null`.\n  - During activation there is no stored schedule yet, so it always requires both reciprocal links.\n- **Missing IDs during observation:** a known schedule, subscription, invoice or invoice payment missing from the lists sets `shapeValid=false`. That sets an anomaly, which blocks settlement. The mutation keeps the union of known receipts, so recognition and the hold stay correct.\n- **Replacement:** activation checks the lists against every prior commitment for the customer, across all services, up to 100. A failure refuses before `consume`.\n\n## My own challenges: 21/21 pass\nRun from a gitignored private copy with my block added (`proofs/payments/recurring/private/challenge.mjs`, command `CHALLENGE_OUT=\u2026 node \u2026/private/challenge.mjs /tmp/\u2026/ev`). It printed PASS 19 groups, and all 5 source hashes were unchanged afterwards.\n\n| Case | Result |\n|---|---|\n| Terminal, only schedule link null / only subscription link null | Accepted, held 0, complete |\n| Null links with schedule active / subscription active; link field missing; null plus foreign link | Refused, held 602 |\n| Live subscription, live customer, foreign subscription customer, `released_subscription` set to another sub, missing clock field, all three clocks cleared together | Refused, held 602 |\n| Changed subscription item at terminal | Accepted, `complete:false`, held 602 |\n| Changed invoice payment ID with the same PaymentIntent | Refused (\"invoice payment identity changed\") |\n| Extra invoice payment with the same PaymentIntent | Refused (\"payment already used\") |\n| Terminal pull omitting the first invoice, or only its invoice payment | Recognized 602, **held 301**, not ended |\n| Control: same case without omission | Held 0, cancelled |\n| Omit oldest predecessor's schedule or subscription before second replacement; omit a predecessor from another service | Refused, 0 new POSTs |\n\n**No writes after refusal:** after every refusal the commitment and its cycles were unchanged apart from `observation` and `complete`.\n\n## Findings (none block approval)\n1. **Refusals still write a little.** `beginObservation` runs first, so a refused observation still bumps `observation` and sets `complete:false`. This is the existing design and it leans safe, but \"no writes after refusal\" really means none beyond those two fields.\n2. **Replacement checks schedules and subscriptions only.** It does not check the prior commitments' invoices or invoice payments. The adopt step already requires the old commitment to be complete with zero held, so this can't create exposure. It is narrower than the scope wording, though. The contract's \"known history\" should say so.\n3. **Legacy receipts.** A stored receipt without an `invoicePayment` ID accepts whatever ID appears next. This is documented in `contract.json`.\n4. **Clock checks don't cover invoices.** They are bound only by the subscription filter and their parent subscription.\n5. **Anomalies are permanent.** Any anomaly locks the commitment into holding until a manual path clears it. That leans safe.\n6. **One weak check.** The \"other service\" refusal didn't capture the error message. The refusal is likely the omission, but not proven.\n\nI haven't reviewed or approved the sandbox driver, real Stripe test clocks, renewals, or anything that touches a provider. I appended this verdict to `decisions.jsonl`. The builder's `green`/`red` evidence is untouched; the only new file under `evidence/` is the `independent/` folder.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2327,
+      "outputTokens": 14,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0023970000000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 44,
+      "outputTokens": 18235,
+      "cacheReadInputTokens": 935033,
+      "cacheCreationInputTokens": 65759,
+      "webSearchRequests": 0,
+      "costUSD": 1.0779546,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6660,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

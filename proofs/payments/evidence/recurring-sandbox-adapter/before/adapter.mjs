@@ -13,33 +13,8 @@ export function recurringAdapter(stripe, client, token) {
         assert.equal(new Set(r.data.map(x => x.id)).size, r.data.length);
         return r.data;
     };
-    const contains = (rows, ids) => ids.every(known => rows.some(row => row.id === known));
-    const clock = (object, c) => assert.equal(object.test_clock, c.plan.testClock ?? null, 'Recurring clock binding changed');
-    async function customerIdentity(c) {
-        const customer = await stripe.request('GET', '/v1/customers/' + c.customer.externalId, {}, c.account);
-        assert.equal(customer.id, c.customer.externalId);
-        assert.equal(customer.livemode, false);
-        clock(customer, c);
-        return customer;
-    }
-    function lineage(schedule, sub, c) {
-        assert.equal(schedule.id, c.commitment.schedule ?? schedule.id);
-        assert.equal(sub.id, c.commitment.subscription ?? sub.id);
-        for (const object of [schedule, sub]) {
-            assert.equal(object.customer, c.customer.externalId);
-            assert.equal(object.livemode, false);
-            clock(object, c);
-        }
-        const terminal = Boolean(c.commitment.schedule && ['canceled', 'completed'].includes(schedule.status) && sub.status === 'canceled');
-        assert.equal(schedule.released_subscription, null);
-        // Cleared links are valid only after both exact, previously bound objects terminate.
-        if (!(terminal && schedule.subscription === null)) assert.equal(id(schedule.subscription), sub.id);
-        if (!(terminal && sub.schedule === null)) assert.equal(id(sub.schedule), schedule.id);
-        return terminal;
-    }
     const shape = (s, c) => {
         assert.equal(s.livemode, false);
-        clock(s, c);
         assert.equal(s.customer, c.customer.externalId);
         assert.equal(s.metadata?.remold_commitment, c.commitment._id);
         assert.equal(s.end_behavior, 'cancel');
@@ -65,7 +40,6 @@ export function recurringAdapter(stripe, client, token) {
     function subscriptionItem(sub, c) {
         assert.equal(sub.customer, c.customer.externalId);
         assert.equal(sub.livemode, false);
-        clock(sub, c);
         assert.equal(sub.items?.has_more, false);
         assert.equal(sub.items.data.length, 1);
         const item = sub.items.data[0];
@@ -144,7 +118,9 @@ export function recurringAdapter(stripe, client, token) {
         assert.equal(account.requirements?.disabled_reason, null);
         for (const field of ['currently_due', 'past_due', 'pending_verification', 'errors'])
             assert.deepEqual(account.requirements[field], []);
-        const customer = await customerIdentity(c);
+        const customer = await stripe.request('GET', '/v1/customers/' + c.customer.externalId, {}, c.account);
+        assert.equal(customer.id, c.customer.externalId);
+        assert.equal(customer.livemode, false);
         assert.equal(customer.balance, 0);
         const cash = await stripe.request('GET', '/v1/customers/' + customer.id + '/cash_balance', {}, c.account);
         assert.equal(cash.customer, customer.id);
@@ -168,10 +144,8 @@ export function recurringAdapter(stripe, client, token) {
         if (cmd.kind === 'activate') {
             await preflight(c);
             const schedules = await list('/v1/subscription_schedules', { customer: c.customer.externalId }, c.account);
-            assert(contains(schedules, c.providerHistory.flatMap(row => row.schedule ? [row.schedule] : [])), 'Known schedule missing before activation');
             assert.ok(schedules.every(s => ['canceled', 'completed'].includes(s.status)), 'Existing nonterminal provider commitment');
             const subscriptions = await list('/v1/subscriptions', { customer: c.customer.externalId, status: 'all' }, c.account);
-            assert(contains(subscriptions, c.providerHistory.flatMap(row => row.subscription ? [row.subscription] : [])), 'Known subscription missing before activation');
             assert.ok(subscriptions.every(s => s.status === 'canceled'), 'Existing subscription');
             const pm = await setup(c, c.plan.setupIntent);
             params = {
@@ -193,26 +167,26 @@ export function recurringAdapter(stripe, client, token) {
             path = '/v1/subscription_schedules';
         }
         else if (cmd.kind === 'card') {
-            await customerIdentity(c);
             assert.ok(c.commitment.subscription);
             const s = await stripe.request('GET', '/v1/subscription_schedules/' + c.commitment.schedule, {}, c.account);
             shape(s, c);
             assert.equal(s.status, 'active');
             const sub = await stripe.request('GET', '/v1/subscriptions/' + c.commitment.subscription, {}, c.account);
-            lineage(s, sub, c);
-            assert.equal(subscriptionItem(sub, c), c.commitment.subscriptionItem);
+            assert.equal(sub.id, c.commitment.subscription);
+            assert.equal(sub.customer, c.customer.externalId);
+            assert.equal(id(sub.schedule), c.commitment.schedule);
+            assert.equal(sub.livemode, false);
             assert.ok(!['canceled', 'incomplete_expired'].includes(sub.status));
             params = { default_payment_method: await setup(c, cmd.setupIntent) };
             path = '/v1/subscriptions/' + sub.id;
         }
         else {
             assert.equal(cmd.kind, 'cancel');
-            await customerIdentity(c);
             const schedule = await stripe.request('GET', '/v1/subscription_schedules/' + c.commitment.schedule, {}, c.account);
-            const sub = await stripe.request('GET', '/v1/subscriptions/' + c.commitment.subscription, {}, c.account);
-            lineage(schedule, sub, c);
-            assert.equal(schedule.status, 'active');
-            assert.equal(subscriptionItem(sub, c), c.commitment.subscriptionItem);
+            assert.equal(schedule.id, c.commitment.schedule);
+            assert.equal(schedule.customer, c.customer.externalId);
+            assert.equal(schedule.livemode, false);
+            assert.equal(id(schedule.subscription), c.commitment.subscription);
             params = { invoice_now: false, prorate: false };
             path = '/v1/subscription_schedules/' + schedule.id + '/cancel';
         }
@@ -232,16 +206,13 @@ export function recurringAdapter(stripe, client, token) {
         }
     }
     async function record(cmd, c, result, params) {
-        await customerIdentity(c);
-        clock(result, c);
         if (cmd.kind === 'activate') {
             shape(result, c);
-            assert.equal(result.status, 'active');
             assert.equal(result.metadata.remold_plan, c.plan.hash);
             assert.equal(typeof result.subscription, 'string');
             const sub = await stripe.request('GET', '/v1/subscriptions/' + result.subscription, {}, c.account);
             assert.equal(sub.id, result.subscription);
-            lineage(result, sub, c);
+            assert.equal(id(sub.schedule), result.id);
             const item = subscriptionItem(sub, c);
             await m('settled', {
                 id: cmd._id,
@@ -277,10 +248,13 @@ export function recurringAdapter(stripe, client, token) {
         const schedule = await stripe.request('GET', '/v1/subscription_schedules/' + c.commitment.schedule, {}, c.account), subscription = await stripe.request('GET', '/v1/subscriptions/' + c.commitment.subscription, {}, c.account);
         assert.equal(schedule.id, c.commitment.schedule);
         assert.equal(subscription.id, c.commitment.subscription);
-        await customerIdentity(c);
-        const terminal = lineage(schedule, subscription, c);
-        let shapeValid = contains(await list('/v1/subscription_schedules', { customer: c.customer.externalId }, c.account), [schedule.id]);
-        shapeValid = contains(await list('/v1/subscriptions', { customer: c.customer.externalId, status: 'all' }, c.account), [subscription.id]) && shapeValid;
+        assert.equal(subscription.customer, c.customer.externalId);
+        assert.equal(schedule.customer, c.customer.externalId);
+        assert.equal(subscription.livemode, false);
+        assert.equal(schedule.livemode, false);
+        assert.equal(id(schedule.subscription), subscription.id);
+        assert.equal(id(subscription.schedule), schedule.id);
+        let shapeValid = true;
         try {
             shape(schedule, c);
             assert.equal(subscriptionItem(subscription, c), c.commitment.subscriptionItem);
@@ -290,7 +264,6 @@ export function recurringAdapter(stripe, client, token) {
         }
         const rows = await list('/v1/invoices', { customer: c.customer.externalId, subscription: subscription.id }, c.account);
         assert.ok(rows.length <= 10);
-        shapeValid = contains(rows, c.cycles.map(row => row.invoice)) && shapeValid;
         const cycles = [];
         for (const row of rows) {
             const invoice = await stripe.request('GET', '/v1/invoices/' + row.id, {}, c.account);
@@ -300,7 +273,6 @@ export function recurringAdapter(stripe, client, token) {
             assert.equal(invoice.currency, 'usd');
             assert.equal(invoice.parent?.subscription_details?.subscription, subscription.id);
             const paymentRows = await list('/v1/invoice_payments', { invoice: invoice.id }, c.account), payments = [];
-            shapeValid = contains(paymentRows, (c.cycles.find(row => row.invoice === invoice.id)?.payments ?? []).flatMap(p => p.invoicePayment ? [p.invoicePayment] : [])) && shapeValid;
             for (const listed of paymentRows) {
                 const payment = await stripe.request('GET', '/v1/invoice_payments/' + listed.id, {}, c.account);
                 assert.equal(payment.id, listed.id);
@@ -329,7 +301,6 @@ export function recurringAdapter(stripe, client, token) {
                     assert.ok(['open', 'canceled'].includes(payment.status));
                 payments.push({
                     id: pi.id,
-                    invoicePayment: payment.id,
                     amountMinor: status === 'succeeded' ? pi.amount_received : pi.amount,
                     status
                 });
@@ -353,6 +324,7 @@ export function recurringAdapter(stripe, client, token) {
         const lastSub = await stripe.request('GET', '/v1/subscriptions/' + subscription.id, {}, c.account);
         assert.deepEqual(lastSub, subscription, 'Subscription changed during traversal');
         const pending = await list('/v1/invoiceitems', { customer: c.customer.externalId, pending: true }, c.account);
+        const terminal = ['canceled', 'completed'].includes(schedule.status) && subscription.status === 'canceled';
         return m('observe', {
             id: commitmentId,
             generation,

@@ -82,7 +82,7 @@ export const propose = mutation({ args: planArgs, handler: async (ctx, a) => {
             || a.service.length > 100 
             || !a.price.startsWith('price_') 
             || !a.setupIntent.startsWith('seti_')
-            || (a.testClock !== undefined && !/^clock_[A-Za-z0-9]+$/.test(a.testClock))
+            || (a.testClock !== undefined && !/^clock_[A-Za-z0-9]+$/.test(a.testClock)) 
             || !Number.isSafeInteger(a.start) 
             || a.start <= 0)
             fail('invalid recurring terms');

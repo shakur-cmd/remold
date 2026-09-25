@@ -20,7 +20,6 @@ export default defineSchema({
         version: v.number(),
         price: v.string(),
         setupIntent: v.string(),
-        testClock: v.optional(v.string()),
         interval: v.union(v.literal('day'), v.literal('month')),
         start: v.number(),
         amountMinor: v.literal(301),
@@ -87,7 +86,6 @@ export default defineSchema({
         autoAdvance: v.boolean(),
         payments: v.array(v.object({
             eligible: v.optional(v.boolean()),
-            invoicePayment: v.optional(v.string()),
             id: v.string(),
             amountMinor: v.number(),
             status: v.union(v.literal('pending'), v.literal('succeeded'), v.literal('failed'), v.literal('cancelled'))

@@ -1,0 +1,21 @@
+{
+  "at": "2026-09-25T02:38:35.723636+00:00",
+  "files": {
+    "proofs/payments/recurring/adapter.mjs": "e0685ba1870336ac35aa6ee52ef78ae0a1e230f7f772bcd5e7b24660be88af84",
+    "proofs/payments/recurring/schema.ts": "e870f8d85669126da7d608b4c608fd6ec3f6a1d8dfd26201c45776b26328cc2f",
+    "proofs/payments/recurring/recurring.ts": "4f1de745f5815e8b77944844e1991d25a66ab5a78546346de9b2947dd60a0c39",
+    "proofs/payments/recurring/replay.mjs": "0bc4137d6f9063c8d7906d24bd8259cd696066425382d73d355576fc50deba92",
+    "proofs/payments/recurring/contract.json": "b7e5449d207719fa787ba7bb3d425c5b12f8da59c6448399438296475672804d",
+    "proofs/payments/recurring/local.mjs": "298e415e557102d75ac3ef1e9c9845bd5b05e7b6520b9937f7448fc8dc84a218",
+    "proofs/payments/recurring/cadence.ts": "9b2610ec2fe5cbf07aea9c2aef6f564a1bd53c19ac6125a50fd7428d524564b5",
+    "proofs/payments/recurring/recurringFixture.ts": "9e4412b87ece48b8c8749ecc582e0e9c0e44e5ef1af81fc076fe83e1edb27809",
+    "proofs/payments/recurring/package.json": "685f5c06fffa1e12ab10896e556ac076e3fac3d81040f4c6e5ddfc04af509874"
+  },
+  "aggregate": "a9709ab8ce4e55a0bda952ad3ae50625bdb9603adf263a5c2820381fdadcaf66",
+  "sourceOnly": true,
+  "providerWrites": 0,
+  "rootReplay": "green-r3.txt",
+  "baseline": "red/lineage-cases.json",
+  "intermediateFailure": "green.txt",
+  "note": "Early hard refusal of omitted payment rows prevented recording newly observed gross facts in the existing receipt-history test. Final source flags incomplete shape, retains observed history, and blocks settlement. Red includes unknown-clock and false-terminal releases; no API/schema promotion beyond isolated P4."
+}

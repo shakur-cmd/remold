@@ -1,0 +1,34 @@
+{
+  "result": "**REVISE.** There is one blocking finding: the approval gate doesn't actually tie execution to the reviewed aggregate. Everything else I checked holds up.\n\n## Verified\n- **Hashes:** all 67 files in `source.json` match their frozen SHA-256 (paths relative to `proofs/payments/recurring/`). The sorted-map aggregate is compact `JSON.stringify` of the sorted `files` map, and it reproduces `d227f914\u2026a77`. I edited no frozen file.\n- **Checks run:** `node --check` passes on `sandbox-fixture.mjs` and `sandbox-policy.mjs`. `node --test sandbox-policy.test.mjs` gives **7 tests, 7 pass, 0 fail**.\n- **No approval file:** `approval.json` doesn't exist, and I didn't create it.\n- **Nothing executed:** no provider call, network, credential read, Convex edit or fixture run. My one synthetic challenge ran in `/tmp/remold-agg-challenge-8tA4`.\n\n## Blocking finding\n**B1. The aggregate is never recomputed** (`sandbox-fixture.mjs:15-18`). The driver checks each file against `manifest.files` and checks `approval.aggregate === manifest.aggregate`. It never derives the aggregate from `files`, and `source.json` isn't hashed itself. So someone can edit a source, update its per-file hash in `source.json` and leave the `aggregate` string alone, and the gate still passes against an approval for d227f914.\n\nMy challenge showed exactly that: after an edit plus a manifest update, the gate printed `GATE PASSED` even though the recomputed aggregate didn't match. This defeats the \"exact aggregate\" condition on execution.\n\nFix: one assertion that recomputes the aggregate before the approval check, `sha256(JSON.stringify(Object.fromEntries(sorted(files)))) === manifest.aggregate`, ideally also `=== approval.aggregate`. That changes the hash of `sandbox-fixture.mjs`, so it needs a new manifest and a new aggregate.\n\n## Source review, non-blocking\n- **Caps and keys:** the 31 writes break down as clocks 2, advances F 8 / H 6 (the arithmetic lands exactly on 8 and 6), customers 2, product 1, price 1, setups 4 (goodF, goodH, F-fail, F-recovery; H2 reuses goodH), schedules 3, card updates 2, cancels 2. Idempotency keys are unique and consumed before the call, so an unknown response can't be retried with the same key. Writes are POST to D only; E and the platform are read-only.\n- **Call shapes:** every driver write, plus the adapter's activate (14 keys), card and cancel parameters, matches the policy's exact key and value lists. There's no route for invoice pay, refund, credit, send, delete or email.\n- **Journal:** `claimJournal` opens with `wx` and fsyncs the file and directory before any write, after the hash and approval checks. Each write logs an attempt (key and payload digests) before the call, then a response or error. A second claim fails with EEXIST before `provider.json` is touched. The journal and local fixture tokens go to `recurring/private/`, which is gitignored.\n- **Response-loss injection:** only the H1 schedule POST gets `loseResponse`, and the policy refuses it on other write kinds. The raw provider throws `OutcomeUnknown` after the commit, the journal records `unknown`, the adapter marks the command unknown, and `reconcileActivation` finds it with GETs only. Any other error type fails `assert.rejects` and stops the run.\n- **Clock bounds:** each advance must be monotonic and within 172800 seconds (2 days). F retries use 6-hour steps capped below cadence 2. H2 starts only after H1 is ended, complete and has released its reservation.\n- **Fees:** each succeeded PaymentIntent goes through `proveNoPlatformFee`: explicit-null fee fields on the PaymentIntent and Charge, plus an empty platform `application_fees` list filtered to that charge.\n- **Money:** F \u2264602 + H1 903 + H2 301 = 1806 collected at most; reserved is 3\u00d7903 = 2709. There's also a runtime assert on the 1806 limit.\n- **Public output:** `provider.json` holds IDs, request IDs, key digests, snapshots and failure messages. No secret key, client secret, session token or hosted URL is written there.\n- **Webhooks:** the listener runs on port 3492, not 3590/3591, and only records signed D events for fixture customers.\n\n## Minor, fix if convenient\n1. The `Stripe-Version` value in each response receipt is recorded but not checked against `2025-05-28.basil`.\n2. The journal labels a 5xx as `http-error` when the effect may have committed. The run stops either way, but a continuation should treat it as unknown.\n3. The policy would allow `loseResponse` on any activation, not just H1. The driver can't trigger this.\n4. Nothing observes the first draft invoice ID before the first advance, which the plan describes.\n5. The clock readiness wait is 120 seconds per advance and may be tight in the real sandbox. If it times out, the run stops and keeps all effects.\n\n## Limitations\n- This is a source review only. Nothing here is evidence that Stripe will behave this way.\n- Connect test-clock write support, schedule start/first-invoice timing, smart-retry behaviour and whether cancelling stops collection are all unproven. The real run may stop on any of them and would then need a separately reviewed continuation.\n- Durable recurring ingress is still open.\n- I didn't replay the approved adapter, since nothing in the driver called for it.\n- The 7 policy tests use hand-built parameters. They don't feed the adapter's actual output through the policy; I confirmed that match by reading the code.\n\nI didn't write `independent-review.json`. Your wrapper script saves this result there.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 24,
+      "outputTokens": 15806,
+      "cacheReadInputTokens": 470410,
+      "cacheCreationInputTokens": 60128,
+      "webSearchRequests": 0,
+      "costUSD": 0.891322,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 10000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

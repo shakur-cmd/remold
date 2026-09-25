@@ -67,7 +67,6 @@ const planArgs = {
     service: v.string(),
     price: v.string(),
     setupIntent: v.string(),
-    testClock: v.optional(v.string()),
     interval: v.union(v.literal('day'), v.literal('month')),
     start: v.number(),
     amountMinor: v.literal(301),
@@ -81,8 +80,7 @@ export const propose = mutation({ args: planArgs, handler: async (ctx, a) => {
             || !a.service 
             || a.service.length > 100 
             || !a.price.startsWith('price_') 
-            || !a.setupIntent.startsWith('seti_')
-            || (a.testClock !== undefined && !/^clock_[A-Za-z0-9]+$/.test(a.testClock))
+            || !a.setupIntent.startsWith('seti_') 
             || !Number.isSafeInteger(a.start) 
             || a.start <= 0)
             fail('invalid recurring terms');
@@ -253,14 +251,8 @@ export const context = query({ args: { token: v.string(), id: v.id('recurringCom
         const { c, b } = await scoped(ctx, a.token, a.id), plan = await ctx.db.get(c.plan), customer = await ctx.db.get(c.customer);
         if (!plan || !customer || customer.binding !== b._id || customer.deleted)
             fail('binding lost');
-        const cycles = await ctx.db.query('recurringCycles').withIndex('commitment', q => q.eq('commitment', c._id)).take(11);
-        if (cycles.length > 10) fail('cycle history bound');
-        const history = await ctx.db.query('recurringCommitments').withIndex('service', q => q.eq('customer', c.customer)).take(101);
-        if (history.length > 100) fail('commitment history bound');
         return {
             commitment: c,
-            cycles,
-            providerHistory: history.map(row => ({ schedule: row.schedule, subscription: row.subscription })),
             plan,
             customer,
             account: b.account,
@@ -385,7 +377,6 @@ export const beginObservation = mutation({ args: { token: v.string(), id: v.id('
     } });
 const payment = v.object({
     id: v.string(),
-    invoicePayment: v.optional(v.string()),
     amountMinor: v.number(),
     status: v.union(v.literal('pending'), v.literal('succeeded'), v.literal('failed'), v.literal('cancelled'))
 });
@@ -520,8 +511,6 @@ export const observe = mutation({ args: {
                     fail('payment already used');
                 incomingPayments.add(next.id);
                 const prior = retained.get(next.id);
-                if (prior?.invoicePayment && prior.invoicePayment !== next.invoicePayment)
-                    fail('invoice payment identity changed');
                 if (prior && prior.amountMinor !== next.amountMinor) {
                     rowAnomaly ??= 'receipt amount changed';
                     continue;

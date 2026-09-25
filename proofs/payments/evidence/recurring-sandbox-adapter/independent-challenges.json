@@ -1,0 +1,217 @@
+[
+  {
+    "kind": "terminal-schedule-link-null-only",
+    "accepted": true,
+    "held": 0,
+    "recognized": 301,
+    "complete": true,
+    "state": "cancelled",
+    "unchangedAfterRefusal": null,
+    "newPosts": 0,
+    "err": null
+  },
+  {
+    "kind": "terminal-sub-link-null-only",
+    "accepted": true,
+    "held": 0,
+    "recognized": 301,
+    "complete": true,
+    "state": "cancelled",
+    "unchangedAfterRefusal": null,
+    "newPosts": 0,
+    "err": null
+  },
+  {
+    "kind": "null-links-schedule-active",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'sub_50"
+  },
+  {
+    "kind": "null-links-sub-active",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'sub_51"
+  },
+  {
+    "kind": "terminal-link-field-absent",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'sub_52"
+  },
+  {
+    "kind": "terminal-null-plus-foreign",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'sub_sched_other'\n-"
+  },
+  {
+    "kind": "live-subscription",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n\ntrue !== false\n"
+  },
+  {
+    "kind": "live-customer",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n\ntrue !== false\n"
+  },
+  {
+    "kind": "foreign-sub-customer",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'cus_other'\n- 'cus_"
+  },
+  {
+    "kind": "changed-item-terminal",
+    "accepted": true,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": null,
+    "newPosts": 0,
+    "err": null
+  },
+  {
+    "kind": "released-other",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'sub_other'\n- null\n"
+  },
+  {
+    "kind": "schedule-clock-field-absent",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Recurring clock binding changed\n+ actual - expected\n\n+ undefined\n- null\n"
+  },
+  {
+    "kind": "clock-cleared-all",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "Recurring clock binding changed\n+ actual - expected\n\n+ null\n- 'clock_mine'\n"
+  },
+  {
+    "kind": "changed-inpay-same-pi",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "[Request ID: 0eac2cd3aadd75e9] Server Error\nUncaught Error: invoice payment iden"
+  },
+  {
+    "kind": "extra-inpay-same-pi",
+    "accepted": false,
+    "held": 602,
+    "recognized": 301,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": true,
+    "newPosts": 0,
+    "err": "[Request ID: 0689ac1877f74f67] Server Error\nUncaught Error: payment already used"
+  },
+  {
+    "kind": "terminal-omits-first-invoice",
+    "accepted": true,
+    "held": 301,
+    "recognized": 602,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": null,
+    "newPosts": 0,
+    "err": null
+  },
+  {
+    "kind": "terminal-omits-first-inpay",
+    "accepted": true,
+    "held": 301,
+    "recognized": 602,
+    "complete": false,
+    "state": "active",
+    "unchangedAfterRefusal": null,
+    "newPosts": 0,
+    "err": null
+  },
+  {
+    "kind": "control-terminal-complete",
+    "accepted": true,
+    "held": 0,
+    "recognized": 602,
+    "complete": true,
+    "state": "cancelled",
+    "unchangedAfterRefusal": null,
+    "newPosts": 0,
+    "err": null
+  },
+  {
+    "kind": "omit-oldest-predecessor sub",
+    "accepted": false,
+    "newPosts": 0,
+    "unchangedAfterRefusal": true
+  },
+  {
+    "kind": "omit-oldest-predecessor sub",
+    "accepted": false,
+    "newPosts": 0,
+    "unchangedAfterRefusal": true
+  },
+  {
+    "kind": "omit-predecessor-of-other-service",
+    "accepted": false,
+    "newPosts": 0
+  }
+]

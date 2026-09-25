@@ -1,0 +1,15 @@
+✔ only D has writes, and arbitrary payment or email routes never reach Stripe (1.0625ms)
+✔ fixture price and setup parameters cannot increase terms or add a recipient (1.534916ms)
+✔ clock advances require exact ownership, monotonic time, two-interval and per-clock caps (0.31325ms)
+✔ setup permits exactly four card-only off-session confirmations and refuses duplicate keys (1.923083ms)
+✔ only registered exact recurring commands may update a card or cancel without proration (0.186166ms)
+✔ one-shot claim is durable before provider effects and an unknown response never retries (15.216542ms)
+✔ finite activations bind approved terms and stop after exactly three schedules (0.384625ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57.112042
