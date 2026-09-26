@@ -1,0 +1,153 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 4 failed) 626ms
+   × records.list: a filter value only hidden deals hold pages like a value nobody holds 144ms
+   × records.list: hidden deals do not change the recent-first pages 15ms
+   × records.list: sorting by a field still pages only readable rows 17ms
+   × agent GET /records: a filter value only hidden deals hold looks like a value nobody holds 65ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  4 failed | 93 passed (97)
+   Start at  08:54:37
+   Duration  1.43s (tests 74%, transform 17%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > records.list: a filter value only hidden deals hold pages like a value nobody holds
+AssertionError: expected [ { n: +0, done: false }, …(2) ] to deeply equal [ { n: +0, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
+      "done": true,
+      "n": 0,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:31:31
+     29|   const w = await world(); await w.hide(3, 777777); await w.restrict();
+     30|   const pages = (value: number) => w.walk(api.records.list, { ...w.lis…
+     31|   expect(await pages(777777)).toEqual(await pages(888888));
+       |                               ^
+     32| });
+     33| it('records.list: hidden deals do not change the recent-first pages', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  ops/authority/pagination.test.ts > records.list: hidden deals do not change the recent-first pages
+AssertionError: expected [ { n: +0, done: false }, …(1) ] to deeply equal [ { n: 1, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
++     "done": false,
++     "n": 0,
++   },
++   {
+      "done": true,
+      "n": 1,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:37:53
+     35|   const before = await w.walk(api.records.list, w.list, 5);
+     36|   await w.hide(7);
+     37|   expect(await w.walk(api.records.list, w.list, 5)).toEqual(before);
+       |                                                     ^
+     38| });
+     39| it('records.list: sorting by a field still pages only readable rows', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  ops/authority/pagination.test.ts > records.list: sorting by a field still pages only readable rows
+AssertionError: expected [ { n: +0, done: false }, …(7) ] to deeply equal [ { n: 1, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
+      "done": true,
+      "n": 1,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:41:124
+     39| it('records.list: sorting by a field still pages only readable rows', …
+     40|   const w = await world(); await w.hide(7); await w.restrict();
+     41|   expect(await w.walk(api.records.list, { ...w.list, sort: { fieldId: …
+       |                                                                                                                            ^
+     42| });
+     43| it('agent GET /records: a filter value only hidden deals hold looks li…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  ops/authority/pagination.test.ts > agent GET /records: a filter value only hidden deals hold looks like a value nobody holds
+AssertionError: expected { status: 200, body: { …(2) } } to deeply equal { status: 200, body: { …(2) } }
+
+- Expected
++ Received
+
+  {
+    "body": {
+-     "cursor": null,
++     "cursor": "[\"\\\"0000000000000000000000010001orgs\\\"\",\"\\\"0000000000000000000010005objects\\\"\",\"777777\",\"1790427277789\",\"\\\"0000000000000000000010059records\\\"\"]",
+      "records": [],
+    },
+    "status": 200,
+  }
+
+ ❯ ops/authority/pagination.test.ts:47:50
+     45|   const call = (value: number) => rest(w.f.t, w.agent.key)('GET', `/ap…
+     46|   const [hit, miss] = [await call(777777), await call(888888)];
+     47|   expect({ status: hit.status, body: hit.json }).toEqual({ status: mis…
+       |                                                  ^
+     48| });
+     49| it('records.related: hidden deals linked to a readable company do not …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+

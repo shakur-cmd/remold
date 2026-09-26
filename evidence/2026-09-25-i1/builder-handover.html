@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>I1 builder handover, revision 3: production authority and integration core</title>
+<title>I1 builder handover, revision 4: production authority and integration core</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 920px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -21,72 +21,60 @@
 </style>
 </head>
 <body>
-<h1>I1 builder handover, revision 3</h1>
-<div class="meta">2026-09-26 · branch <code>wip/i1-authority</code> · replies to independent verification round 3 on <code>i1/iv-r3-2026-09-26</code> (f25ef43, verdict: revise) · level: SERVICE on an isolated local Convex (127.0.0.1:3480/3481), synthetic JWTs and data, no providers, spend or sends · status: <b>awaiting independent re-verification</b>. Builder-run, not certified.</div>
+<h1>I1 builder handover, revision 4</h1>
+<div class="meta">2026-09-26 · branch <code>wip/i1-authority</code> · replies to independent verification round 4 on <code>i1/iv-r4-2026-09-26</code> (6b1e2d2: certify except residual S) · level: SERVICE on an isolated local Convex (127.0.0.1:3480/3481), synthetic JWTs and data, no providers, spend or sends · status: <b>awaiting independent re-verification</b>. Builder-run, not certified.</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
-<li><b>Behaviour changes for restricted readers.</b> These are the price of removing the leaks. (1) Text search leaves out any object whose titles the caller cannot fully see: the title field is hidden or not in every scope, or the title is a lookup into such an object. Before, such objects were partly searchable. (2) A record-scoped caller's search results are ranked by matched words, then most recently updated, not by the search index's own ranking. (3) The daily list is empty for a reader who covers every task or deal but whose due, done or stage field is missing from one of their scopes. Before, they saw some records. I recommend accepting all three.</li>
-<li><b>New index.</b> <code>events</code> gains an additive <code>by_object</code> index, used only by the restricted org activity feed. Deploying it backfills the index; nothing is removed. The rollback target stays compatible because older code ignores the index. Confirm.</li>
-<li><b>Remaining low leaks, not fixed.</b> The suggestion lists (member and agent) and the inbox lists still scan with a 1000-row cap. Beyond 1000 hidden pending items ahead of a caller's own, the cap and the scan time can still hint that the hidden items exist. Hidden items there are suggestions on unreadable records and other people's private inbox notes. Neither list has a per-object or per-record index to serve from. Accept for now, or ask for one.</li>
+<li><b>Three more additive indexes.</b> <code>suggestions.by_object_status</code>, <code>agentInbox.by_org_status_from</code> and <code>agentInbox.by_org_status_audience</code>. Nothing is removed, and older code ignores them. The IV's rollback script (babeb42 and back, on non-empty data) was rerun on this code: PASS. Rolling back dropped the new indexes, the old code read the data, and rolling forward rebuilt them with the member feed matching the owner's view (<code>revision-4/iv-r4-rollback.log</code>). Confirm.</li>
+<li>Residual S is closed rather than accepted, per the coordinator's decision, so no leak acceptance is needed from you for I1.</li>
 </ul>
 </div>
 
 <div class="status">
-<h2>Revision 3: done and proven by the builder (not independent)</h2>
+<h2>Revision 4: done and proven by the builder (not independent)</h2>
 <ul>
-<li><b>IV suites on this code.</b> Round 3 <code>iv-r3.mjs</code>: <b>10/10 PASS</b>, up from 2/10 here (the IV measured 3/10; my before-run also failed the timing check). Round 2 <code>iv-r2.mjs</code>: 14/14. Round 1 <code>iv-service.mjs</code>: 24/24.</li>
-<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 91/91 (was 71). Release tests 19/19 (was 18). <code>pnpm build</code> passes. MCP build plus 2/2.</li>
-<li><b>SERVICE replay 65/65 PASS</b> (one new H0#5 test). <b>Migration replay PASS.</b></li>
-<li><b>Deliberate breaks: 25 of 25 caught</b> (22 unit and release breaks in <code>mutants.py</code>, the two IV D6 data breaks, and one SERVICE break for H0#5). Each fix and each of the 13 original <code>firstVisible</code> sites was reverted one at a time, and each revert fails its own test. Details are in the table below; the mutant script and every run are in <code>revision-3/reds/</code>.</li>
-<li>No real providers, production, spend or sends. Evidence secret scan: no raw agent or adapter keys in logs or fixture zips. Hashes in red and IV logs are replaced with <code>&lt;sha256&gt;</code>.</li>
+<li><b>IV suites on this code.</b> Round 4 <code>iv-r4.mjs</code>: <b>7/7 PASS</b> (was 6/7). Its S measurement no longer depends on hidden items (numbers below). Round 3: 10/10. Round 2: 14/14. Round 1: 24/24. <code>iv-r4-timing.mjs</code>: after 1000 hidden deals in workspace A only, A and B match within noise, including the new agent /me row (6.23 vs 5.82 ms).</li>
+<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 97/97 (was 91). Release tests 19/19. <code>pnpm build</code> passes. MCP build plus 2/2.</li>
+<li><b>SERVICE replay 65/65 PASS. Migration replay PASS.</b></li>
+<li><b>Deliberate breaks: 33 of 33 caught</b> by <code>revision-4/mutants.py</code>. That is the 18 still-applicable round-3 breaks plus 15 new ones (<code>reds/mutants-run.log</code>, <code>reds/mutants.json</code>). The four round-3 suggestion and inbox breaks were replaced, because those code paths no longer exist.</li>
+<li>No real providers, production, spend or sends. Evidence secret scan: no raw agent or adapter keys in logs or fixture zips.</li>
 </ul>
 </div>
 
-<h2>Revision 3 fixes: before and after</h2>
-<table><tr><th>#</th><th>Fix</th><th>Before</th><th>After</th><th>Regression test, and what reverting the fix does</th></tr>
-<tr><td>P (paginated reads)</td><td>When none of a caller's scopes on an object covers all of its records, the caller is served from their own explicit record list: <code>listedRecords()</code> in <code>convex/authority/reads.ts</code>. Filter and sort run in memory on readable rows, in the index's own order, with an offset cursor (<code>list:N</code>). This covers records.list and agent GET /records (<code>pageRecords</code> in <code>lib/list.ts</code>), records.related and agent related (<code>listedRelated</code>), and csv.exportPage. <code>events.forOrg</code> pages the org-wide index only when the caller covers every record of every object. Anyone else gets a newest-first merge of streams: one per fully readable object (new <code>by_object</code> index) and one per listed record. The cursor is creation time plus the IDs already returned at that time. Readers with <code>records: 'all'</code> keep the Convex paginated path, because every row of a per-object index is readable to them. No other reader kind meets hidden rows on these paths. Field masks remove values but never rows, and filters and sorts already require the field in every scope.</td><td>IV R3-P1 to P6 FAIL: short pages and early "not done" revealed hidden deals and, with a filter, their amount (<code>reds/iv-r3-before-fix-2of10.log</code>)</td><td>R3-P1 to P7 PASS</td><td>New <code>ops/authority/pagination.test.ts</code> (8 tests: list recent, list filtered, list sorted, agent /records, related, events pages, events completeness, CSV). Turning off the list path at each site fails its tests: <code>p-list-listed-path-off</code>, <code>p-related-member-listed-off</code>, <code>p-events-merge-off</code>, <code>p-csv-listed-off</code>.</td></tr>
-<tr><td>F1, F2 (scan cap, timing)</td><td>Search (member and agent) now goes through <code>lib/search.ts</code>. A record-scoped caller is matched against their own list. A caller who can read every record and title of an object uses the search index with <code>take(limit)</code>, with nothing to skip. Other objects are left out. Name matching (<code>findReadableByTitle</code>) and the daily lists (<code>lib/daily.ts</code>) use the same split.</td><td>R3-F1 FAIL (999 vs 1000 hidden changed the result), R3-F2 FAIL (search slowed as hidden rows grew)</td><td>R3-F1, R3-F2, R3-F3 PASS</td><td>For record-scoped callers, and for callers who see every row, neither leak remains: nothing unreadable is scanned. What remains is the suggestion and inbox lists (see Your calls). The daily lists still skip done tasks and won or lost deals, but the caller can see those rows.</td></tr>
-<tr><td>T (site tests)</td><td>New <code>ops/authority/limits.test.ts</code> has one test per original site. In each, enough unreadable rows sit ahead of the caller's one readable row to fill the limit, including the <code>take(200)</code> the pre-revision-2 code used.</td><td>IV: 10 of 13 sites could be reverted to take-then-filter with every suite green</td><td>13 of 13 sites have their own test</td><td>Each site reverted to take-then-filter fails its own test. Member search, agent search, name matching, agent related (both branches), member and agent today tasks, member and agent quiet deals, member and agent suggestion lists, member and agent inbox lists. The helper stopping after <i>limit</i> scanned rows fails the four list tests. All logs are <code>reds/t-*.log</code>.</td></tr>
-<tr><td>D6 map and guard</td><td>Row 5's own check now keys the read after the manager is fired, in a new SERVICE test ("H0#5 firing a manager removes delegated reads..."). The test fires the manager and checks that the child loses the delegated field and title, while its independent human grant keeps the other field and its queued model work pauses. Row 8 keys the late outcome plus the before-permit refusal, which now asserts its reason ("Agent inactive"). Row 38 keys a new assertion that the exhausted step refuses continuation (<code>exhausted.continuationRefused</code>), confirms, frees its slot and cannot be claimed again. The guard is now a function (<code>gapsFor</code>), and two self-tests feed it bad maps.</td><td>IV: rows 5, 8, 38 keyed the wrong assertion; removing the own-check line or raising the limit to 60 left the suite green</td><td>Guard 5/5; max single-test acceptance still 5 of 43</td><td>Removing the own-check line fails a self-test (<code>d6-guard-own-check-line-removed</code>). So does raising the limit to 60 (<code>d6-guard-max-shared-60</code>). The IV's two data mutants still fail. If a fired manager's delegated grants survive (a liveGrant break), the new H0#5 SERVICE test fails (<code>d6-row5-fired-manager-grants-survive.log</code>).</td></tr>
-<tr><td>Floor message</td><td><code>authorityFloorCheck()</code> returns the reason for a refusal. Preflight reports it, and the release CLI uses it. <code>authorityFloor()</code> keeps its boolean. The pin is unchanged, per the coordinator.</td><td>Squash, shallow clone and missing pin all said "predates the I1 authority core"</td><td>Each says what failed: the pinned floor commit is not in this clone (with "this clone is shallow; fetch --unshallow" when it is shallow), the target is a tree rather than a commit, the target does not descend from the floor (it predates I1 or came by squash or rebase), or it descends but lacks a core file (<code>reds/floor-iv-probe-cli-reasons.log</code>)</td><td>New release test "a refused rollback floor says what failed". A generic-message break fails it (<code>floor-generic-message.log</code>).</td></tr>
+<h2>Revision 4 fixes: before and after</h2>
+<table><tr><th>#</th><th>Fix</th><th>Before (IV check, this code's parent 87d4c10)</th><th>After</th><th>Regression test and the break it catches</th></tr>
+<tr><td>S (suggestion and inbox lists)</td><td>New <code>convex/authority/pending.ts</code>. Suggestions come newest first from one stream per fully readable object (new <code>by_object_status</code> index) plus one per listed record (existing <code>by_record</code>). Only a caller who covers everything reads the org-wide index. Inbox items come oldest first from the caller's own items (new <code>by_org_status_from</code>), plus shared items (new <code>by_org_status_audience</code>, including legacy pre-freeze rows) when the caller may read the shared inbox. Unrestricted humans keep the org index. Used by the member and agent suggestion lists, the member and agent inbox lists, and agent GET /me counts. Nothing hidden is read, so there is no scan cap and no timing slope.</td><td>R4-S: member 9.2 ms at 80 hidden vs 74.4 ms at 980; agent 11.5 vs 61.0 ms. Own suggestion listed at 999 hidden, gone at 1000. Inbox: own note listed after 998, gone after 1001 (<code>reds/iv-r4-before-6of7.log</code>)</td><td>R4-S: own suggestion listed at 999 and at 1000 hidden (member and agent), and own inbox note listed after 998 and after 1001. Timing at 80 vs 980 hidden: member 2.00 vs 2.18 ms, agent 6.09 vs 7.32 ms. That is single-workspace early vs late, so it includes backend drift; before it was a 50 to 65 ms rise.</td><td>New tests with 1100 hidden items. Suggestions (member, agent, /me count), inbox (agent, /me count, member) and quiet deals. Caught: each list reverted to the scanning version (4), treating every caller as fully covered, and turning off the shared or legacy inbox stream. The last two are caught by the existing inbox tests.</td></tr>
+<tr><td>Sort parity</td><td>The list path compares values with Convex's own <code>compareValues</code> (from <code>convex/values</code>). Strings go by UTF-8 bytes, and -0 is distinct from 0, exactly like the index.</td><td>R4-C3 FAIL: nameAsc and nameDesc swapped U+FFFD and the emoji; amount = -0 matched a 0 row</td><td>R4-C3 PASS</td><td>New test "the list path sorts and filters exactly like the index path". It covers 9 cases: recent, amount and name in both directions, a filter plus descending, amount 5 with three ties, -0 and empty, against the index path restricted to readable rows. The scope lists records in reverse, so a lost tie-break shows. Caught: UTF-16 comparator, -0 equal to 0, filter ignored, descending ignored, tie-break dropped.</td></tr>
+<tr><td>Test gaps</td><td>Same test as above, plus a quiet-deals test with 1100 hidden deals untouched for longer. There is also a daily-list test with 60 done tasks ahead of an open one, which makes the helper's scan logic observable again.</td><td>IV: filter, descending, tie-break and quiet-deals list path could be broken with builder suites green</td><td>All four caught</td><td><code>g-list-ignores-filter</code>, <code>g-list-ignores-descending</code>, <code>g-list-drops-tiebreak</code>, <code>g-quiet-list-path-off</code>, <code>t-helper-stops-after-limit-scanned</code></td></tr>
+<tr><td>Cursor refusal</td><td><code>paginateIndex()</code> wraps every index paginate: records.list and agent /records, related, CSV, events. Our own <code>list:</code> and <code>events:</code> cursors, and any cursor Convex cannot parse, get <code>VALIDATION: Invalid cursor</code>.</td><td>R4-C2 observed a raw "Failed to parse cursor" server error for a list cursor on the index path</td><td>R4-C2: all three switches give VALIDATION Invalid cursor</td><td>New test "a cursor from the other path is refused cleanly". Caught: prefix check removed, and the catch removed (garbage cursor).</td></tr>
 </table>
 
 <h2>Not done or not proven</h2>
 <ul>
-<li>Suggestion and inbox lists keep the scan cap and timing hint for hidden items (see Your calls).</li>
-<li>Offset cursors: if a caller's scope switches between an explicit list and "all" while they are paging, the old cursor is refused and paging restarts. Rows added between pages shift later pages the same way they do in any offset list.</li>
-<li>A record-scoped read costs one fetch per listed record (the restricted events feed reads one stream per listed record). A very long explicit list could hit Convex read limits. That limit depends only on the caller's own list, never on hidden rows. Not measured.</li>
-<li>Timing was checked only through IV R3-F2 on a local backend. I did not rerun <code>iv-r3-timing.mjs</code>, <code>iv-r3-d8.mjs</code> or <code>iv-r3-breaks.mjs</code>; the breaks script targets revision-2 code.</li>
-<li>The other 19 own-check rows the IV rated weak were not reworked. Only rows 5, 8 and 38 were changed.</li>
-<li>Floor: a descendant of I1 that restores pre-I1 code plus empty marker files is still accepted. That is a content check, which ancestry cannot do (the known limit). The pin will be raised only after certification.</li>
-<li>Unreadable lookup IDs still show on readable records (unchanged, optional in round 2).</li>
-<li>Carried: readonly tail, SIM financial finality adapter, hosted log sinks unchecked.</li>
+<li>Large lists (IV item L): a scope list write fails at about 4080 IDs, and an agent holding a bigger union across grants gets a generic 500 on list reads. It fails closed. Not changed.</li>
+<li>Agent GET /me now counts only visible items, from the same streams. The count was already correct, but I have no unit test for its timing. Timing was only measured through the list endpoints in R4-S.</li>
+<li>Not rerun: <code>iv-r4-limits.mjs</code>, <code>iv-r4-floor.mjs</code>, <code>iv-r4-breaks.mjs</code> (it targets revision-3 code), <code>iv-r3-d8.mjs</code>.</li>
+<li>Carried unchanged: the 19 weak D6 rows, the floor's content limit, unreadable lookup IDs on readable records, the readonly tail, the SIM finality adapter, and unchecked hosted log sinks.</li>
 </ul>
 
 <h2>How to reproduce</h2>
 <pre>git checkout wip/i1-authority   # this commit
 pnpm install &amp;&amp; (cd packages/mcp &amp;&amp; pnpm install &amp;&amp; pnpm build &amp;&amp; pnpm test)
 pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm build &amp;&amp; pnpm verify:release
-# Isolated local backend on 127.0.0.1:3480/3481, synthetic data only.
-I1_EVIDENCE_DIR=/tmp/b node ops/authority/service.mjs            # 65 PASS
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/service.mjs            # 65 PASS (127.0.0.1:3480/3481)
 I1_EVIDENCE_DIR=/tmp/b node ops/authority/migration-service.mjs  # PASS
-python3 evidence/2026-09-25-i1/revision-3/mutants.py             # 22 unit/release breaks, all caught; restores files
-# IV suites (untracked copies): git checkout 8f9e362 -- evidence/2026-09-25-i1/iv evidence/2026-09-25-i1/iv-r2
-#   git checkout f25ef43 -- evidence/2026-09-25-i1/iv-r3 ; cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts ops/authority/
-I1_EVIDENCE_DIR=/tmp/r1 node evidence/2026-09-25-i1/iv/iv-service.mjs   # 24/24
-I1_EVIDENCE_DIR=/tmp/r2 node evidence/2026-09-25-i1/iv-r2/iv-r2.mjs     # 14/14
-I1_EVIDENCE_DIR=/tmp/r3 node evidence/2026-09-25-i1/iv-r3/iv-r3.mjs     # 10/10
-# Remove ops/authority/fixture-iv.ts before running the builder SERVICE suite.</pre>
-<p>Evidence for this revision is in <code>evidence/2026-09-25-i1/revision-3/</code>. The IV scripts were run from untracked copies and are not committed as builder tests. Run <code>mutants.py</code> from the repository root.</p>
+python3 evidence/2026-09-25-i1/revision-4/mutants.py             # 33 breaks, all caught; restores files
+# IV suites from untracked copies: 8f9e362 (iv, iv-r2), f25ef43 (iv-r3), 6b1e2d2 (iv-r4);
+# cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts ops/authority/  (remove before builder SERVICE runs)
+I1_EVIDENCE_DIR=/tmp/x node evidence/2026-09-25-i1/iv-r4/iv-r4.mjs   # 7/7</pre>
 
 <h2>Attack cases for the re-verifier</h2>
 <ul>
-<li>A mixed reader, holding "all" records with some fields plus an explicit list with other fields on the same object: list, filter, sort, related, export, search and the daily list, with and without hidden rows.</li>
-<li>Paging the restricted events feed while events are being written, including several events with the same creation time. Check for duplicates and gaps.</li>
-<li>Cross-object text search as a restricted member: compare results with and without hidden matches in objects they can and cannot fully read.</li>
-<li>Suggestion and inbox lists with more than 1000 hidden items (known remaining, low).</li>
+<li>Suggestion and inbox lists for a legacy (pre-freeze) agent with shared inbox access, and for a member with no scope at all: compare them with and without hidden items.</li>
+<li>Suggestions on records that were later deleted, and create suggestions (no record) on list-scoped objects.</li>
+<li>Agent GET /me latency against 1000 hidden pending items.</li>
 </ul>
 
 <h2>H0 group to production test mapping (guarded by operations and each group's own check)</h2>
@@ -135,6 +123,42 @@ I1_EVIDENCE_DIR=/tmp/r3 node evidence/2026-09-25-i1/iv-r3/iv-r3.mjs     # 10/10
 <tr><td>42</td><td>Old consumed fence for the same unresolved step still supports provisional absence</td><td><code>first\.step, second\.step</code></td><td>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
 <tr><td>43</td><td>Old consumed fence for the same unresolved step still supports final absence</td><td><code>first\.step, second\.step</code></td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
 </table>
+
+
+<h2>Revision 3 record</h2>
+<p>Revision 3 (<code>87d4c10</code>) replied to IV round 3. Its evidence is in <code>evidence/2026-09-25-i1/revision-3/</code>. IV round 4 certified it except residual S, and found the items fixed above.</p>
+
+<h3>Revision 3: done and proven by the builder (not independent)</h3>
+<ul>
+<li><b>IV suites on this code.</b> Round 3 <code>iv-r3.mjs</code>: <b>10/10 PASS</b>, up from 2/10 here (the IV measured 3/10; my before-run also failed the timing check). Round 2 <code>iv-r2.mjs</code>: 14/14. Round 1 <code>iv-service.mjs</code>: 24/24.</li>
+<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 91/91 (was 71). Release tests 19/19 (was 18). <code>pnpm build</code> passes. MCP build plus 2/2.</li>
+<li><b>SERVICE replay 65/65 PASS</b> (one new H0#5 test). <b>Migration replay PASS.</b></li>
+<li><b>Deliberate breaks: 25 of 25 caught</b> (22 unit and release breaks in <code>mutants.py</code>, the two IV D6 data breaks, and one SERVICE break for H0#5). Each fix and each of the 13 original <code>firstVisible</code> sites was reverted one at a time, and each revert fails its own test. Details are in the table below; the mutant script and every run are in <code>revision-3/reds/</code>.</li>
+<li>No real providers, production, spend or sends. Evidence secret scan: no raw agent or adapter keys in logs or fixture zips. Hashes in red and IV logs are replaced with <code>&lt;sha256&gt;</code>.</li>
+</ul>
+
+
+<h3>Revision 3 fixes: before and after</h3>
+<table><tr><th>#</th><th>Fix</th><th>Before</th><th>After</th><th>Regression test, and what reverting the fix does</th></tr>
+<tr><td>P (paginated reads)</td><td>When none of a caller's scopes on an object covers all of its records, the caller is served from their own explicit record list: <code>listedRecords()</code> in <code>convex/authority/reads.ts</code>. Filter and sort run in memory on readable rows, in the index's own order, with an offset cursor (<code>list:N</code>). This covers records.list and agent GET /records (<code>pageRecords</code> in <code>lib/list.ts</code>), records.related and agent related (<code>listedRelated</code>), and csv.exportPage. <code>events.forOrg</code> pages the org-wide index only when the caller covers every record of every object. Anyone else gets a newest-first merge of streams: one per fully readable object (new <code>by_object</code> index) and one per listed record. The cursor is creation time plus the IDs already returned at that time. Readers with <code>records: 'all'</code> keep the Convex paginated path, because every row of a per-object index is readable to them. No other reader kind meets hidden rows on these paths. Field masks remove values but never rows, and filters and sorts already require the field in every scope.</td><td>IV R3-P1 to P6 FAIL: short pages and early "not done" revealed hidden deals and, with a filter, their amount (<code>reds/iv-r3-before-fix-2of10.log</code>)</td><td>R3-P1 to P7 PASS</td><td>New <code>ops/authority/pagination.test.ts</code> (8 tests: list recent, list filtered, list sorted, agent /records, related, events pages, events completeness, CSV). Turning off the list path at each site fails its tests: <code>p-list-listed-path-off</code>, <code>p-related-member-listed-off</code>, <code>p-events-merge-off</code>, <code>p-csv-listed-off</code>.</td></tr>
+<tr><td>F1, F2 (scan cap, timing)</td><td>Search (member and agent) now goes through <code>lib/search.ts</code>. A record-scoped caller is matched against their own list. A caller who can read every record and title of an object uses the search index with <code>take(limit)</code>, with nothing to skip. Other objects are left out. Name matching (<code>findReadableByTitle</code>) and the daily lists (<code>lib/daily.ts</code>) use the same split.</td><td>R3-F1 FAIL (999 vs 1000 hidden changed the result), R3-F2 FAIL (search slowed as hidden rows grew)</td><td>R3-F1, R3-F2, R3-F3 PASS</td><td>For record-scoped callers, and for callers who see every row, neither leak remains: nothing unreadable is scanned. What remains is the suggestion and inbox lists (see Your calls). The daily lists still skip done tasks and won or lost deals, but the caller can see those rows.</td></tr>
+<tr><td>T (site tests)</td><td>New <code>ops/authority/limits.test.ts</code> has one test per original site. In each, enough unreadable rows sit ahead of the caller's one readable row to fill the limit, including the <code>take(200)</code> the pre-revision-2 code used.</td><td>IV: 10 of 13 sites could be reverted to take-then-filter with every suite green</td><td>13 of 13 sites have their own test</td><td>Each site reverted to take-then-filter fails its own test. Member search, agent search, name matching, agent related (both branches), member and agent today tasks, member and agent quiet deals, member and agent suggestion lists, member and agent inbox lists. The helper stopping after <i>limit</i> scanned rows fails the four list tests. All logs are <code>reds/t-*.log</code>.</td></tr>
+<tr><td>D6 map and guard</td><td>Row 5's own check now keys the read after the manager is fired, in a new SERVICE test ("H0#5 firing a manager removes delegated reads..."). The test fires the manager and checks that the child loses the delegated field and title, while its independent human grant keeps the other field and its queued model work pauses. Row 8 keys the late outcome plus the before-permit refusal, which now asserts its reason ("Agent inactive"). Row 38 keys a new assertion that the exhausted step refuses continuation (<code>exhausted.continuationRefused</code>), confirms, frees its slot and cannot be claimed again. The guard is now a function (<code>gapsFor</code>), and two self-tests feed it bad maps.</td><td>IV: rows 5, 8, 38 keyed the wrong assertion; removing the own-check line or raising the limit to 60 left the suite green</td><td>Guard 5/5; max single-test acceptance still 5 of 43</td><td>Removing the own-check line fails a self-test (<code>d6-guard-own-check-line-removed</code>). So does raising the limit to 60 (<code>d6-guard-max-shared-60</code>). The IV's two data mutants still fail. If a fired manager's delegated grants survive (a liveGrant break), the new H0#5 SERVICE test fails (<code>d6-row5-fired-manager-grants-survive.log</code>).</td></tr>
+<tr><td>Floor message</td><td><code>authorityFloorCheck()</code> returns the reason for a refusal. Preflight reports it, and the release CLI uses it. <code>authorityFloor()</code> keeps its boolean. The pin is unchanged, per the coordinator.</td><td>Squash, shallow clone and missing pin all said "predates the I1 authority core"</td><td>Each says what failed: the pinned floor commit is not in this clone (with "this clone is shallow; fetch --unshallow" when it is shallow), the target is a tree rather than a commit, the target does not descend from the floor (it predates I1 or came by squash or rebase), or it descends but lacks a core file (<code>reds/floor-iv-probe-cli-reasons.log</code>)</td><td>New release test "a refused rollback floor says what failed". A generic-message break fails it (<code>floor-generic-message.log</code>).</td></tr>
+</table>
+
+<h3>Not done or not proven</h3>
+<ul>
+<li>Suggestion and inbox lists keep the scan cap and timing hint for hidden items (see Your calls).</li>
+<li>Offset cursors: if a caller's scope switches between an explicit list and "all" while they are paging, the old cursor is refused and paging restarts. Rows added between pages shift later pages the same way they do in any offset list.</li>
+<li>A record-scoped read costs one fetch per listed record (the restricted events feed reads one stream per listed record). A very long explicit list could hit Convex read limits. That limit depends only on the caller's own list, never on hidden rows. Not measured.</li>
+<li>Timing was checked only through IV R3-F2 on a local backend. I did not rerun <code>iv-r3-timing.mjs</code>, <code>iv-r3-d8.mjs</code> or <code>iv-r3-breaks.mjs</code>; the breaks script targets revision-2 code.</li>
+<li>The other 19 own-check rows the IV rated weak were not reworked. Only rows 5, 8 and 38 were changed.</li>
+<li>Floor: a descendant of I1 that restores pre-I1 code plus empty marker files is still accepted. That is a content check, which ancestry cannot do (the known limit). The pin will be raised only after certification.</li>
+<li>Unreadable lookup IDs still show on readable records (unchanged, optional in round 2).</li>
+<li>Carried: readonly tail, SIM financial finality adapter, hosted log sinks unchecked.</li>
+</ul>
+
 
 <h2>Revision 2 record</h2>
 <p>Revision 2 (<code>babeb42</code>) replied to IV round 2. Its evidence is in <code>evidence/2026-09-25-i1/revision-2/</code>. IV round 3 confirmed R1 to R4 closed and found the gaps fixed above.</p>
@@ -248,4 +272,5 @@ I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutants-service.mjs    # 14 CAUGHT, n
 <p>This session's first-round evidence is in <code>evidence/2026-09-25-i1/</code> (service, migration, service-mutants, unit-mutants). Revision-1 evidence is in <code>evidence/2026-09-25-i1/revision-1/</code>.</p>
 </body>
 </html>
+
 

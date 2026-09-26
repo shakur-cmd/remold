@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 1 failed) 1046ms
+   × inbox lists and the agent summary ignore any number of other people's private notes 29ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:15
+   Duration  1.32s (tests 78%, transform 14%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > inbox lists and the agent summary ignore any number of other people's private notes
+AssertionError: expected [] to deeply equal [ '0000000000000000011151agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000011151agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:137:95
+    135|   const agent = await f.client.action(api.agents.createScoped, { orgId…
+    136|   const own = (await rest(f.t, agent.key)('POST', '/api/v1/inbox', { t…
+    137|   expect(((await rest(f.t, agent.key)('GET', '/api/v1/inbox')).json as…
+       |                                                                                               ^
+    138|   expect((await rest(f.t, agent.key)('GET', '/api/v1/me')).json.pendin…
+    139|   const company = await objectFields(f.client, f.orgId, 'company');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

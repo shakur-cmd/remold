@@ -1,0 +1,103 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 1 failed) 649ms
+   × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 121ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:29
+   Duration  1.27s (tests 79%, transform 12%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text
+AssertionError: expected { amountAsc: { …(2) }, …(3) } to deeply equal {}
+
+- Expected
++ Received
+
+- {}
++ {
++   "amount5": {
++     "expected": [
++       "0000000000000000000010048records",
++       "0000000000000000000010052records",
++       "0000000000000000000010076records",
++     ],
++     "got": [
++       "0000000000000000000010076records",
++       "0000000000000000000010052records",
++       "0000000000000000000010048records",
++     ],
++   },
++   "amount5Desc": {
++     "expected": [
++       "0000000000000000000010076records",
++       "0000000000000000000010052records",
++       "0000000000000000000010048records",
++     ],
++     "got": [
++       "0000000000000000000010048records",
++       "0000000000000000000010052records",
++       "0000000000000000000010076records",
++     ],
++   },
++   "amountAsc": {
++     "expected": [
++       "0000000000000000000010056records",
++       "0000000000000000000010064records",
++       "0000000000000000000010060records",
++       "0000000000000000000010072records",
++       "0000000000000000000010048records",
++       "0000000000000000000010052records",
++       "0000000000000000000010076records",
++       "0000000000000000000010080records",
++       "0000000000000000000010068records",
++     ],
++     "got": [
++       "0000000000000000000010056records",
++       "0000000000000000000010064records",
++       "0000000000000000000010060records",
++       "0000000000000000000010072records",
++       "0000000000000000000010076records",
++       "0000000000000000000010052records",
++       "0000000000000000000010048records",
++       "0000000000000000000010080records",
++       "0000000000000000000010068records",
++     ],
++   },
++   "amountDesc": {
++     "expected": [
++       "0000000000000000000010068records",
++       "0000000000000000000010080records",
++       "0000000000000000000010076records",
++       "0000000000000000000010052records",
++       "0000000000000000000010048records",
++       "0000000000000000000010072records",
++       "0000000000000000000010060records",
++       "0000000000000000000010064records",
++       "0000000000000000000010056records",
++     ],
++     "got": [
++       "0000000000000000000010068records",
++       "0000000000000000000010080records",
++       "0000000000000000000010048records",
++       "0000000000000000000010052records",
++       "0000000000000000000010076records",
++       "0000000000000000000010072records",
++       "0000000000000000000010060records",
++       "0000000000000000000010064records",
++       "0000000000000000000010056records",
++     ],
++   },
++ }
+
+ ❯ ops/authority/pagination.test.ts:99:18
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

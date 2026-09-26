@@ -1,0 +1,67 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 1 failed) 753ms
+   × records.related: hidden deals linked to a readable company do not change the pages 24ms
+ ❯ ops/authority/limits.test.ts (14 tests | 1 failed) 1077ms
+   × agent related through a lookup fills its limit with readable records 33ms
+
+ Test Files  2 failed | 15 passed (17)
+      Tests  2 failed | 95 passed (97)
+   Start at  08:54:48
+   Duration  1.37s (tests 79%, transform 12%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > agent related through a lookup fills its limit with readable records
+AssertionError: expected [] to deeply equal [ '0000000000000000000010250records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010250records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:70:65
+     68| }
+     69| it('agent related through a lookup fills its limit with readable recor…
+     70|   const w = await relatedWorld('lookup'); expect(await w.ids()).toEqua…
+       |                                                                 ^
+     71| }, 30000);
+     72| it('agent related through a links field fills its limit with readable …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages
+AssertionError: expected [ { n: 1, done: false }, …(1) ] to deeply equal [ { n: 1, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "done": true,
++     "done": false,
+      "n": 1,
++   },
++   {
++     "done": true,
++     "n": 0,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:54:54
+     52|   const before = await w.walk(api.records.related, args, 5);
+     53|   await w.hide(7);
+     54|   expect(await w.walk(api.records.related, args, 5)).toEqual(before);
+       |                                                      ^
+     55| });
+     56| it('events.forOrg: activity on hidden deals does not change the member…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

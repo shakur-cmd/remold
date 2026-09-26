@@ -1,0 +1,213 @@
+{
+ "p-list-listed-path-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > agent GET /records: a filter value only hidden deals hold looks like a value nobody holds",
+   "ops/authority/pagination.test.ts > records.list: a filter value only hidden deals hold pages like a value nobody holds",
+   "ops/authority/pagination.test.ts > records.list: hidden deals do not change the recent-first pages",
+   "ops/authority/pagination.test.ts > records.list: sorting by a field still pages only readable rows"
+  ]
+ },
+ "p-related-member-listed-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages"
+  ]
+ },
+ "p-events-merge-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages"
+  ]
+ },
+ "p-csv-listed-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > csv.exportPage: hidden deals do not change the export pages"
+  ]
+ },
+ "t-agent-related-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > agent related through a links field fills its limit with readable records",
+   "ops/authority/limits.test.ts > agent related through a lookup fills its limit with readable records"
+  ]
+ },
+ "t-related-links-branch-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > agent related through a links field fills its limit with readable records"
+  ]
+ },
+ "t-related-lookup-branch-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > agent related through a lookup fills its limit with readable records",
+   "ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages"
+  ]
+ },
+ "t-member-search-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/masks.test.ts > a hidden field is removed from user records, history, suggestions and exports",
+   "ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing"
+  ]
+ },
+ "t-agent-search-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing"
+  ]
+ },
+ "t-find-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches outrank it"
+  ]
+ },
+ "t-member-today-tasks-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > member today: due tasks fill the list with readable tasks",
+   "ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record"
+  ]
+ },
+ "t-member-today-quiet-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > member today: quiet deals fill the list with readable deals",
+   "ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer"
+  ]
+ },
+ "t-agent-today-tasks-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > agent today: due tasks fill the list with readable tasks",
+   "ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record"
+  ]
+ },
+ "t-agent-today-quiet-take-then-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > agent today: quiet deals fill the list with readable deals",
+   "ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer"
+  ]
+ },
+ "t-helper-stops-after-limit-scanned": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > the daily list keeps looking past done tasks until it has open ones"
+  ]
+ },
+ "d6-guard-own-check-line-removed": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs"
+  ]
+ },
+ "d6-guard-max-shared-60": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/h0-parity.test.ts > the guard reports an own check that seven production tests share"
+  ]
+ },
+ "floor-generic-message": {
+  "exit": 1,
+  "failed": [
+   "a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file"
+  ]
+ },
+ "s-member-suggestions-scan": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > suggestion lists and the agent summary ignore any number of hidden pending suggestions"
+  ]
+ },
+ "s-agent-suggestions-scan": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > suggestion lists and the agent summary ignore any number of hidden pending suggestions"
+  ]
+ },
+ "s-member-inbox-scan": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > inbox lists and the agent summary ignore any number of other people's private notes"
+  ]
+ },
+ "s-agent-inbox-scan": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > inbox lists and the agent summary ignore any number of other people's private notes"
+  ]
+ },
+ "s-pending-treats-everyone-as-full": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > agent suggestion list fills its limit with readable suggestions",
+   "ops/authority/limits.test.ts > member suggestion list fills its limit with readable suggestions",
+   "ops/authority/limits.test.ts > suggestion lists and the agent summary ignore any number of hidden pending suggestions"
+  ]
+ },
+ "s-inbox-shared-stream-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/inbox.test.ts > old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes",
+   "ops/authority/inbox.test.ts > sharing requires deliberate human choice plus a separate current agent entitlement"
+  ]
+ },
+ "s-inbox-legacy-stream-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/inbox.test.ts > old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes"
+  ]
+ },
+ "o-comparator-utf16": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  ]
+ },
+ "o-minus0-equals-0": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  ]
+ },
+ "g-list-ignores-filter": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  ]
+ },
+ "g-list-ignores-descending": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  ]
+ },
+ "g-list-drops-tiebreak": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  ]
+ },
+ "g-quiet-list-path-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer"
+  ]
+ },
+ "c-cursor-prefix-check-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > a cursor from the other path is refused cleanly, not with a server error"
+  ]
+ },
+ "c-cursor-catch-off": {
+  "exit": 1,
+  "failed": [
+   "ops/authority/pagination.test.ts > a cursor from the other path is refused cleanly, not with a server error"
+  ]
+ }
+}

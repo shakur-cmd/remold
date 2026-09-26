@@ -1,0 +1,56 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 1 failed) 552ms
+   × events.forOrg: activity on hidden deals does not change the member's pages 22ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:54:41
+   Duration  1.33s (tests 75%, transform 16%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages
+AssertionError: expected [ { n: +0, done: false }, …(4) ] to deeply equal [ { n: 2, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 0,
++   },
++   {
++     "done": false,
++     "n": 1,
++   },
++   {
+      "done": true,
+-     "n": 2,
++     "n": 1,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:60:68
+     58|   const before = await w.walk(api.events.forOrg, { orgId: w.f.orgId },…
+     59|   await w.hide(7);
+     60|   expect(await w.walk(api.events.forOrg, { orgId: w.f.orgId }, 2)).toE…
+       |                                                                    ^
+     61| });
+     62| it('events.forOrg: a restricted member pages every event they can see,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
