@@ -1,0 +1,17 @@
+✔ only the exact host and published paths reach the native service (36.886166ms)
+✔ a valid submission is stored once through the tenant capture key and never posted to Mautic (6.652417ms)
+✔ the rendered token binds tenant and field labels (3.260042ms)
+✔ malformed, duplicate, extra or nonce-less form inputs never reach capture (9.205125ms)
+✔ client cookies and headers never reach capture (3.501208ms)
+✔ success is reported only for a confirmed capture; a reused nonce with other values is a conflict (11.655583ms)
+✔ native redirects and oversized page responses are not published (6.260416ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before capture (2.127292ms)
+✔ an edge without a well-formed capture key or store refuses to start (0.874291ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.007125

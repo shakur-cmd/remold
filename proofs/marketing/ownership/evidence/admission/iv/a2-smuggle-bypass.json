@@ -1,0 +1,682 @@
+{
+ "run": "5a95e508",
+ "capturedAt": "2026-09-26T11:47:19.659Z",
+ "tenants": {
+  "a": {
+   "formId": 38,
+   "ownerId": 224,
+   "rows": [
+    {
+     "kind": "duplicate Cookie headers",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "lowercase cookie header",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mixed-case cookie header",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "client DNT 0 and Sec-GPC 0",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "device id cookie",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "obs-fold continuation",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "X-Forwarded-For routing header",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mauticform key in body",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "CRLF in firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "whitespace in email",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "pipelined keep-alive pair",
+     "expected": "200,200",
+     "statuses": [
+      200,
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "trailing slash",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "query string",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "double slash",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "inner double slash",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "percent-encoded id",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "dot segment",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "traversal to another form",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "encoded traversal",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "upper case",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "absolute-form target",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "form 1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "another id",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "native submit path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "native submit form 1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant token on this edge",
+     "expected": "403",
+     "statuses": [
+      403
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant Host on this edge",
+     "expected": "421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "PUT on form path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "duplicate Host header",
+     "expected": "400|421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    }
+   ],
+   "accepted": 7,
+   "newSubmissions": [
+    "106\t38\tnull",
+    "107\t38\tnull",
+    "108\t38\tnull",
+    "109\t38\tnull",
+    "110\t38\tnull",
+    "111\t38\tnull",
+    "112\t38\tnull"
+   ],
+   "ownerBefore": {
+    "id": 224,
+    "firstname": "IV owner smuggle",
+    "lastname": "Stable smuggle",
+    "email": "iv-own-5a95e508-smuggle@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "ownerAfter": {
+    "id": 224,
+    "firstname": "IV owner smuggle",
+    "lastname": "Stable smuggle",
+    "email": "iv-own-5a95e508-smuggle@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "countersBefore": {
+    "contacts": 219,
+    "anonymousContacts": 30,
+    "maxLeadId": 224,
+    "dnc": 30,
+    "submissions": 101,
+    "campaignLeads": 137,
+    "campaignEventLog": 169,
+    "pointActionLog": 2,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "countersAfter": {
+    "contacts": 219,
+    "anonymousContacts": 30,
+    "maxLeadId": 224,
+    "dnc": 30,
+    "submissions": 108,
+    "campaignLeads": 137,
+    "campaignEventLog": 169,
+    "pointActionLog": 2,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "verdict": {
+    "allAsExpected": true,
+    "submissionsEqualAccepted": true,
+    "allUnlinked": true,
+    "allOnAdmittedForm": true,
+    "ownerUnchanged": true,
+    "noNewContacts": true
+   }
+  },
+  "b": {
+   "formId": 33,
+   "ownerId": 53,
+   "rows": [
+    {
+     "kind": "duplicate Cookie headers",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "lowercase cookie header",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mixed-case cookie header",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "client DNT 0 and Sec-GPC 0",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "device id cookie",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "obs-fold continuation",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "X-Forwarded-For routing header",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mauticform key in body",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "CRLF in firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "whitespace in email",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "pipelined keep-alive pair",
+     "expected": "200,200",
+     "statuses": [
+      200,
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "trailing slash",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "query string",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "double slash",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "inner double slash",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "percent-encoded id",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "dot segment",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "traversal to another form",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "encoded traversal",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "upper case",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "absolute-form target",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "form 1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "another id",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "native submit path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "native submit form 1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant token on this edge",
+     "expected": "403",
+     "statuses": [
+      403
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant Host on this edge",
+     "expected": "421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "PUT on form path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "duplicate Host header",
+     "expected": "400|421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    }
+   ],
+   "accepted": 7,
+   "newSubmissions": [
+    "55\t33\tnull",
+    "56\t33\tnull",
+    "57\t33\tnull",
+    "58\t33\tnull",
+    "59\t33\tnull",
+    "60\t33\tnull",
+    "61\t33\tnull"
+   ],
+   "ownerBefore": {
+    "id": 53,
+    "firstname": "IV owner smuggle",
+    "lastname": "Stable smuggle",
+    "email": "iv-own-5a95e508-smuggle@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "ownerAfter": {
+    "id": 53,
+    "firstname": "IV owner smuggle",
+    "lastname": "Stable smuggle",
+    "email": "iv-own-5a95e508-smuggle@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "countersBefore": {
+    "contacts": 46,
+    "anonymousContacts": 23,
+    "maxLeadId": 53,
+    "dnc": 10,
+    "submissions": 51,
+    "campaignLeads": 0,
+    "campaignEventLog": 0,
+    "pointActionLog": 0,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "countersAfter": {
+    "contacts": 46,
+    "anonymousContacts": 23,
+    "maxLeadId": 53,
+    "dnc": 10,
+    "submissions": 58,
+    "campaignLeads": 0,
+    "campaignEventLog": 0,
+    "pointActionLog": 0,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "verdict": {
+    "allAsExpected": true,
+    "submissionsEqualAccepted": true,
+    "allUnlinked": true,
+    "allOnAdmittedForm": true,
+    "ownerUnchanged": true,
+    "noNewContacts": true
+   }
+  }
+ }
+}

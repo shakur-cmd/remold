@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent check round 2: P2 raw capture (422e818)</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Independent check round 2: P2 raw capture</h1>
+<div class="meta">2026-09-26 · scope: proofs/marketing at 422e818 (p2/admission-2026-09-26) · level: SERVICE, isolated local containers in colima-remold-proof, synthetic data · checker: independent verifier session (Claude Opus 5.5), not the builder · supersedes the round-1 verdict on D1 (../report.html) · verdict: D1 CLOSED on the public path; reconciler has one new real defect</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>One bad email stops reconciliation for the whole tenant.</b> The edge and Convex accept emails that Mautic will not take, such as <code>iv%pct-…@example.invalid</code> (Mautic answers 400 on create) or <code>%@%.%</code> (Mautic search matches all 216 contacts, so the size guard throws). The reconciler throws, exits 1, and on every later run stops at the same oldest pending capture. Nothing behind it ever reaches Mautic. Any public visitor can do this with one post, and so can a real typo. Fix: settle a capture that Mautic refuses as a new outcome (for example <code>rejected</code>) and carry on, instead of throwing. Needs a builder change and a test.</li>
+  <li><b>No lease on the reconciler causes real duplicates, not only the race the builder disclosed.</b> I ran two reconcilers at once on 12 captures for 6 emails. Mautic created two contacts for one email (282 and 283), one reconciler crashed on a settle conflict, and every later capture for that email will be settled as "ambiguous" forever. Choose: a single-writer lease in Convex (claim a batch before calling Mautic), or run it strictly as one scheduled job and accept the risk.</li>
+  <li><b>The admin race overwrites names, not DNC.</b> The reconciler looks the email up and then creates the contact. If an admin creates the same email between those two steps, the "create" updates the admin's contact: its first name became the public suggestion and the capture was recorded as <code>created</code>. DNC was kept. This is the disclosed gap, now with measured harm. It only matters if you accept D0M with a reconciler that creates through Mautic's upserting API.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by me, on the same tenants)</h2>
+<ul>
+  <li>The builder's r3 run reproduced: <code>node rawcapture/replay.mjs iv-r3</code> PASS 43/43 (<code>iv-r3.json</code>). Unit tests 9/9. Both deployed edges run server.mjs 3a46cf7701daa2e9, the same as the repo.</li>
+  <li><b>D1 closed on the public path.</b> With my round-1 D1 edit (email and firstname mapped, remove-DNC action) live on A34 and B29, 42 raw-socket attacks per tenant all got the expected status. Mautic did not move: form submissions, the sum of submission_count, contacts, DNC, campaigns and mail were all equal before and after. Owner and DNC were unchanged. Exactly the 6 expected captures per tenant were stored, all under their own tenant (<code>b1-edge-attacks.json</code>).</li>
+  <li>Mautic form submissions stayed at A 184 and B 92 (sum of submission_count 184 and 92) from my first snapshot to my last, across all my round-2 work (<code>snap-r2-initial.json</code>, <code>snap-r2-final.json</code>).</li>
+  <li>Concurrency: 32 distinct posts per tenant, both tenants at once: 32/32 acknowledged and stored. 16 posts racing on one nonce with the same values got 16 × 200 and one row. 8 posts racing on one nonce with different values got exactly one 200, seven 409, and one row holding the winner's values (<code>b2-concurrency-32.json</code>).</li>
+  <li>Kill the real edge (SIGKILL on public-a) mid-burst of 48: 6 acknowledged, all stored. 42 connection resets, all of which had actually been stored. Retrying with the same bodies gave 42 × 200 and exactly one capture per nonce. Kill the capture backend mid-burst of 48: 15 acknowledged, all durable after restart. 33 got 502, and 5 of those had in fact committed. Retries gave 33 × 200 and exactly one per nonce. The forward target IP did not change (<code>b3-kill-edge-48.json</code>, <code>b3-kill-capture-48.json</code>).</li>
+  <li>Mutants: 7 edge mutants, all killed by unit tests and all showing live harm where applicable. 5 Convex mutants were deployed to the live backend: all 5 showed live harm, and the original was redeployed and re-probed. Of the reconciler mutants, R1 (case-insensitive match removed) was killed and overwrote the owner's name. R2 was inconclusive (see detail) (<code>b7-edge-mutants.json</code>, <code>b9-convex-mutants.json</code>, <code>b8-reconciler-mutants.json</code>).</li>
+</ul>
+</div>
+
+<h2>Per-claim verdict</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Edge serves its own /form/intake with a per-render nonce</td><td>PASS, with a caveat</td><td>A nonce is rendered on each GET, but the edge does not bind or remember it. Any 32-hex string the client picks is accepted, including all zeros. Replay of an identical body is deduped (200, no new row), and changed values are refused (409). The same nonce on A and B stores one capture in each tenant, as designed. The builder disclosed that the nonce is unsigned.</td></tr>
+<tr><td>One Convex mutation per post; tenant from key; keys stored as sha256</td><td>PASS</td><td>An edge key reading pending, an A reconciler settling a B capture, a reconciler key writing a capture, and an unknown key: all refused (replay plus my probes). The backend container's filesystem holds no raw edge or reconciler key; only hashes. Mutants C1 and C3 prove these checks matter.</td></tr>
+<tr><td>200 only after commit</td><td>PASS</td><td>No acknowledged post was lost in either kill. Mutant E3 (any reply counts as stored) acknowledged a post with a wrong key, and nothing was stored. The reverse case, committed but not acknowledged, happens (47 in the kills). It is healed by retry with the same nonce.</td></tr>
+<tr><td>Zero Mautic form POSTs</td><td>PASS</td><td>Form submissions and submission_count were unchanged through the replay, 42 attacks × 2 tenants, 64 concurrent posts, two kills and all mutants.</td></tr>
+<tr><td>Reconciler creates only unknown emails, never edits existing contacts or DNC</td><td>PARTIAL</td><td>It holds for one reconciler with no admin activity. 136 captures on A settled as 127 existing and 9 created, and the owners and DNC were kept. A case-variant email of an owner resolved to the owner. Multi-match settled as ambiguous with no write. It fails under a concurrent reconciler (duplicate contacts), under an admin create in the lookup-then-create window (name overwritten), and on poison emails (queue halts). See D-R2-1 to D-R2-3.</td></tr>
+<tr><td>Disclosed limits</td><td>Confirmed</td><td>No lease: confirmed, with worse harm than stated. The admin race: confirmed, with measured harm. The multi-match branch: now exercised and correct. Capture container memory: 512 MiB. It peaked at 307 MiB under my load and was 199 MiB at the end, with no OOM.</td></tr>
+</table>
+
+<h2>Defects, with repro (tenant A only; db-b sits at 483 of 512 MiB, so I kept load off B)</h2>
+<table>
+<tr><th>#</th><th>Severity</th><th>What</th><th>Repro</th></tr>
+<tr><td>D-R2-1</td><td>High</td><td>Head-of-line poison. An email the edge accepts but Mautic refuses (400) or over-matches (search total ≥ 100) makes every reconciler run exit 1 at the same capture. A good capture posted after it stayed pending across two runs. I unblocked it by settling both poisons as ambiguous with A's reconciler key. The next run then settled the good one.</td><td><code>node b6-reconciler.mjs poison</code>, then <code>node b6b-unblock.mjs</code></td></tr>
+<tr><td>D-R2-2</td><td>Medium</td><td>Two reconcilers at once: Mautic created duplicate contacts (282 and 283) for one email, and one reconciler crashed on a settle conflict. The email is now permanently ambiguous for future captures.</td><td><code>node b6-reconciler.mjs two</code></td></tr>
+<tr><td>D-R2-3</td><td>Medium (disclosed)</td><td>Admin create inside the lookup-then-create window: the admin's contact 345 had its first name replaced by the public suggestion, and the capture was recorded as <code>created</code>. DNC was kept. The window was widened with a 4 s pause, which changes timing only. The natural 40-email race did not hit it (23 were seen as existing, 17 created, 0 renamed). A direct demo shows the mechanism: the reconciler's create call on an existing suppressed owner replaces the first name.</td><td><code>node b8-reconciler-mutants.mjs</code> (window section), <code>node b6-reconciler.mjs admin</code></td></tr>
+<tr><td>N-1</td><td>Note</td><td>The nonce is client-chosen, and there is no rate limit. Anyone with the public page token can create unlimited pending captures and, through the reconciler, Mautic contacts for arbitrary emails.</td><td><code>b1-edge-attacks.json</code>, "forged client nonce"</td></tr>
+<tr><td>N-2</td><td>Note</td><td>The edge refuses <code>application/x-www-form-urlencoded; charset=utf-8</code> with 415. Browsers do not add charset to this type, so this is fine today, but it is strict.</td><td>b1</td></tr>
+<tr><td>N-3</td><td>Note</td><td>The 3547 forward was added to the long-lived ssh master (pid 64127, shared with 3540 to 3546). <code>private/rawcapture/forward.pid</code> records 60288, which is not running, so the forward cannot be closed by that pid.</td><td><code>lsof -iTCP:3547</code></td></tr>
+<tr><td>N-4</td><td>Note</td><td>Mutant R2 (ambiguous branch removed) fell through to create, and Mautic answered 422 when the email already had two contacts. That crashes the run: no write, but the same halt as D-R2-1.</td><td>b8</td></tr>
+</table>
+
+<h2>Keys and the loopback forward</h2>
+<ul>
+  <li>Raw edge and reconciler keys are found only in <code>private/rawcapture/keys.json</code>, host <code>private/publishing/config-{a,b}.json</code>, and each edge's own <code>/public-config.json</code>. Edge A holds only A's keys and edge B only B's. No raw key is in any <code>docker inspect</code>, any container log, the capture volume, or any git-tracked file. The instance secret is in the capture container's env and <code>/convex/data/credentials</code>, as Convex requires. Admin key and instance secret are in <code>private/rawcapture/state.json</code> (<code>b4-keys.json</code>, which lists locations only).</li>
+  <li>My own scan once echoed secrets into an uncommitted error field. I deleted that file, moved secrets to stdin, and checked all 40 committed evidence files contain none of the 8 secrets. I also deleted my round-1 copies in <code>private/iv-admission/</code>.</li>
+  <li>3547 listens on 127.0.0.1 only. The LAN address 10.0.0.192 and ::1 are closed. Without keys: admin endpoints return 403 BadDeployKey. Public functions and <code>_system</code> queries return an error status. Internal <code>registerKey</code> is refused. A text/plain request of the kind a browser page could send is rejected with 400 (<code>b5-loopback.json</code>). The remaining exposure is any local process that holds a key file.</li>
+</ul>
+
+<h2>Mutants</h2>
+<table>
+<tr><th>Mutant</th><th>Unit</th><th>Live harm</th></tr>
+<tr><td>E1 idempotency key random per post</td><td>killed</td><td>retry duplicated, changed values acknowledged</td></tr>
+<tr><td>E2 conflict answered 200</td><td>killed</td><td>changed values acknowledged</td></tr>
+<tr><td>E3 any capture reply counts as stored</td><td>killed</td><td>acknowledged with a wrong key and nothing stored</td></tr>
+<tr><td>E4 token check removed</td><td>killed</td><td>other tenant's token accepted</td></tr>
+<tr><td>E5 nonce format check removed</td><td>killed</td><td>none (Convex arg validation then gives 502)</td></tr>
+<tr><td>E6 origin check / E7 host check removed</td><td>killed</td><td>foreign origin or host accepted</td></tr>
+<tr><td>C1 key role check removed</td><td>no unit tests exist</td><td>edge key reads pending captures (the replay would catch it)</td></tr>
+<tr><td>C2 payload conflict removed</td><td>none</td><td>changed values acknowledged (the replay would catch it)</td></tr>
+<tr><td>C3 settle tenant scope removed</td><td>none</td><td>A settled a B capture (the replay would catch it)</td></tr>
+<tr><td>C4 settled rows re-settle</td><td>none</td><td>settled capture rewritten. <b>The replay has no check for this.</b></td></tr>
+<tr><td>C5 Convex input validation removed</td><td>none</td><td>invalid capture stored via the edge key. <b>The replay has no check for this.</b></td></tr>
+<tr><td>R1 case-insensitive match removed</td><td>none</td><td>owner's name and email case overwritten</td></tr>
+<tr><td>R2 ambiguous branch removed</td><td>none</td><td>inconclusive: fell through to create, Mautic 422, crash</td></tr>
+</table>
+<p>After the Convex mutants I redeployed the original and re-ran all probes. Conflict gave 409, the edge key could not read, A could not settle B, re-settle was refused, and junk was refused. All match the control.</p>
+
+<h2>What I changed on the tenants (all synthetic)</h2>
+<ul>
+  <li><b>A:</b> contacts 254 to 340, DNC 44 to 95, audit_log +245. These are IV owners, reconciled new emails, the 8 probe contacts from the search test (ids 264 to 271), and the duplicate pair 282 and 283. Contacts 343 and 344 (and 330 and 331) share an email on purpose (set by SQL) for the multi-match test. Owner 341's name and email case were changed by mutant R1, and admin contact 345's name was changed by the window test.</li>
+  <li><b>B:</b> contacts 71 to 82 and DNC 27 to 30, from reconciling my 46 B captures once (39 existing, 7 created, <code>drain-b.json</code>).</li>
+  <li>Form submissions and submission_count are unchanged on both tenants. Forms A34 and B29 were edited during b1 and the replay, then reverted to no mappings and no actions (checked).</li>
+  <li><b>Capture store:</b> A has 321 captures, B 154, and 0 pending on either. Some were settled by hand as ambiguous: the two poisons, R3's poison, and C5's junk row. The mutant probes settled some A probe captures to contact 1. C3 settled one B probe capture as A's (<code>j57adt348hbn9scdbs638g3mf18f4zh1</code>). The Convex functions were redeployed 6 times and end on the original.</li>
+  <li>Containers: public-a was SIGKILLed and restarted (same id, same hash). The capture backend was SIGKILLed and restarted (same IP 172.19.0.9, forward still works). Nothing else was restarted. db-b was not restarted in round 2. No Convex backend on 3450-3453 or 3490-3491 was touched, and no mail, DNS, TLS, public port or provider account was used.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>The reconciler races on tenant B. I kept load off db-b, which sits near its memory limit. The code path is the same, but I did not prove it on B.</li>
+  <li>That the redeployed Convex function bundle is byte-identical to the builder's. I proved it behaves the same on every probe, not by a bundle hash.</li>
+  <li>The edge under a real browser. All clients were Node HTTP or raw sockets.</li>
+</ul>
+
+<h2>Commands (from proofs/marketing, worktree ../remold-p2-iv fast-forwarded to 422e818)</h2>
+<pre>node --test publishing/server.test.mjs                       9 pass
+node rawcapture/replay.mjs iv-r3                             PASS 43/43
+cd ownership/evidence/admission/iv/r2
+node b1-edge-attacks.mjs            42 cases x 2 tenants as expected, Mautic unchanged
+node b2-concurrency.mjs 32          all verdicts true
+node b3-kill-midburst.mjs edge 48   no acked loss, exactly one per nonce after retry
+node b3-kill-midburst.mjs capture 48  same
+node b4-keys.mjs ; node b5-loopback.mjs
+node b6-reconciler.mjs drain|two|admin|multi|poison ; node b6b-unblock.mjs
+node b7-edge-mutants.mjs ; node b8-reconciler-mutants.mjs ; node b9-convex-mutants.mjs
+node ../../../../../rawcapture/reconcile.mjs b   (drain of my B captures, 46 settled)</pre>
+</body>
+</html>

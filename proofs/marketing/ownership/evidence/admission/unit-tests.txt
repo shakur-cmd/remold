@@ -1,0 +1,21 @@
+✔ an unmapped, action-free, campaign-free raw form is admitted (0.554917ms)
+✔ a form that maps any field to a contact is refused (0.222917ms)
+✔ a form with any native action is refused, in list or keyed shape (0.067708ms)
+✔ a campaign-linked form or an unknown link count is refused (0.076125ms)
+✔ unpublished, non-standalone or differently shaped forms are refused (0.056334ms)
+✔ only the exact host and published paths reach the native service (36.649375ms)
+✔ rendered form token binds tenant, form and published field labels (46.924167ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.766125ms)
+✔ native capture always gets the server tracking block, never the client cookie or tracking headers (22.488083ms)
+✔ native validation failure, redirect and oversized responses cannot report success (230.867709ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before native capture (4.453792ms)
+✔ an edge without an admitted form under the server tracking policy refuses to start (1.191375ms)
+✔ concurrent submissions reach native capture one at a time and all succeed (96.741708ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 492.484958

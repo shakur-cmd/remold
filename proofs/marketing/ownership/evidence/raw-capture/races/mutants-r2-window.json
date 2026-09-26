@@ -1,0 +1,17 @@
+{
+ "label": "r2-window",
+ "at": "2026-09-26T12:47:25.817Z",
+ "results": [
+  {
+   "mutant": "R3 a 200 upsert is treated as our new contact and named",
+   "check": "window",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 4/6",
+    "  admin contact first name not overwritten by the public suggestion",
+    "  capture settled as existing on the admin contact"
+   ]
+  }
+ ]
+}

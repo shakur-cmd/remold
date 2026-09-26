@@ -1,0 +1,159 @@
+{
+ "section": "faults",
+ "label": "before",
+ "at": "2026-09-26T13:25:45.942Z",
+ "status": "FAIL",
+ "failed": [
+  "a refused name update is recorded and the contact kept unnamed",
+  "captures after both refusals are still created"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "a create Mautic refuses (400) settles as rejected with the reason",
+   "detail": {
+    "contactId": null,
+    "email": "f400-d0023de9@example.invalid",
+    "firstname": "Refused",
+    "id": "j57frdq8fpppm3kwfra869c4098f46em",
+    "idempotencyKey": "e16edd8423b0c59fde223be8bbc986a2",
+    "outcome": "rejected",
+    "reason": "Mautic refused create (400): fault: refused",
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "a refused name update is recorded and the contact kept unnamed",
+   "detail": {
+    "contactId": null,
+    "email": "fname-d0023de9@example.invalid",
+    "firstname": "Name refused",
+    "id": "j57d4ry1dqedwxkgdktmbyq9zx8f5b4g",
+    "idempotencyKey": "56227e7df348a8a3e14fdefd597ba610",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "captures after both refusals are still created",
+   "detail": []
+  },
+  {
+   "ok": true,
+   "name": "a 500 on create stops the run and leaves the capture pending, never rejected",
+   "detail": {
+    "exit": 1,
+    "row": {
+     "contactId": null,
+     "email": "f500-d0023de9@example.invalid",
+     "firstname": "Outage",
+     "id": "j570b3q6vckkpkwssj2c3f5jdh8f5ajn",
+     "idempotencyKey": "ca3ae28c1debbd71f7db3233685d535c",
+     "outcome": null,
+     "reason": null,
+     "status": "pending",
+     "tenant": "a"
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "once Mautic answers normally the pending capture is created",
+   "detail": {
+    "exit": 0,
+    "err": "",
+    "e500": {
+     "contactId": 771,
+     "email": "f500-d0023de9@example.invalid",
+     "firstname": "Outage",
+     "id": "j570b3q6vckkpkwssj2c3f5jdh8f5ajn",
+     "idempotencyKey": "ca3ae28c1debbd71f7db3233685d535c",
+     "outcome": "created",
+     "reason": null,
+     "status": "settled",
+     "tenant": "a"
+    }
+   }
+  }
+ ],
+ "out": {
+  "faultyRun": {
+   "exit": 1,
+   "err": "      if(c.firstname){const p=c.email===\"fname-d0023de9@example.invalid\"?{status:400,data:{errors:[{message:'fault: name refused'}]}}:api(tenant,'/contacts/'+contactId+'/edit','PATCH',{firstname:c.fir"
+  },
+  "e400": {
+   "contactId": null,
+   "email": "f400-d0023de9@example.invalid",
+   "firstname": "Refused",
+   "id": "j57frdq8fpppm3kwfra869c4098f46em",
+   "idempotencyKey": "e16edd8423b0c59fde223be8bbc986a2",
+   "outcome": "rejected",
+   "reason": "Mautic refused create (400): fault: refused",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "en": {
+   "contactId": null,
+   "email": "fname-d0023de9@example.invalid",
+   "firstname": "Name refused",
+   "id": "j57d4ry1dqedwxkgdktmbyq9zx8f5b4g",
+   "idempotencyKey": "56227e7df348a8a3e14fdefd597ba610",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": null,
+   "email": "fgood-d0023de9@example.invalid",
+   "firstname": "Good",
+   "id": "j573n5j45d3dxj83qeq558mxg58f5jxh",
+   "idempotencyKey": "94361462e552d2c6a19231c715ef1f19",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "e500": {
+   "contactId": null,
+   "email": "f500-d0023de9@example.invalid",
+   "firstname": "Outage",
+   "id": "j570b3q6vckkpkwssj2c3f5jdh8f5ajn",
+   "idempotencyKey": "ca3ae28c1debbd71f7db3233685d535c",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "contacts": {
+   "e400": [],
+   "en": [
+    {
+     "id": 769
+    }
+   ],
+   "good": [],
+   "e500": []
+  },
+  "realRun": {
+   "exit": 0,
+   "err": "",
+   "e500": {
+    "contactId": 771,
+    "email": "f500-d0023de9@example.invalid",
+    "firstname": "Outage",
+    "id": "j570b3q6vckkpkwssj2c3f5jdh8f5ajn",
+    "idempotencyKey": "ca3ae28c1debbd71f7db3233685d535c",
+    "outcome": "created",
+    "reason": null,
+    "status": "settled",
+    "tenant": "a"
+   }
+  }
+ }
+}

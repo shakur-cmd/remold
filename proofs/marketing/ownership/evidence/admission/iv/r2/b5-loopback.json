@@ -1,0 +1,93 @@
+{
+ "capturedAt": "2026-09-26T12:24:52.560Z",
+ "rows": [
+  {
+   "method": "GET",
+   "path": "/version",
+   "body": null,
+   "status": 200,
+   "response": "unknown"
+  },
+  {
+   "method": "GET",
+   "path": "/api/check_admin_key",
+   "body": null,
+   "status": 403,
+   "response": "{\"code\":\"BadDeployKey\",\"message\":\"The provided deploy key was invalid for this deployment. Double check that the environment this key was ge"
+  },
+  {
+   "method": "GET",
+   "path": "/api/list_snapshot",
+   "body": null,
+   "status": 403,
+   "response": "{\"code\":\"BadDeployKey\",\"message\":\"The provided deploy key was invalid for this deployment. Double check that the environment this key was ge"
+  },
+  {
+   "method": "GET",
+   "path": "/api/shapes2",
+   "body": null,
+   "status": 403,
+   "response": "{\"code\":\"BadDeployKey\",\"message\":\"The provided deploy key was invalid for this deployment. Double check that the environment this key was ge"
+  },
+  {
+   "method": "GET",
+   "path": "/api/export/zip",
+   "body": null,
+   "status": 404,
+   "response": ""
+  },
+  {
+   "method": "POST",
+   "path": "/api/query",
+   "body": "capture:inventory",
+   "status": 200,
+   "response": "{\"status\":\"error\",\"errorMessage\":\"[Request ID: b91c9d7412478567] Server Error\\nUncaught ConvexError: {\\\"code\\\":\\\"credential\\\"}\\n    at refus"
+  },
+  {
+   "method": "POST",
+   "path": "/api/query",
+   "body": "capture:pending",
+   "status": 200,
+   "response": "{\"status\":\"error\",\"errorMessage\":\"[Request ID: 37274991766fae09] Server Error\\nUncaught ConvexError: {\\\"code\\\":\\\"credential\\\"}\\n    at refus"
+  },
+  {
+   "method": "POST",
+   "path": "/api/mutation",
+   "body": "capture:capture",
+   "status": 200,
+   "response": "{\"status\":\"error\",\"errorMessage\":\"[Request ID: eb275cf9f994875f] Server Error\\nUncaught ConvexError: {\\\"code\\\":\\\"credential\\\"}\\n    at refus"
+  },
+  {
+   "method": "POST",
+   "path": "/api/mutation",
+   "body": "capture:registerKey",
+   "status": 200,
+   "response": "{\"status\":\"error\",\"errorMessage\":\"[Request ID: 5bd5fab2b73d8e67] Server Error\\nCould not find public function for 'capture:registerKey'.\\n\"}"
+  },
+  {
+   "method": "POST",
+   "path": "/api/query",
+   "body": "_system/cli/tables:list",
+   "status": 200,
+   "response": "{\"status\":\"error\",\"errorMessage\":\"[Request ID: 946edb19ffe8530c] Server Error\\nOperation query not permitted\\n\"}"
+  },
+  {
+   "method": "POST",
+   "path": "/api/deploy2/start_push",
+   "body": null,
+   "status": 400,
+   "response": "{\"code\":\"BadJsonBody\",\"message\":\"Failed to deserialize the JSON body into the target type: missing field `adminKey` at line 1 column 2\"}"
+  },
+  {
+   "method": "POST text/plain",
+   "path": "/api/query",
+   "status": 400,
+   "cors": null,
+   "response": "{\"code\":\"BadJsonBody\",\"message\":\"Expected request with `Content-Type: application/json`\"}"
+  }
+ ],
+ "reachableOn": {
+  "127.0.0.1": true,
+  "10.0.0.192": false
+ }
+}

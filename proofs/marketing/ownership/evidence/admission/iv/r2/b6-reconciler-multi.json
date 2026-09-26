@@ -1,0 +1,87 @@
+{
+ "run": "58fecaf5",
+ "capturedAt": "2026-09-26T12:29:12.855Z",
+ "tenant": "a",
+ "postStatuses": [
+  200
+ ],
+ "ids": [
+  330,
+  331
+ ],
+ "reconciler": {
+  "exit": 0,
+  "stderr": ""
+ },
+ "captures": [
+  [
+   "settled",
+   "ambiguous",
+   null
+  ]
+ ],
+ "before": [
+  {
+   "id": 330,
+   "firstname": "IV owner multi1",
+   "lastname": "Stable multi1",
+   "email": "iv-own-58fecaf5-multi1@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  {
+   "id": 331,
+   "firstname": "IV owner multi2",
+   "lastname": "Stable multi2",
+   "email": "iv-own-58fecaf5-multi1@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  }
+ ],
+ "after": [
+  {
+   "id": 330,
+   "firstname": "IV owner multi1",
+   "lastname": "Stable multi1",
+   "email": "iv-own-58fecaf5-multi1@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  {
+   "id": 331,
+   "firstname": "IV owner multi2",
+   "lastname": "Stable multi2",
+   "email": "iv-own-58fecaf5-multi1@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  }
+ ],
+ "verdict": {
+  "ambiguous": true,
+  "unchanged": true
+ }
+}

@@ -1,0 +1,12 @@
+27c27
+<  if(old){if(old.payloadSha256!==payloadSha256)refuse('conflict');return {id:old._id,duplicate:true};}
+---
+>  void old;
+FAIL 36/43 checks
+FAILED: a: exactly one capture for the retried nonce
+        a: same nonce with changed values refused as conflict
+        b: exactly one capture for the retried nonce
+        b: same nonce with changed values refused as conflict
+        b: untouched while a reconciled
+        a: all 17 captures settled once, to the owner or the new contact
+        b: all 17 captures settled once, to the owner or the new contact

@@ -1,0 +1,235 @@
+{
+ "section": "window",
+ "label": "iv-r4-r3",
+ "at": "2026-09-26T13:41:48.072Z",
+ "status": "FAIL",
+ "failed": [
+  "admin contact first name not overwritten by the public suggestion",
+  "capture settled as existing on the admin contact"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "admin create landed inside the lookup-then-create window"
+  },
+  {
+   "ok": true,
+   "name": "reconciler completes",
+   "detail": ""
+  },
+  {
+   "ok": false,
+   "name": "admin contact first name not overwritten by the public suggestion",
+   "detail": "Public suggestion"
+  },
+  {
+   "ok": true,
+   "name": "admin DNC kept"
+  },
+  {
+   "ok": true,
+   "name": "one contact for the email",
+   "detail": [
+    {
+     "id": 838,
+     "firstname": "Public suggestion"
+    }
+   ]
+  },
+  {
+   "ok": false,
+   "name": "capture settled as existing on the admin contact",
+   "detail": {
+    "status": "settled",
+    "outcome": "created",
+    "contactId": 838
+   }
+  }
+ ],
+ "out": {
+  "email": "win-da034b2b@example.invalid",
+  "adminId": 838,
+  "reconciler": {
+   "exit": 0,
+   "log": [
+    {
+     "capture": "j5721jg0gp1kn92frd2q6xct4s8f5w1a",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: %@%.% is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57erk7vd7ny33289hw1vr85x98f43kh",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a*b@example.invalid has characters not allowed in email addresses.",
+     "result": "settled"
+    },
+    {
+     "capture": "j570n1xjwz99hjbkqnas24vpzh8f4683",
+     "outcome": "created",
+     "contactId": 369,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j571gq51j9vhk7h6z1p24pdxb98f44kp",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@b is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57epk5t8k0t8447exmyh6k9w18f5zbt",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j572xq46xy17ggxd6vkrd504w98f59yz",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: .a@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j577vggqdeygsp1vbh2cvx5ts18f58a2",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a..b@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j575ceqctefxn9eyw0fm7p7sbd8f5pg1",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@-x.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57d41y097j5z01t1t2d5emg1h8f5ekx",
+     "outcome": "created",
+     "contactId": 370,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j570cdebkrwy5src6yzwyg3pbn8f5atv",
+     "outcome": "existing",
+     "contactId": 355,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j572r3skaf56htwq69rbg9hsmn8f5x42",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a&b@example.invalid has characters not allowed in email addresses.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57a925sbze09ek48rk6r3npks8f578s",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j577jnbjv4rxs0fe8wx3mhpjt18f4p96",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+     "result": "settled"
+    },
+    {
+     "capture": "j57bn4fksajqpzjmms2251mn198f4k3a",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57frb3zhh26f8zc21b8kzhsks8f4mjz",
+     "outcome": "existing",
+     "contactId": 371,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j578xqfss4zej2hhydbrm40jxx8f559t",
+     "outcome": "existing",
+     "contactId": 371,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57dsgmexmbjqhzc3nxrzkbnqs8f4nma",
+     "outcome": "created",
+     "contactId": 832,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57ay7m5ghm0g7m8s8dv448dtx8f568h",
+     "outcome": "created",
+     "contactId": 833,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57bx22qewg31yfv0122vwybfn8f4980",
+     "outcome": "created",
+     "contactId": 834,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57epqf5twe2nfppnvdjwc642n8f5ftp",
+     "outcome": "created",
+     "contactId": 835,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57bs7r51wjxansg1xhaxavr198f4qcm",
+     "outcome": "created",
+     "contactId": 836,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j570hqnkawd8y9362mazmj1x0n8f5wm6",
+     "outcome": "created",
+     "contactId": 837,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j575sw9a734nyp83g8d1nwtkj58f5r9b",
+     "outcome": "created",
+     "contactId": 838,
+     "reason": null,
+     "result": "settled"
+    }
+   ],
+   "err": ""
+  },
+  "adminAfter": {
+   "firstname": "Public suggestion",
+   "dnc": 1
+  },
+  "contacts": [
+   {
+    "id": 838,
+    "firstname": "Public suggestion"
+   }
+  ],
+  "capture": {
+   "status": "settled",
+   "outcome": "created",
+   "contactId": 838
+  }
+ }
+}

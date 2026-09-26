@@ -1,0 +1,23 @@
+{"e":"iv-plus+tag-023ed4@example.invalid","create":201,"id":264,"stored":"iv-plus+tag-023ed4@example.invalid","searchStatus":200,"total":"1","found":[264]}
+{"e":"iv.o'neil-023ed4@example.invalid","create":201,"id":265,"stored":"iv.o'neil-023ed4@example.invalid","searchStatus":200,"total":"1","found":[265]}
+{"e":"-iv-dash-023ed4@example.invalid","create":201,"id":266,"stored":"-iv-dash-023ed4@example.invalid","searchStatus":200,"total":"1","found":[266]}
+{"e":"iv_under-023ed4@example.invalid","create":201,"id":267,"stored":"iv_under-023ed4@example.invalid","searchStatus":200,"total":"1","found":[267]}
+{"e":"IV-Case-023ed4@Example.invalid","create":201,"id":268,"stored":"IV-Case-023ed4@Example.invalid","searchStatus":200,"total":"1","found":[268]}
+{"e":"iv!bang-023ed4@example.invalid","create":201,"id":269,"stored":"iv!bang-023ed4@example.invalid","searchStatus":200,"total":"1","found":[269]}
+{"e":"iv%pct-023ed4@example.invalid","create":400,"searchStatus":200,"total":"0","found":[]}
+{"e":"iv#hash-023ed4@example.invalid","create":201,"id":270,"stored":"iv#hash-023ed4@example.invalid","searchStatus":200,"total":"1","found":[270]}
+{"e":"iv&amp-023ed4@example.invalid","create":400,"searchStatus":200,"total":"0","found":[]}
+{"e":"iv=eq-023ed4@example.invalid","create":201,"id":271,"stored":"iv=eq-023ed4@example.invalid","searchStatus":200,"total":"1","found":[271]}
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p2-iv/proofs/marketing/tenants/api.mjs:8
+ catch{throw Error('Local '+tenant+' API call failed; no credentials printed');}
+             ^
+
+Error: Local a API call failed; no credentials printed
+    at api (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p2-iv/proofs/marketing/tenants/api.mjs:8:14)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p2-iv/proofs/marketing/[eval1]:5:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:224:26
+    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:221:20)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0

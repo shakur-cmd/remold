@@ -1,0 +1,390 @@
+{
+  "label": "after-r2",
+  "mode": "after",
+  "fixture": "d6cb9085-8c7a-421c-a559-c26375b52b78",
+  "startedAt": "2026-09-26T11:28:08.461Z",
+  "level": "SERVICE isolated local Mautic A/B plus internal public edges; synthetic data; no mail, DNS, TLS or host ports",
+  "tenants": {
+    "a": {
+      "edgeFormId": 15,
+      "responses": [
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 502,
+          "body": "Submission could not be confirmed"
+        }
+      ],
+      "submissions": [
+        {
+          "id": 41,
+          "leadId": null,
+          "results": {
+            "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "Existing B d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        },
+        {
+          "id": 40,
+          "leadId": null,
+          "results": {
+            "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "Existing A d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        },
+        {
+          "id": 39,
+          "leadId": null,
+          "results": {
+            "email": "new-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "New A d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        }
+      ],
+      "ownerBefore": {
+        "id": 188,
+        "firstname": "Remold owned a",
+        "lastname": "Stable owner a",
+        "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "channel": "email",
+            "reason": 3
+          }
+        ]
+      },
+      "ownerAfter": {
+        "id": 188,
+        "firstname": "Remold owned a",
+        "lastname": "Stable owner a",
+        "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "channel": "email",
+            "reason": 3
+          }
+        ]
+      },
+      "countsBefore": {
+        "contacts": 184,
+        "anonymousContacts": 25,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 37,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "countsAfter": {
+        "contacts": 184,
+        "anonymousContacts": 25,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 40,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "membershipsBefore": 135,
+      "membershipsAfter": 135,
+      "newEmailContacts": [],
+      "accepted": 3
+    },
+    "b": {
+      "edgeFormId": 13,
+      "responses": [
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        }
+      ],
+      "submissions": [
+        {
+          "id": 31,
+          "leadId": null,
+          "results": {
+            "email": "new-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "New B d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        },
+        {
+          "id": 30,
+          "leadId": null,
+          "results": {
+            "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "Existing B d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        },
+        {
+          "id": 29,
+          "leadId": null,
+          "results": {
+            "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "Existing A d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        },
+        {
+          "id": 28,
+          "leadId": null,
+          "results": {
+            "email": "new-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+            "firstname": "New A d6cb9085-8c7a-421c-a559-c26375b52b78"
+          }
+        }
+      ],
+      "ownerBefore": {
+        "id": 38,
+        "firstname": "Remold owned b",
+        "lastname": "Stable owner b",
+        "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "channel": "email",
+            "reason": 3
+          }
+        ]
+      },
+      "ownerAfter": {
+        "id": 38,
+        "firstname": "Remold owned b",
+        "lastname": "Stable owner b",
+        "email": "own-d6cb9085-8c7a-421c-a559-c26375b52b78@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "channel": "email",
+            "reason": 3
+          }
+        ]
+      },
+      "countsBefore": {
+        "contacts": 34,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 26,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "countsAfter": {
+        "contacts": 34,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 30,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "membershipsBefore": 0,
+      "membershipsAfter": 0,
+      "newEmailContacts": [],
+      "accepted": 4
+    }
+  },
+  "refusals": [
+    {
+      "tenant": "a",
+      "kind": "existing form 1",
+      "formId": 1,
+      "refused": "Form 1 on tenant a refused: mapped field email; mapped field firstname"
+    },
+    {
+      "tenant": "a",
+      "kind": "mapped",
+      "formId": 12,
+      "refused": "Form 12 on tenant a refused: mapped field email"
+    },
+    {
+      "tenant": "a",
+      "kind": "action-bearing",
+      "formId": 13,
+      "refused": "Form 13 on tenant a refused: has native actions"
+    },
+    {
+      "tenant": "a",
+      "kind": "campaign-linked",
+      "formId": 14,
+      "refused": "Form 14 on tenant a refused: campaign-linked"
+    },
+    {
+      "tenant": "a",
+      "countersBefore": {
+        "contacts": 183,
+        "anonymousContacts": 25,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 37,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "countersAfter": {
+        "contacts": 183,
+        "anonymousContacts": 25,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 37,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "membershipsBefore": 135,
+      "membershipsAfter": 135
+    },
+    {
+      "tenant": "b",
+      "kind": "existing form 1",
+      "formId": 1,
+      "refused": "Form 1 on tenant b refused: mapped field email; mapped field firstname"
+    },
+    {
+      "tenant": "b",
+      "kind": "mapped",
+      "formId": 10,
+      "refused": "Form 10 on tenant b refused: mapped field email"
+    },
+    {
+      "tenant": "b",
+      "kind": "action-bearing",
+      "formId": 11,
+      "refused": "Form 11 on tenant b refused: has native actions"
+    },
+    {
+      "tenant": "b",
+      "kind": "campaign-linked",
+      "formId": 12,
+      "refused": "Form 12 on tenant b refused: campaign-linked"
+    },
+    {
+      "tenant": "b",
+      "countersBefore": {
+        "contacts": 33,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 26,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "countersAfter": {
+        "contacts": 33,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 26,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "membershipsBefore": 0,
+      "membershipsAfter": 0
+    },
+    {
+      "kind": "publish form 1 through setup",
+      "exit": 1,
+      "stderrTail": [
+        " if(refusals.length)throw Error('Form '+formId+' on tenant '+tenant+' refused: '+refusals.join('; '));",
+        "Error: Form 1 on tenant a refused: mapped field email; mapped field firstname"
+      ],
+      "edgesBefore": {
+        "a": {
+          "id": "53e12c2d8437a639c163c685f2886c89ab2a0e7da62ba5400361fa6b978616d9",
+          "startedAt": "2026-09-26T11:27:12.426574499Z",
+          "serverSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7"
+        },
+        "b": {
+          "id": "1b539b9d648a65bf328e0eee59e3a2ac18ac0e0a9a902f8218f968a04a0e4cc0",
+          "startedAt": "2026-09-26T11:27:24.478385157Z",
+          "serverSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7"
+        }
+      },
+      "edgesAfter": {
+        "a": {
+          "id": "53e12c2d8437a639c163c685f2886c89ab2a0e7da62ba5400361fa6b978616d9",
+          "startedAt": "2026-09-26T11:27:12.426574499Z",
+          "serverSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7"
+        },
+        "b": {
+          "id": "1b539b9d648a65bf328e0eee59e3a2ac18ac0e0a9a902f8218f968a04a0e4cc0",
+          "startedAt": "2026-09-26T11:27:24.478385157Z",
+          "serverSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7"
+        }
+      }
+    },
+    {
+      "kind": "missing admission",
+      "refused": "Form not admitted under the server tracking policy; refusing to serve"
+    },
+    {
+      "kind": "missing tracking policy",
+      "refused": "Form not admitted under the server tracking policy; refusing to serve"
+    },
+    {
+      "kind": "foreign tracking policy",
+      "refused": "Form not admitted under the server tracking policy; refusing to serve"
+    }
+  ],
+  "publish": {
+    "previousIntake": {
+      "a": 11,
+      "b": 9
+    },
+    "admitted": {
+      "a": 15,
+      "b": 13
+    },
+    "edges": {
+      "a": {
+        "id": "53e12c2d8437a639c163c685f2886c89ab2a0e7da62ba5400361fa6b978616d9",
+        "startedAt": "2026-09-26T11:28:35.881780526Z",
+        "serverSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7"
+      },
+      "b": {
+        "id": "1b539b9d648a65bf328e0eee59e3a2ac18ac0e0a9a902f8218f968a04a0e4cc0",
+        "startedAt": "2026-09-26T11:28:47.39322327Z",
+        "serverSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7"
+      }
+    },
+    "localServerSha256": "709c4692f04f7fb307c0dee4d16111e7277364d9d694bdf7fc89fc389e84d0e7",
+    "admissions": {
+      "a": {
+        "formId": 15,
+        "policy": "raw-capture/blocked-tracking-v1",
+        "campaignLinks": 0,
+        "admittedAt": "2026-09-26T11:28:23.754Z",
+        "formSha256": "6d12fd1e2fd872f105417d3028e7a834e4c53112cfa9a5750e67f27f95898267"
+      },
+      "b": {
+        "formId": 13,
+        "policy": "raw-capture/blocked-tracking-v1",
+        "campaignLinks": 0,
+        "admittedAt": "2026-09-26T11:28:24.408Z",
+        "formSha256": "bddc469de5cb65999c5e18ac41b4a5120fbf937ed00fdc48b534ea796fa9238e"
+      }
+    },
+    "trackingPolicy": "raw-capture/blocked-tracking-v1"
+  },
+  "failures": [],
+  "status": "PASS",
+  "finishedAt": "2026-09-26T11:28:57.748Z"
+}

@@ -1,0 +1,91 @@
+{
+ "label": "r2",
+ "at": "2026-09-26T12:46:51.836Z",
+ "results": [
+  {
+   "mutant": "C4 settled capture can be re-settled",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 26/27",
+    "  a settled capture cannot be re-settled differently, even by the lease holder"
+   ]
+  },
+  {
+   "mutant": "C5 store input validation removed",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 9/27",
+    "  store refuses email \"iv%pct@example.invalid\"",
+    "  store refuses email \"%@%.%\"",
+    "  store refuses email \"a*b@example.invalid\"",
+    "  store refuses email \"a b@example.invalid\"",
+    "  store refuses email \"a@b\""
+   ]
+  },
+  {
+   "mutant": "L1 acquire ignores a live lease",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 23/27",
+    "  second reconciler is refused while the lease is live",
+    "  a foreign token cannot renew",
+    "  a settled capture cannot be re-settled differently, even by the lease holder",
+    "  settle with a stale lease token is refused"
+   ]
+  },
+  {
+   "mutant": "L2 settle not fenced by the lease",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 25/27",
+    "  settle with a stale lease token is refused",
+    "  settle with an expired lease is refused"
+   ]
+  },
+  {
+   "mutant": "R1 Mautic refusal throws instead of rejected",
+   "check": "poison",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 0/5",
+    "  reconciler completes despite poison",
+    "  email Mautic refuses is settled as rejected with the reason",
+    "  underscore email resolved by exact match, one contact",
+    "  capture behind the poison is created with its suggested name",
+    "  nothing left pending on A"
+   ]
+  },
+  {
+   "mutant": "R2 LIKE search instead of exact lookup",
+   "check": "poison",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 0/5",
+    "  reconciler completes despite poison",
+    "  email Mautic refuses is settled as rejected with the reason",
+    "  underscore email resolved by exact match, one contact",
+    "  capture behind the poison is created with its suggested name",
+    "  nothing left pending on A"
+   ]
+  },
+  {
+   "mutant": "R3 a 200 upsert is treated as our new contact and named",
+   "check": "window",
+   "exit": 0,
+   "killed": false,
+   "summary": [
+    "PASS 5/5"
+   ]
+  }
+ ]
+}

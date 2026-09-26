@@ -1,0 +1,307 @@
+{
+ "run": "883410e8",
+ "capturedAt": "2026-09-26T13:24:22.779Z",
+ "cases": [
+  {
+   "kind": "accent",
+   "ownerId": 759,
+   "storedVia": "sql",
+   "apiAttempt": {
+    "status": 200,
+    "storedAs": "jos-883410e8@example.invalid"
+   },
+   "captured": "jose-883410e8@example.invalid",
+   "before": {
+    "email": "[josé-883410e8@example.invalid]",
+    "profile": {
+     "id": 759,
+     "firstname": "Owner accent",
+     "lastname": "Stable coll-accent",
+     "email": "josé-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "capture": {
+    "outcome": "existing",
+    "contactId": 759
+   },
+   "after": {
+    "email": "[jose-883410e8@example.invalid]",
+    "profile": {
+     "id": 759,
+     "firstname": "Owner accent",
+     "lastname": "Stable coll-accent",
+     "email": "jose-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "contactsForCaptured": [
+    759
+   ],
+   "ownerEmailRewritten": true,
+   "ownerNameChanged": false,
+   "dncKept": true
+  },
+  {
+   "kind": "sharp s",
+   "ownerId": 760,
+   "storedVia": "sql",
+   "apiAttempt": {
+    "status": 200,
+    "storedAs": "strae-883410e8@example.invalid"
+   },
+   "captured": "strasse-883410e8@example.invalid",
+   "before": {
+    "email": "[straße-883410e8@example.invalid]",
+    "profile": {
+     "id": 760,
+     "firstname": "Owner sharp s",
+     "lastname": "Stable coll-sharp",
+     "email": "straße-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "capture": {
+    "outcome": "existing",
+    "contactId": 760
+   },
+   "after": {
+    "email": "[strasse-883410e8@example.invalid]",
+    "profile": {
+     "id": 760,
+     "firstname": "Owner sharp s",
+     "lastname": "Stable coll-sharp",
+     "email": "strasse-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "contactsForCaptured": [
+    760
+   ],
+   "ownerEmailRewritten": true,
+   "ownerNameChanged": false,
+   "dncKept": true
+  },
+  {
+   "kind": "fullwidth",
+   "ownerId": 761,
+   "storedVia": "sql",
+   "apiAttempt": {
+    "status": 200,
+    "storedAs": "-883410e8@example.invalid"
+   },
+   "captured": "jo-883410e8@example.invalid",
+   "before": {
+    "email": "[ｊｏ-883410e8@example.invalid]",
+    "profile": {
+     "id": 761,
+     "firstname": "Owner fullwidth",
+     "lastname": "Stable coll-fullwidth",
+     "email": "ｊｏ-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "capture": {
+    "outcome": "existing",
+    "contactId": 761
+   },
+   "after": {
+    "email": "[jo-883410e8@example.invalid]",
+    "profile": {
+     "id": 761,
+     "firstname": "Owner fullwidth",
+     "lastname": "Stable coll-fullwidth",
+     "email": "jo-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "contactsForCaptured": [
+    761
+   ],
+   "ownerEmailRewritten": true,
+   "ownerNameChanged": false,
+   "dncKept": true
+  },
+  {
+   "kind": "trailing space",
+   "ownerId": 762,
+   "storedVia": "sql",
+   "apiAttempt": {
+    "status": 200,
+    "storedAs": "pad-883410e8@example.invalid"
+   },
+   "captured": "pad-883410e8@example.invalid",
+   "before": {
+    "email": "[pad-883410e8@example.invalid ]",
+    "profile": {
+     "id": 762,
+     "firstname": "Owner trailing space",
+     "lastname": "Stable coll-trailing",
+     "email": "pad-883410e8@example.invalid ",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "capture": {
+    "outcome": "existing",
+    "contactId": 762
+   },
+   "after": {
+    "email": "[pad-883410e8@example.invalid]",
+    "profile": {
+     "id": 762,
+     "firstname": "Owner trailing space",
+     "lastname": "Stable coll-trailing",
+     "email": "pad-883410e8@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "contactsForCaptured": [
+    762
+   ],
+   "ownerEmailRewritten": true,
+   "ownerNameChanged": false,
+   "dncKept": true
+  },
+  {
+   "kind": "upper case (control)",
+   "ownerId": 763,
+   "storedVia": "sql",
+   "apiAttempt": {
+    "status": 200,
+    "storedAs": "CASE-883410e8@EXAMPLE.INVALID"
+   },
+   "captured": "case-883410e8@example.invalid",
+   "before": {
+    "email": "[CASE-883410e8@EXAMPLE.INVALID]",
+    "profile": {
+     "id": 763,
+     "firstname": "Owner upper case (control)",
+     "lastname": "Stable coll-upper",
+     "email": "CASE-883410e8@EXAMPLE.INVALID",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "status": 200,
+   "capture": {
+    "outcome": "existing",
+    "contactId": 763
+   },
+   "after": {
+    "email": "[CASE-883410e8@EXAMPLE.INVALID]",
+    "profile": {
+     "id": 763,
+     "firstname": "Owner upper case (control)",
+     "lastname": "Stable coll-upper",
+     "email": "CASE-883410e8@EXAMPLE.INVALID",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    }
+   },
+   "contactsForCaptured": [
+    763
+   ],
+   "ownerEmailRewritten": false,
+   "ownerNameChanged": false,
+   "dncKept": true
+  }
+ ],
+ "reconciler": {
+  "exit": 0,
+  "err": ""
+ },
+ "mauticBefore": {
+  "formSubmissions": 184,
+  "submissionCountSum": 184,
+  "contacts": 758,
+  "anonymousContacts": 42,
+  "maxLeadId": 763,
+  "dnc": 126,
+  "campaignLeads": 137,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "mauticAfter": {
+  "formSubmissions": 184,
+  "submissionCountSum": 184,
+  "contacts": 758,
+  "anonymousContacts": 42,
+  "maxLeadId": 763,
+  "dnc": 126,
+  "campaignLeads": 137,
+  "queuedEmails": 0,
+  "emailStats": 170
+ }
+}

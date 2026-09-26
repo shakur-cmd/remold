@@ -1,0 +1,80 @@
+{
+ "run": "beb50b8a",
+ "capturedAt": "2026-09-26T13:03:22.838Z",
+ "section": "direct",
+ "storm": {
+  "winners": 1,
+  "refusals": [
+   "leased"
+  ]
+ },
+ "afterStorm": {
+  "winnerRenews": {
+   "ok": 1790427822744
+  },
+  "newcomer": {
+   "refused": "leased"
+  },
+  "loserRenews": {
+   "refused": "stale"
+  }
+ },
+ "foreignRelease": {
+  "ok": null
+ },
+ "stillHeld": {
+  "refused": "leased"
+ },
+ "staleSettle": {
+  "refused": "stale"
+ },
+ "edgeKeyAcquire": {
+  "refused": "credential"
+ },
+ "otherTenantKeyAgainstA": {
+  "refused": "stale"
+ },
+ "ttl": {
+  "0": {
+   "refused": "invalid"
+  },
+  "60000": {
+   "ok": 1790427862822
+  },
+  "60001": {
+   "refused": "invalid"
+  },
+  "-1": {
+   "refused": "invalid"
+  },
+  "1.5": {
+   "refused": "invalid"
+  },
+  "1000000000000000": {
+   "refused": "invalid"
+  }
+ },
+ "badToken": {
+  "refused": "invalid"
+ },
+ "expired": {
+  "settle": {
+   "refused": "stale"
+  },
+  "renew": {
+   "refused": "stale"
+  },
+  "takeover": {
+   "ok": 1790427802922
+  }
+ },
+ "verdict": {
+  "oneWinner": true,
+  "newcomerRefused": true,
+  "foreignReleaseNoop": true,
+  "staleSettleRefused": true,
+  "edgeRefused": true,
+  "ttlBounds": true,
+  "expiredRefused": true
+ }
+}

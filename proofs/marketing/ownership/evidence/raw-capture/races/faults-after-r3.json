@@ -1,0 +1,168 @@
+{
+ "section": "faults",
+ "label": "after-r3",
+ "at": "2026-09-26T13:28:17.018Z",
+ "status": "FAIL",
+ "failed": [
+  "a refused name update is recorded and the contact kept unnamed"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "a create Mautic refuses (400) settles as rejected with the reason",
+   "detail": {
+    "contactId": null,
+    "email": "f400-20cf54f5@example.invalid",
+    "firstname": "Refused",
+    "id": "j576kekf2whhkddbnhg763n5px8f4ks2",
+    "idempotencyKey": "f2c1af96a7a7e72e7be9ac4712674fac",
+    "outcome": "rejected",
+    "reason": "Mautic refused create (400): fault: refused",
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "a refused name update is recorded and the contact kept unnamed",
+   "detail": {
+    "contactId": 775,
+    "email": "fname-20cf54f5@example.invalid",
+    "firstname": "Name refused",
+    "id": "j57cacdscckh7qhgpx0tw04m998f5zr8",
+    "idempotencyKey": "554f2b0712db3e334b9d5f187d237eae",
+    "outcome": "created",
+    "reason": "name not set: Mautic refused name update (400): fault: name refused",
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": true,
+   "name": "captures after both refusals are still created",
+   "detail": [
+    {
+     "id": 776,
+     "firstname": "Good"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a 500 on create stops the run and leaves the capture pending, never rejected",
+   "detail": {
+    "exit": 1,
+    "row": {
+     "contactId": null,
+     "email": "f500-20cf54f5@example.invalid",
+     "firstname": "Outage",
+     "id": "j574n50ec1jdw7t88tf24x1agd8f4fcx",
+     "idempotencyKey": "dc4e4c95b7870a2ea411691c9d29edcc",
+     "outcome": null,
+     "reason": null,
+     "status": "pending",
+     "tenant": "a"
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "once Mautic answers normally the pending capture is created",
+   "detail": {
+    "exit": 0,
+    "err": "",
+    "e500": {
+     "contactId": 777,
+     "email": "f500-20cf54f5@example.invalid",
+     "firstname": "Outage",
+     "id": "j574n50ec1jdw7t88tf24x1agd8f4fcx",
+     "idempotencyKey": "dc4e4c95b7870a2ea411691c9d29edcc",
+     "outcome": "created",
+     "reason": null,
+     "status": "settled",
+     "tenant": "a"
+    }
+   }
+  }
+ ],
+ "out": {
+  "faultyRun": {
+   "exit": 1,
+   "err": "     else throw Error('Mautic create failed '+r.status);"
+  },
+  "e400": {
+   "contactId": null,
+   "email": "f400-20cf54f5@example.invalid",
+   "firstname": "Refused",
+   "id": "j576kekf2whhkddbnhg763n5px8f4ks2",
+   "idempotencyKey": "f2c1af96a7a7e72e7be9ac4712674fac",
+   "outcome": "rejected",
+   "reason": "Mautic refused create (400): fault: refused",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "en": {
+   "contactId": 775,
+   "email": "fname-20cf54f5@example.invalid",
+   "firstname": "Name refused",
+   "id": "j57cacdscckh7qhgpx0tw04m998f5zr8",
+   "idempotencyKey": "554f2b0712db3e334b9d5f187d237eae",
+   "outcome": "created",
+   "reason": "name not set: Mautic refused name update (400): fault: name refused",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": 776,
+   "email": "fgood-20cf54f5@example.invalid",
+   "firstname": "Good",
+   "id": "j57462tfffssvzadnz8q6jhpj58f45zg",
+   "idempotencyKey": "f19146f6deb7849758a1eef5d70e4df3",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  },
+  "e500": {
+   "contactId": null,
+   "email": "f500-20cf54f5@example.invalid",
+   "firstname": "Outage",
+   "id": "j574n50ec1jdw7t88tf24x1agd8f4fcx",
+   "idempotencyKey": "dc4e4c95b7870a2ea411691c9d29edcc",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "contacts": {
+   "e400": [],
+   "en": [
+    {
+     "id": 775
+    }
+   ],
+   "good": [
+    {
+     "id": 776,
+     "firstname": "Good"
+    }
+   ],
+   "e500": []
+  },
+  "realRun": {
+   "exit": 0,
+   "err": "",
+   "e500": {
+    "contactId": 777,
+    "email": "f500-20cf54f5@example.invalid",
+    "firstname": "Outage",
+    "id": "j574n50ec1jdw7t88tf24x1agd8f4fcx",
+    "idempotencyKey": "dc4e4c95b7870a2ea411691c9d29edcc",
+    "outcome": "created",
+    "reason": null,
+    "status": "settled",
+    "tenant": "a"
+   }
+  }
+ }
+}

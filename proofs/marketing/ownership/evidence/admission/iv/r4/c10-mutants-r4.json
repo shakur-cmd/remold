@@ -1,0 +1,38 @@
+{
+ "run": "7798f31f",
+ "capturedAt": "2026-09-26T13:39:08.775Z",
+ "results": [
+  {
+   "mutant": "M5 any non-2xx create settles as rejected",
+   "checks": {
+    "faults": {
+     "exit": 1,
+     "out": "FAIL 3/5 |   a 500 on create stops the run and leaves the capture pending, never rejected |   once Mautic answers normally the pending capture is created"
+    },
+    "poison": {
+     "exit": 0,
+     "out": "PASS 4/4"
+    },
+    "c8": {
+     "exit": 0,
+     "out": "{\"bad\":\"iv-5xx-27002333@example.invalid\",\"good\":\"iv-after-5xx-27002333@example.invalid\",\"posts\":[200,200],\"runs\":[{\"exit\":0,\"err\":\"\",\"bad\":\"settled\",\"good\":\"settled\"},{\"exit\":0,\"err\":\"\",\"bad\":\"settled\",\"good\":\"settled\"},{\"exit\":0,\"err\":\"\",\"bad\":\"settled\",\"good\":\"settled\"}],\"goodContactsWhileBlocked\""
+    }
+   },
+   "killedByBuilderSuite": true
+  },
+  {
+   "mutant": "M6 no renew right before create",
+   "checks": {
+    "stall": {
+     "exit": 1,
+     "out": "FAIL 1/3 |   no Mautic contact written under a lapsed lease; capture still pending |   the next reconciler creates it exactly once"
+    },
+    "window": {
+     "exit": 0,
+     "out": "PASS 6/6"
+    }
+   },
+   "killedByBuilderSuite": true
+  }
+ ]
+}

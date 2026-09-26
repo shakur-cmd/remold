@@ -1,0 +1,60 @@
+{
+ "run": "fefcaa12",
+ "capturedAt": "2026-09-26T13:43:23.236Z",
+ "pending": 44,
+ "exit": 0,
+ "err": "",
+ "ms": 32442,
+ "perCaptureMs": 737,
+ "outcomes": {
+  "rejected": 1,
+  "existing": 40,
+  "created": 3
+ },
+ "rule": [
+  {
+   "case": "punycode domain",
+   "emailLength": 32,
+   "outcome": "created",
+   "contactId": 848,
+   "reason": null
+  },
+  {
+   "case": "upper-case owner email",
+   "emailLength": 38,
+   "outcome": "existing",
+   "contactId": 846,
+   "reason": null
+  },
+  {
+   "case": "plus-addressed owner",
+   "emailLength": 42,
+   "outcome": "created",
+   "contactId": 849,
+   "reason": null
+  }
+ ],
+ "mauticBefore": {
+  "formSubmissions": 184,
+  "submissionCountSum": 184,
+  "contacts": 842,
+  "anonymousContacts": 42,
+  "maxLeadId": 847,
+  "dnc": 150,
+  "campaignLeads": 137,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "mauticAfter": {
+  "formSubmissions": 184,
+  "submissionCountSum": 184,
+  "contacts": 845,
+  "anonymousContacts": 42,
+  "maxLeadId": 850,
+  "dnc": 150,
+  "campaignLeads": 137,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "pendingAfter": 0
+}

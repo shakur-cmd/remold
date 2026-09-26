@@ -1,0 +1,103 @@
+{
+ "section": "poison",
+ "label": "r2-r2",
+ "at": "2026-09-26T12:44:41.861Z",
+ "status": "FAIL",
+ "failed": [
+  "reconciler completes despite poison",
+  "email Mautic refuses is settled as rejected with the reason",
+  "underscore email resolved by exact match, one contact",
+  "capture behind the poison is created with its suggested name",
+  "nothing left pending on A"
+ ],
+ "checks": [
+  {
+   "ok": false,
+   "name": "reconciler completes despite poison",
+   "detail": " const r=api(tenant,'/contacts?limit=100&search='+encodeURIComponent(email));if(Number(r.data?.total)>=100)throw Error('Do not truncate the email match set');"
+  },
+  {
+   "ok": false,
+   "name": "email Mautic refuses is settled as rejected with the reason",
+   "detail": {
+    "contactId": null,
+    "email": "long-53264488-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid",
+    "firstname": "Too long for Mautic",
+    "id": "j570sy0xk9vqe2qscz5d4yv6zh8f5b8n",
+    "idempotencyKey": "19f54ad417b92c98f0fd788f9c5be879",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "underscore email resolved by exact match, one contact",
+   "detail": {
+    "contactId": null,
+    "email": "_53264488@example.invalid",
+    "firstname": "Underscore",
+    "id": "j57bscsw2h6e1x7hp2tvkbsvax8f4m6h",
+    "idempotencyKey": "3f98591216a802f32dfbfd1c6ca5c70c",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "capture behind the poison is created with its suggested name",
+   "detail": []
+  },
+  {
+   "ok": false,
+   "name": "nothing left pending on A"
+  }
+ ],
+ "out": {
+  "reconciler": {
+   "exit": 1,
+   "err": " const r=api(tenant,'/contacts?limit=100&search='+encodeURIComponent(email));if(Number(r.data?.total)>=100)throw Error('Do not truncate the email match set');"
+  },
+  "tooLong": {
+   "contactId": null,
+   "email": "long-53264488-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid",
+   "firstname": "Too long for Mautic",
+   "id": "j570sy0xk9vqe2qscz5d4yv6zh8f5b8n",
+   "idempotencyKey": "19f54ad417b92c98f0fd788f9c5be879",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "underscore": {
+   "contactId": null,
+   "email": "_53264488@example.invalid",
+   "firstname": "Underscore",
+   "id": "j57bscsw2h6e1x7hp2tvkbsvax8f4m6h",
+   "idempotencyKey": "3f98591216a802f32dfbfd1c6ca5c70c",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": null,
+   "email": "good-53264488@example.invalid",
+   "firstname": "Good after poison",
+   "id": "j57c5n4s4n2b88yr1rb2pyy7ax8f4m1k",
+   "idempotencyKey": "fd6560595db455ded15fd3b40fa1a547",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "contacts": {
+   "tooLong": [],
+   "underscore": [],
+   "good": []
+  }
+ }
+}

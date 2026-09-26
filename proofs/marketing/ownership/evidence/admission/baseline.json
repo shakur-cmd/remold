@@ -1,0 +1,220 @@
+{
+  "label": "baseline",
+  "mode": "baseline",
+  "fixture": "19282cc6-a51c-49cd-b695-357e85854bff",
+  "startedAt": "2026-09-26T11:24:55.415Z",
+  "level": "SERVICE isolated local Mautic A/B plus internal public edges; synthetic data; no mail, DNS, TLS or host ports",
+  "tenants": {
+    "a": {
+      "edgeFormId": 1,
+      "responses": [
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        }
+      ],
+      "submissions": [
+        {
+          "id": 34,
+          "leadId": 186,
+          "results": {
+            "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "Existing A 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        },
+        {
+          "id": 33,
+          "leadId": 185,
+          "results": {
+            "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "Existing B 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        },
+        {
+          "id": 32,
+          "leadId": 184,
+          "results": {
+            "email": "new-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "New B 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        },
+        {
+          "id": 31,
+          "leadId": 183,
+          "results": {
+            "email": "new-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "New A 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        }
+      ],
+      "ownerBefore": {
+        "id": 182,
+        "firstname": "Remold owned a",
+        "lastname": "Stable owner a",
+        "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "channel": "email",
+            "reason": 3
+          }
+        ]
+      },
+      "ownerAfter": {
+        "id": 186,
+        "firstname": "Existing A 19282cc6-a51c-49cd-b695-357e85854bff",
+        "lastname": "Stable owner a",
+        "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+        "points": 0,
+        "doNotContact": []
+      },
+      "countsBefore": {
+        "contacts": 179,
+        "anonymousContacts": 25,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 30,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "countsAfter": {
+        "contacts": 182,
+        "anonymousContacts": 25,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 34,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "membershipsBefore": 135,
+      "membershipsAfter": 135,
+      "newEmailContacts": [
+        183,
+        184
+      ]
+    },
+    "b": {
+      "edgeFormId": 1,
+      "responses": [
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        },
+        {
+          "status": 200,
+          "body": "Submission received"
+        }
+      ],
+      "submissions": [
+        {
+          "id": 23,
+          "leadId": 36,
+          "results": {
+            "email": "new-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "New B 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        },
+        {
+          "id": 22,
+          "leadId": 33,
+          "results": {
+            "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "Existing B 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        },
+        {
+          "id": 21,
+          "leadId": 34,
+          "results": {
+            "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "Existing A 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        },
+        {
+          "id": 20,
+          "leadId": 36,
+          "results": {
+            "email": "new-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+            "firstname": "New A 19282cc6-a51c-49cd-b695-357e85854bff"
+          }
+        }
+      ],
+      "ownerBefore": {
+        "id": 32,
+        "firstname": "Remold owned b",
+        "lastname": "Stable owner b",
+        "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "channel": "email",
+            "reason": 3
+          }
+        ]
+      },
+      "ownerAfter": {
+        "id": 34,
+        "firstname": "Existing A 19282cc6-a51c-49cd-b695-357e85854bff",
+        "lastname": "Stable owner b",
+        "email": "own-19282cc6-a51c-49cd-b695-357e85854bff@example.invalid",
+        "points": 0,
+        "doNotContact": []
+      },
+      "countsBefore": {
+        "contacts": 30,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 19,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "countsAfter": {
+        "contacts": 32,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 23,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "membershipsBefore": 0,
+      "membershipsAfter": 0,
+      "newEmailContacts": [
+        36
+      ]
+    }
+  },
+  "failures": [
+    "a: submission linked to native contact(s) 186,185,184,183",
+    "a: existing owner identity or suppression changed",
+    "a: native contacts 179->182, anonymous 25->25",
+    "a: new email created native contact(s) 183,184",
+    "b: submission linked to native contact(s) 36,33,34,36",
+    "b: existing owner identity or suppression changed",
+    "b: native contacts 30->32, anonymous 19->19",
+    "b: new email created native contact(s) 36"
+  ],
+  "status": "FAIL",
+  "finishedAt": "2026-09-26T11:25:09.519Z"
+}

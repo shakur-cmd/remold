@@ -1,0 +1,67 @@
+{
+ "section": "stall",
+ "label": "after-r3",
+ "at": "2026-09-26T13:28:40.295Z",
+ "status": "FAIL",
+ "failed": [
+  "a reconciler whose lease lapsed stops before creating"
+ ],
+ "checks": [
+  {
+   "ok": false,
+   "name": "a reconciler whose lease lapsed stops before creating",
+   "detail": " const body=await r.json();if(body.status!=='success'){const e=Error('Raw capture '+path+' refused: '+(body.errorData?.code??body.errorMessage));e.code=body.errorData?.code;throw e;}"
+  },
+  {
+   "ok": true,
+   "name": "no Mautic contact written under a lapsed lease; capture still pending",
+   "detail": {
+    "during": [],
+    "row": {
+     "contactId": null,
+     "email": "stall-71dda75d@example.invalid",
+     "firstname": "Stalled",
+     "id": "j57ag6r06zta3abxkrt95mw1z98f5205",
+     "idempotencyKey": "813e456b992c6cd9dbc6bc550625970b",
+     "outcome": null,
+     "reason": null,
+     "status": "pending",
+     "tenant": "a"
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the next reconciler creates it exactly once",
+   "detail": {
+    "contactId": 779,
+    "email": "stall-71dda75d@example.invalid",
+    "firstname": "Stalled",
+    "id": "j57ag6r06zta3abxkrt95mw1z98f5205",
+    "idempotencyKey": "813e456b992c6cd9dbc6bc550625970b",
+    "outcome": "created",
+    "reason": null,
+    "status": "settled",
+    "tenant": "a"
+   }
+  }
+ ],
+ "out": {
+  "first": {
+   "exit": 1,
+   "err": " const body=await r.json();if(body.status!=='success'){const e=Error('Raw capture '+path+' refused: '+(body.errorData?.code??body.errorMessage));e.code=body.errorData?.code;throw e;}"
+  },
+  "during": [],
+  "after": {
+   "contactId": 779,
+   "email": "stall-71dda75d@example.invalid",
+   "firstname": "Stalled",
+   "id": "j57ag6r06zta3abxkrt95mw1z98f5205",
+   "idempotencyKey": "813e456b992c6cd9dbc6bc550625970b",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  }
+ }
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent check round 4: P2 raw capture re-check (1d639b5)</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Independent check round 4: P2 raw capture re-check</h1>
+<div class="meta">2026-09-26 · scope: proofs/marketing at 1d639b5 (p2/admission-2026-09-26) · level: SERVICE, isolated local containers, synthetic data, tenant A only (B read-only, unchanged) · checker: independent verifier session (Claude Opus 5.5), not the builder · supersedes the round-3 open defects D-R3-1 to D-R3-3 and test gaps M5/M6 (../r3/report.html) · verdict: CLOSED at SERVICE level, with the open items carried forward</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Mark "public capture preserves identity and suppression" closed at SERVICE level.</b> I recommend yes. Every defect I raised in rounds 1 to 3 that touched identity or suppression is fixed and re-proven, and none regressed. Carry these forward as open. (1) The abuse gate (rate limits, one pending capture per email, a cap on pending, confirmation before creating a Mautic contact) must exist before any live form. It is not built. (2) D-R3-4: a stall longer than the lease, inside a Mautic create call, can still give duplicate contacts. (3) A persistent Mautic 5xx stops each run and keeps that capture pending. That is safe, but it blocks the queue behind it; add an attempt counter and parking. (4) Capture backend memory grew to about 347 MiB of 512 MiB under load in round 3. This is still SERVICE level only: not integrated, not live, and it does not complete P2 or D0M.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by me, tenant A)</h2>
+<ul>
+  <li><b>D-R3-1 fixed.</b> Same collation test as round 3: owners stored as josé, straße, fullwidth and trailing-space. Public captures of the ASCII forms now settle as <code>existing</code> on the owner. There was no create, and the owner's email, name and DNC were unchanged in all 5 cases. In round 3, 4 of the 5 were rewritten (<code>c6-collation-sql-r4.json</code>).</li>
+  <li><b>D-R3-2 and D-R3-3 fixed.</b> The edge now refuses first names of 65 and 100 characters (400), accepts 64, and the reconciler finished in one run with exit 0. In round 3 this took 3 runs and left unnamed contacts (<code>c9-long-name-r4.json</code>). Emails over 64 characters are refused at the edge. No first name of 64 characters or fewer made Mautic refuse the name update: I tried umlauts, emoji, combining marks, <code>&lt;</code> and entities. So the new non-fatal path is only reachable in the builder's fault test.</li>
+  <li><b>My M5 and M6 are now killed.</b> M5 (a 5xx settles as rejected) fails the new faults check with 3/5. M6 (no renew before create) fails the new stall check with 1/3 (<code>c10-mutants-r4.json</code>).</li>
+  <li><b>Builder suite reproduced.</b> Unit tests 10/10. Probe 28/28 (and 28/28 again after every mutant redeploy), collation 4/4, faults 5/5, stall 3/3, poison 4/4, window 6/6. Mutants 12/12 killed, and the repo was restored with no diff. The A-only replay passed 53/53 with A's form submissions at 184 throughout (<code>iv-r4-a.json</code>, <code>builder-races/</code>). The deployed edges run server.mjs 445041bb69983881, the same as the repo.</li>
+  <li><b>No regressions.</b> I reran the round-2/3 edge attacks with the D1 edit live: 65 cases, Mautic unchanged, owner unchanged. The only 4 differences are intended: the all-zero nonce is still claimed (409), and 3 emails over 64 characters are now refused (400). The concurrency sample passed: 32 distinct posts, 16 posts racing on one nonce, and 8 racing on one nonce with different values. All verdicts were true and Mautic was unchanged (<code>c1-edge-attacks-a-r4.json</code>, <code>c2-concurrency-a-32-r4.json</code>).</li>
+</ul>
+</div>
+
+<h2>Per-claim verdict</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th></tr>
+<tr><td>Any database lookup row means existing or ambiguous, never create (D-R3-1)</td><td>PASS: collation 5/5 with my test, builder collation 4/4, mutant D1 killed</td></tr>
+<tr><td>Email and first name capped at 64 at the edge and in Convex; a refused name update is non-fatal (D-R3-2, D-R3-3)</td><td>PASS: edge 400 for 65 and 100, probe 28/28, mutants D2 and D3 killed. The non-fatal path is proven by fault injection only.</td></tr>
+<tr><td>Fault check kills M5, stall check kills M6</td><td>PASS: reproduced with my own mutant copies</td></tr>
+<tr><td>12/12 mutants</td><td>PASS: reproduced</td></tr>
+<tr><td>A-only replay 53/53</td><td>PASS: reproduced (label iv-r4-a)</td></tr>
+</table>
+
+<h2>State</h2>
+<ul>
+  <li>A: contacts 801 to 845 and DNC 137 to 150 (IV and builder-suite owners). Form submissions unchanged at 184. All my captures were drained, 0 pending (44 settled: 40 existing, 3 created, 1 rejected).</li>
+  <li>B: every counter identical from my first to my last snapshot. The last write to B's database is still 12:48:33Z.</li>
+  <li>Convex functions were redeployed by the mutant runs and end on the original. A <code>node_modules</code> link at the worktree root is needed by <code>rawcapture/setup.mjs</code> and is not committed.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>A real, not injected, Mautic refusal of a first name of 64 characters or fewer.</li>
+  <li>Tenant B writes (by rule) and the two-tenant replay.</li>
+</ul>
+
+<h2>Commands (from proofs/marketing, worktree ../remold-p2-iv fast-forwarded to 1d639b5)</h2>
+<pre>node --test publishing/server.test.mjs                                   10 pass
+node rawcapture/races.mjs probe|collation|faults|stall|poison|window iv-r4   28/28 4/4 5/5 3/3 4/4 6/6
+REMOLD_REPLAY_TENANTS=a node rawcapture/replay.mjs iv-r4-a              PASS 53/53
+node rawcapture/mutants.mjs iv-r4                                        12/12 killed
+cd ownership/evidence/admission/iv/r3
+IV_LABEL=r4 node c6-collation.mjs ; IV_LABEL=r4 node c9-long-name.mjs
+IV_ONLY=M5,M6 IV_LABEL=r4 IV_CHECKS='{"M5":["faults","poison","c8"],"M6":["stall","window"]}' node c10-mutants.mjs
+IV_LABEL=r4 node c1-edge-attacks.mjs ; IV_LABEL=r4 node c2-concurrency.mjs 32 ; node c4-drain.mjs r4</pre>
+</body>
+</html>

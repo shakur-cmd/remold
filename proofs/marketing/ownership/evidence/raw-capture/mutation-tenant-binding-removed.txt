@@ -1,0 +1,11 @@
+33c33
+<  const rows=await ctx.db.query('captures').withIndex('by_status',q=>q.eq('tenant',t).eq('status','pending')).take(a.limit);
+---
+>  const rows=await ctx.db.query('captures').filter(q=>q.eq(q.field('status'),'pending')).take(a.limit);void t;
+FAIL 37/43 checks
+FAILED: a: reconciler restart completed
+        b: reconciler completed
+        third run finds nothing pending on either tenant
+        a: repeat reconcile made no Mautic change
+        a: reconcile created exactly one contact (the new email), no anonymous contacts
+        b: reconcile created exactly one contact (the new email), no anonymous contacts

@@ -1,0 +1,74 @@
+{
+ "section": "window",
+ "label": "after",
+ "at": "2026-09-26T12:43:29.006Z",
+ "status": "PASS",
+ "failed": [],
+ "checks": [
+  {
+   "ok": true,
+   "name": "reconciler completes",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "admin contact first name not overwritten by the public suggestion",
+   "detail": "Admin"
+  },
+  {
+   "ok": true,
+   "name": "admin DNC kept"
+  },
+  {
+   "ok": true,
+   "name": "one contact for the email",
+   "detail": [
+    {
+     "id": 360,
+     "firstname": "Admin"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "capture settled as existing on the admin contact",
+   "detail": {
+    "status": "settled",
+    "outcome": "existing",
+    "contactId": 360
+   }
+  }
+ ],
+ "out": {
+  "email": "win-08155be3@example.invalid",
+  "adminId": 360,
+  "reconciler": {
+   "exit": 0,
+   "log": [
+    {
+     "capture": "j5770xbpnvnd4hzhwa05p1c2898f597d",
+     "outcome": "existing",
+     "contactId": 360,
+     "reason": null,
+     "result": "settled"
+    }
+   ],
+   "err": ""
+  },
+  "adminAfter": {
+   "firstname": "Admin",
+   "dnc": 1
+  },
+  "contacts": [
+   {
+    "id": 360,
+    "firstname": "Admin"
+   }
+  ],
+  "capture": {
+   "status": "settled",
+   "outcome": "existing",
+   "contactId": 360
+  }
+ }
+}
