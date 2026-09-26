@@ -1,0 +1,31 @@
+{
+  "productionTests": 121,
+  "groupsWithNoOperations": [],
+  "operationsPerGroup": {
+    "min": 1,
+    "max": 7
+  },
+  "top5SingleTestAcceptance": [
+    {
+      "test": "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly",
+      "accepts": 25
+    },
+    {
+      "test": "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives",
+      "accepts": 18
+    },
+    {
+      "test": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple",
+      "accepts": 17
+    },
+    {
+      "test": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail",
+      "accepts": 15
+    },
+    {
+      "test": "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced",
+      "accepts": 14
+    }
+  ],
+  "singleTestsAcceptingAtLeastHalf": 1
+}

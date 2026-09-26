@@ -1,0 +1,4 @@
+FAIL R2-D8a Inherited-property keys (constructor, toString, hasOwnProperty, __proto__) cannot slip an extra field past the shape check into Convex argument logging 
+    {"constructor | adapter callback":{"response":"400 {\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}","logsCanary":true,"logsKeyHash":true,"responseKeyHash":false,"logSample":["Object: {bindingId: \"k176nbybwngccr6djehnsjbz4x8f4hcp\", body: \"{}\", constructor: \"<CANARY>\", credentialHash: \"<KEY_SHA256>\", eventId: \"e-<CANARY>\"}"]},"constructor | rest changes":{"response":"400 {\"error\":{\"code\":\"VALIDATION\",\"message\":\"ArgumentValidationError: Object contains extra field `constructor` th","logsCanary":true,"logsKeyHash":true,"responseKeyHash":false,"logSample":["Object: {action: \"create\", constructor: \"<CANARY>\", keyHash: \"<KEY_SHA256>\", object:
+
+R2 SUMMARY 0 PASS / 1 FAIL

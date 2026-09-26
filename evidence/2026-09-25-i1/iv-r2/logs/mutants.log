@@ -1,0 +1,34 @@
+D1 | csv-skip-duplicates-any-record | IV C3-M4 | CAUGHT
+D1 | csv-skip-duplicates-any-record | unit oracles.test | CAUGHT
+D1 | csv-skip-duplicates-any-record | IV R2-O1 | NOT CAUGHT
+D1 | csv-lookup-code-not-found | unit oracles.test | NOT CAUGHT
+D1 | csv-lookup-code-not-found | IV R2-O1 | CAUGHT
+D1 | csv-lookup-title-not-found | unit oracles.test | CAUGHT
+D1 | csv-lookup-title-not-found | IV R2-O1 | CAUGHT
+D2 | capture-company-not-found | IV C3-M5 | CAUGHT
+D2 | capture-company-not-found | unit oracles.test | CAUGHT
+D2 | capture-company-not-found | IV R2-O6 | CAUGHT
+D3 | agent-lookup-title-not-found | IV C3-M6 | NOT CAUGHT
+D3 | agent-lookup-title-not-found | unit oracles.test | CAUGHT
+D3 | agent-lookup-title-not-found | IV R2-O3 | CAUGHT
+D3 | propose-scope-after-resolution | IV C3-M6 | NOT CAUGHT
+D3 | propose-scope-after-resolution | unit oracles.test | CAUGHT
+D3 | propose-scope-after-resolution | IV R2-O3 | NOT CAUGHT
+D4 | readonly-registerSecret | builder sweep: operator-internal labels | CAUGHT
+D4 | readonly-registerSecret | IV R2-R1 | CAUGHT
+D4 | readonly-org-budget | builder sweep: operator-internal labels | CAUGHT
+D4 | readonly-org-budget | IV R2-R1 | CAUGHT
+D4 | readonly-seed-ensureStandard | builder sweep: operator-internal labels | CAUGHT
+D4 | readonly-seed-ensureStandard | IV R2-R1 | CAUGHT
+D5 | new-agent-subroute | unit inventory.test | CAUGHT
+D7 | frozen-key-ignored | unit migration.test | CAUGHT
+D7 | frozen-key-ignored | IV R2-K1 | CAUGHT
+D8 | shape-allows-extra-keys | IV C4-S2 | NOT CAUGHT
+D8 | shape-allows-extra-keys | IV R2-D8c | NOT CAUGHT
+D8 | shape-allows-extra-keys | builder secrets | CAUGHT
+D8 | rest-body-check-skipped | IV C4-S2 | NOT CAUGHT
+D8 | rest-body-check-skipped | IV R2-D8c | CAUGHT
+D8 | rest-body-check-skipped | builder secrets | CAUGHT
+floor | floor-always-true | release tests | CAUGHT
+convex/ and ops/release restored clean
+exit 0

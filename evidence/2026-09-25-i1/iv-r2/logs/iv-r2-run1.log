@@ -1,0 +1,25 @@
+FAIL R2-D8a Inherited-property keys (constructor, toString, hasOwnProperty, __proto__) cannot slip an extra field past the shape check into Convex argument logging 
+    {"constructor | adapter callback":{"response":"400 {\"error\":{\"code\":\"VALIDATION\",\"message\":\"Invalid adapter arguments\"}}","logsCanary":true,"logsKeyHash":true,"responseKeyHash":false,"logSample":["Object: {bindingId: \"k17bn0nrak6k77bn2fv84knvjh8f5amt\", body: \"{}\", constructor: \"<CANARY>\", credentialHash: \"<KEY_SHA256>\", eventId: \"e-<CANARY>\"}"]},"constructor | rest changes":{"response":"400 {\"error\":{\"code\":\"VALIDATION\",\"message\":\"ArgumentValidationError: Object contains extra field `constructor` th","logsCanary":true,"logsKeyHash":true,"responseKeyHash":false,"logSample":["Object: {action: \"create\", constructor: \"<CANARY>\", keyHash: \"<KEY_SHA256>\", object:
+FAIL R2-D8b Field names Convex refuses ($-prefixed, _-prefixed, empty) and over-deep nesting inside record/any values do not log the body or key hashes 
+    logged: {"dollarKey":"500 {\"error\":{\"code\":\"INTERNAL\",\"message\":\"Something went wrong\"}}","underscoreKey":"400 {\"error\":{\"code\":\"VALIDATION\",\"fieldKey\":\"_<CANARY>\",\"message\":\"Unknown field \\\"_<CANARY>\\\"\"}}","emptyKey":"400 {\"error\":{\"code\":\"VALIDATION\",\"fieldKey\":\"\",\"message\":\"Unknown field \\\"\\\"\"}}","nestedDollar":"500 {\"error\":{\"code\":\"INTERNAL\",\"message\":\"Something went wrong\"}}","deepNesting":"500 {\"error\":{\"code\":\"INTERNAL\",\"message\":\"Something went wrong\"}}","suggestionDollar":"500 {\"error\":{\"code\":\"INTERNAL\",\"message\":\"Something went wrong\"}}","adapterDollar":"400 {\"error\":{\"code\":\"VALIDATION\",\"message\"
+PASS R2-D8c Regression of the D8 fix: extra fields, wrong types and wrong-table IDs on all 15 adapter routes and all 11 agent POST routes get 400 and log nothing
+PASS R2-O1 Record-scoped member, CSV lookup column: title, record code and raw ID give the same outcome for an unreadable record as for a missing one (with and without skipDuplicates)
+FAIL R2-O2 Record-scoped member: search, byRef, get, events, suggestions and related-list queries do not distinguish an unreadable record from a missing or deleted one 
+    {"search":{"hit":"{\"ok\":true,\"value\":[]}","miss":"{\"ok\":true,\"value\":[]}"},"byRef":{"hit":"{\"ok\":true,\"value\":null}","miss":"{\"ok\":true,\"value\":null}"},"get":{"hit":"{\"ok\":true,\"value\":null}","miss":"{\"ok\":true,\"value\":null}"},"eventsById":{"hit":"{\"ok\":true,\"value\":[]}","miss":"{\"ok\":false,\"error\":\"{\\\"code\\\":\\\"NOT_FOUND\\\",\\\"message\\\":\\\"Record not found\\\"}\"}"},"suggestionsById":{"hit":"{\"ok\":true,\"value\":[]}","miss":"{\"ok\":true,\"value\":[]}"},"relatedById":{"hit":"{\"ok\":false,\"error\":\"{\\\"code\\\":\\\"NOT_FOUND\\\",\\\"message\\\":\\\"Record not found\\\"}\"}","miss":"{\"ok\":false,\"error\":\"{\\\"code\\\":\\\"NOT_FOUND\\\",\\\"
+PASS R2-O3 Record-scoped agent over REST (and so MCP): get, byRef, events, related, inbox resolve, propose/change with lookup by ID, code or title, and a links field, are identical for unreadable and missing
+PASS R2-O4 Timing: capture of an unreadable existing company name vs a missing one (median of 25 each) differs by less than 5 ms
+FAIL R2-O5 Search ranking oracle: with limit 1, a query that also matches an unreadable record does not push the member/agent's own readable match out of the result 
+    [Request ID: 288d99f214a60779] Server Error
+ArgumentValidationError: Value does not match validator.
+Path: .scope
+Value: {fields: "all", kind: "records", objectId: "mx7efewvxw4ff5a8k7658w00tx8f4fz0", records: ["nd774qbd6aj1565h27xfvsngs58f43tx"]}
+Validator: v.union(v.object({fields: v.array(v.id("fields")), kind: v.literal("records"), objectId: v.id("objects"), records: v.union(v.literal("all"), v.array(v.id("records")))}), v.object({bindings: v.array(v.id("integrationBindings")), currency: v.string(), kind: v.literal("bindings"), maxAmountMinor: v.float64(), maxRecipients: v.float64()}), v.object({kind: v.literal("model"), maxSteps: v.float64(), maxUnitsPerRun: v.float64()}), v.object({agen
+PASS R2-O6 Capture of a person whose company is an unreadable existing name behaves exactly like a missing company name
+PASS R2-R1 Under readonly every operator/internal write behaves as its inventory label says, and refused ones change nothing
+PASS R2-K1 Legacy key grant follows the key the object had at freeze: swapping keys between two pre-freeze objects moves nothing, before and after migration
+PASS R2-T1 Without the pause sweep, the final permit alone refuses: approver downgraded (Approver authority changed) and delegated parent revoked (External capability denied)
+PASS R2-T2 Real race, 20 rounds: role change via the public mutation, then permit at once; never 200, and record which layer refused
+PASS R2-S1 Across the whole r2 run, no raw agent key, raw adapter key or vault handle appears in the backend log
+
+R2 SUMMARY 10 PASS / 4 FAIL
+exit 0

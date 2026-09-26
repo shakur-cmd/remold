@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I1 independent verification, round 2</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 900px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .verdict { background: #fdecea; border-left: 4px solid #c62828; padding: 12px 16px; margin-bottom: 20px; }
+  .verdict h2, .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 13px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+  .pass { color: #1b5e20; font-weight: 600; } .fail { color: #b71c1c; font-weight: 600; } .partial { color: #9a6700; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>I1 independent verification, round 2</h1>
+<div class="meta">2026-09-26 · target 4cb4671 on wip/i1-authority (revision 1, evidence from f1de701) · verifier: Opus 5.5, fresh session, not the builder · level: SERVICE on an isolated local Convex (127.0.0.1:3490/3491), synthetic JWTs and data, no providers, no spend, no sends, no preview or production · status: awaiting your check</div>
+
+<div class="verdict">
+<h2>Verdict: revise, not certified</h2>
+<p>Revision 1 closes six of the eight round-1 defects outright (D1, D2, D3, D4, D5, D7) and fixes the D6 map. Every fix has a test that fails when I break it again. Two things stop certification: the D8 body check can be bypassed with one extra key, and search has an existence oracle of the same kind as D1 to D3. Both are small fixes.</p>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>One line</th></tr>
+<tr><td>1. All 43 H0 groups pass on production code</td><td class="pass">CERTIFY</td><td>SERVICE 64/64. My 8 H0 attacks still refused. The final permit refuses on its own even with no pause sweep (R2-T1). The 18 remapped rows now name the tests I recommended in round 1.</td></tr>
+<tr><td>2. Old clients, wildcard freeze, migration, rollback</td><td class="pass">CERTIFY</td><td>Migration replay passes. Legacy key grants now follow the key an object had at freeze, even when two objects swap keys (R2-K1). The rollback floor refuses 3339517 and accepts I1 commits. It only checks that two file paths exist (see your calls).</td></tr>
+<tr><td>3. Readonly, masks, subscription, inventory, no oracles</td><td class="fail">REVISE</td><td>Readonly holds for every function newly refused and every operator override. CSV, capture and agent lookups no longer leak. <b>New:</b> search with a small limit reveals whether a record you can't read exists (R2-O5, medium). Record-ID paths also still differ (R2-O2, low).</td></tr>
+<tr><td>4. Secrets fail closed; nothing secret in responses, logs or exports</td><td class="fail">REVISE</td><td>No raw key or vault handle appeared anywhere (R2-S1). <b>D8 is only partly fixed.</b> A body with an extra key named <code>constructor</code>, <code>toString</code>, <code>hasOwnProperty</code> or <code>valueOf</code> gets past the new shape check. Convex then logs the whole body plus the key SHA-256, on 20 of 20 route and key pairs tried (R2-D8a).</td></tr>
+</table>
+</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Rollback floor strength.</b> It checks only that <code>convex/authority/migration.ts</code> and <code>reads.ts</code> exist in the target. A commit made of pre-I1 code plus two empty files at those paths passes. So does a raw tree SHA. I recommend adding an ancestry check (<code>git merge-base --is-ancestor &lt;first I1 commit&gt; &lt;target&gt;</code>), which is one line. It guards against a mistaken rollback. A deliberate operator can still get around it. Your call: accept the path check as decided, or ask for ancestry.</li>
+  <li><b>Readonly tail and operator overrides</b> (carried from the builder): a permit issued just before readonly can still be consumed once, within 1 s. <code>ops:setFlag</code>, <code>clearAnomaly</code> and the migration freeze/backfill stay available in readonly. I confirmed all of this behaves as labelled. It matches the H0 contract. I recommend accepting it.</li>
+  <li><b>Fix and rerun.</b> I recommend the builder fixes R1 and R2 below, and ideally R3. Then rerun <code>evidence/2026-09-25-i1/iv-r2/iv-r2.mjs</code>: it should go from 11/14 to 14/14.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by this verifier, worktree remold-i1-iv2 at 4cb4671)</h2>
+<ul>
+  <li>Reproduced: typecheck pass, app tests 73/73, authority unit tests 66/66, release tests 18/18, pnpm build pass, MCP build plus 2/2 (logs/typecheck, test, authunit, release-tests, build, mcp).</li>
+  <li>Builder SERVICE replay 64/64 PASS (logs/service.log, data/builder-service.json). Migration replay PASS (logs/migration.log).</li>
+  <li>Round-1 attack suite <code>iv/iv-service.mjs</code>: <b>24/24 PASS</b>, up from 21/24 (logs/iv-service.log, data/iv-service.json).</li>
+  <li>Round-2 bypass suite <code>iv-r2/iv-r2.mjs</code>: 14 checks, <b>11 pass, 3 fail</b> (logs/iv-r2.log, data/iv-r2.json). The 3 failures are R1 to R3 below.</li>
+  <li>Deliberate breaks: 14 one-line breaks of production code, one or more per fix (D1 to D5, D7, D8, plus the floor). <b>All 14 were caught</b>, each by at least one test. D6 is a test-side map, so I measured it separately. convex/ and ops/release were restored clean after every run (logs/mutants.log, data/iv-mutants-r2.json).</li>
+  <li>Rollback floor probed on a throwaway clone, nothing pushed: 3339517 refused, and d2c8744, f1de701, 4cb4671 and 7299ee9 accepted. It was fooled by empty stubs, by I1 code with enforcement switched off, and by a tree SHA (logs/floor.log).</li>
+  <li>Evidence secret scan: no raw agent key, adapter key or vault handle in this folder.</li>
+</ul>
+</div>
+
+<h2>Remaining defects (with repro)</h2>
+<p>All repros: apply <code>iv/local-ports.patch</code> and copy <code>iv-r2/fixture-iv.ts</code> to <code>ops/authority/</code>. Then run <code>I1_EVIDENCE_DIR=/tmp/x IV_ONLY='&lt;id&gt;' node evidence/2026-09-25-i1/iv-r2/iv-r2.mjs</code>.</p>
+<table>
+<tr><th>#</th><th>Severity</th><th>Defect</th><th>Repro and observed</th><th>Suggested fix</th></tr>
+<tr><td>R1 (D8 still open)</td><td>Low</td><td>The body shape check tests extra keys with <code>key in fields</code>, which also looks at <code>Object.prototype</code>. So an extra key named after an inherited property passes. The call reaches Convex, whose validator rejects it and logs the full argument object, including the key hash.</td><td><code>R2-D8a</code>. For example, POST <code>/api/v1/inbox</code> with <code>{"text":"x","constructor":"&lt;canary&gt;"}</code> returns 400. The backend log line is <code>Object: {constructor: "&lt;canary&gt;", keyHash: "&lt;agent key sha256&gt;", text: "x"}</code>. The same happens with <code>toString</code>, <code>hasOwnProperty</code> and <code>valueOf</code>, on adapter <code>callback</code> and REST <code>changes</code>, <code>suggestions</code>, <code>inbox</code> and <code>inbox/:id/resolve</code>: 20 of 20 leak. <code>__proto__</code> did not leak. Matrix: data/iv-r2-d8a-matrix.json.</td><td><code>convex/lib/shape.ts</code>: use <code>Object.hasOwn(fields, key)</code>. That is a one-word change.</td></tr>
+<tr><td>R2 (new)</td><td>Medium</td><td>Search takes the top <code>limit</code> hits first and filters out unreadable ones afterwards. A hidden record that ranks higher pushes the caller's own readable match out. Comparing results tells the caller that a hidden name exists. This is the same class as D1 to D3, through a path the fix did not cover.</td><td><code>R2-O5</code>. There are two identical workspaces. A member (and an agent) can read only "Alpha Mine". Searching "Alpha Bravo Charlie Delta" with limit 1 returns 0 results when an unreadable "Bravo Charlie Delta" exists, and 1 result when it doesn't. This holds for <code>records.search</code> with and without objectId, and for agent <code>GET /api/v1/search?limit=1</code>. The member can choose the limit.</td><td>In <code>records.search</code> and <code>agentApi.search</code>, filter by <code>canReadRecord</code> while iterating the search results, until <code>limit</code> readable hits or a fixed scan cap.</td></tr>
+<tr><td>R3</td><td>Low</td><td>Record-ID paths tell "exists but unreadable" apart from "deleted". A member can learn such IDs, because a readable person's company lookup shows the raw ID of a company they can't read.</td><td><code>R2-O2</code>. <code>events.forRecord</code> returns <code>[]</code> for the unreadable record and <code>NOT_FOUND</code> for a deleted one. <code>records.related</code> says "Record not found" versus "Record or field not found". Agent REST gives identical answers for both (R2-O3 passes).</td><td>Use one NOT_FOUND message for missing and unreadable in both queries. Optionally mask unreadable lookup IDs too.</td></tr>
+<tr><td>R4</td><td>Low</td><td>The rollback floor checks path existence only.</td><td><code>iv-floor.mjs</code>. Pre-I1 code plus two empty stub files is accepted. So is I1 code where <code>canReadRecordId</code> returns true, and so is a tree SHA.</td><td>Ancestry check (see your calls).</td></tr>
+</table>
+<p>Informational, not a defect: an agent-chosen field name such as <code>_x</code> is echoed in the domain error <code>Unknown field "_x"</code>, which Convex logs. No body and no key hash appear. <code>$</code>-prefixed keys and over-deep nesting return 500 INTERNAL, not 400, and log nothing (R2-D8b).</p>
+
+<h2>Round-1 defects: status</h2>
+<table>
+<tr><th>#</th><th>Status</th><th>Proof</th><th>Break that re-opens it, and what caught it</th></tr>
+<tr><td>D1 CSV oracles</td><td class="pass">closed</td><td>C3-M4 pass. R2-O1: title, code and raw ID give identical results, with and without skipDuplicates.</td><td>Skip-duplicates against any record: caught by C3-M4 and the builder's oracles.test. Lookup by code shows NOT_FOUND: caught by R2-O1 only (the builder's unit test does not cover the code path). Lookup by title shows NOT_FOUND: caught by both.</td></tr>
+<tr><td>D2 capture oracle</td><td class="pass">closed</td><td>C3-M5 pass. R2-O6 (person with a hidden company) identical. R2-O4 timing: medians 4.88 vs 4.83 ms, same error.</td><td>Old findByTitle plus NOT_FOUND: caught by C3-M5, oracles.test and R2-O6.</td></tr>
+<tr><td>D3 agent lookup oracle</td><td class="pass">closed</td><td>C3-M6 pass. R2-O3: 13 REST pairs identical (get, byRef, events, related, propose and change by ID, code and title, <code>links</code> field by title, code and ID, inbox resolve).</td><td>values.ts reverted: caught by oracles.test and R2-O3. C3-M6 alone no longer notices, because the new scope-first order hides it. Scope check moved after resolution: caught by oracles.test only. That is defence in depth: the readable-only match already makes both answers equal.</td></tr>
+<tr><td>D4 readonly labels</td><td class="pass">closed</td><td>R2-R1: registerSecret, org budget, seed ensureStandard, backfillRefs, releaseStandardSlots, demoAs, agents:createAs and connections:insert are all refused ("Workspace is read only"), with no workspace data changed. Global budget, clearAnomaly, freeze, migrateAgent (no widening) and setFlag lifting readonly are all allowed, as labelled.</td><td>Removing writable() from registerSecret, the org budget or ensureStandard: each caught by the builder's sweep and by R2-R1.</td></tr>
+<tr><td>D5 route guard</td><td class="pass">closed</td><td>The round-1 attack (a new <code>GET /records/:id/dump</code>) now fails inventory.test.</td><td>Caught.</td></tr>
+<tr><td>D6 parity map</td><td class="partial">map fixed, guard weak</td><td>All 18 rows I flagged now name the test I recommended. All 43 mapped tests pass. The guard's operation matching is loose, though. One test ("H0#15 H0#24 … absence and overrun …") would satisfy the guard for 25 of the 43 groups by itself (logs/parity-power.log). Read the mapped tests, not the guard. The builder says so too.</td><td>Not a convex/ break. Pointing all rows at the JWT test fails, as the builder shows.</td></tr>
+<tr><td>D7 frozen keys</td><td class="pass">closed</td><td>R2-K1: company and campaign swap keys. A legacy <code>update:campaign</code> agent keeps 403 on company and 200 on campaign, before backfill and after migration (dropped: []).</td><td>frozenKey returns the current key: caught by migration.test and R2-K1.</td></tr>
+<tr><td>D8 body logging</td><td class="fail">partly open (R1)</td><td>R2-D8c: 26 routes × 4 malformed bodies (extra fields, wrong types, wrong-table IDs) all return 400 and log nothing. R2-D8a bypass: see R1.</td><td>Extra-key check removed: caught by the builder's secrets suite. REST body check skipped: caught by R2-D8c and the builder's secrets suite.</td></tr>
+<tr><td>Floor</td><td class="partial">works as decided, can be fooled (R4)</td><td>3339517 refused. d2c8744, f1de701, 4cb4671 and 7299ee9 accepted. Abbreviated SHA throws. An unknown SHA is refused.</td><td><code>return true</code>: caught by release tests.</td></tr>
+</table>
+
+<h2>Other checks that held</h2>
+<ul>
+  <li><b>Final permit without the sweep (R2-T1).</b> Using fixture functions that make the same state change as <code>orgs.setRole</code> and <code>grants.revoke</code>, minus the pause sweep: the permit refuses "Approver authority changed" and "External capability denied". The builder's two relaxed tests hide nothing.</li>
+  <li><b>Real race, 20 rounds (R2-T2).</b> setRole and permit were sent together. The result was never 200: 12 "Stale claim", 8 "Approver authority changed".</li>
+  <li><b>Secret canaries across the run (R2-S1).</b> 10 agent keys, 33 adapter keys and 33 vault handles: none appears raw in 60 KB of backend log.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>Hosted log sinks (only the local backend's stream). The financial finality adapter remains SIM, as the builder states.</li>
+  <li>Timing oracles beyond one path (capture, 25 samples each). Local timings do not predict hosted ones.</li>
+  <li>The old-MCP migration attack (<code>iv/iv-migration.mjs</code>) was not rerun this round. The builder's migration replay passed, and R2-K1 covers the D7 change.</li>
+</ul>
+
+<h2>Files</h2>
+<ul>
+  <li><code>iv-r2.mjs</code>: round-2 suite (14 checks). <code>fixture-iv.ts</code>: round-1 fixture plus <code>makeLegacy</code> and <code>handles</code>, scratch-only.</li>
+  <li><code>iv-mutants-r2.mjs</code>: 14 breaks. <code>iv-floor.mjs</code>: floor probes. <code>iv-parity-power.mjs</code>: guard discrimination.</li>
+  <li><code>logs/</code> and <code>data/</code>: every run above. <code>logs/iv-r2-run1.log</code> is my first run, before I fixed a bug in my own R2-O5 grant (fields must be an ID list) and narrowed R2-D8b to body and hash logging.</li>
+</ul>
+
+<h2>How to rerun</h2>
+<pre>git -C remold worktree add --detach ../remold-iv2 4cb4671 &amp;&amp; cd ../remold-iv2 &amp;&amp; pnpm install
+git checkout i1/iv-r2-2026-09-26 -- evidence/2026-09-25-i1/iv evidence/2026-09-25-i1/iv-r2
+git apply evidence/2026-09-25-i1/iv/local-ports.patch
+cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts ops/authority/
+I1_EVIDENCE_DIR=/tmp/iv  node evidence/2026-09-25-i1/iv/iv-service.mjs      # 24/24
+I1_EVIDENCE_DIR=/tmp/r2  node evidence/2026-09-25-i1/iv-r2/iv-r2.mjs        # 11/14 today
+I1_EVIDENCE_DIR=/tmp/mut node evidence/2026-09-25-i1/iv-r2/iv-mutants-r2.mjs # 14/14 caught
+node evidence/2026-09-25-i1/iv-r2/iv-floor.mjs &lt;path-to-remold&gt; /tmp/floor-repo
+node evidence/2026-09-25-i1/iv-r2/iv-parity-power.mjs</pre>
+<p>The builder branch was not modified. Only the port patch and the fixture copy were applied locally, and they are not committed outside the evidence folder.</p>
+</body>
+</html>

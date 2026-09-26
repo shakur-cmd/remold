@@ -1,0 +1,93 @@
+[
+  {
+    "claim": 1,
+    "id": "approver-recheck",
+    "file": "convex/integrations/core.ts",
+    "from": "approver.member.role === 'member' || epoch(approver) !== approval.approverEpoch || approver.member._id !== approval.approverMembershipId",
+    "to": "false",
+    "checks": {
+      "IV C1-A (role downgrade/re-invite)": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL C1-A1 Human approver downgraded admin->member between claim and permit: permit refused \nPASS C1-A2 Approver removed and re-invited as admin between claim and permit: permit refused\nFAIL C1-A3 Approver downgraded then restored (admin->member->admin) mid-flight: permit refused (epoch moved) \nPASS C1-A4 Grantor owner downgraded to admin while agent holds a claim: direct grant dies, permit refused\nPASS C1-A5 Human proposer downgraded admin->member after approval and claim: permit refused\nIV SUMMARY 3 PASS / 2 FAIL"
+      },
+      "builder: approver role downgrade": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+      }
+    }
+  },
+  {
+    "claim": 2,
+    "id": "legacy-freeze-cutoff",
+    "file": "convex/identity.ts",
+    "from": "return org.authorityFrozenAt !== undefined && object._creationTime <= org.authorityFrozenAt && agent.grants",
+    "to": "return org.authorityFrozenAt !== undefined && agent.grants",
+    "checks": {
+      "IV migration attack (pre-backfill future object)": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "FINDINGS [\n  \"issue\": \"W get on post-freeze object allowed/leaked\",\n  \"issue\": \"W list on post-freeze object allowed/leaked\",\n  \"issue\": \"W searchLeak on post-freeze object allowed/leaked\",\n  \"issue\": \"W related on post-freeze object allowed/leaked\",\n  \"issue\": \"K get on post-freeze object allowed/leaked\",\n  \"issue\": \"K list on post-freeze object allowed/leaked\",\n  \"issue\": \"K propose on post-freeze object allowed/leaked\",\n  \"issue\": \"K searchLeak on post-freeze object allowed/leaked\",\n  \"issue\": \"K related on post-freeze object allowed/leaked\",\n  \"issue\": \"R get on post-freeze object allowed/leaked\",\n  \"issue\": \"R list on post-freeze object allowed/leaked\","
+      },
+      "builder migration-service": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: frozen-before-backfill create"
+      }
+    },
+    "findings": true
+  },
+  {
+    "claim": 3,
+    "id": "readonly-agent-inbox",
+    "file": "convex/agentApi.ts",
+    "from": "const principal = await requireAgent(ctx, args.keyHash); await writable(ctx, principal.org._id); if (!args.text.trim())",
+    "to": "const principal = await requireAgent(ctx, args.keyHash); if (!args.text.trim())",
+    "checks": {
+      "builder readonly sweep": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: HTTP POST /api/v1/inbox must refuse readonly writes: {\"createdAt\":1790347016078.166,\"from\":{\"kind\":\"agent\",\"name\":\"sweep agent\"},\"id\":\"j5760nf05171957chk2namdwmd8f25fv\",\"note\":null,\"recordId\":null,\"resolvedAt\":null,\"source\":\"api\",\"status\":\"pending\",\"suggestionId\":null,\"text\":\"Denied inbox\"}"
+      }
+    }
+  },
+  {
+    "claim": 3,
+    "id": "mask-filter-on-hidden-field",
+    "file": "convex/lib/list.ts",
+    "from": "if (principal) requireQueryField(principal, object, field);",
+    "to": "",
+    "checks": {
+      "IV C3-M1/M2 (filter/sort by hidden field)": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "PASS C3-M1 Agent cannot filter or sort by a hidden field (no inference of hidden value by presence)\nFAIL C3-M2 Member with hidden field cannot filter, sort, search, export, or read events/suggestions to recover it \nIV SUMMARY 1 PASS / 1 FAIL"
+      },
+      "builder mask sweep + reads": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "PASS Hidden field value never appears in any human query or agent REST read"
+      }
+    }
+  },
+  {
+    "claim": 4,
+    "id": "secret-environment-check",
+    "file": "convex/integrations/connections.ts",
+    "from": "ref.environment !== connection.environment || ",
+    "to": "",
+    "checks": {
+      "IV C4-S1 (environment/provider change)": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL C4-S1 Secret reference environment or provider changed after connect: claim fails closed \nIV SUMMARY 0 PASS / 1 FAIL"
+      },
+      "builder secrets suite": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens\nPASS Production dispatch records cancelled late acceptance exactly once\nPASS Invalid provider and secret references fail closed\nPASS Callback, adapter, REST and ops logs reveal no secrets"
+      }
+    }
+  }
+]

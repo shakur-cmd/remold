@@ -1,0 +1,374 @@
+[
+  {
+    "d": "D1",
+    "id": "csv-skip-duplicates-any-record",
+    "file": "convex/csv.ts",
+    "edits": [
+      [
+        "import { findReadableByTitle } from \"./lib/find\";",
+        "import { findReadableByTitle, findByTitle } from \"./lib/find\";"
+      ],
+      [
+        "(await findReadableByTitle(ctx, membership, object, title))",
+        "(await findByTitle(ctx, args.orgId, object._id, title))"
+      ]
+    ],
+    "checks": {
+      "IV C3-M4": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL C3-M4 Record-scoped member: CSV import duplicate check does not reveal titles of records outside scope \nIV SUMMARY 0 PASS / 1 FAIL"
+      },
+      "unit oracles.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "   × CSV import skips only readable duplicates; an unreadable existing name looks like a new one 75ms\n      Tests  1 failed | 3 passed (4)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/oracles.test.ts > CSV import skips only readable duplicates; an unreadable existing name looks like a new one\nAssertionError: expected 2 to be 1 // Object.is equality"
+      },
+      "IV R2-O1": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "R2 SUMMARY 1 PASS / 0 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D1",
+    "id": "csv-lookup-code-not-found",
+    "file": "convex/csv.ts",
+    "edits": [
+      [
+        "if (object && canReadRecord(run.membership, object, byRef)) return byRef._id; }",
+        "if (object) { if (!canReadRecord(run.membership, object, byRef)) fail(\"NOT_FOUND\", \"Record not found\"); return byRef._id; } }"
+      ]
+    ],
+    "checks": {
+      "unit oracles.test": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "      Tests  4 passed (4)"
+      },
+      "IV R2-O1": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-O1 Record-scoped member, CSV lookup column: title, record code and raw ID give the same outcome for an unreadable record as for a missing one (with and without skipDuplicates) \nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D1",
+    "id": "csv-lookup-title-not-found",
+    "file": "convex/csv.ts",
+    "edits": [
+      [
+        "import { findReadableByTitle } from \"./lib/find\";",
+        "import { findReadableByTitle, findByTitle } from \"./lib/find\";"
+      ],
+      [
+        "const found = await findReadableByTitle(ctx, run.membership, target, text);",
+        "const found = await findByTitle(ctx, orgId, target._id, text); if (found && !canReadRecord(run.membership, target, found)) fail(\"NOT_FOUND\", \"Record not found\");"
+      ]
+    ],
+    "checks": {
+      "unit oracles.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "   × CSV lookup columns treat an unreadable linked name like a missing one 9ms\n      Tests  1 failed | 3 passed (4)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/oracles.test.ts > CSV lookup columns treat an unreadable linked name like a missing one\nAssertionError: expected [ 'Record not found' ] to deeply equal [ Array(1) ]"
+      },
+      "IV R2-O1": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-O1 Record-scoped member, CSV lookup column: title, record code and raw ID give the same outcome for an unreadable record as for a missing one (with and without skipDuplicates) \nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D2",
+    "id": "capture-company-not-found",
+    "file": "convex/capture.ts",
+    "edits": [
+      [
+        "import { findReadableByTitle } from \"./lib/find\";",
+        "import { findReadableByTitle, findByTitle } from \"./lib/find\";\nimport { canReadRecord } from \"./authority/reads\";"
+      ],
+      [
+        "const existing = await findReadableByTitle(ctx, membership, company.object, name);",
+        "const existing = await findByTitle(ctx, orgId, company.object._id, name); if (existing && !canReadRecord(membership, company.object, existing)) fail(\"NOT_FOUND\", \"Record not found\");"
+      ]
+    ],
+    "checks": {
+      "IV C3-M5": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL C3-M5 Record-scoped member: browser capture duplicate check does not reveal titles of records outside scope \nIV SUMMARY 0 PASS / 1 FAIL"
+      },
+      "unit oracles.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "   × browser capture treats an unreadable existing company like a missing one 12ms\n      Tests  1 failed | 3 passed (4)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/oracles.test.ts > browser capture treats an unreadable existing company like a missing one\nAssertionError: expected { ok: false, error: { …(2) } } to deeply equal { ok: false, error: { …(2) } }"
+      },
+      "IV R2-O6": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-O6 Capture of a person whose company is an unreadable existing name behaves exactly like a missing company name \nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D3",
+    "id": "agent-lookup-title-not-found",
+    "file": "convex/lib/values.ts",
+    "edits": [
+      [
+        "import { findReadableByTitle } from \"./find\";",
+        "import { findReadableByTitle, findByTitle } from \"./find\";"
+      ],
+      [
+        "const record = object ? await findReadableByTitle(ctx, principal, object, value) : null;",
+        "const record = object ? await findByTitle(ctx, orgId, object._id, value) : null; if (record && object && !canReadRecord(principal, object, record)) fail(\"NOT_FOUND\", \"Record not found\");"
+      ]
+    ],
+    "checks": {
+      "IV C3-M6": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "IV SUMMARY 1 PASS / 0 FAIL"
+      },
+      "unit oracles.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "   × agent proposals check proposal scope before resolving a lookup by name 103ms\n      Tests  1 failed | 3 passed (4)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/oracles.test.ts > agent proposals check proposal scope before resolving a lookup by name\nAssertionError: expected 404 to be 400 // Object.is equality"
+      },
+      "IV R2-O3": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-O3 Record-scoped agent over REST (and so MCP): get, byRef, events, related, inbox resolve, propose/change with lookup by ID, code or title, and a links field, are identical for unreadable and missing \nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D3",
+    "id": "propose-scope-after-resolution",
+    "file": "convex/agentApi.ts",
+    "edits": [
+      [
+        "if (!canPropose(principal, target.item.object, target.record?._id, touched)) fail(\"FORBIDDEN\", \"Proposal scope required\");",
+        ""
+      ]
+    ],
+    "checks": {
+      "IV C3-M6": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "IV SUMMARY 1 PASS / 0 FAIL"
+      },
+      "unit oracles.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "   × agent proposals check proposal scope before resolving a lookup by name 72ms\n      Tests  1 failed | 3 passed (4)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/oracles.test.ts > agent proposals check proposal scope before resolving a lookup by name\nAssertionError: expected { status: 400, …(1) } to deeply equal { status: 403, …(1) }"
+      },
+      "IV R2-O3": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "R2 SUMMARY 1 PASS / 0 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D4",
+    "id": "readonly-registerSecret",
+    "file": "convex/integrations/connections.ts",
+    "edits": [
+      [
+        "await provider(ctx, args.provider); await writable(ctx, args.orgId);",
+        "await provider(ctx, args.provider);"
+      ]
+    ],
+    "checks": {
+      "builder sweep: operator-internal labels": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: integrations/connections:registerSecret is labelled refused but was: allowed"
+      },
+      "IV R2-R1": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-R1 Under readonly every operator/internal write behaves as its inventory label says, and refused ones change nothing \n    {\"refused\":{\"integrations/connections:registerSecret\":{\"label\":\"refused\",\"ok\":true},\"integrations/budgets:configure\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: 5f141dbfefecbee9] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace is read only\\\"}\"},\"seed:ensureStandard\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: 8a0a55330bd31d22] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace is read only\\\"}\"},\"seed:backfillRefs\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: 035fddd8a54b0138] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace i\nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D4",
+    "id": "readonly-org-budget",
+    "file": "convex/integrations/budgets.ts",
+    "edits": [
+      [
+        "if (args.orgId) await writable(ctx, args.orgId);",
+        "if (args.orgId && !(await ctx.db.get(args.orgId))) fail(\"NOT_FOUND\");"
+      ]
+    ],
+    "checks": {
+      "builder sweep: operator-internal labels": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: integrations/budgets:configure is labelled refused but was: allowed"
+      },
+      "IV R2-R1": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-R1 Under readonly every operator/internal write behaves as its inventory label says, and refused ones change nothing \n    {\"refused\":{\"integrations/connections:registerSecret\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: b90a00b6612872df] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace is read only\\\"}\"},\"integrations/budgets:configure\":{\"label\":\"refused\",\"ok\":true},\"seed:ensureStandard\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: 4cb3f97e531bf9a4] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace is read only\\\"}\"},\"seed:backfillRefs\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: f1b9d4e1e83afa7a] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace i\nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D4",
+    "id": "readonly-seed-ensureStandard",
+    "file": "convex/seed.ts",
+    "edits": [
+      [
+        "handler: async (ctx, args) => { await writable(ctx, args.orgId); return seedStandard(ctx, args.orgId); },",
+        "handler: async (ctx, args) => seedStandard(ctx, args.orgId),"
+      ]
+    ],
+    "checks": {
+      "builder sweep: operator-internal labels": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: seed:ensureStandard is labelled refused but was: allowed"
+      },
+      "IV R2-R1": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-R1 Under readonly every operator/internal write behaves as its inventory label says, and refused ones change nothing \n    {\"refused\":{\"integrations/connections:registerSecret\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: f45e8d9e2629c7ff] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace is read only\\\"}\"},\"integrations/budgets:configure\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: cfb0badb8207d771] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace is read only\\\"}\"},\"seed:ensureStandard\":{\"label\":\"refused\",\"ok\":true},\"seed:backfillRefs\":{\"label\":\"refused\",\"ok\":false,\"error\":\"ConvexError: [Request ID: a27147ca53776a65] Server Error | Uncaught ConvexError: {\\\"code\\\":\\\"FORBIDDEN\\\",\\\"message\\\":\\\"Workspace i\nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D5",
+    "id": "new-agent-subroute",
+    "file": "convex/http.ts",
+    "edits": [
+      [
+        "  return bad(\"NOT_FOUND\", \"Route not found\", 404);\n}",
+        "  if (request.method === \"GET\" && path[0] === \"records\" && path[2] === \"dump\" && path.length === 3) return json(await query(internal.agentApi.getRecord, { idOrRef: path[1] }));\n  return bad(\"NOT_FOUND\", \"Route not found\", 404);\n}"
+      ]
+    ],
+    "checks": {
+      "unit inventory.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "     × lists every registered function, concrete HTTP branch, cron and scheduled target 173ms\n      Tests  1 failed | 1 passed (2)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/inventory.test.ts > authority inventory > lists every registered function, concrete HTTP branch, cron and scheduled target\nAssertionError: expected [ …(185) ] to deeply equal [ …(186) ]"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D7",
+    "id": "frozen-key-ignored",
+    "file": "convex/authority/migration.ts",
+    "edits": [
+      [
+        "=> org.authorityFrozenKeys?.[object._id] ?? object.key;",
+        "=> object.key;"
+      ]
+    ],
+    "checks": {
+      "unit migration.test": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "   × an explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7) 7ms\n      Tests  1 failed | 6 passed (7)\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n FAIL  ops/authority/migration.test.ts > an explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7)\nAssertionError: expected 200 to be 403 // Object.is equality"
+      },
+      "IV R2-K1": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-K1 Legacy key grant follows the key the object had at freeze: swapping keys between two pre-freeze objects moves nothing, before and after migration \nR2 SUMMARY 0 PASS / 1 FAIL"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D8",
+    "id": "shape-allows-extra-keys",
+    "file": "convex/lib/shape.ts",
+    "edits": [
+      [
+        "if (Object.keys(record).some(key => !(key in fields))) return false;",
+        ""
+      ]
+    ],
+    "checks": {
+      "IV C4-S2": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "IV SUMMARY 1 PASS / 0 FAIL"
+      },
+      "IV R2-D8c": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "R2 SUMMARY 1 PASS / 0 FAIL"
+      },
+      "builder secrets": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: backend/function log contains the forwarded body field: Object: {action: \"create\", apiKey: \"<forwarded body field>\", keyHash: \"a9b2eb1329d6da1ef641d38397bac48f8cd84e9205afb016dca56ae5635682c4\", object: \"company\", reason: \"hygiene\", values: {name: \"x\"}}"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "D8",
+    "id": "rest-body-check-skipped",
+    "file": "convex/http.ts",
+    "edits": [
+      [
+        "if (!ids || (ids.length && !await ctx.runQuery(makeFunctionReference<\"query\">(\"lib/shape:idsBelong\"), { ids }))) throw",
+        "if (false) throw"
+      ]
+    ],
+    "checks": {
+      "IV C4-S2": {
+        "exit": 0,
+        "caught": false,
+        "evidence": "IV SUMMARY 1 PASS / 0 FAIL"
+      },
+      "IV R2-D8c": {
+        "exit": 0,
+        "caught": true,
+        "evidence": "FAIL R2-D8c Regression of the D8 fix: extra fields, wrong types and wrong-table IDs on all 15 adapter routes and all 11 agent POST routes get 400 and log nothing \nR2 SUMMARY 0 PASS / 1 FAIL"
+      },
+      "builder secrets": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "AssertionError [ERR_ASSERTION]: backend/function log contains the forwarded body field: Object: {action: \"create\", apiKey: \"<forwarded body field>\", keyHash: \"280aa01a0fc6eb48e2e6ba1188b64330b76d9d9a6abbb99f1d46524f71505823\", object: \"company\", reason: \"hygiene\", values: {name: \"x\"}}"
+      }
+    },
+    "caught": true
+  },
+  {
+    "d": "floor",
+    "id": "floor-always-true",
+    "file": "ops/release/release.mjs",
+    "edits": [
+      [
+        "return AUTHORITY_CORE.every(",
+        "return true || AUTHORITY_CORE.every("
+      ]
+    ],
+    "checks": {
+      "release tests": {
+        "exit": 1,
+        "caught": true,
+        "evidence": "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+      }
+    },
+    "caught": true
+  }
+]

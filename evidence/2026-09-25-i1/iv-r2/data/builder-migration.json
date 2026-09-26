@@ -1,0 +1,6259 @@
+{
+  "status": "PASS bounded migration and old-client compatibility",
+  "level": "SERVICE local backend / synthetic JWT and data",
+  "baselineRevision": "3339517",
+  "oldMcpHash": "5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e",
+  "cutoff": 1790421626497,
+  "baselineSnapshot": {
+    "agents": [
+      {
+        "_creationTime": 1790421624375.196,
+        "_id": "j97by9s0z8bgee42qzad25phvd8f485z",
+        "createdBy": "ks7brvargxh6wmnbjv6g2n73vx8f4zah",
+        "grants": [
+          {
+            "action": "create",
+            "objectKey": "*"
+          },
+          {
+            "action": "update",
+            "objectKey": "*"
+          },
+          {
+            "action": "delete",
+            "objectKey": "*"
+          }
+        ],
+        "keyHash": "8911687f65ae28371a73bf49403b88ed7be4c0435bbf2105e44234b5b5850bde",
+        "keyPrefix": "rm_8e4b54de0",
+        "name": "Retained legacy agent",
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "role": "admin"
+      }
+    ],
+    "objects": [
+      {
+        "_creationTime": 1790421624360.5364,
+        "_id": "k171htm6arv7dts4r65d7yhnq98f5j08",
+        "isStandard": true,
+        "key": "company",
+        "label": "Company",
+        "labelPlural": "Companies",
+        "order": 0,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh75s4gas7x983bg71p9y5eren8f55ak"
+      },
+      {
+        "_creationTime": 1790421624360.5366,
+        "_id": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+        "isStandard": true,
+        "key": "person",
+        "label": "Person",
+        "labelPlural": "People",
+        "order": 1,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh74dj8nxrs71zjjrkpmkfenb98f43q5"
+      },
+      {
+        "_creationTime": 1790421624360.5369,
+        "_id": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+        "isStandard": true,
+        "key": "opportunity",
+        "label": "Opportunity",
+        "labelPlural": "Opportunities",
+        "order": 2,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh78gq5xjyvbhkpfe6dmc3cnzn8f4p65"
+      },
+      {
+        "_creationTime": 1790421624360.537,
+        "_id": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+        "isStandard": true,
+        "key": "project",
+        "label": "Project",
+        "labelPlural": "Projects",
+        "order": 3,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh72nnqygbb2jcsdmrk46j3re58f4gwn"
+      },
+      {
+        "_creationTime": 1790421624360.5374,
+        "_id": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+        "isStandard": true,
+        "key": "task",
+        "label": "Task",
+        "labelPlural": "Tasks",
+        "order": 4,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh76x216trdn49vn8b0zcn3m7n8f47d5"
+      },
+      {
+        "_creationTime": 1790421624360.5376,
+        "_id": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+        "isStandard": true,
+        "key": "note",
+        "label": "Note",
+        "labelPlural": "Notes",
+        "order": 5,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh7683kn2az4xc2aaakjx5m9js8f5ztf"
+      },
+      {
+        "_creationTime": 1790421624360.5378,
+        "_id": "k179vfs5vy3papv259jfh1fmws8f45kc",
+        "isStandard": true,
+        "key": "campaign",
+        "label": "Campaign",
+        "labelPlural": "Campaigns",
+        "order": 6,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh73p3gxyhgszqft7v9f1s2ftn8f4qfe"
+      }
+    ],
+    "org": {
+      "_creationTime": 1790421624360.536,
+      "_id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+      "createdBy": "ks7brvargxh6wmnbjv6g2n73vx8f4zah",
+      "name": "Authority migration synthetic"
+    },
+    "records": []
+  },
+  "migratedSnapshot": {
+    "agents": [
+      {
+        "_creationTime": 1790421624375.196,
+        "_id": "j97by9s0z8bgee42qzad25phvd8f485z",
+        "authorityEpoch": 0,
+        "authorityVersion": 1,
+        "createdBy": "ks7brvargxh6wmnbjv6g2n73vx8f4zah",
+        "grants": [
+          {
+            "action": "create",
+            "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+            "objectKey": "company"
+          },
+          {
+            "action": "create",
+            "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+            "objectKey": "person"
+          },
+          {
+            "action": "create",
+            "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+            "objectKey": "opportunity"
+          },
+          {
+            "action": "create",
+            "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+            "objectKey": "project"
+          },
+          {
+            "action": "create",
+            "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+            "objectKey": "task"
+          },
+          {
+            "action": "create",
+            "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+            "objectKey": "note"
+          },
+          {
+            "action": "create",
+            "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+            "objectKey": "campaign"
+          },
+          {
+            "action": "update",
+            "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+            "objectKey": "company"
+          },
+          {
+            "action": "update",
+            "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+            "objectKey": "person"
+          },
+          {
+            "action": "update",
+            "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+            "objectKey": "opportunity"
+          },
+          {
+            "action": "update",
+            "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+            "objectKey": "project"
+          },
+          {
+            "action": "update",
+            "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+            "objectKey": "task"
+          },
+          {
+            "action": "update",
+            "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+            "objectKey": "note"
+          },
+          {
+            "action": "update",
+            "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+            "objectKey": "campaign"
+          },
+          {
+            "action": "delete",
+            "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+            "objectKey": "company"
+          },
+          {
+            "action": "delete",
+            "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+            "objectKey": "person"
+          },
+          {
+            "action": "delete",
+            "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+            "objectKey": "opportunity"
+          },
+          {
+            "action": "delete",
+            "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+            "objectKey": "project"
+          },
+          {
+            "action": "delete",
+            "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+            "objectKey": "task"
+          },
+          {
+            "action": "delete",
+            "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+            "objectKey": "note"
+          },
+          {
+            "action": "delete",
+            "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+            "objectKey": "campaign"
+          }
+        ],
+        "keyHash": "8911687f65ae28371a73bf49403b88ed7be4c0435bbf2105e44234b5b5850bde",
+        "keyPrefix": "rm_8e4b54de0",
+        "name": "Retained legacy agent",
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "origin": "external",
+        "readObjectIds": [
+          "k171htm6arv7dts4r65d7yhnq98f5j08",
+          "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+          "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+          "k177tjj9m8pf57jgeaeeb0vks98f569b",
+          "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+          "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+          "k179vfs5vy3papv259jfh1fmws8f45kc"
+        ],
+        "role": "admin",
+        "sharedInbox": true,
+        "state": "active"
+      },
+      {
+        "_creationTime": 1790421627974.891,
+        "_id": "j9710d1m1x58tpsmqrrapy9trd8f47k4",
+        "authorityEpoch": 0,
+        "authorityVersion": 1,
+        "createdBy": "ks7brvargxh6wmnbjv6g2n73vx8f4zah",
+        "grants": [],
+        "keyHash": "22b35e278166c8056fed587d61a58a7373867679f8c7d7a38c12dffa1f465a8e",
+        "keyPrefix": "rm_98ce9a358",
+        "name": "Management target",
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "origin": "external",
+        "readObjectIds": [
+          "k171htm6arv7dts4r65d7yhnq98f5j08",
+          "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+          "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+          "k177tjj9m8pf57jgeaeeb0vks98f569b",
+          "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+          "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+          "k179vfs5vy3papv259jfh1fmws8f45kc",
+          "k1708j5e3nmt4r1pc0641x7ae18f5pqx"
+        ],
+        "role": "member",
+        "state": "active"
+      }
+    ],
+    "objects": [
+      {
+        "_creationTime": 1790421624360.5364,
+        "_id": "k171htm6arv7dts4r65d7yhnq98f5j08",
+        "isStandard": true,
+        "key": "company",
+        "label": "Company",
+        "labelPlural": "Companies",
+        "order": 0,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh75s4gas7x983bg71p9y5eren8f55ak"
+      },
+      {
+        "_creationTime": 1790421624360.5366,
+        "_id": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+        "isStandard": true,
+        "key": "person",
+        "label": "Person",
+        "labelPlural": "People",
+        "order": 1,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh74dj8nxrs71zjjrkpmkfenb98f43q5"
+      },
+      {
+        "_creationTime": 1790421624360.5369,
+        "_id": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+        "isStandard": true,
+        "key": "opportunity",
+        "label": "Opportunity",
+        "labelPlural": "Opportunities",
+        "order": 2,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh78gq5xjyvbhkpfe6dmc3cnzn8f4p65"
+      },
+      {
+        "_creationTime": 1790421624360.537,
+        "_id": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+        "isStandard": true,
+        "key": "project",
+        "label": "Project",
+        "labelPlural": "Projects",
+        "order": 3,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh72nnqygbb2jcsdmrk46j3re58f4gwn"
+      },
+      {
+        "_creationTime": 1790421624360.5374,
+        "_id": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+        "isStandard": true,
+        "key": "task",
+        "label": "Task",
+        "labelPlural": "Tasks",
+        "order": 4,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh76x216trdn49vn8b0zcn3m7n8f47d5"
+      },
+      {
+        "_creationTime": 1790421624360.5376,
+        "_id": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+        "isStandard": true,
+        "key": "note",
+        "label": "Note",
+        "labelPlural": "Notes",
+        "order": 5,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh7683kn2az4xc2aaakjx5m9js8f5ztf"
+      },
+      {
+        "_creationTime": 1790421624360.5378,
+        "_id": "k179vfs5vy3papv259jfh1fmws8f45kc",
+        "isStandard": true,
+        "key": "campaign",
+        "label": "Campaign",
+        "labelPlural": "Campaigns",
+        "order": 6,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh73p3gxyhgszqft7v9f1s2ftn8f4qfe"
+      },
+      {
+        "_creationTime": 1790421627957.128,
+        "_id": "k1708j5e3nmt4r1pc0641x7ae18f5pqx",
+        "isStandard": false,
+        "key": "future",
+        "label": "Future",
+        "labelPlural": "Future",
+        "order": 7,
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "titleFieldId": "jh789pw6q2f7yagsc362ee2xr18f5jcn"
+      }
+    ],
+    "org": {
+      "_creationTime": 1790421624360.536,
+      "_id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+      "authorityFrozenAt": 1790421626497,
+      "authorityFrozenKeys": {
+        "k171htm6arv7dts4r65d7yhnq98f5j08": "company",
+        "k17285rdt46eevyvd9brbkn9ph8f5vvq": "note",
+        "k177eqf480kzz3x07v1bk7tfnd8f5hzp": "task",
+        "k177tjj9m8pf57jgeaeeb0vks98f569b": "project",
+        "k179vfs5vy3papv259jfh1fmws8f45kc": "campaign",
+        "k17dpgrasfe8c67v0c1dzp5m558f4ad0": "person",
+        "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx": "opportunity"
+      },
+      "createdBy": "ks7brvargxh6wmnbjv6g2n73vx8f4zah",
+      "name": "Authority migration synthetic"
+    },
+    "records": [
+      {
+        "_creationTime": 1790421627967.161,
+        "_id": "kh70jc67qxa4t6bcywkjkpmkah8f46fv",
+        "createdBy": "ks7brvargxh6wmnbjv6g2n73vx8f4zah",
+        "objectId": "k1708j5e3nmt4r1pc0641x7ae18f5pqx",
+        "orgId": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+        "ref": "raven-creek-fair",
+        "s0": "Human future record",
+        "title": "Human future record",
+        "updatedAt": 1790421627967,
+        "values": {
+          "jh789pw6q2f7yagsc362ee2xr18f5jcn": "Human future record"
+        }
+      }
+    ]
+  },
+  "transcript": [
+    {
+      "phase": "baseline",
+      "name": "remold_me",
+      "args": {},
+      "data": {
+        "agent": {
+          "grants": [
+            {
+              "action": "create",
+              "objectKey": "*"
+            },
+            {
+              "action": "update",
+              "objectKey": "*"
+            },
+            {
+              "action": "delete",
+              "objectKey": "*"
+            }
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_objects",
+      "args": {},
+      "data": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ]
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "create",
+        "object": "company",
+        "values": {
+          "name": "Compatibility company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd77sc0a70jhm3wtt4cfg429e98f499e",
+        "record": {
+          "createdAt": 1790421624938.155,
+          "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+          "object": "company",
+          "ref": "tidy-bold-sky",
+          "title": "Compatibility company",
+          "updatedAt": 1790421624938,
+          "values": {
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "update",
+        "record": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+        "values": {
+          "city": "Synthetic city"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd71dhqdcvtqwgfwwsv7hqnq1x8f4ygs",
+        "record": {
+          "createdAt": 1790421624938.155,
+          "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+          "object": "company",
+          "ref": "tidy-bold-sky",
+          "title": "Compatibility company",
+          "updatedAt": 1790421624954,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_get_record",
+      "args": {
+        "idOrRef": "tidy-bold-sky"
+      },
+      "data": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "at": 1790421624954.024,
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "at": 1790421624938.1553,
+            "before": null,
+            "reason": "synthetic compatibility"
+          }
+        ],
+        "record": {
+          "createdAt": 1790421624938.155,
+          "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+          "object": "company",
+          "ref": "tidy-bold-sky",
+          "title": "Compatibility company",
+          "updatedAt": 1790421624954,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_list_records",
+      "args": {
+        "object": "company"
+      },
+      "data": {
+        "cursor": null,
+        "records": [
+          {
+            "createdAt": 1790421624938.155,
+            "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+            "object": "company",
+            "ref": "tidy-bold-sky",
+            "title": "Compatibility company",
+            "updatedAt": 1790421624954,
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_search",
+      "args": {
+        "q": "Compatibility",
+        "object": "company"
+      },
+      "data": [
+        {
+          "createdAt": 1790421624938.155,
+          "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+          "object": "company",
+          "ref": "tidy-bold-sky",
+          "title": "Compatibility company",
+          "updatedAt": 1790421624954,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_related",
+      "args": {
+        "idOrRef": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+        "field": "person.company"
+      },
+      "data": []
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_today",
+      "args": {},
+      "data": {
+        "quiet": [],
+        "tasks": []
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_propose_change",
+      "args": {
+        "action": "update",
+        "record": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+        "values": {
+          "name": "Proposed company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "suggestion": {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421625004.541,
+          "id": "kn7eb3hkz0061f1s3vjxjf0sw98f4cy6",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+            "ref": "tidy-bold-sky",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_list_suggestions",
+      "args": {
+        "status": "pending"
+      },
+      "data": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421625004.541,
+          "id": "kn7eb3hkz0061f1s3vjxjf0sw98f4cy6",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+            "ref": "tidy-bold-sky",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_inbox_add",
+      "args": {
+        "text": "Compatibility inbox",
+        "source": "synthetic"
+      },
+      "data": {
+        "createdAt": 1790421625026.188,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j578yhkx825se2dpt0rasnp60d8f5qzt",
+        "note": null,
+        "recordId": null,
+        "resolvedAt": null,
+        "source": "synthetic",
+        "status": "pending",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_inbox",
+      "args": {},
+      "data": [
+        {
+          "createdAt": 1790421625026.188,
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "j578yhkx825se2dpt0rasnp60d8f5qzt",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ]
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_inbox_resolve",
+      "args": {
+        "id": "j578yhkx825se2dpt0rasnp60d8f5qzt",
+        "recordId": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+        "note": "resolved"
+      },
+      "data": {
+        "createdAt": 1790421625026.188,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j578yhkx825se2dpt0rasnp60d8f5qzt",
+        "note": "resolved",
+        "recordId": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+        "resolvedAt": 1790421625046,
+        "source": "synthetic",
+        "status": "resolved",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "baseline",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "delete",
+        "record": "kh73jercfbzhje83ytwrwzrxa18f58z5",
+        "reason": "synthetic compatibility cleanup"
+      },
+      "data": {
+        "eventId": "jd79fhsg7nsm8zpv1awz7hvf7x8f4aa4",
+        "record": null
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_me",
+      "args": {},
+      "data": {
+        "agent": {
+          "grants": [
+            {
+              "action": "create",
+              "objectKey": "*"
+            },
+            {
+              "action": "update",
+              "objectKey": "*"
+            },
+            {
+              "action": "delete",
+              "objectKey": "*"
+            }
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_objects",
+      "args": {},
+      "data": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ]
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "create",
+        "object": "company",
+        "values": {
+          "name": "Compatibility company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd74bsfv3he480wy60q96jecd58f457b",
+        "record": {
+          "createdAt": 1790421627795.216,
+          "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+          "object": "company",
+          "ref": "proud-north-arrow",
+          "title": "Compatibility company",
+          "updatedAt": 1790421627795,
+          "values": {
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "update",
+        "record": "kh79j7rz0j1492rvv8ra1pks218f504t",
+        "values": {
+          "city": "Synthetic city"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd7789fd19tsre2hw887wga3s18f42af",
+        "record": {
+          "createdAt": 1790421627795.216,
+          "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+          "object": "company",
+          "ref": "proud-north-arrow",
+          "title": "Compatibility company",
+          "updatedAt": 1790421627810,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_get_record",
+      "args": {
+        "idOrRef": "proud-north-arrow"
+      },
+      "data": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "at": 1790421627810.913,
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "at": 1790421627795.2163,
+            "before": null,
+            "reason": "synthetic compatibility"
+          }
+        ],
+        "record": {
+          "createdAt": 1790421627795.216,
+          "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+          "object": "company",
+          "ref": "proud-north-arrow",
+          "title": "Compatibility company",
+          "updatedAt": 1790421627810,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_list_records",
+      "args": {
+        "object": "company"
+      },
+      "data": {
+        "cursor": null,
+        "records": [
+          {
+            "createdAt": 1790421627795.216,
+            "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+            "object": "company",
+            "ref": "proud-north-arrow",
+            "title": "Compatibility company",
+            "updatedAt": 1790421627810,
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_search",
+      "args": {
+        "q": "Compatibility",
+        "object": "company"
+      },
+      "data": [
+        {
+          "createdAt": 1790421627795.216,
+          "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+          "object": "company",
+          "ref": "proud-north-arrow",
+          "title": "Compatibility company",
+          "updatedAt": 1790421627810,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_related",
+      "args": {
+        "idOrRef": "kh79j7rz0j1492rvv8ra1pks218f504t",
+        "field": "person.company"
+      },
+      "data": []
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_today",
+      "args": {},
+      "data": {
+        "quiet": [],
+        "tasks": []
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_propose_change",
+      "args": {
+        "action": "update",
+        "record": "kh79j7rz0j1492rvv8ra1pks218f504t",
+        "values": {
+          "name": "Proposed company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "suggestion": {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421627864.538,
+          "id": "kn7c8qsf0dhtp2yxwdfdb32z718f5c8c",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+            "ref": "proud-north-arrow",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_list_suggestions",
+      "args": {
+        "status": "pending"
+      },
+      "data": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421627864.538,
+          "id": "kn7c8qsf0dhtp2yxwdfdb32z718f5c8c",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh79j7rz0j1492rvv8ra1pks218f504t",
+            "ref": "proud-north-arrow",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_inbox_add",
+      "args": {
+        "text": "Compatibility inbox",
+        "source": "synthetic"
+      },
+      "data": {
+        "createdAt": 1790421627886.851,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j57chx7hc4sf2x0kqkxn3w8r898f4b1x",
+        "note": null,
+        "recordId": null,
+        "resolvedAt": null,
+        "source": "synthetic",
+        "status": "pending",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_inbox",
+      "args": {},
+      "data": [
+        {
+          "createdAt": 1790421627886.851,
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "j57chx7hc4sf2x0kqkxn3w8r898f4b1x",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ]
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_inbox_resolve",
+      "args": {
+        "id": "j57chx7hc4sf2x0kqkxn3w8r898f4b1x",
+        "recordId": "kh79j7rz0j1492rvv8ra1pks218f504t",
+        "note": "resolved"
+      },
+      "data": {
+        "createdAt": 1790421627886.851,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j57chx7hc4sf2x0kqkxn3w8r898f4b1x",
+        "note": "resolved",
+        "recordId": "kh79j7rz0j1492rvv8ra1pks218f504t",
+        "resolvedAt": 1790421627906,
+        "source": "synthetic",
+        "status": "resolved",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "enforcing-expand-before-backfill",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "delete",
+        "record": "kh79j7rz0j1492rvv8ra1pks218f504t",
+        "reason": "synthetic compatibility cleanup"
+      },
+      "data": {
+        "eventId": "jd7d37bdp3sjngf913f6n4rmex8f5rwe",
+        "record": null
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_me",
+      "args": {},
+      "data": {
+        "agent": {
+          "grants": [
+            {
+              "action": "create",
+              "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+              "objectKey": "company"
+            },
+            {
+              "action": "create",
+              "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+              "objectKey": "person"
+            },
+            {
+              "action": "create",
+              "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+              "objectKey": "opportunity"
+            },
+            {
+              "action": "create",
+              "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+              "objectKey": "project"
+            },
+            {
+              "action": "create",
+              "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+              "objectKey": "task"
+            },
+            {
+              "action": "create",
+              "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+              "objectKey": "note"
+            },
+            {
+              "action": "create",
+              "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+              "objectKey": "campaign"
+            },
+            {
+              "action": "update",
+              "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+              "objectKey": "company"
+            },
+            {
+              "action": "update",
+              "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+              "objectKey": "person"
+            },
+            {
+              "action": "update",
+              "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+              "objectKey": "opportunity"
+            },
+            {
+              "action": "update",
+              "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+              "objectKey": "project"
+            },
+            {
+              "action": "update",
+              "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+              "objectKey": "task"
+            },
+            {
+              "action": "update",
+              "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+              "objectKey": "note"
+            },
+            {
+              "action": "update",
+              "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+              "objectKey": "campaign"
+            },
+            {
+              "action": "delete",
+              "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+              "objectKey": "company"
+            },
+            {
+              "action": "delete",
+              "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+              "objectKey": "person"
+            },
+            {
+              "action": "delete",
+              "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+              "objectKey": "opportunity"
+            },
+            {
+              "action": "delete",
+              "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+              "objectKey": "project"
+            },
+            {
+              "action": "delete",
+              "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+              "objectKey": "task"
+            },
+            {
+              "action": "delete",
+              "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+              "objectKey": "note"
+            },
+            {
+              "action": "delete",
+              "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+              "objectKey": "campaign"
+            }
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_objects",
+      "args": {},
+      "data": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ]
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "create",
+        "object": "company",
+        "values": {
+          "name": "Compatibility company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd7dsz2me9x957taky170nkeah8f4qtj",
+        "record": {
+          "createdAt": 1790421629882.581,
+          "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+          "object": "company",
+          "ref": "cobalt-grove-creek",
+          "title": "Compatibility company",
+          "updatedAt": 1790421629882,
+          "values": {
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "update",
+        "record": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+        "values": {
+          "city": "Synthetic city"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd753x8pejy24rpcaajzn2cpxh8f5ywq",
+        "record": {
+          "createdAt": 1790421629882.581,
+          "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+          "object": "company",
+          "ref": "cobalt-grove-creek",
+          "title": "Compatibility company",
+          "updatedAt": 1790421629896,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_get_record",
+      "args": {
+        "idOrRef": "cobalt-grove-creek"
+      },
+      "data": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "at": 1790421629896.683,
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "at": 1790421629882.5813,
+            "before": null,
+            "reason": "synthetic compatibility"
+          }
+        ],
+        "record": {
+          "createdAt": 1790421629882.581,
+          "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+          "object": "company",
+          "ref": "cobalt-grove-creek",
+          "title": "Compatibility company",
+          "updatedAt": 1790421629896,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_list_records",
+      "args": {
+        "object": "company"
+      },
+      "data": {
+        "cursor": null,
+        "records": [
+          {
+            "createdAt": 1790421629882.581,
+            "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+            "object": "company",
+            "ref": "cobalt-grove-creek",
+            "title": "Compatibility company",
+            "updatedAt": 1790421629896,
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_search",
+      "args": {
+        "q": "Compatibility",
+        "object": "company"
+      },
+      "data": [
+        {
+          "createdAt": 1790421629882.581,
+          "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+          "object": "company",
+          "ref": "cobalt-grove-creek",
+          "title": "Compatibility company",
+          "updatedAt": 1790421629896,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_related",
+      "args": {
+        "idOrRef": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+        "field": "person.company"
+      },
+      "data": []
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_today",
+      "args": {},
+      "data": {
+        "quiet": [],
+        "tasks": []
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_propose_change",
+      "args": {
+        "action": "update",
+        "record": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+        "values": {
+          "name": "Proposed company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "suggestion": {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421629952.596,
+          "id": "kn7d314yba4g6ncjca6x015m218f4x5c",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+            "ref": "cobalt-grove-creek",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_list_suggestions",
+      "args": {
+        "status": "pending"
+      },
+      "data": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421629952.596,
+          "id": "kn7d314yba4g6ncjca6x015m218f4x5c",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+            "ref": "cobalt-grove-creek",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_inbox_add",
+      "args": {
+        "text": "Compatibility inbox",
+        "source": "synthetic"
+      },
+      "data": {
+        "createdAt": 1790421629972.561,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j57eq1caqhyp263phgf3gaj0398f5aa4",
+        "note": null,
+        "recordId": null,
+        "resolvedAt": null,
+        "source": "synthetic",
+        "status": "pending",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_inbox",
+      "args": {},
+      "data": [
+        {
+          "createdAt": 1790421629972.561,
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "j57eq1caqhyp263phgf3gaj0398f5aa4",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ]
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_inbox_resolve",
+      "args": {
+        "id": "j57eq1caqhyp263phgf3gaj0398f5aa4",
+        "recordId": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+        "note": "resolved"
+      },
+      "data": {
+        "createdAt": 1790421629972.561,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j57eq1caqhyp263phgf3gaj0398f5aa4",
+        "note": "resolved",
+        "recordId": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+        "resolvedAt": 1790421629992,
+        "source": "synthetic",
+        "status": "resolved",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "migrated",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "delete",
+        "record": "kh720ye1nq998b6bnda94ye7vx8f4g2v",
+        "reason": "synthetic compatibility cleanup"
+      },
+      "data": {
+        "eventId": "jd727bgzzsypc2129vv9v00g958f5p23",
+        "record": null
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_me",
+      "args": {},
+      "data": {
+        "agent": {
+          "grants": [
+            {
+              "action": "create",
+              "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+              "objectKey": "company"
+            },
+            {
+              "action": "create",
+              "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+              "objectKey": "person"
+            },
+            {
+              "action": "create",
+              "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+              "objectKey": "opportunity"
+            },
+            {
+              "action": "create",
+              "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+              "objectKey": "project"
+            },
+            {
+              "action": "create",
+              "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+              "objectKey": "task"
+            },
+            {
+              "action": "create",
+              "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+              "objectKey": "note"
+            },
+            {
+              "action": "create",
+              "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+              "objectKey": "campaign"
+            },
+            {
+              "action": "update",
+              "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+              "objectKey": "company"
+            },
+            {
+              "action": "update",
+              "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+              "objectKey": "person"
+            },
+            {
+              "action": "update",
+              "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+              "objectKey": "opportunity"
+            },
+            {
+              "action": "update",
+              "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+              "objectKey": "project"
+            },
+            {
+              "action": "update",
+              "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+              "objectKey": "task"
+            },
+            {
+              "action": "update",
+              "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+              "objectKey": "note"
+            },
+            {
+              "action": "update",
+              "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+              "objectKey": "campaign"
+            },
+            {
+              "action": "delete",
+              "objectId": "k171htm6arv7dts4r65d7yhnq98f5j08",
+              "objectKey": "company"
+            },
+            {
+              "action": "delete",
+              "objectId": "k17dpgrasfe8c67v0c1dzp5m558f4ad0",
+              "objectKey": "person"
+            },
+            {
+              "action": "delete",
+              "objectId": "k17fr4ha0g5jf8azpgvm4ssmhx8f5vdx",
+              "objectKey": "opportunity"
+            },
+            {
+              "action": "delete",
+              "objectId": "k177tjj9m8pf57jgeaeeb0vks98f569b",
+              "objectKey": "project"
+            },
+            {
+              "action": "delete",
+              "objectId": "k177eqf480kzz3x07v1bk7tfnd8f5hzp",
+              "objectKey": "task"
+            },
+            {
+              "action": "delete",
+              "objectId": "k17285rdt46eevyvd9brbkn9ph8f5vvq",
+              "objectKey": "note"
+            },
+            {
+              "action": "delete",
+              "objectId": "k179vfs5vy3papv259jfh1fmws8f45kc",
+              "objectKey": "campaign"
+            }
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_objects",
+      "args": {},
+      "data": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ]
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "create",
+        "object": "company",
+        "values": {
+          "name": "Compatibility company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd75f6kr7nj5jawmdqd42wxaad8f4fay",
+        "record": {
+          "createdAt": 1790421632132.436,
+          "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+          "object": "company",
+          "ref": "dune-modest-apple",
+          "title": "Compatibility company",
+          "updatedAt": 1790421632132,
+          "values": {
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "update",
+        "record": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+        "values": {
+          "city": "Synthetic city"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "eventId": "jd74q3zny8vgs0a9nyznk3q0zs8f494h",
+        "record": {
+          "createdAt": 1790421632132.436,
+          "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+          "object": "company",
+          "ref": "dune-modest-apple",
+          "title": "Compatibility company",
+          "updatedAt": 1790421632149,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_get_record",
+      "args": {
+        "idOrRef": "dune-modest-apple"
+      },
+      "data": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "at": 1790421632149.624,
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "at": 1790421632132.4363,
+            "before": null,
+            "reason": "synthetic compatibility"
+          }
+        ],
+        "record": {
+          "createdAt": 1790421632132.436,
+          "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+          "object": "company",
+          "ref": "dune-modest-apple",
+          "title": "Compatibility company",
+          "updatedAt": 1790421632149,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_list_records",
+      "args": {
+        "object": "company"
+      },
+      "data": {
+        "cursor": null,
+        "records": [
+          {
+            "createdAt": 1790421632132.436,
+            "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+            "object": "company",
+            "ref": "dune-modest-apple",
+            "title": "Compatibility company",
+            "updatedAt": 1790421632149,
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_search",
+      "args": {
+        "q": "Compatibility",
+        "object": "company"
+      },
+      "data": [
+        {
+          "createdAt": 1790421632132.436,
+          "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+          "object": "company",
+          "ref": "dune-modest-apple",
+          "title": "Compatibility company",
+          "updatedAt": 1790421632149,
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_related",
+      "args": {
+        "idOrRef": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+        "field": "person.company"
+      },
+      "data": []
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_today",
+      "args": {},
+      "data": {
+        "quiet": [],
+        "tasks": []
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_propose_change",
+      "args": {
+        "action": "update",
+        "record": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+        "values": {
+          "name": "Proposed company"
+        },
+        "reason": "synthetic compatibility"
+      },
+      "data": {
+        "suggestion": {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421632201.722,
+          "id": "kn7cjrjbyfgwc7y031nzw7agv98f5s4d",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+            "ref": "dune-modest-apple",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_list_suggestions",
+      "args": {
+        "status": "pending"
+      },
+      "data": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "createdAt": 1790421632201.722,
+          "id": "kn7cjrjbyfgwc7y031nzw7agv98f5s4d",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+            "ref": "dune-modest-apple",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_inbox_add",
+      "args": {
+        "text": "Compatibility inbox",
+        "source": "synthetic"
+      },
+      "data": {
+        "createdAt": 1790421632223,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j579wk8334e07z6f47a1p3xf9h8f4b5n",
+        "note": null,
+        "recordId": null,
+        "resolvedAt": null,
+        "source": "synthetic",
+        "status": "pending",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_inbox",
+      "args": {},
+      "data": [
+        {
+          "createdAt": 1790421632223,
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "j579wk8334e07z6f47a1p3xf9h8f4b5n",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ]
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_inbox_resolve",
+      "args": {
+        "id": "j579wk8334e07z6f47a1p3xf9h8f4b5n",
+        "recordId": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+        "note": "resolved"
+      },
+      "data": {
+        "createdAt": 1790421632223,
+        "from": {
+          "kind": "agent",
+          "name": "Retained legacy agent"
+        },
+        "id": "j579wk8334e07z6f47a1p3xf9h8f4b5n",
+        "note": "resolved",
+        "recordId": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+        "resolvedAt": 1790421632240,
+        "source": "synthetic",
+        "status": "resolved",
+        "suggestionId": null,
+        "text": "Compatibility inbox"
+      }
+    },
+    {
+      "phase": "compatible-enforcing-rollback",
+      "name": "remold_apply_change",
+      "args": {
+        "action": "delete",
+        "record": "kh769kr9v4rg0ezdj622ae9j8s8f51a4",
+        "reason": "synthetic compatibility cleanup"
+      },
+      "data": {
+        "eventId": "jd72qq029yf8npxqqzbjw47eg18f4xwh",
+        "record": null
+      }
+    }
+  ],
+  "normalizedTranscript": {
+    "baseline": {
+      "me": {
+        "agent": {
+          "grants": [
+            "create:campaign",
+            "create:company",
+            "create:note",
+            "create:opportunity",
+            "create:person",
+            "create:project",
+            "create:task",
+            "delete:campaign",
+            "delete:company",
+            "delete:note",
+            "delete:opportunity",
+            "delete:person",
+            "delete:project",
+            "delete:task",
+            "update:campaign",
+            "update:company",
+            "update:note",
+            "update:opportunity",
+            "update:person",
+            "update:project",
+            "update:task"
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      },
+      "metadata": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ],
+      "got": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "listed": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      },
+      "searched": [
+        {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ],
+      "related": [],
+      "today": {
+        "quiet": [],
+        "tasks": []
+      },
+      "suggestions": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "id": "<suggestion>",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "<record>",
+            "ref": "<ref>",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ],
+      "pending": [
+        {
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "<inbox>",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ],
+      "restGet": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "restList": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    "fallback": {
+      "me": {
+        "agent": {
+          "grants": [
+            "create:campaign",
+            "create:company",
+            "create:note",
+            "create:opportunity",
+            "create:person",
+            "create:project",
+            "create:task",
+            "delete:campaign",
+            "delete:company",
+            "delete:note",
+            "delete:opportunity",
+            "delete:person",
+            "delete:project",
+            "delete:task",
+            "update:campaign",
+            "update:company",
+            "update:note",
+            "update:opportunity",
+            "update:person",
+            "update:project",
+            "update:task"
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      },
+      "metadata": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ],
+      "got": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "listed": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      },
+      "searched": [
+        {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ],
+      "related": [],
+      "today": {
+        "quiet": [],
+        "tasks": []
+      },
+      "suggestions": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "id": "<suggestion>",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "<record>",
+            "ref": "<ref>",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ],
+      "pending": [
+        {
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "<inbox>",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ],
+      "restGet": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "restList": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    "after": {
+      "me": {
+        "agent": {
+          "grants": [
+            "create:campaign",
+            "create:company",
+            "create:note",
+            "create:opportunity",
+            "create:person",
+            "create:project",
+            "create:task",
+            "delete:campaign",
+            "delete:company",
+            "delete:note",
+            "delete:opportunity",
+            "delete:person",
+            "delete:project",
+            "delete:task",
+            "update:campaign",
+            "update:company",
+            "update:note",
+            "update:opportunity",
+            "update:person",
+            "update:project",
+            "update:task"
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      },
+      "metadata": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ],
+      "got": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "listed": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      },
+      "searched": [
+        {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ],
+      "related": [],
+      "today": {
+        "quiet": [],
+        "tasks": []
+      },
+      "suggestions": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "id": "<suggestion>",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "<record>",
+            "ref": "<ref>",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ],
+      "pending": [
+        {
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "<inbox>",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ],
+      "restGet": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "restList": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    },
+    "rollback": {
+      "me": {
+        "agent": {
+          "grants": [
+            "create:campaign",
+            "create:company",
+            "create:note",
+            "create:opportunity",
+            "create:person",
+            "create:project",
+            "create:task",
+            "delete:campaign",
+            "delete:company",
+            "delete:note",
+            "delete:opportunity",
+            "delete:person",
+            "delete:project",
+            "delete:task",
+            "update:campaign",
+            "update:company",
+            "update:note",
+            "update:opportunity",
+            "update:person",
+            "update:project",
+            "update:task"
+          ],
+          "id": "j97by9s0z8bgee42qzad25phvd8f485z",
+          "name": "Retained legacy agent",
+          "role": "admin"
+        },
+        "org": {
+          "id": "kx7ep1p91xe03n32rk5y02v20d8f4tm3",
+          "name": "Authority migration synthetic"
+        },
+        "pendingInbox": 0,
+        "pendingSuggestions": 0
+      },
+      "metadata": [
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "domain",
+              "label": "Domain",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "city",
+              "label": "City",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "notes",
+              "label": "Notes",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "street",
+              "label": "Street",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "state",
+              "label": "State",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "postalCode",
+              "label": "Postal Code",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "country",
+              "label": "Country",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "company",
+          "label": "Company",
+          "labelPlural": "Companies",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "email",
+              "label": "Email",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "phone",
+              "label": "Phone",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "linkedin",
+              "label": "LinkedIn",
+              "required": false,
+              "type": "text"
+            }
+          ],
+          "key": "person",
+          "label": "Person",
+          "labelPlural": "People",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "amount",
+              "label": "Amount",
+              "required": false,
+              "type": "number"
+            },
+            {
+              "indexed": true,
+              "key": "stage",
+              "label": "Stage",
+              "options": [
+                {
+                  "id": "new",
+                  "label": "New"
+                },
+                {
+                  "id": "contacted",
+                  "label": "Contacted"
+                },
+                {
+                  "id": "qualified",
+                  "label": "Qualified"
+                },
+                {
+                  "id": "proposal",
+                  "label": "Proposal"
+                },
+                {
+                  "id": "won",
+                  "label": "Won"
+                },
+                {
+                  "id": "lost",
+                  "label": "Lost"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "closeDate",
+              "label": "Close Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            },
+            {
+              "indexed": true,
+              "key": "person",
+              "label": "Person",
+              "required": false,
+              "target": "person",
+              "type": "lookup"
+            }
+          ],
+          "key": "opportunity",
+          "label": "Opportunity",
+          "labelPlural": "Opportunities",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "company",
+              "label": "Company",
+              "required": false,
+              "target": "company",
+              "type": "lookup"
+            }
+          ],
+          "key": "project",
+          "label": "Project",
+          "labelPlural": "Projects",
+          "titleField": "name"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "title",
+              "label": "Title",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "dueDate",
+              "label": "Due Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "done",
+              "label": "Done",
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "indexed": true,
+              "key": "project",
+              "label": "Project",
+              "required": false,
+              "target": "project",
+              "type": "lookup"
+            },
+            {
+              "indexed": false,
+              "key": "blockedBy",
+              "label": "Blocked By",
+              "required": false,
+              "target": "task",
+              "type": "links"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "task",
+          "label": "Task",
+          "labelPlural": "Tasks",
+          "titleField": "title"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "body",
+              "label": "Body",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "about",
+              "label": "About",
+              "required": false,
+              "type": "lookup"
+            }
+          ],
+          "key": "note",
+          "label": "Note",
+          "labelPlural": "Notes",
+          "titleField": "body"
+        },
+        {
+          "fields": [
+            {
+              "indexed": true,
+              "key": "name",
+              "label": "Name",
+              "required": true,
+              "type": "text"
+            },
+            {
+              "indexed": true,
+              "key": "status",
+              "label": "Status",
+              "options": [
+                {
+                  "id": "planned",
+                  "label": "Planned"
+                },
+                {
+                  "id": "active",
+                  "label": "Active"
+                },
+                {
+                  "id": "paused",
+                  "label": "Paused"
+                },
+                {
+                  "id": "done",
+                  "label": "Done"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "channel",
+              "label": "Channel",
+              "options": [
+                {
+                  "id": "email",
+                  "label": "Email"
+                },
+                {
+                  "id": "phone",
+                  "label": "Phone"
+                },
+                {
+                  "id": "inPerson",
+                  "label": "In person"
+                },
+                {
+                  "id": "social",
+                  "label": "Social"
+                }
+              ],
+              "required": false,
+              "type": "select"
+            },
+            {
+              "indexed": true,
+              "key": "startDate",
+              "label": "Start Date",
+              "required": false,
+              "type": "date"
+            },
+            {
+              "indexed": true,
+              "key": "goal",
+              "label": "Goal",
+              "required": false,
+              "type": "text"
+            },
+            {
+              "indexed": false,
+              "key": "people",
+              "label": "People",
+              "required": false,
+              "target": "person",
+              "type": "links"
+            },
+            {
+              "indexed": false,
+              "key": "companies",
+              "label": "Companies",
+              "required": false,
+              "target": "company",
+              "type": "links"
+            }
+          ],
+          "key": "campaign",
+          "label": "Campaign",
+          "labelPlural": "Campaigns",
+          "titleField": "name"
+        }
+      ],
+      "got": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "listed": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      },
+      "searched": [
+        {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      ],
+      "related": [],
+      "today": {
+        "quiet": [],
+        "tasks": []
+      },
+      "suggestions": [
+        {
+          "action": "update",
+          "agent": "Retained legacy agent",
+          "before": {
+            "name": "Compatibility company"
+          },
+          "id": "<suggestion>",
+          "object": "company",
+          "reason": "synthetic compatibility",
+          "record": {
+            "id": "<record>",
+            "ref": "<ref>",
+            "title": "Compatibility company"
+          },
+          "resolvedAt": null,
+          "status": "pending",
+          "values": {
+            "name": "Proposed company"
+          }
+        }
+      ],
+      "pending": [
+        {
+          "from": {
+            "kind": "agent",
+            "name": "Retained legacy agent"
+          },
+          "id": "<inbox>",
+          "note": null,
+          "recordId": null,
+          "resolvedAt": null,
+          "source": "synthetic",
+          "status": "pending",
+          "suggestionId": null,
+          "text": "Compatibility inbox"
+        }
+      ],
+      "restGet": {
+        "events": [
+          {
+            "action": "update",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "city": "Synthetic city"
+            },
+            "before": {
+              "city": null
+            },
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          },
+          {
+            "action": "create",
+            "actor": {
+              "kind": "agent",
+              "name": "Retained legacy agent"
+            },
+            "after": {
+              "name": "Compatibility company"
+            },
+            "before": null,
+            "reason": "synthetic compatibility",
+            "id": "<event>"
+          }
+        ],
+        "record": {
+          "id": "<record>",
+          "object": "company",
+          "ref": "<ref>",
+          "title": "Compatibility company",
+          "values": {
+            "city": "Synthetic city",
+            "name": "Compatibility company"
+          }
+        }
+      },
+      "restList": {
+        "cursor": null,
+        "records": [
+          {
+            "id": "<record>",
+            "object": "company",
+            "ref": "<ref>",
+            "title": "Compatibility company",
+            "values": {
+              "city": "Synthetic city",
+              "name": "Compatibility company"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaFailure": "- Preparing Convex functions...\n\n✖ Schema validation failed.\nDocument with ID \"j57chx7hc4sf2x0kqkxn3w8r898f4b1x\" in table \"agentInbox\" does not match the schema: Object contains extra field `audience` that is not in the validator.\n\nObject: {audience: \"author\", from: {id: \"j97by9s0z8bgee42qzad25phvd8f485z\", kind: \"agent\"}, note: \"resolved\", orgId: \"kx7ep1p91xe03n32rk5y02v20d8f4tm3\", recordId: \"kh79j7rz0j1492rvv8ra1pks218f504t\", resolvedAt: 1790421627906.0, resolvedBy: \"j97by9s0z8bgee42qzad25phvd8f485z\", source: \"synthetic\", status: \"resolved\", text: \"Compatibility inbox\"}\nValidator: v.object({from: v.object({id: v.string(), kind: v.union(v.literal(\"user\"), v.literal(\"agent\"))}), note: v.optional(v.string()), orgId: v.id(\"orgs\"), recordId: v.optional(v.id(\"records\")), resolvedAt: v.optional(v.float64()), resolvedBy: v.optional(v.id(\"agents\")), source: v.string(), status: v.union(v.literal(\"pending\"), v.literal(\"resolved\")), suggestionId: v.optional(v.id(\"suggestions\")), text: v.string()})\n",
+  "fixture": {
+    "path": "/tmp/ivr2/migration/fixture-remold-authority-YsKGHW.zip",
+    "sha256": "3df279a7fdb8210a83d039204f9d7e2bd0430eb0aa299f8f31fe46fef33894d1"
+  },
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-YsKGHW",
+  "sourceManifest": {
+    "convex/agentApi.ts": "23cb0ec37b20c48fa77c82262314f858ee0eb9c506abeda721943a3beb084b87",
+    "convex/agentSafety.test.ts": "cc9109fef5e72e12fe24eed7ddd2b0e8a9474ba81c73d4deb8c9b49309bbf943",
+    "convex/agents.test.ts": "c56a5cbf205e01a3b00852920c75852830a1d7220dccfc23ff2a71762452f0be",
+    "convex/agents.ts": "237db37fdbaa717eddbac8932060622baac9523ed227286ba53e9c39fce2453f",
+    "convex/applyChange.test.ts": "8c76a2c39ce5ea770fcc11a12693375cdd72184bde52f6b0f65b227c68d43553",
+    "convex/auth.config.ts": "f56be98f2484a2e83bcbd7ccdf1b0a4bdf746ceb03d3929b9b995bf0644492ec",
+    "convex/authorityFixture.ts": "e0ea0b794d50f024824890d653d4445721bc87c45dc96aaf76a79489965b0da0",
+    "convex/capture.test.ts": "73c4a6fa63e199ce0bb4b627e660f46cde414a5ce4968968f46f7a559be38883",
+    "convex/capture.ts": "b0d8f663bcd4b246508d24eca43399fdf02e941b42267f324e28f9173eb28e5f",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.test.ts": "95fb527cde0169d926ed7580494d02e572a10dbc0a2398d7279efbb809d9cf61",
+    "convex/csv.ts": "d3ed1acb2251e6d2ad7d2815692fd3ef28ad0bce74ec6186356d1958ffbc8a9b",
+    "convex/diff.test.ts": "ff30fe68fd915749048c14eb3271228fe36316ae1d87d2612a3f6c4b52a53461",
+    "convex/errors.ts": "3a818529f14b255517e1b3ce6bbc6e96fa58feab44b128ba3c9856da835ec045",
+    "convex/events.ts": "9cf6b44fdf5a5f2ef2170ae76fd16ba3988f7d83b5f721903bf4859370a62e3f",
+    "convex/fields.ts": "21746d6799ba6dbf95d9c29cb5ba26868e062982863bbe44a9e32d280325489c",
+    "convex/fixes.test.ts": "a43fc2db6be42416bdd5d733b7f8b73dd6deb28e52fc0f722b5c3989c1b4e2ad",
+    "convex/http.ts": "6aecf55aa763e34ca849bced2179adb1d747628391d5d52ff15a049a9024afe2",
+    "convex/identity.test.ts": "607e1a8ece5c4f4fbcc5dde2d984aa4c41888e2d70c34c1e4ff72d0f2e0d9de4",
+    "convex/identity.ts": "485fc92a9a71057cd052e3d3718c14f100aaef36676d70bb31d29efea838490a",
+    "convex/inbox.test.ts": "8c981966b4afd10d25cfe06b687f19568ea1265f3a94ec5cb96a7b8be525fd6f",
+    "convex/inbox.ts": "a4492dad0a28784262db8d201a818a34730deee3fa528acd5fc6cd47e3883243",
+    "convex/invites.test.ts": "ed3177834f24a5ec848e35902c3464da7ad22eaa5a4d746a0ffd6c537353217d",
+    "convex/invites.ts": "13170bf91bf3a66e95badae8b94dcd3afc83a709715a5127e0f15fa5200dde17",
+    "convex/isolation.test.ts": "d70f818795b6975b8b9a6908be6495d764d138bd40c69172ce0dd62659318491",
+    "convex/members.test.ts": "b4c419b3a480be8924feebe4c55d93baace57655eca2e09ed326c0ecf08905f3",
+    "convex/objects.ts": "4cd6b2c29d8832aec68f8de3713d45cc2b1440e3130431729ade11bec64d1f20",
+    "convex/ops.test.ts": "58780c3541cc6b3330bc51b9a327064fd479e2c3b549be522a503bebad1cb619",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "17aa2a4f72503b1d8915675ddb77c471ea9097e73ac5c5cd7cba4334a3966fad",
+    "convex/rateLimit.test.ts": "9d0250a34d6a5e228b3f54fc76c517ab1b43850bf0a8a124c58e607cd7991494",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "243324820505da4daa751b382b779f56346ef4622e03bcf58f956bbdc2039145",
+    "convex/refs.test.ts": "d2992aadc92faf629c9fb098c3cd7aa3048744a0726208872eb8c6aefdf0e07c",
+    "convex/related.test.ts": "8f49340d184118237be763f1b91d319855e3372621440ee7fc10117ffc91c5f1",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/rest.test.ts": "55f4187072d17b537e741572ab0b778feacd8cac5a219f8903301eb8df7754b7",
+    "convex/schema.ts": "f91f43df6da6b3b7a80a2594e6f03673fb505a181543b9c0c547e8866ab51243",
+    "convex/seed.test.ts": "2fe0dade0bb08dccde8324a011ce765b6ab14f646ce330e62ef751f937888e4d",
+    "convex/seed.ts": "e47a71007a23a5d7675c8f3beb41e64c7f989979e3f9e383038ffba62a005e19",
+    "convex/slots.test.ts": "a53332b726a3dcda21e0033e09e62bbc66402e5e4815469a511d5fb93c12d24e",
+    "convex/suggestions.test.ts": "5e8505dc4e20c1bf744781d358cccec6ba5dbfc3333f2e3afb40b5906d8e818e",
+    "convex/suggestions.ts": "6f6dd33d63bf998e8478f67b8a8f572fcd044007f247e122db9873aed97f5e6a",
+    "convex/telemetry.test.ts": "f7982fc5c8d4c39863d7a0adc2dbd12cb98bacf0284b4467792d5325ebeb3c0f",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/test.helpers.ts": "f7b4734c9bb83447233b5f6bd58fa5657b61f285dfa4f65acbc8f029ff9c6734",
+    "convex/test.setup.ts": "4a298bc05fd1efe28d6303d8cf046cbd6fbaea9026bc80eaac9d0ebcd02af95c",
+    "convex/today.ts": "70b7479e867a109d65c54f8f835f1b0bf94ad20d97959317d92331626f067303",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "3af653172538c0a86c86c0cde0a0c5bdfdfccd91c2aed23b994c41362c212b02",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/lib/applyChange.ts": "3ffeb48ccf75c6c56d9ecccef2491cc50f8a44de520c3602eee6c5919325ebca",
+    "convex/lib/find.ts": "5741338c3d15b6759b0cff8c80437ac0d06785b6a6f0ef3de65f648dc58cc1ef",
+    "convex/lib/list.ts": "9ee346372f97215d2af96daa86c659033c761a95564e5ae93fb25ea0950e0eff",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "f1102db401c0e17b7af6f9d89b9f8b64519751c0a457cccfb613f0357a4c4c5a",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "eae72f25923c2cea4330398f4a30b6c70ed13c0703bd981e523f2ca01e2e0338"
+  },
+  "finalSourceManifest": {
+    "convex/agentApi.ts": "f9de51dcd6f65655b0202240b2bb48f6856be0e3aadcedfabd3f8606aa4e4142",
+    "convex/agentSafety.test.ts": "cc9109fef5e72e12fe24eed7ddd2b0e8a9474ba81c73d4deb8c9b49309bbf943",
+    "convex/agents.test.ts": "c56a5cbf205e01a3b00852920c75852830a1d7220dccfc23ff2a71762452f0be",
+    "convex/agents.ts": "3aebc5324cb4614dcc1e3b2d797d8a3e7a412fff57ef9ad501055e7d9075b4ec",
+    "convex/applyChange.test.ts": "8c76a2c39ce5ea770fcc11a12693375cdd72184bde52f6b0f65b227c68d43553",
+    "convex/auth.config.ts": "f56be98f2484a2e83bcbd7ccdf1b0a4bdf746ceb03d3929b9b995bf0644492ec",
+    "convex/authorityFixture.ts": "e0ea0b794d50f024824890d653d4445721bc87c45dc96aaf76a79489965b0da0",
+    "convex/capture.test.ts": "73c4a6fa63e199ce0bb4b627e660f46cde414a5ce4968968f46f7a559be38883",
+    "convex/capture.ts": "283369a245ab894b8ac8cc978365f2dc0c9ce1a9d6a6486e0d66ae137b05c196",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.test.ts": "95fb527cde0169d926ed7580494d02e572a10dbc0a2398d7279efbb809d9cf61",
+    "convex/csv.ts": "6f357b7b1d5c7c2e891c2f4bfa060556483a6bc79baa094f3e3c73b16dfcbddf",
+    "convex/diff.test.ts": "ff30fe68fd915749048c14eb3271228fe36316ae1d87d2612a3f6c4b52a53461",
+    "convex/errors.ts": "499423efb133eff7ea0cf31b9c5d87d684ffa2f47f45187af94e2cb6778e9a66",
+    "convex/events.ts": "0c27600f59fc9bc4a5af81d85acd1aad75146b7f2566edb0e78a5be895cad91e",
+    "convex/fields.ts": "d39b4c3582e9bfb1109f4d0b97dddb0c0d0ac3ebc8c20f3af9d43709c280021e",
+    "convex/fixes.test.ts": "a43fc2db6be42416bdd5d733b7f8b73dd6deb28e52fc0f722b5c3989c1b4e2ad",
+    "convex/http.ts": "82bdda9ddefe98f41c82ac3974925746a03c85e1034e4f940559d41c17fb04fe",
+    "convex/identity.test.ts": "607e1a8ece5c4f4fbcc5dde2d984aa4c41888e2d70c34c1e4ff72d0f2e0d9de4",
+    "convex/identity.ts": "252d0cf969d008616a0533e314d6af25b3d08c8cfb7f7979bddc28f7ee0a59a3",
+    "convex/inbox.test.ts": "8c981966b4afd10d25cfe06b687f19568ea1265f3a94ec5cb96a7b8be525fd6f",
+    "convex/inbox.ts": "faac5f30990e0623061fd8235f949dca57f30ada3b5e4200b2875ba568f0b2db",
+    "convex/invites.test.ts": "ed3177834f24a5ec848e35902c3464da7ad22eaa5a4d746a0ffd6c537353217d",
+    "convex/invites.ts": "c191f04b6be5d9de8a943c53511e86c596d461f54b146bc5a8097a1e8fee2f3e",
+    "convex/isolation.test.ts": "d70f818795b6975b8b9a6908be6495d764d138bd40c69172ce0dd62659318491",
+    "convex/members.test.ts": "b4c419b3a480be8924feebe4c55d93baace57655eca2e09ed326c0ecf08905f3",
+    "convex/objects.ts": "c2c9badd9b4590c2775d47e923e8b883ab12fcef3db26f4fe4835e3ed66acc13",
+    "convex/ops.test.ts": "58780c3541cc6b3330bc51b9a327064fd479e2c3b549be522a503bebad1cb619",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "ff19e47a6e5d23469c958330a64b4a34b2800c55647097c3199dba2c2a384949",
+    "convex/rateLimit.test.ts": "9d0250a34d6a5e228b3f54fc76c517ab1b43850bf0a8a124c58e607cd7991494",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "5c08630f1bc0a2dd0ef8433f48e63248fffdb7c95c1ab2861c0d1952d6938e7a",
+    "convex/refs.test.ts": "d2992aadc92faf629c9fb098c3cd7aa3048744a0726208872eb8c6aefdf0e07c",
+    "convex/related.test.ts": "8f49340d184118237be763f1b91d319855e3372621440ee7fc10117ffc91c5f1",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/rest.test.ts": "55f4187072d17b537e741572ab0b778feacd8cac5a219f8903301eb8df7754b7",
+    "convex/schema.ts": "55e3c238ee5e59be4e4eab47de5019895dbdcd0c59668a32f6aff8e953fc939e",
+    "convex/seed.test.ts": "2fe0dade0bb08dccde8324a011ce765b6ab14f646ce330e62ef751f937888e4d",
+    "convex/seed.ts": "9db92800d9a1235f08423ba27d306fc6b4f801d061396dc23406c3dabeed189c",
+    "convex/slots.test.ts": "a53332b726a3dcda21e0033e09e62bbc66402e5e4815469a511d5fb93c12d24e",
+    "convex/suggestions.test.ts": "5e8505dc4e20c1bf744781d358cccec6ba5dbfc3333f2e3afb40b5906d8e818e",
+    "convex/suggestions.ts": "9645e04bbe46243c087b10a8f8044b60bba385c96f7845e9a4c0fa90ad7ddb5f",
+    "convex/telemetry.test.ts": "f7982fc5c8d4c39863d7a0adc2dbd12cb98bacf0284b4467792d5325ebeb3c0f",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/test.helpers.ts": "f7b4734c9bb83447233b5f6bd58fa5657b61f285dfa4f65acbc8f029ff9c6734",
+    "convex/test.setup.ts": "4a298bc05fd1efe28d6303d8cf046cbd6fbaea9026bc80eaac9d0ebcd02af95c",
+    "convex/today.ts": "1af85ab53ce4343f59ad2b64dfba834e4f84c6567339a996c571b72b72bd2bf5",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "2f98a0d0cecce3042d2d7c7eaaa3b9a0f9f3f2804474b2c072043a092083f54f",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/authority/grants.ts": "1bd5d05378316c7dd2ad851b873c31e5e5a9aadf70f4f3701dd8e7cbf788f3e0",
+    "convex/authority/inbox.ts": "e58244c4ad9ff91ce53b37d0af24fbadccdf50a787cbc85ebc09e1edbc7052e4",
+    "convex/authority/migration.ts": "d42fd64f6a70e4cf3ee686cd10f21c44dc2b19d595fcba69bbc01a1f43a8bdff",
+    "convex/authority/policies.ts": "c120d03444ae3bf3417cd3d99249c2e904748fc4cf33a4341bced13f79c76d1f",
+    "convex/authority/readonly.ts": "8be51e982ba0c20583d03b947e8f03290e4b209f868bfbe6f08c6ee5bf5f011d",
+    "convex/authority/reads.ts": "5e600f2f063b6d77b45698e08de3c07c8a6f29fda7a8971ba5da4dda63a165b3",
+    "convex/integrations/bindings.ts": "e1ad0a3699d985c16b3db45b92e109a10e141b0e24379294cb9193727316230e",
+    "convex/integrations/budgets.ts": "975dedfb81f5793dbfc081c89b9f972243172cf14bc1c52076f8a8d30caadaac",
+    "convex/integrations/callbacks.ts": "a135380048d8f40fc3d3e2980f72ef6d41ae7787a4ba271cf26516aa3821d24f",
+    "convex/integrations/commands.ts": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+    "convex/integrations/connections.ts": "c3168fbaead7a1196011bfe8f7f98b4393ae32df6bc52995ce2992eab878c005",
+    "convex/integrations/core.ts": "6054e86765db12050eee4d3e651a3ce46f722bb64bf4a2b7cbf466ae100cf2f9",
+    "convex/integrations/dispatch.ts": "75b7b09a85562bfada04d885e7f9a2277147501129663f12247777059688845c",
+    "convex/integrations/http.ts": "4e4c21b1d1fd59e036a085c5b95d7279a0203aa298b899588ca5dc7d0f3c1401",
+    "convex/integrations/lifecycle.ts": "617f60334b74d16b85fe9e840beb11bb4c934055a807907faefcfb962eab0b5f",
+    "convex/integrations/lookups.ts": "13fa88c6deb6f004155bbb1ec15acf49d79db7dadc1720a4009702e3cec375b6",
+    "convex/integrations/outcomes.ts": "22f0ef2e283179b1f7dae6f4fa09cc17ec51ab9088c37e5e9c054044ff0565bd",
+    "convex/integrations/receipts.ts": "187e1c4f0052aed6104ff7086b1a15c1d1ebf879c8f0a8bc9c912cecf962f3d6",
+    "convex/integrations/safety.ts": "e5abbde2777eb9dd34987d4b2a92f23717a767fc886398bc52fbe64c883de923",
+    "convex/integrations/safetyAdapters.ts": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc",
+    "convex/integrations/safetyFinality.ts": "a8c5d379c039af7c05a905b76a5cce46fbb7c958235e523d6457a610ace46f0d",
+    "convex/integrations/tables.ts": "556d1dfcb641617b25014b000053ab87b72b0cd8169d2599ce87fcbcd875b5d6",
+    "convex/lib/applyChange.ts": "61bcc9776ee48c1d7b21cd42685662b744f0c0a565aa002636a52b63d934e069",
+    "convex/lib/find.ts": "f53a9d7afffe4a6d2ced43011fb4cb8c072bfdb97b730411c7651ef93118a5f3",
+    "convex/lib/list.ts": "ba20c645009b336fd9d41ac960dfaaee1028185c617fbbbc890f2145396dde8e",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/shape.ts": "9a13427c5ea16e0af970b1cdff9049e390c7f7f29668ea2dcb06a6889ccbdb02",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "f015224e9bfb6b86c4ffb66658614bc715a85931f88ac40cd634c15a2d045a0a",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "eae72f25923c2cea4330398f4a30b6c70ed13c0703bd981e523f2ca01e2e0338"
+  },
+  "safetyAdapter": {
+    "level": "unimplemented production registry",
+    "productionHash": null,
+    "effectiveHash": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc"
+  }
+}

@@ -1,0 +1,6580 @@
+{
+  "url": "http://127.0.0.1:3490",
+  "functions": [
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:me",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:objects",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "filter": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "field": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "value": {
+                  "fieldType": {
+                    "type": "any"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": true
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "limit": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "object": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sort": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "direction": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "asc"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "desc"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "field": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:listRecords",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "idOrRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:getRecord",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "limit": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "object": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "q": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:search",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "field": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "idOrRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:related",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:today",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "action": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "create"
+                },
+                {
+                  "type": "literal",
+                  "value": "update"
+                },
+                {
+                  "type": "literal",
+                  "value": "delete"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "inboxId": {
+            "fieldType": {
+              "tableName": "agentInbox",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "object": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "record": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "values": {
+            "fieldType": {
+              "keys": {
+                "type": "string"
+              },
+              "type": "record",
+              "values": {
+                "fieldType": {
+                  "type": "any"
+                },
+                "optional": false
+              }
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agentApi.js:propose",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "action": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "create"
+                },
+                {
+                  "type": "literal",
+                  "value": "update"
+                },
+                {
+                  "type": "literal",
+                  "value": "delete"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "object": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "record": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "values": {
+            "fieldType": {
+              "keys": {
+                "type": "string"
+              },
+              "type": "record",
+              "values": {
+                "fieldType": {
+                  "type": "any"
+                },
+                "optional": false
+              }
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agentApi.js:change",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "applied"
+                },
+                {
+                  "type": "literal",
+                  "value": "dismissed"
+                },
+                {
+                  "type": "literal",
+                  "value": "conflicted"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:listSuggestions",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "resolved"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agentApi.js:inbox",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "text": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agentApi.js:inboxAdd",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "agentInbox",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "note": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "suggestionId": {
+            "fieldType": {
+              "tableName": "suggestions",
+              "type": "id"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agentApi.js:inboxResolve",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "grants": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "action": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "create"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "update"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "delete"
+                        }
+                      ]
+                    },
+                    "optional": false
+                  },
+                  "objectKey": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "role": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "admin"
+                },
+                {
+                  "type": "literal",
+                  "value": "member"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "agents.js:create",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "agents.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "asUserId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "grants": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "action": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "create"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "update"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "delete"
+                        }
+                      ]
+                    },
+                    "optional": false
+                  },
+                  "objectKey": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "keyPrefix": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "origin": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "hosted"
+                },
+                {
+                  "type": "literal",
+                  "value": "external"
+                }
+              ]
+            },
+            "optional": true
+          },
+          "role": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "admin"
+                },
+                {
+                  "type": "literal",
+                  "value": "member"
+                }
+              ]
+            },
+            "optional": true
+          },
+          "scoped": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agents.js:insert",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "grants": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "action": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "create"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "update"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "delete"
+                        }
+                      ]
+                    },
+                    "optional": false
+                  },
+                  "objectKey": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "role": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "admin"
+                },
+                {
+                  "type": "literal",
+                  "value": "member"
+                }
+              ]
+            },
+            "optional": true
+          },
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "agents.js:createAs",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "agentId": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "grants": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "action": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "create"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "update"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "delete"
+                        }
+                      ]
+                    },
+                    "optional": false
+                  },
+                  "objectKey": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agents.js:setGrants",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "agentId": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agents.js:revoke",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "agentId": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "enabled": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "agents.js:setSharedInbox",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "origin": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "hosted"
+                },
+                {
+                  "type": "literal",
+                  "value": "external"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "agents.js:createScoped",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "target": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/grants.js:fireAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "capability": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "read"
+                },
+                {
+                  "type": "literal",
+                  "value": "propose"
+                },
+                {
+                  "type": "literal",
+                  "value": "record.create"
+                },
+                {
+                  "type": "literal",
+                  "value": "record.update"
+                },
+                {
+                  "type": "literal",
+                  "value": "record.delete"
+                },
+                {
+                  "type": "literal",
+                  "value": "marketing.send"
+                },
+                {
+                  "type": "literal",
+                  "value": "social.publish"
+                },
+                {
+                  "type": "literal",
+                  "value": "model.call"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.issue"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.collect"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.refund"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.cancelRecurring"
+                },
+                {
+                  "type": "literal",
+                  "value": "agent.manage"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "delegate": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "mode": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "propose"
+                },
+                {
+                  "type": "literal",
+                  "value": "direct"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "parent": {
+            "fieldType": {
+              "tableName": "capabilityGrants",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "scope": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "object",
+                  "value": {
+                    "fields": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "tableName": "fields",
+                          "type": "id"
+                        }
+                      },
+                      "optional": false
+                    },
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "records"
+                      },
+                      "optional": false
+                    },
+                    "objectId": {
+                      "fieldType": {
+                        "tableName": "objects",
+                        "type": "id"
+                      },
+                      "optional": false
+                    },
+                    "records": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "all"
+                          },
+                          {
+                            "type": "array",
+                            "value": {
+                              "tableName": "records",
+                              "type": "id"
+                            }
+                          }
+                        ]
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "value": {
+                    "bindings": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "tableName": "integrationBindings",
+                          "type": "id"
+                        }
+                      },
+                      "optional": false
+                    },
+                    "currency": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": false
+                    },
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "bindings"
+                      },
+                      "optional": false
+                    },
+                    "maxAmountMinor": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    },
+                    "maxRecipients": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "value": {
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "model"
+                      },
+                      "optional": false
+                    },
+                    "maxSteps": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    },
+                    "maxUnitsPerRun": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "value": {
+                    "agents": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "tableName": "agents",
+                          "type": "id"
+                        }
+                      },
+                      "optional": false
+                    },
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "agents"
+                      },
+                      "optional": false
+                    }
+                  }
+                }
+              ]
+            },
+            "optional": false
+          },
+          "target": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/grants.js:grant",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "capability": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "read"
+                },
+                {
+                  "type": "literal",
+                  "value": "propose"
+                },
+                {
+                  "type": "literal",
+                  "value": "record.create"
+                },
+                {
+                  "type": "literal",
+                  "value": "record.update"
+                },
+                {
+                  "type": "literal",
+                  "value": "record.delete"
+                },
+                {
+                  "type": "literal",
+                  "value": "marketing.send"
+                },
+                {
+                  "type": "literal",
+                  "value": "social.publish"
+                },
+                {
+                  "type": "literal",
+                  "value": "model.call"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.issue"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.collect"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.refund"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.cancelRecurring"
+                },
+                {
+                  "type": "literal",
+                  "value": "agent.manage"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "delegate": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "mode": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "propose"
+                },
+                {
+                  "type": "literal",
+                  "value": "direct"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "parent": {
+            "fieldType": {
+              "tableName": "capabilityGrants",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "scope": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "object",
+                  "value": {
+                    "fields": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "tableName": "fields",
+                          "type": "id"
+                        }
+                      },
+                      "optional": false
+                    },
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "records"
+                      },
+                      "optional": false
+                    },
+                    "objectId": {
+                      "fieldType": {
+                        "tableName": "objects",
+                        "type": "id"
+                      },
+                      "optional": false
+                    },
+                    "records": {
+                      "fieldType": {
+                        "type": "union",
+                        "value": [
+                          {
+                            "type": "literal",
+                            "value": "all"
+                          },
+                          {
+                            "type": "array",
+                            "value": {
+                              "tableName": "records",
+                              "type": "id"
+                            }
+                          }
+                        ]
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "value": {
+                    "bindings": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "tableName": "integrationBindings",
+                          "type": "id"
+                        }
+                      },
+                      "optional": false
+                    },
+                    "currency": {
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "optional": false
+                    },
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "bindings"
+                      },
+                      "optional": false
+                    },
+                    "maxAmountMinor": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    },
+                    "maxRecipients": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "value": {
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "model"
+                      },
+                      "optional": false
+                    },
+                    "maxSteps": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    },
+                    "maxUnitsPerRun": {
+                      "fieldType": {
+                        "type": "number"
+                      },
+                      "optional": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "value": {
+                    "agents": {
+                      "fieldType": {
+                        "type": "array",
+                        "value": {
+                          "tableName": "agents",
+                          "type": "id"
+                        }
+                      },
+                      "optional": false
+                    },
+                    "kind": {
+                      "fieldType": {
+                        "type": "literal",
+                        "value": "agents"
+                      },
+                      "optional": false
+                    }
+                  }
+                }
+              ]
+            },
+            "optional": false
+          },
+          "target": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/grants.js:grantAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "capabilityGrants",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/grants.js:revoke",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "capabilityGrants",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/grants.js:revokeAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/migration.js:freeze",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "agentId": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/migration.js:migrateAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "hiddenFieldIds": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "tableName": "fields",
+                "type": "id"
+              }
+            },
+            "optional": false
+          },
+          "memberId": {
+            "fieldType": {
+              "tableName": "members",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "scopes": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "fields": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "all"
+                        },
+                        {
+                          "type": "array",
+                          "value": {
+                            "tableName": "fields",
+                            "type": "id"
+                          }
+                        }
+                      ]
+                    },
+                    "optional": false
+                  },
+                  "objectId": {
+                    "fieldType": {
+                      "tableName": "objects",
+                      "type": "id"
+                    },
+                    "optional": false
+                  },
+                  "records": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "all"
+                        },
+                        {
+                          "type": "array",
+                          "value": {
+                            "tableName": "records",
+                            "type": "id"
+                          }
+                        }
+                      ]
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/policies.js:setMember",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "agentId": {
+            "fieldType": {
+              "tableName": "agents",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "hiddenFieldIds": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "tableName": "fields",
+                "type": "id"
+              }
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authority/policies.js:setAgentMasks",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "readonly": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixture.js:flags",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "recipient": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixture.js:consent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "authorityFixture.js:dump",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixture.js:bumpMember",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "account": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "secretReferences",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixture.js:patchSecretAccount",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "secretReferences",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixture.js:revokeSecret",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "connectionId": {
+            "fieldType": {
+              "tableName": "integrationConnections",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixtureH0.js:cloneConnection",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "recipient": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixtureH0.js:recipient",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "account": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "secretReferences",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixtureIv.js:patchSecret",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixtureIv.js:renameObject",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "readonly": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "authorityFixtureIv.js:readonly",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Query",
+      "identifier": "authorityFixtureIv.js:scheduled",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "authorityFixtureIv.js:everything",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "authorityFixtureSweeps.js:everything",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "company": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "domain": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "email": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "kind": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "person"
+                },
+                {
+                  "type": "literal",
+                  "value": "company"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "linkedin": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "note": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "phone": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "title": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "capture.js:save",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "columns": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "union",
+                "value": [
+                  {
+                    "tableName": "fields",
+                    "type": "id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "optional": false
+          },
+          "createMissing": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "firstRow": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "rows": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "array",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "optional": false
+          },
+          "skipDuplicates": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "csv.js:importRows",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "csv.js:exportPage",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "events.js:forRecord",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "paginationOpts": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "cursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "endCursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "id": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumBytesRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumRowsRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "numItems": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "events.js:forOrg",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "fields.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "label": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "options": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "color": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "id": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  },
+                  "label": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "required": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": true
+          },
+          "targetObjectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "type": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "text"
+                },
+                {
+                  "type": "literal",
+                  "value": "number"
+                },
+                {
+                  "type": "literal",
+                  "value": "select"
+                },
+                {
+                  "type": "literal",
+                  "value": "date"
+                },
+                {
+                  "type": "literal",
+                  "value": "boolean"
+                },
+                {
+                  "type": "literal",
+                  "value": "lookup"
+                },
+                {
+                  "type": "literal",
+                  "value": "links"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "fields.js:create",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "fieldId": {
+            "fieldType": {
+              "tableName": "fields",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "label": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "options": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "color": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": true
+                  },
+                  "id": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  },
+                  "label": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "fields.js:update",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "fieldId": {
+            "fieldType": {
+              "tableName": "fields",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "fields.js:retire",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "functionType": "HttpAction",
+      "method": "POST",
+      "path": "/api/integrations/v1/*"
+    },
+    {
+      "functionType": "HttpAction",
+      "method": "GET",
+      "path": "/api/v1/*"
+    },
+    {
+      "functionType": "HttpAction",
+      "method": "POST",
+      "path": "/api/v1/*"
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "inbox.js:audience",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "resolved"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "inbox.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "shareWithAgents": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": true
+          },
+          "source": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "text": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "inbox.js:add",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "agentInbox",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "inbox.js:remove",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "connectionId": {
+            "fieldType": {
+              "tableName": "integrationConnections",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "kind": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "localRecordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "logical": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "recipient": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "remove": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/bindings.js:provision",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "externalId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "intentId": {
+            "fieldType": {
+              "tableName": "integrationIntents",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/bindings.js:bind",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cap": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "maxConcurrent": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "maxPerRun": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "maxRecipients": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "maxSteps": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/budgets.js:configure",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/budgets.js:clearAnomaly",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "body": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "integrations/callbacks.js:callback",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "body": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "digest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "eventId": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/callbacks.js:receive",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "checkpoint": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "end": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "from": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "items": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "bindingId": {
+                    "fieldType": {
+                      "tableName": "integrationBindings",
+                      "type": "id"
+                    },
+                    "optional": false
+                  },
+                  "observation": {
+                    "fieldType": {
+                      "type": "object",
+                      "value": {
+                        "channel": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "purpose": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": true
+                        },
+                        "state": {
+                          "fieldType": {
+                            "type": "string"
+                          },
+                          "optional": false
+                        },
+                        "version": {
+                          "fieldType": {
+                            "type": "number"
+                          },
+                          "optional": false
+                        }
+                      }
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": false
+          },
+          "page": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "resource": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "traversal": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/callbacks.js:page",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "capability": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "marketing.send"
+                },
+                {
+                  "type": "literal",
+                  "value": "social.publish"
+                },
+                {
+                  "type": "literal",
+                  "value": "model.call"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.issue"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.collect"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.refund"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.cancelRecurring"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "logical": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "maxSteps": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "payload": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "amountMinor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "audience": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "optional": false
+                },
+                "audienceVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "content": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "destination": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "schedule": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "workflowVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          },
+          "reservationUnits": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:proposeAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "capability": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "marketing.send"
+                },
+                {
+                  "type": "literal",
+                  "value": "social.publish"
+                },
+                {
+                  "type": "literal",
+                  "value": "model.call"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.issue"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.collect"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.refund"
+                },
+                {
+                  "type": "literal",
+                  "value": "billing.cancelRecurring"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "logical": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "maxSteps": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "payload": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "amountMinor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "audience": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "optional": false
+                },
+                "audienceVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "content": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "destination": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "schedule": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "workflowVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          },
+          "reservationUnits": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:proposeHuman",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "expiresAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:approve",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "payload": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "amountMinor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "audience": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "optional": false
+                },
+                "audienceVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "content": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "destination": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "schedule": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "workflowVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:editAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "payload": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "amountMinor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "audience": {
+                  "fieldType": {
+                    "type": "array",
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "optional": false
+                },
+                "audienceVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "content": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "destination": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "schedule": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "workflowVersion": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:editHuman",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "worker": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:claimAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "worker": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:claimHuman",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "logical": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:adopt",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:cancelAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/commands.js:cancelHuman",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/commands.js:getAgent",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/commands.js:getHuman",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "secretReferenceId": {
+            "fieldType": {
+              "tableName": "secretReferences",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "integrations/connections.js:connect",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "connectionId": {
+            "fieldType": {
+              "tableName": "integrationConnections",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/connections.js:disconnect",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "secretReferenceId": {
+            "fieldType": {
+              "tableName": "secretReferences",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/connections.js:insert",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/connections.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "enabled": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "finalityRules": {
+            "fieldType": {
+              "type": "array",
+              "value": {
+                "type": "object",
+                "value": {
+                  "capability": {
+                    "fieldType": {
+                      "type": "union",
+                      "value": [
+                        {
+                          "type": "literal",
+                          "value": "marketing.send"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "social.publish"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "model.call"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "billing.issue"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "billing.collect"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "billing.refund"
+                        },
+                        {
+                          "type": "literal",
+                          "value": "billing.cancelRecurring"
+                        }
+                      ]
+                    },
+                    "optional": false
+                  },
+                  "proofRef": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  },
+                  "semantics": {
+                    "fieldType": {
+                      "type": "string"
+                    },
+                    "optional": false
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/connections.js:registerProvider",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "account": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "environment": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "handle": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "provider": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/connections.js:registerSecret",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "worker": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/dispatch.js:permit",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "version": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "worker": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/dispatch.js:consume",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/dispatch.js:status",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/lifecycle.js:expire",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cursor": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/lifecycle.js:sweep",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "resource": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/lookups.js:pages",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "resource": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "integrations/lookups.js:seal",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "cursorId": {
+            "fieldType": {
+              "tableName": "integrationCursors",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "digest": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "pageCount": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "traversal": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/lookups.js:record",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/outcomes.js:unknown",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "continue": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": true
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "providerRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "usage": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/outcomes.js:reconcile",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "retryable": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/outcomes.js:fail",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "evidence": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "finality": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "provisional"
+                },
+                {
+                  "type": "literal",
+                  "value": "final"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/outcomes.js:resolveUnknown",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "evidence": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "fence": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "finality": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "provisional"
+                },
+                {
+                  "type": "literal",
+                  "value": "final"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "step": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/outcomes.js:operatorResolveUnknown",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "generation": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "receipt": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "amountMinor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "operationId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "receiptId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "sourceRef": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "status": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "pending"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "succeeded"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "failed"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "cancelled"
+                      }
+                    ]
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          },
+          "targetId": {
+            "fieldType": {
+              "tableName": "safetyTargets",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/receipts.js:observe",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "receipt": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "amountMinor": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                },
+                "currency": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "operationId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "receiptId": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "sourceRef": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": false
+                },
+                "status": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "pending"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "succeeded"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "failed"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "cancelled"
+                      }
+                    ]
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/receipts.js:acknowledge",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "bindingId": {
+            "fieldType": {
+              "tableName": "integrationBindings",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "currency": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "documentRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "kind": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "payment"
+                },
+                {
+                  "type": "literal",
+                  "value": "clientRecurring"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "paidMinor": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "providerRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safety.js:beginTarget",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "cancelled": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "generation": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "lookupId": {
+            "fieldType": {
+              "tableName": "integrationLookups",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "paidMinor": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "targetId": {
+            "fieldType": {
+              "tableName": "safetyTargets",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safety.js:completeTarget",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "amountMinor": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "kind": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "refund"
+                },
+                {
+                  "type": "literal",
+                  "value": "cancelRecurring"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "logical": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "targetId": {
+            "fieldType": {
+              "tableName": "safetyTargets",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safety.js:prepare",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safety.js:consume",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/safety.js:request",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "integrations/safety.js:send",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safety.js:unknown",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safety.js:sendSettled",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "lookupId": {
+            "fieldType": {
+              "tableName": "integrationLookups",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "integrations/safetyFinality.js:inspect",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "lookupId": {
+            "fieldType": {
+              "tableName": "integrationLookups",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Action",
+      "identifier": "integrations/safetyFinality.js:resolve",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "credentialHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "generation": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "id": {
+            "fieldType": {
+              "tableName": "integrationOps",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "lookupId": {
+            "fieldType": {
+              "tableName": "integrationLookups",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "proofRef": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "sendSettledAt": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "integrations/safetyFinality.js:settle",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "role": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "admin"
+                },
+                {
+                  "type": "literal",
+                  "value": "member"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "invites.js:create",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "token": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "invites.js:get",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "token": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "invites.js:accept",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "objects.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "objects.js:get",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "icon": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "key": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "label": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "labelPlural": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "objects.js:create",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "enabled": {
+            "fieldType": {
+              "type": "boolean"
+            },
+            "optional": false
+          },
+          "flag": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "ops.js:setFlag",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "orgs.js:create",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Query",
+      "identifier": "orgs.js:mine",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "orgs.js:get",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "name": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "orgs.js:rename",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "orgs.js:members",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "role": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "owner"
+                },
+                {
+                  "type": "literal",
+                  "value": "admin"
+                },
+                {
+                  "type": "literal",
+                  "value": "member"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "orgs.js:setRole",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "orgs.js:removeMember",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "orgs.js:leave",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "keyHash": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "rateLimit.js:take",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "filter": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "fieldId": {
+                  "fieldType": {
+                    "tableName": "fields",
+                    "type": "id"
+                  },
+                  "optional": false
+                },
+                "value": {
+                  "fieldType": {
+                    "type": "any"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": true
+          },
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "paginationOpts": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "cursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "endCursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "id": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumBytesRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumRowsRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "numItems": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          },
+          "sort": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "direction": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "literal",
+                        "value": "asc"
+                      },
+                      {
+                        "type": "literal",
+                        "value": "desc"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "fieldId": {
+                  "fieldType": {
+                    "tableName": "fields",
+                    "type": "id"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "records.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "records.js:get",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "fieldId": {
+            "fieldType": {
+              "tableName": "fields",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "paginationOpts": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "cursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                },
+                "endCursor": {
+                  "fieldType": {
+                    "type": "union",
+                    "value": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "optional": true
+                },
+                "id": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumBytesRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "maximumRowsRead": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": true
+                },
+                "numItems": {
+                  "fieldType": {
+                    "type": "number"
+                  },
+                  "optional": false
+                }
+              }
+            },
+            "optional": false
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "records.js:related",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "records.js:reverseFields",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "values": {
+            "fieldType": {
+              "keys": {
+                "type": "string"
+              },
+              "type": "record",
+              "values": {
+                "fieldType": {
+                  "type": "any"
+                },
+                "optional": false
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "records.js:create",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "ref": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "records.js:byRef",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "records.js:remove",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "reason": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": true
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "values": {
+            "fieldType": {
+              "keys": {
+                "type": "string"
+              },
+              "type": "record",
+              "values": {
+                "fieldType": {
+                  "type": "any"
+                },
+                "optional": false
+              }
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "records.js:update",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "limit": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": true
+          },
+          "objectId": {
+            "fieldType": {
+              "tableName": "objects",
+              "type": "id"
+            },
+            "optional": true
+          },
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "text": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "records.js:search",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "seed.js:demo",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "userId": {
+            "fieldType": {
+              "tableName": "users",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "seed.js:demoAs",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "seed.js:ensureStandard",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "seed.js:backfillRefs",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "seed.js:releaseStandardSlots",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "pending"
+                },
+                {
+                  "type": "literal",
+                  "value": "applied"
+                },
+                {
+                  "type": "literal",
+                  "value": "dismissed"
+                },
+                {
+                  "type": "literal",
+                  "value": "conflicted"
+                }
+              ]
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "suggestions.js:list",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "recordId": {
+            "fieldType": {
+              "tableName": "records",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "suggestions.js:forRecord",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "suggestionId": {
+            "fieldType": {
+              "tableName": "suggestions",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "suggestions.js:apply",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "suggestionId": {
+            "fieldType": {
+              "tableName": "suggestions",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "suggestions.js:dismiss",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "suggestionId": {
+            "fieldType": {
+              "tableName": "suggestions",
+              "type": "id"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "suggestions.js:adopt",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "durationMs": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "minute": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "release": {
+            "fieldType": {
+              "type": "string"
+            },
+            "optional": false
+          },
+          "route": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "rest"
+                },
+                {
+                  "type": "literal",
+                  "value": "probe"
+                }
+              ]
+            },
+            "optional": false
+          },
+          "status": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "telemetry.js:record",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "minute": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "result": {
+            "fieldType": {
+              "type": "union",
+              "value": [
+                {
+                  "type": "literal",
+                  "value": "sent"
+                },
+                {
+                  "type": "literal",
+                  "value": "failed"
+                },
+                {
+                  "type": "literal",
+                  "value": "unconfigured"
+                }
+              ]
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "telemetry.js:recordProbe",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Action",
+      "identifier": "telemetry.js:probe",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Mutation",
+      "identifier": "telemetry.js:purge",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "asOfMinute": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          },
+          "minutes": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "telemetry.js:report",
+      "returns": null,
+      "visibility": {
+        "kind": "internal"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "orgId": {
+            "fieldType": {
+              "tableName": "orgs",
+              "type": "id"
+            },
+            "optional": false
+          },
+          "today": {
+            "fieldType": {
+              "type": "number"
+            },
+            "optional": false
+          }
+        }
+      },
+      "functionType": "Query",
+      "identifier": "today.js:get",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {
+          "profile": {
+            "fieldType": {
+              "type": "object",
+              "value": {
+                "email": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "imageUrl": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                },
+                "name": {
+                  "fieldType": {
+                    "type": "string"
+                  },
+                  "optional": true
+                }
+              }
+            },
+            "optional": true
+          }
+        }
+      },
+      "functionType": "Mutation",
+      "identifier": "users.js:store",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    },
+    {
+      "args": {
+        "type": "object",
+        "value": {}
+      },
+      "functionType": "Query",
+      "identifier": "users.js:me",
+      "returns": null,
+      "visibility": {
+        "kind": "public"
+      }
+    }
+  ]
+}
