@@ -74,8 +74,8 @@ function scheduled() {
   for (const target of targets) expect(source).toContain(target.replace(':', target.startsWith('telemetry:') ? '.' : ':'));
   for (const target of ['integrations/lifecycle:expire', 'integrations/lifecycle:sweep', 'integrations/safety:send', 'integrations/safety:unknown', 'telemetry:record', 'telemetry:purge']) expect(targets).toContain(target);
   const crons = readFileSync(join(root, 'convex/crons.ts'), 'utf8');
-  for (const name of ['REST telemetry probe', 'Expire operational metrics', 'Operator alerts']) expect(crons).toContain(`"${name}"`);
-  return targets.map(id => ({ id: `scheduled ${id}`, kind: 'scheduled', visibility: 'scheduled', writes: true, principal: 'scheduler' })).concat(['REST telemetry probe', 'Expire operational metrics', 'Operator alerts'].map(name => ({ id: `cron ${name}`, kind: 'cron', visibility: 'cron', writes: true, principal: 'scheduler' })));
+  for (const name of ['REST telemetry probe', 'Expire operational metrics']) expect(crons).toContain(`"${name}"`);
+  return targets.map(id => ({ id: `scheduled ${id}`, kind: 'scheduled', visibility: 'scheduled', writes: true, principal: 'scheduler' })).concat(['REST telemetry probe', 'Expire operational metrics'].map(name => ({ id: `cron ${name}`, kind: 'cron', visibility: 'cron', writes: true, principal: 'scheduler' })));
 }
 
 describe('authority inventory', () => {

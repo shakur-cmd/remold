@@ -1309,50 +1309,6 @@
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
-    "id": "alerts:check",
-    "kind": "action",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "outside-workspace",
-    "masks": "n/a",
-    "proof": "delivers each notice to the configured sink, retries failed deliveries, and never resends a delivered one",
-    "reason": "operator alerts only"
-  },
-  {
-    "id": "alerts:evaluate",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "outside-workspace",
-    "masks": "n/a",
-    "proof": "keeps error text, arguments and customer content out of every notification",
-    "reason": "operator alerts only"
-  },
-  {
-    "id": "alerts:settle",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "outside-workspace",
-    "masks": "n/a",
-    "proof": "delivers each notice to the configured sink, retries failed deliveries, and never resends a delivered one",
-    "reason": "operator alerts only"
-  },
-  {
-    "id": "alerts:status",
-    "kind": "query",
-    "visibility": "internal",
-    "writes": false,
-    "principal": "human",
-    "readonly": "not-a-write",
-    "masks": "no-record-data",
-    "proof": "operator-only: internal function with no HTTP route or public caller",
-    "reason": "operator alerts only"
-  },
-  {
     "id": "telemetry:record",
     "kind": "mutation",
     "visibility": "internal",
@@ -1486,17 +1442,6 @@
     "masks": "no-record-data",
     "proof": "schedules only bounded operational fields and survives scheduler failure",
     "reason": "operational metrics only"
-  },
-  {
-    "id": "cron Operator alerts",
-    "kind": "cron",
-    "visibility": "cron",
-    "writes": true,
-    "principal": "scheduler",
-    "readonly": "outside-workspace",
-    "masks": "no-record-data",
-    "proof": "delivers each notice to the configured sink, retries failed deliveries, and never resends a delivered one",
-    "reason": "operator alerts only"
   },
   {
     "id": "cron REST telemetry probe",

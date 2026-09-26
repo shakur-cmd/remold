@@ -6,6 +6,10 @@ import { withLocalCore } from "./local-core.mjs";
 const summary = await withLocalCore(async ({ site, run, scratch, root, sha }) => {
   const keys = ["1", "2", "3"].map((c) => `rm_${c.repeat(40)}`);
   const ids = run("rateFixture:seed", { keyHashes: keys.map(sha) });
+  // Since I1, legacy agents answer 503 AUTHORITY_MIGRATING until the workspace is
+  // frozen and the agent migrated. Run the real migration functions, as production does.
+  for (const orgId of [ids.orgA, ids.orgB]) run("authority/migration:freeze", { orgId });
+  for (const agentId of ids.agents) run("authority/migration:migrateAgent", { agentId });
   const results = await Promise.all(Array.from({ length: 50 }, async (_, i) => {
     const response = await fetch(`${site}/api/v1/inbox`, { method: "POST", headers: { authorization: `Bearer ${keys[0]}`, "content-type": "application/json" }, body: JSON.stringify({ text: `attempt-${i}` }) });
     return { status: response.status, retryAfter: response.headers.get("retry-after") };
