@@ -1,0 +1,44 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-rMpCQt[39m
+
+ [31m❯[39m ops/authority/safety.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 178[2mms[22m[39m
+   [32m✓[39m readonly human safety uses paid-minus-refunded-minus-pending and deduplicates both consume and receipt[32m 74[2mms[22m[39m
+   [32m✓[39m membership change before final safety consume refuses without reserving money[32m 5[2mms[22m[39m
+   [32m✓[39m ordinary dispatch cannot borrow a safety approval and agents cannot call human safety[32m 9[2mms[22m[39m
+   [32m✓[39m client recurring cancellation is zero amount and cannot masquerade as refund or charge[32m 6[2mms[22m[39m
+   [32m✓[39m unknown refund headroom cannot be released by an owner or an unproven finality claim[32m 16[2mms[22m[39m
+   [32m✓[39m two exact 5 refunds cannot settle from one aggregate of 5 and free more paid headroom[32m 6[2mms[22m[39m
+   [32m✓[39m one provider receipt cannot settle a second operation[32m 6[2mms[22m[39m
+   [32m✓[39m the general operation path cannot dispatch a refund outside the shared safety headroom[32m 11[2mms[22m[39m
+   [32m✓[39m outside pending refunds consume headroom and only authoritative refetch can reverse their status[32m 7[2mms[22m[39m
+   [32m✓[39m callback-first exact receipt and late create acknowledgement never resurrect a failed refund[32m 8[2mms[22m[39m
+   [32m✓[39m incomplete reconciliation keeps unknown local holds and blocks new permits[32m 5[2mms[22m[39m
+   [32m✓[39m a mismatched operation amount records outside truth without releasing the local hold[32m 4[2mms[22m[39m
+[31m   [31m×[31m local send settlement plus operator rules cannot replace the code-owned provider finality check[39m[32m 12[2mms[22m[39m
+   [32m✓[39m a pending recurring cancellation blocks a second command until an authoritative terminal receipt[32m 8[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m13 passed[39m[22m[90m (14)[39m
+[2m   Start at [22m 11:10:46
+[2m   Duration [22m 304ms[2m (tests 70%, transform 22%, import 8%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/safety.test.ts[2m > [22mlocal send settlement plus operator rules cannot replace the code-owned provider finality check
+[31m[1mAssertionError[22m: promise resolved "{ duplicate: false }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "duplicate": false,[39m
+[2m  }[22m
+
+[36m [2m❯[22m ops/authority/safety.test.ts:[2m132:162[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P5 communications preparation</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>One Calendar event proof</h1><div class="decisions"><h2>Approved scope, execution pending</h2><p>Owner authorized primary calendar for shakur@envoylogic.com: one “Remold integration TEST” event tomorrow,25September2026,11:00–11:15 America/New_York, reschedule to11:30–11:45, then delete it. No guests, no conference, sendUpdates=none. Google Calendar API enablement, incremental scope consent and root review remain before execution. No Calendar provider call has run.</p></div><div class="status"><h2>Built and checked</h2><p>29 local tests pass. Calendar scope opt-in first failed, then passed; missing calendar scope fails closed. Core tests exercise one-event/no-repeat behavior, unknown create exact-ID lookup, version guards and refusal of foreign calendar/recipient/event. These are builder tests, with independent review and LIVE behavior pending.</p></div><p>The launcher optionally requests <code>calendar.events.owned</code> in calendar consent mode while preserving the prior verified private mailbox. Tokens remain outside the repository,0600. A client-generated event ID and durable create-intent are persisted before the only POST. An unknown response triggers only an exact-ID GET; it never automatically inserts again. Reschedule and delete use retrieved ETags and If-Match. Only the exact returned and verified test event may be deleted, followed by404/410 or a cancelled tombstone check. Errors leave explicit evidence and prevent rerunning the create attempt.</p><p>This is an owner-driven provider fixture. Frozen H0 has no calendar-write capability; it is not mislabeled marketing.send or certified as a production calendar adapter. It creates no broad historical import or arbitrary calendar writer.</p><pre># After mail proof finishes; root coordinates callback restart.
+P5_CALENDAR_PROOF=1 pnpm --dir proofs/communications oauth
+# Only after consent and review:
+node proofs/communications/calendar-proof.mjs --run-reviewed 584e739e76bc1b51f0a40cc6ffc00a4b1e33b16654811ac59023e4ba07e5a6e5</pre><p><a href="https://developers.google.com/workspace/calendar/api/auth">Official narrow scope</a> · <a href="https://developers.google.com/workspace/calendar/api/v3/reference/events/insert">insert scope/primary calendar/sendUpdates</a> · <a href="https://developers.google.com/workspace/calendar/api/guides/version-resources">version guards and insert ID uniqueness</a>. <a href="evidence/calendar-scope-before.txt">Scope before</a> · <a href="evidence/calendar-scope-after.txt">after</a> · <a href="evidence/unit-calendar-preparation.txt">29-test run</a>.</p></body></html>

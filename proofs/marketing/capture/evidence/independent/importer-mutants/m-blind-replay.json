@@ -1,0 +1,238 @@
+{
+ "label": "m-blind-replay",
+ "importerSha256": "6e2113baf9c91d920c81716266fe94a195fbe90025c740dff0a7f406c8e1b2fa",
+ "cases": [
+  {
+   "name": "foreign key cannot read tenant A",
+   "expected": "refuse INSTANCE_CREDENTIAL",
+   "outcome": "refused INSTANCE_CREDENTIAL",
+   "pass": true
+  },
+  {
+   "name": "foreign key cannot stage on tenant A",
+   "expected": "refuse INSTANCE_CREDENTIAL",
+   "outcome": "refused INSTANCE_CREDENTIAL",
+   "pass": true
+  },
+  {
+   "name": "tenant B row cannot enter tenant A",
+   "expected": "refuse CAPTURE_SCOPE",
+   "outcome": "refused CAPTURE_SCOPE",
+   "pass": true
+  },
+  {
+   "name": "other form row refused",
+   "expected": "refuse CAPTURE_SCOPE",
+   "outcome": "refused CAPTURE_SCOPE",
+   "pass": true
+  },
+  {
+   "name": "row above upper refused",
+   "expected": "refuse CAPTURE_SCOPE",
+   "outcome": "refused CAPTURE_SCOPE",
+   "pass": true
+  },
+  {
+   "name": "descending rows refused",
+   "expected": "refuse CAPTURE_SCOPE",
+   "outcome": "refused CAPTURE_SCOPE",
+   "pass": true
+  },
+  {
+   "name": "altered content with stale digest refused",
+   "expected": "refuse CAPTURE_DIGEST",
+   "outcome": "refused CAPTURE_DIGEST",
+   "pass": true
+  },
+  {
+   "name": "first page must start at cursor",
+   "expected": "refuse PAGE_GAP",
+   "outcome": "refused PAGE_GAP",
+   "pass": true
+  },
+  {
+   "name": "non-integer id refused",
+   "expected": "refuse INTEGER_BOUND",
+   "outcome": "refused INTEGER_BOUND",
+   "pass": true
+  },
+  {
+   "name": "empty incomplete page refused",
+   "expected": "refuse PAGE_PROGRESS",
+   "outcome": "refused PAGE_PROGRESS",
+   "pass": true
+  },
+  {
+   "name": "next that skips rows refused",
+   "expected": "refuse PAGE_PROGRESS",
+   "outcome": "refused PAGE_PROGRESS",
+   "pass": true
+  },
+  {
+   "name": "oversized field refused",
+   "expected": "refuse CAPTURE_BOUND",
+   "outcome": "refused CAPTURE_BOUND",
+   "pass": true
+  },
+  {
+   "name": "stage page 1",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "\"staged\"",
+   "pass": true
+  },
+  {
+   "name": "same page replay is duplicate",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "\"duplicate\"",
+   "pass": true
+  },
+  {
+   "name": "same page replay with different valid rows refused",
+   "expected": "refuse REPLAY_CHANGED",
+   "outcome": "accepted",
+   "value": "\"duplicate\"",
+   "pass": false
+  },
+  {
+   "name": "second concurrent scan refused",
+   "expected": "refuse TRAVERSAL_IN_PROGRESS",
+   "outcome": "refused TRAVERSAL_IN_PROGRESS",
+   "pass": true
+  },
+  {
+   "name": "gap after page 1 refused",
+   "expected": "refuse PAGE_GAP",
+   "outcome": "refused PAGE_GAP",
+   "pass": true
+  },
+  {
+   "name": "finish before complete refused",
+   "expected": "refuse TRAVERSAL_INCOMPLETE",
+   "outcome": "refused TRAVERSAL_INCOMPLETE",
+   "pass": true
+  },
+  {
+   "name": "stage final page",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "\"staged\"",
+   "pass": true
+  },
+  {
+   "name": "finish missing one contact refused",
+   "expected": "refuse CONSENT_COVERAGE",
+   "outcome": "refused CONSENT_COVERAGE",
+   "pass": true
+  },
+  {
+   "name": "finish with extra contact refused",
+   "expected": "refuse CONSENT_COVERAGE",
+   "outcome": "refused CONSENT_COVERAGE",
+   "pass": true
+  },
+  {
+   "name": "missing native contact must be suppressed",
+   "expected": "refuse MISSING_CONTACT_MUST_SUPPRESS",
+   "outcome": "refused MISSING_CONTACT_MUST_SUPPRESS",
+   "pass": true
+  },
+  {
+   "name": "complete finish commits",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "{\"added\":3,\"cursor\":3,\"duplicate\":false,\"suppressionChanges\":2}",
+   "pass": true
+  },
+  {
+   "name": "repeat finish is duplicate",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "{\"added\":3,\"cursor\":3,\"duplicate\":true,\"suppressionChanges\":2}",
+   "pass": true
+  },
+  {
+   "name": "old page replay after commit with changed rows refused",
+   "expected": "refuse REPLAY_CHANGED",
+   "outcome": "refused REPLAY_CHANGED",
+   "pass": true
+  },
+  {
+   "name": "new scan below cursor refused",
+   "expected": "refuse PAGE_GAP",
+   "outcome": "refused PAGE_GAP",
+   "pass": true
+  },
+  {
+   "name": "replays after commit leave snapshot identical",
+   "pass": true
+  },
+  {
+   "name": "commit state",
+   "pass": true,
+   "detail": {
+    "captures": 3,
+    "events": 5,
+    "cursor": 3,
+    "suppression": [
+     [
+      11,
+      true
+     ],
+     [
+      12,
+      false
+     ]
+    ]
+   }
+  },
+  {
+   "name": "stale unsuppressed observation accepted after suppressed (read/finalize race boundary)",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "{\"added\":0,\"cursor\":3,\"duplicate\":false,\"suppressionChanges\":1}",
+   "pass": true
+  },
+  {
+   "name": "boundary: contact 11 now recorded unsuppressed by later-committed observation",
+   "pass": true,
+   "informational": true,
+   "detail": [
+    [
+     11,
+     false
+    ],
+    [
+     12,
+     false
+    ]
+   ]
+  },
+  {
+   "name": "non-ASCII field keys digest agrees across runtimes",
+   "expected": "accept",
+   "outcome": "refused ASCII",
+   "pass": false
+  },
+  {
+   "name": "max100: capture 101 staged",
+   "expected": "accept",
+   "outcome": "accepted",
+   "value": "\"staged\"",
+   "pass": true
+  },
+  {
+   "name": "max100: capture 101 finish refused",
+   "expected": "refuse CAPTURE_BOUND",
+   "outcome": "refused CAPTURE_BOUND",
+   "pass": true
+  },
+  {
+   "name": "max100: instance then wedged for any new scan",
+   "expected": "refuse TRAVERSAL_IN_PROGRESS",
+   "outcome": "refused TRAVERSAL_IN_PROGRESS",
+   "pass": true
+  }
+ ]
+}

@@ -6,28 +6,19 @@ import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { errorMessage } from "@/lib/errors";
-import type { OrgContext } from "@/routes/OrgLayout";
 import { AgentsCard } from "@/components/AgentsCard";
-
-const run = async (action: () => Promise<unknown>, success?: string) => {
-  try {
-    await action();
-    if (success) toast.success(success);
-  } catch (error) {
-    toast.error(errorMessage(error));
-  }
-};
+import { attempt } from "@/lib/errors";
+import { toKey } from "@/lib/fields";
+import type { OrgContext } from "@/routes/OrgLayout";
 
 export function Settings() {
   const { org, role, objects } = useOutletContext<OrgContext>();
   const admin = role === "owner" || role === "admin";
   return (
-    <div className="grid max-w-3xl gap-6">
+    <div className="grid max-w-3xl gap-5">
       <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
       <OrgCard org={org} admin={admin} />
       <MembersCard orgId={org._id} admin={admin} />
@@ -43,18 +34,18 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Organisation</CardTitle>
+        <CardTitle>Organisation</CardTitle>
       </CardHeader>
       <CardContent>
         <form
           className="flex gap-2"
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
-            void run(() => rename({ orgId: org._id, name: name.trim() }), "Renamed");
+            void attempt(() => rename({ orgId: org._id, name: name.trim() }), "Renamed");
           }}
         >
           <Input value={name} onChange={(e) => setName(e.target.value)} disabled={!admin} aria-label="Organisation name" />
-          <Button type="submit" disabled={!admin || name.trim() === org.name}>
+          <Button type="submit" variant="outline" disabled={!admin || !name.trim() || name.trim() === org.name}>
             Rename
           </Button>
         </form>
@@ -73,32 +64,31 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
   const navigate = useNavigate();
   const [link, setLink] = useState<string | null>(null);
   const myRole = members?.find(({ user }) => user._id === me?._id)?.member.role;
-  async function invite(role: "admin" | "member") {
-    await run(async () => {
+  const invite = (role: "admin" | "member") =>
+    attempt(async () => {
       const { token } = await createInvite({ orgId, role });
       const base = import.meta.env.VITE_ROUTER === "hash" ? `${location.origin}${location.pathname}#` : location.origin;
       const url = `${base}/invite/${token}`;
       setLink(url);
       await navigator.clipboard?.writeText(url).catch(() => undefined);
     }, "Invite link ready and copied");
-  }
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Members</CardTitle>
+        <CardTitle>Members</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent className="grid gap-1">
         {members?.map(({ member, user }) => {
           const self = user._id === me?._id;
           // Only an owner touches owners; nobody edits their own row here.
           const editable = admin && !self && (member.role !== "owner" || myRole === "owner");
           return (
-            <div key={member._id} className="flex flex-wrap items-center gap-2 text-sm">
+            <div key={member._id} className="flex min-h-9 flex-wrap items-center gap-x-2 text-sm">
               <span className="font-medium">{user.name}</span>
               <span className="text-muted-foreground">{user.email}</span>
               <span className="ml-auto flex items-center gap-1">
                 {editable ? (
-                  <Select value={member.role} onValueChange={(role) => run(() => setRole({ orgId, userId: user._id, role: role as "owner" | "admin" | "member" }), "Role changed")}>
+                  <Select value={member.role} onValueChange={(role) => attempt(() => setRole({ orgId, userId: user._id, role: role as "owner" | "admin" | "member" }), "Role changed")}>
                     <SelectTrigger size="sm" aria-label={`Role of ${user.name}`}>
                       <SelectValue />
                     </SelectTrigger>
@@ -114,7 +104,7 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
                   <Badge variant="outline">{member.role}</Badge>
                 )}
                 {editable && (
-                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => confirm(`Remove ${user.name} from this organisation?`) && run(() => removeMember({ orgId, userId: user._id }), "Removed")}>
+                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => confirm(`Remove ${user.name} from this organisation?`) && attempt(() => removeMember({ orgId, userId: user._id }), "Removed")}>
                     Remove
                   </Button>
                 )}
@@ -122,7 +112,7 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
             </div>
           );
         })}
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 pt-3">
           {admin && (
             <>
               <Button size="sm" variant="outline" onClick={() => invite("member")}>
@@ -133,11 +123,11 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
               </Button>
             </>
           )}
-          <Button size="sm" variant="ghost" className="ml-auto text-destructive" onClick={() => confirm("Leave this organisation?") && run(async () => { await leave({ orgId }); navigate("/"); })}>
-            Leave
+          <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={() => confirm("Leave this organisation?") && attempt(async () => { await leave({ orgId }); navigate("/"); })}>
+            Leave organisation
           </Button>
         </div>
-        {link && <Input readOnly value={link} onFocus={(e) => e.currentTarget.select()} aria-label="Invite link" />}
+        {link && <Input readOnly value={link} className="mt-2" onFocus={(e) => e.currentTarget.select()} aria-label="Invite link" />}
       </CardContent>
     </Card>
   );
@@ -148,22 +138,35 @@ function ObjectsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Do
   const [selected, setSelected] = useState<Id<"objects"> | undefined>(objects[0]?._id);
   const [label, setLabel] = useState("");
   const [plural, setPlural] = useState("");
-  const key = label.replace(/[^a-zA-Z0-9]+(.)?/g, (_, c: string | undefined) => (c ? c.toUpperCase() : "")).replace(/^[A-Z]/, (c) => c.toLowerCase());
+  const key = toKey(label);
   const current = objects.find((o) => o._id === selected);
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Objects and fields</CardTitle>
+        <CardTitle>Objects and fields</CardTitle>
+        <CardDescription>Shape Remold around your work: add an object like Lead or Job, then give it fields.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        <Select value={selected} onValueChange={(v) => setSelected(v as Id<"objects">)}>
+          <SelectTrigger className="w-full sm:w-72" aria-label="Object">
+            <SelectValue placeholder="Choose an object" />
+          </SelectTrigger>
+          <SelectContent>
+            {objects.map((o) => (
+              <SelectItem key={o._id} value={o._id}>
+                {o.labelPlural}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {current && <Fields key={current._id} orgId={orgId} object={current} objects={objects} admin={admin} />}
         {admin && (
           <form
-            className="grid gap-2 rounded-md border p-3 sm:grid-cols-[1fr_1fr_auto]"
+            className="grid gap-2 border-t pt-4 sm:grid-cols-[1fr_1fr_auto]"
             onSubmit={(e: FormEvent) => {
               e.preventDefault();
-              void run(async () => {
-                const objectId = await create({ orgId, key, label: label.trim(), labelPlural: plural.trim() || `${label.trim()}s` });
-                setSelected(objectId);
+              void attempt(async () => {
+                setSelected(await create({ orgId, key, label: label.trim(), labelPlural: plural.trim() || `${label.trim()}s` }));
                 setLabel("");
                 setPlural("");
               }, "Object created");
@@ -171,27 +174,11 @@ function ObjectsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Do
           >
             <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="New object, e.g. Lead" aria-label="Object label" required />
             <Input value={plural} onChange={(e) => setPlural(e.target.value)} placeholder="Plural, e.g. Leads" aria-label="Plural label" />
-            <Button type="submit" disabled={!key}>
+            <Button type="submit" variant="outline" disabled={!key}>
               Add object
             </Button>
           </form>
         )}
-        <div className="grid gap-1.5">
-          <Label>Object</Label>
-          <Select value={selected} onValueChange={(v) => setSelected(v as Id<"objects">)}>
-            <SelectTrigger className="w-full sm:w-72">
-              <SelectValue placeholder="Choose an object" />
-            </SelectTrigger>
-            <SelectContent>
-              {objects.map((o) => (
-                <SelectItem key={o._id} value={o._id}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {current && <Fields key={current._id} orgId={orgId} object={current} objects={objects} admin={admin} />}
       </CardContent>
     </Card>
   );
@@ -202,31 +189,23 @@ const TYPES = ["text", "number", "select", "date", "boolean", "lookup", "links"]
 function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: Doc<"objects">; objects: Doc<"objects">[]; admin: boolean }) {
   const fields = useQuery(api.fields.list, { orgId, objectId: object._id });
   const create = useMutation(api.fields.create);
-  const update = useMutation(api.fields.update);
   const retire = useMutation(api.fields.retire);
   const [label, setLabel] = useState("");
   const [type, setType] = useState<(typeof TYPES)[number]>("text");
   const [options, setOptions] = useState("");
   const [target, setTarget] = useState<Id<"objects"> | undefined>();
-  const key = label.replace(/[^a-zA-Z0-9]+(.)?/g, (_, c: string | undefined) => (c ? c.toUpperCase() : "")).replace(/^[A-Z]/, (c) => c.toLowerCase());
+  const key = toKey(label);
+  const linking = type === "lookup" || type === "links";
 
   async function add(e: FormEvent) {
     e.preventDefault();
-    await run(async () => {
+    await attempt(async () => {
       const parsed = options
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)
         .map((s) => ({ id: s.toLowerCase().replace(/[^a-z0-9]+/g, "_"), label: s }));
-      const result = await create({
-        orgId,
-        objectId: object._id,
-        key,
-        label: label.trim(),
-        type,
-        options: type === "select" ? parsed : undefined,
-        targetObjectId: type === "lookup" || type === "links" ? target : undefined,
-      });
+      const result = await create({ orgId, objectId: object._id, key, label: label.trim(), type, options: type === "select" ? parsed : undefined, targetObjectId: linking ? target : undefined });
       if (!result.slot) toast.warning("Slots for this type are used up: the field stores values but cannot sort or filter.");
       setLabel("");
       setOptions("");
@@ -235,60 +214,33 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
 
   return (
     <div className="grid gap-3">
-      <ul className="grid gap-1 text-sm">
+      <ul className="grid divide-y rounded-md border text-sm">
         {fields?.map((field) => (
-          <li key={field._id} className="flex flex-wrap items-center gap-2 rounded-md border px-3 py-2">
-            <span className={field.retired ? "line-through text-muted-foreground" : "font-medium"}>{field.label}</span>
-            <span className="text-muted-foreground">{field.type}</span>
-            {field.slot ? (
-              <Badge variant="outline">indexed</Badge>
-            ) : (
-              field.type !== "links" && <Badge variant="secondary">unindexed</Badge>
-            )}
-            {field._id === object.titleFieldId && <Badge>title</Badge>}
-            {admin && !field.retired && (
-              <span className="ml-auto flex gap-1">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    const next = prompt("Rename field", field.label);
-                    if (next && next.trim() !== field.label) void run(() => update({ orgId, fieldId: field._id, label: next.trim() }), "Renamed");
-                  }}
-                >
-                  Rename
-                </Button>
-                {field._id !== object.titleFieldId && (
-                  <Button size="sm" variant="ghost" className="text-destructive" onClick={() => confirm(`Retire ${field.label}?`) && run(() => retire({ orgId, fieldId: field._id }), "Retired")}>
-                    Retire
-                  </Button>
-                )}
-              </span>
-            )}
-          </li>
+          <FieldRow key={field._id} orgId={orgId} field={field} isTitle={field._id === object.titleFieldId} admin={admin} onRetire={() => confirm(`Retire ${field.label}? Its values stay in history.`) && attempt(() => retire({ orgId, fieldId: field._id }), "Retired")} />
         ))}
       </ul>
       {admin && (
-        <form onSubmit={add} className="grid gap-2 rounded-md border p-3">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Field label, e.g. Stage" aria-label="Field label" required />
-            <Select value={type} onValueChange={(v) => setType(v as (typeof TYPES)[number])}>
-              <SelectTrigger aria-label="Field type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {type === "select" && <Input value={options} onChange={(e) => setOptions(e.target.value)} placeholder="Options, comma separated: New, Contacted, Won" aria-label="Options" required />}
-          {(type === "lookup" || type === "links") && (
+        <form onSubmit={add} className="grid gap-2 sm:grid-cols-[1fr_10rem_auto]">
+          <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="New field, e.g. Source" aria-label="Field label" required />
+          <Select value={type} onValueChange={(v) => setType(v as (typeof TYPES)[number])}>
+            <SelectTrigger className="w-full" aria-label="Field type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TYPES.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button type="submit" variant="outline" disabled={!key || (linking && !target)}>
+            Add field
+          </Button>
+          {type === "select" && <Input className="sm:col-span-3" value={options} onChange={(e) => setOptions(e.target.value)} placeholder="Options, comma separated: New, Contacted, Won" aria-label="Options" required />}
+          {linking && (
             <Select value={target} onValueChange={(v) => setTarget(v as Id<"objects">)}>
-              <SelectTrigger aria-label="Target object">
+              <SelectTrigger className="w-full sm:col-span-3" aria-label="Target object">
                 <SelectValue placeholder="Links to which object?" />
               </SelectTrigger>
               <SelectContent>
@@ -300,11 +252,54 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
               </SelectContent>
             </Select>
           )}
-          <Button type="submit" className="justify-self-end" disabled={!key || ((type === "lookup" || type === "links") && !target)}>
-            Add field
-          </Button>
         </form>
       )}
     </div>
+  );
+}
+
+function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs">; field: Doc<"fields">; isTitle: boolean; admin: boolean; onRetire: () => void }) {
+  const update = useMutation(api.fields.update);
+  const [draft, setDraft] = useState<string | null>(null);
+  if (draft !== null)
+    return (
+      <li className="px-3 py-1.5">
+        <form
+          className="flex gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (draft.trim() === field.label || (await attempt(() => update({ orgId, fieldId: field._id, label: draft.trim() }), "Renamed"))) setDraft(null);
+          }}
+        >
+          <Input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} aria-label={`New name for ${field.label}`} onKeyDown={(e) => e.key === "Escape" && setDraft(null)} />
+          <Button type="submit" size="sm" variant="outline" disabled={!draft.trim()}>
+            Save
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setDraft(null)}>
+            Cancel
+          </Button>
+        </form>
+      </li>
+    );
+  return (
+    <li className="flex min-h-10 flex-wrap items-center gap-2 px-3 py-1.5">
+      <span className={field.retired ? "text-muted-foreground line-through" : "font-medium"}>{field.label}</span>
+      <span className="text-xs text-muted-foreground">{field.type}</span>
+      {isTitle && <Badge variant="secondary">title</Badge>}
+      {/* Only unindexed fields need a note: they store values but cannot sort or filter. */}
+      {!field.slot && field.type !== "links" && <Badge variant="outline" title="Stores values, cannot sort or filter">unindexed</Badge>}
+      {admin && !field.retired && (
+        <span className="ml-auto flex gap-1">
+          <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setDraft(field.label)}>
+            Rename
+          </Button>
+          {!isTitle && (
+            <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={onRetire}>
+              Retire
+            </Button>
+          )}
+        </span>
+      )}
+    </li>
   );
 }

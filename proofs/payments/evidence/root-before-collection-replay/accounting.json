@@ -1,0 +1,117 @@
+{
+  "level": "SERVICE local Convex; synthetic provider receipts",
+  "results": [
+    {
+      "name": "Two accepted refund receipts cannot reuse one aggregate observation to restore capacity",
+      "status": "PASS"
+    },
+    {
+      "name": "Credit is counted once with callback-first",
+      "status": "PASS"
+    },
+    {
+      "name": "Credit is counted once with receipt-first",
+      "status": "PASS"
+    },
+    {
+      "name": "Pre-existing refunds, unknown holds and distinct receipts all retain their capacity",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent credits cannot share a receipt or lose accepted value to an older aggregate",
+      "status": "PASS"
+    },
+    {
+      "name": "Outside refund racing a local receipt has distinct identity and blocks excess capacity",
+      "status": "PASS"
+    },
+    {
+      "name": "Partial reconciliation blocks permits and retains unknown reservations",
+      "status": "PASS"
+    },
+    {
+      "name": "A real HTTP read failure closes adapter reconciliation before the request",
+      "status": "PASS"
+    },
+    {
+      "name": "General collection adapter cannot dispatch refunds or cancellation under any capability",
+      "status": "PASS"
+    },
+    {
+      "name": "Receipt identities are account scoped, immutable and cannot move between documents",
+      "status": "PASS"
+    },
+    {
+      "name": "Newer target generation refuses an older issued snapshot after a credit void",
+      "status": "PASS"
+    },
+    {
+      "name": "Callback before a pull observation cannot be overwritten by that pull",
+      "status": "PASS"
+    },
+    {
+      "name": "Callback after a pull observation cannot be overwritten by that pull",
+      "status": "PASS"
+    },
+    {
+      "name": "A complete adapter HTTP pull observes newly paid and refunded value without invalidating itself",
+      "status": "PASS"
+    },
+    {
+      "name": "A refund callback during a pull invalidates its older completion",
+      "status": "PASS"
+    },
+    {
+      "name": "A credit callback during a pull invalidates its older completion",
+      "status": "PASS"
+    },
+    {
+      "name": "Outside pending refunds stay held until an authoritative terminal refetch",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status needs_response",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status under_review",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status warning_needs_response",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status warning_under_review",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status lost",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status unrecognized",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch refuses disputed value with status null",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch remains available after no dispute",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch remains available after won",
+      "status": "PASS"
+    },
+    {
+      "name": "Refund dispatch remains available after warning_closed",
+      "status": "PASS"
+    },
+    {
+      "name": "Binding a pending receipt replaces its exact local hold and rejects unrelated metadata",
+      "status": "PASS"
+    }
+  ]
+}

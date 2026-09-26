@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-09-24T22:41:42.102Z",
+  "fixture": "E",
+  "account": "acct_1UJL2DR59Pk6MTFE",
+  "distinctFromD": true,
+  "type": "standard",
+  "controller": {
+    "fees": {
+      "payer": "account"
+    },
+    "is_controller": true,
+    "losses": {
+      "payments": "stripe"
+    },
+    "requirement_collection": "stripe",
+    "stripe_dashboard": {
+      "type": "full"
+    },
+    "type": "application"
+  },
+  "charges_enabled": true,
+  "payouts_enabled": true,
+  "capabilities": {
+    "acss_debit_payments": "active",
+    "afterpay_clearpay_payments": "active",
+    "amazon_pay_payments": "active",
+    "bancontact_payments": "active",
+    "blik_payments": "active",
+    "card_payments": "active",
+    "cartes_bancaires_payments": "pending",
+    "cashapp_payments": "active",
+    "eps_payments": "active",
+    "klarna_payments": "active",
+    "link_payments": "active",
+    "mb_way_payments": "active",
+    "pay_by_bank_payments": "active",
+    "pix_payments": "active",
+    "satispay_payments": "active",
+    "transfers": "active",
+    "us_bank_account_ach_payments": "active"
+  },
+  "requirements": {
+    "disabled_reason": null,
+    "currently_due": [],
+    "past_due": [],
+    "pending_verification": [],
+    "errors": []
+  },
+  "balanceLivemode": false,
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_Rt4UXl1zZuUiy6",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_4lpKYiPJgdp1EA",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJL2DR59Pk6MTFE",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_E9tcikT2wOoNBV",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_WFfN3eD1cMzfIy",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ]
+}

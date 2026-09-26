@@ -1,0 +1,41 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:46:59 Convex functions ready! (871.26ms)
+RED T1 removing object check leaks invoice through records-all person grant AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
+    {
+      public: 'visible A'
+    },
++   {
++     public: 'invoice A'
++   }
+  ]
+
+RED T2 removing grantor epoch check leaves descendant reads after manager downgrade AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   {
++     public: 'visible A'
++   },
++   {
++     public: 'invoice A'
++   }
++ ]
+- []
+
+RED D4 a false cancellation signal is detected by adapter-status probe AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+3 mutation behavior reds
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

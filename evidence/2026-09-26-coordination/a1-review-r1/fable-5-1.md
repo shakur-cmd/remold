@@ -1,0 +1,33 @@
+**Verdict: REVISE.** The shape is right (propose, human approves, additive, everything evented), but the apply path is weaker than the authority I1 already enforces for humans, and one irreversible resource attack is unguarded. Reviewed read-only against the build branch and `remold-i1` at 4cb4671. No code run.
+
+1. **HIGH. Apply bypasses I1's metadata authority.** On 4cb4671 human field ops already require full object scope and no masks (`convex/fields.ts:18` calls `requireObjectAdministration`), and object create requires an unrestricted human (`convex/objects.ts:14`). The draft's apply rule is "human admin at current epoch" only, so a masked or scoped admin could approve setup they cannot do by hand. The "Gap confirmed in code" line is also stale for the I1 branch. Fix: apply runs each op through the same internal functions the human mutations call, with the approving admin as principal (writable, requireObjectAdministration, unrestrictedHuman for object.create). Correct the status block to say the gap exists on the build branch only.
+
+2. **HIGH. Slot exhaustion is permanent and uncapped.** Slots are never reused once a field held one, and there are 8 text, 8 number, 4 date, 4 boolean per object (`convex/lib/slots.ts:12`). Approved create-then-retire cycles burn them forever. A cap on active fields does nothing here. Fix: count all fields including retired toward any cap; the review card shows remaining slots and warns that retire does not free one; add a case: after repeated approved cycles a later human number field still gets a slot, or the proposal is refused with a slot warning.
+
+3. **HIGH. Retiring a standard object is allowed.** The draft forbids creating standard objects but not retiring them. Today's feed and the won-to-delivery handoff look up task and opportunity by key. Fix: object.retire refuses isStandard on every path. Add the case.
+
+4. **MEDIUM. Retired object with inbound relations is undefined.** Lookup and links fields on other objects that target a retired object are not covered: forms, titles, the related endpoint. Fix: a relation field whose target is retired is treated as hidden while the target is retired and returns on restore. Extend S8 to include relation values.
+
+5. **MEDIUM. Grant issuance and delegation for the setup scope are unspecified.** The I1 issue path validates every scope kind against the grantor's own authority, and `within` has no branch for setup. Fix: mode direct refused for setup.propose; ids scope requires the grantor to pass object administration for each object; the 'new' scope requires an unrestricted owner; within is 'new' under 'new' and ids as a subset; agent role admin confers nothing. Add three cases: direct-mode grant refused, restricted owner granting setup scope refused, delegated setup grant widening objects refused.
+
+6. **MEDIUM. Hidden or unreadable references at propose time.** Relabel, retire, addOptions and relation targets name existing metadata. If they are accepted as pending and only checked at apply, the admin sees nonsense, and a relation target to an unreadable object works as an existence probe. S2 already checks in-org existence at propose, so unreadable must look identical. Fix: resolve references at propose through canReadField and canReadObject; unreadable returns the same error as missing. Add cases for relation target and retire-by-key of a hidden field.
+
+7. **MEDIUM. S4 is mislabeled.** Role downgrade does not bump authorityEpoch; only scope and mask changes do (`convex/authority/policies.ts:25`). S4 passes through the admin role re-read at apply, not the epoch. "At the current authority epoch" also means nothing unless the client passes what it saw. Fix: state that apply re-reads membership and object administration at the write boundary; split S4 into role downgrade and "admin masked from a target field between open and approve". Keep the agent's epoch on the proposal as in `suggestions.apply`.
+
+8. **LOW. Outcome still leaks a hidden collision.** S11 covers the propose response, but a hidden-key collision can never be applied while a fresh key can, so the final status differs. Fix: admin may apply with a renamed key, so collision does not determine outcome; the agent never sees 'conflicted' for key clashes, only applied or dismissed.
+
+9. **Complexity. Cut the basis hash.** Ops are additive, so the only conflicts that matter are per-op preconditions: key free, field exists and not retired, option ids absent, type unchanged. A whole-object hash conflicts on any unrelated human relabel and needs a canonicalization spec. Fix: replace basis with per-op precondition checks; S3 becomes "same key added by a person", and an unrelated relabel still applies.
+
+10. **Complexity. Cut duplicates and the impossible undo.** The agent metadata read already exists and filters by readability (`convex/agentApi.ts:51`), so drop the new read endpoint. Undo of field.create is retire, but addOptions has no reverse because options cannot be removed. Fix: I12 undo exists only for relabel, retire and restore; the card says create and addOptions are permanent.
+
+11. **Missing attack: duplicates and double approve.** Same key twice inside one proposal, and two admins approving at once or apply called twice. Fix: refuse duplicate keys at shape time; second apply returns the existing status. Add both cases.
+
+12. **Missing attack: another agent reads or applies the proposal.** H0 check 1 requires that B cannot read or approve A's operation with a known id. The draft states the rule but has no case. Add: agent B fetching A's proposal id gets NOT_FOUND; no agent path can apply.
+
+13. **LOW. Event masking is field-only.** Object events need canReadObject, and a proposal's free-text reason can name a hidden field. Fix: follow projectEvent: hide the whole event and the reason when any touched field is hidden from the reader.
+
+14. **Decision 1 is right.** Propose-only matches AGENTS.md ("agents propose by default; explicit scoped grants authorize direct action"). Add one line: a later direct-mode amendment changes a shared contract shape and reopens the affected I1 cases per the pack rule.
+
+15. **Decision 2 is the wrong knob.** Keep 20 ops per proposal as a bounded mutation. Drop the 30-object and 100-field caps from this amendment: humans have no such cap today, so proposals would follow a second rule set, and the caps miss the real scarce resource in finding 2. If Shakur still wants caps, apply them on every path and count retired fields.
+
+Rollback section is fine with one correction: fields already have retired, so only retired objects reappear after rollback.

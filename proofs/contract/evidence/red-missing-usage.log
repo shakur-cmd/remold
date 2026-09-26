@@ -1,0 +1,35 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+Could not find project with name anonymous-agent!
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ Added table indexes:
+  [+] bindings.key   provider, environment, account, kind, externalId, _creationTime
+  [+] callbacks.key   binding, eventId, _creationTime
+  [+] consent.recipient   org, recipient, purpose, channel, _creationTime
+  [+] operations.logical   org, logical, _creationTime
+  [+] sessions.token   token, _creationTime
+✔ 14:02:45 Convex functions ready! (727.13ms)
+PASS A/B share database; propose-only default and known-ID isolation
+PASS Delegated queued/model authority fails after manager fire; human grant survives
+PASS Before-permit revocation refuses; after-permit revocation preserves late result
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async rejects (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:15:43)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:69:72
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:64:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:144:5 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: /usage unresolved/,
+  operator: 'rejects',
+  diff: 'simple'
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

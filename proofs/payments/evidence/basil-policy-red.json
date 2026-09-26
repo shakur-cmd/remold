@@ -1,0 +1,307 @@
+{
+  "level": "SERVICE loopback HTTP and local Convex; provider responses simulated",
+  "results": [
+    {
+      "name": "invoice-pay",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "general collection route refused"
+    },
+    {
+      "name": "subscription-create",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "general collection route refused"
+    },
+    {
+      "name": "unsafe-invoice-0",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "unsafe-invoice-1",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'charge_automatically'\n- 'send_invoice'\n"
+    },
+    {
+      "name": "unsafe-invoice-2",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'include'\n- 'exclude'\n"
+    },
+    {
+      "name": "unsafe-invoice-3",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "unsafe-invoice-4",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "unsafe-invoice-5",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "unsafe-invoice-6",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "under-item",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n99 !== 100\n"
+    },
+    {
+      "name": "price-item",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "unbound-item",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'in_synthetic'\n"
+    },
+    {
+      "name": "second-item",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Invoice already has lines\n\n1 !== 0\n"
+    },
+    {
+      "name": "auto-finalize",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "wrong-total-finalize",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n99 !== 100\n"
+    },
+    {
+      "name": "unreserved-attachment",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "[Request ID: 3724de3c1676ee6f] Server Error\nUncaught Error: payment is not reserved for this document\n    at deny (../convex/payments.ts:6:54)\n    at handler (../convex/payments.ts:426:32)\n"
+    },
+    {
+      "name": "inactive-card",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Provider merchant restricted"
+    },
+    {
+      "name": "requirements-due",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Provider merchant restricted"
+    },
+    {
+      "name": "automatic-collection",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'charge_automatically'\n- 'send_invoice'\n"
+    },
+    {
+      "name": "subscription-invoice",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Subscription invoice route unsupported"
+    },
+    {
+      "name": "shape-drift",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'charge_automatically'\n- 'send_invoice'\n"
+    },
+    {
+      "name": "last-read-shape-drift",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Subscription invoice route unsupported"
+    },
+    {
+      "name": "remaining-drift",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Unexplained invoice remaining\n\n99 !== 100\n"
+    },
+    {
+      "name": "explicit-invoice-fee-item-1",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n1 !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-item-0",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n0 !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-item-\"0\"",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n'0' !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-item-{}",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n{} !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-finalize-1",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n1 !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-finalize-0",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n0 !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-finalize-\"0\"",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n'0' !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-finalize-{}",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n{} !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-pi-1",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n1 !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-pi-0",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n0 !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-pi-\"0\"",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n'0' !== null\n"
+    },
+    {
+      "name": "explicit-invoice-fee-pi-{}",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "Expected values to be strictly equal:\n\n{} !== null\n"
+    },
+    {
+      "name": "invoice-transfer",
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "invoice-on-behalf",
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "missing-issuer",
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "foreign-issuer",
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "missing-application",
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "foreign-application",
+      "refused": false,
+      "writes": 1,
+      "status": "FAIL"
+    },
+    {
+      "name": "platform-fee",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "off-session",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    },
+    {
+      "name": "transfer",
+      "refused": true,
+      "writes": 0,
+      "status": "PASS",
+      "reason": "unsupported provider parameter"
+    }
+  ]
+}

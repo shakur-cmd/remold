@@ -1,0 +1,90 @@
+$ node replay.mjs
+AssertionError [ERR_ASSERTION]: Only exact accepted recurring line may consume cycle reservation
++ actual - expected
+... Skipped lines
+
+  [
+    {
+      anomaly: false,
+      held: 602,
+      kind: 'valid-line-different-invoice-period',
+...
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'shifted-start',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'end-outside',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'after-term',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'wrong-price',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'wrong-item',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'proration',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'extra-line',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'incomplete-lines',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'wrong-reason',
+      paid: 301
+    }
+  ]
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:616:20
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:84:16)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:11:5
+[ELIFECYCLE] Test failed. See above for more details.

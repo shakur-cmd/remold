@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold measurement dashboard: build addendum</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Measurement dashboard</h1><div class="meta">2026-09-24 · User-requested scope addition · Implementation and independent verification pending</div>
+<div class="decisions"><h2>Your decision, recorded</h2><p>Build a dashboard that measures business conversion and the performance of Remold itself, so measured results guide the next improvement. This extends the current build. No additional decision is needed to implement the foundation.</p></div>
+<div class="status"><h2>Done and proven</h2><p>The requirement is recorded and assigned below. The dashboard and telemetry are not implemented. No conversion or performance result has been invented. The original approved plan remains intact; this addendum expands I10 and the instrumentation acceptance in its source jobs.</p></div>
+<h2>One place to see what is improving</h2><p>Start with a useful set of measures and add measures when they answer a real question. Each tile links to its definition, source, time window, sample count and relevant work. Show missing or delayed data explicitly. Tenant owners see their business and service results; platform-wide operational detail is restricted to authorized operators.</p>
+<table><tr><th>Area</th><th>Initial measurements</th><th>Authoritative source</th></tr>
+<tr><td>Business journey</td><td>Capture to qualified, qualified to won, quote acceptance, won to paid; time between stages; value by currency</td><td>Recorded CRM stage changes, immutable quote acceptance and reconciled payment events</td></tr>
+<tr><td>Marketing and social</td><td>Delivery, bounce, unsubscribe, response and attributed conversion; provider lag</td><td>Deduplicated provider outcomes and recorded source links. Aggregate social views stay aggregate; unknown attribution stays unknown.</td></tr>
+<tr><td>Getting started</td><td>Sign-in completion, workspace creation, first useful record/action and where a journey stops</td><td>Defined app events and canonical successful writes, with a documented measurement boundary</td></tr>
+<tr><td>App performance</td><td>Page load and interaction timing; table/search response; backend request duration, error rate and stale subscriptions</td><td>Browser timing APIs and measured server spans. Show median/tail latency with units and sample counts.</td></tr>
+<tr><td>Agents and workflows</td><td>Queue wait, execution time, success/refusal/retry/cancellation, approval wait, unresolved outcomes, reported usage and cost per completed task where cost is known</td><td>Attributed operation state transitions and authoritative usage receipts; unknown usage never becomes zero</td></tr>
+<tr><td>Operational health</td><td>Sync delay, callback failures, stuck jobs, recovery outcomes and telemetry gaps</td><td>Integration checkpoints, service probes and delivered operational alerts</td></tr></table>
+<h2>Compare changes with evidence</h2><p>Connect a proposed improvement to one primary outcome and its guardrails. Record the baseline period, change or release version, eligible cohort and observation period. Show before and after side by side with the underlying counts. A faster page with more failed actions is not an improvement. A change in a chart alone is an observation, not proof that the release caused it; controlled comparisons must retain assignment and exposure records.</p><p>Agents can read the measurements within their current scopes and propose a specific improvement and verification check. Existing authority, approval, cost and release gates still govern the change. Preserve a decision trail of what was tried, what happened and whether to keep or revert it. Do not add a separate general-purpose analytics or experiment platform.</p>
+<h2>Definitions that prevent misleading results</h2><ul>
+<li>Conversion is a count of distinct eligible entities reaching a defined outcome divided by the explicitly shown eligible cohort. Record the entry event, outcome event, observation window and exclusion rules. Separate time-to-convert from same-period activity counts.</li>
+<li>Return “no data” for a zero denominator; retain the numerator and denominator. Do not average percentages or mix currencies.</li>
+<li>Version definitions when eligibility or attribution rules change. Show provider lag, incomplete observations, late events and sampling coverage.</li>
+<li>Use canonical events for business truth; a browser can report perceived latency but cannot author a won deal or paid invoice by sending telemetry.</li>
+<li>Use bounded, indexed rollups and rebuild them from source events. Duplicate/reordered callbacks must not inflate the totals.</li>
+<li>Masking and tenant authorization apply to metrics, drill-down, exports and agent tools. Telemetry contains route patterns and operation references, not message bodies, field contents, email addresses, secrets or full record URLs.</li>
+<li>Bound telemetry volume and retention; measure its overhead. Provider-specific paid ingestion or storage still follows the existing cost gate.</li>
+</ul>
+<h2>Where this enters the build</h2><table><tr><th>Job</th><th>Added responsibility</th></tr>
+<tr><td>I2</td><td>Release-version tagging, request/error timing and a minimal operational metric path alongside delivered alerts</td></tr>
+<tr><td>I3–I9 and I11</td><td>Emit or expose the canonical outcome and duration events owned by each domain; record event semantics before building rollups</td></tr>
+<tr><td>I10</td><td>The measurement dashboard, definitions, source drill-down, bounded rollups, cohort/time filters and before/after comparisons; retain all original report requirements</td></tr>
+<tr><td>I12</td><td>Accessible dashboard navigation and onboarding/action timing; readable missing-data and uncertainty states</td></tr>
+<tr><td>I13–I14</td><td>Telemetry health, rebuild/retention/restore and self-host instructions without mandatory new paid analytics service</td></tr>
+<tr><td>V0</td><td>Independent calculation, latency/error injection, masking attacks and observed improvement comparison</td></tr></table>
+<h2>Acceptance evidence</h2><ul>
+<li>Independent export-based calculations match the dashboard for defined conversion cohorts, zero-data, timezone boundaries, replayed/late events and separated currencies.</li>
+<li>Introduce a measurable delay and a real failed request in an isolated fixture; the correct metric changes. Remove it and repeat the same measurement. Static screenshots alone do not pass.</li>
+<li>A change record links exact before/after versions and counts; a guardrail regression is visible even if its primary metric improves.</li>
+<li>Cross-tenant and masked-field probes fail without revealing counts, aggregates or customer content. Forged browser outcome events cannot change canonical business conversions.</li>
+<li>Disable telemetry transport: the dashboard reports the gap rather than a false improvement to zero errors/latency. Verify bounded ingestion, rollup rebuild and overhead.</li>
+</ul><p>Source: Shakur’s direct request in this build session, 2026-09-24. Parent scope: <a href="integration-and-build-jobs.html">approved integration and build jobs</a>. This addition does not waive H0, provider selection, independent review or launch gates.</p></body></html>

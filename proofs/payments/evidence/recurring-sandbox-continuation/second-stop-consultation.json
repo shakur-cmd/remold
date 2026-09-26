@@ -1,0 +1,31 @@
+{
+  "result": "**Direction: sound, with the added requirements below.** I'm not approving anything: there is no successor implementation yet. I made 31 GETs and 0 POSTs. The results, with no signed links or secrets, are saved to `second-stop-independent-readback.json` (sha `d480c315\u2026`).\n\n## Readback\nIt matches root's readback on every financial fact:\n- **Clocks:** F frozen at 1790477988, H at 1790305129, both ready. The earliest `deletes_after` is **1792897135** (about 2026-10-25 02:58 UTC).\n- **F objects:**\n  - The schedule is canceled (`canceled_at` 1790477988).\n  - The subscription is canceled, with `ended_at` 1790477988 and reason `cancellation_requested`. Its `canceled_at` is 1790395489, the time of the last card update; Stripe reports that field this way when the cancellation was already scheduled.\n  - The default payment method is the recovery card.\n- **Invoices:** two reads of each, 1.3 seconds apart, differ only in the two delivery links.\n  - The old invoice is `paid` 301, and the fee proof still passes.\n  - The residual `in_\u2026Ewf` is `open`, 301 due, 1 attempt, `auto_advance` false, `next_payment_attempt` null. Its payment is `requires_payment_method` with `card_declined/generic_decline`.\n- **H and E:** H has no schedules, subscriptions or invoices, only its original SetupIntent. E has no clocks.\n- **Private failure diagnostic:** its digest `954fc750\u2026` matches the public failure record.\n\n**New finding: F has 5 SetupIntents, not 3.** Two of them aren't in either journal: `seti_\u2026Ppk` and `seti_\u2026Pq6`. Each appeared 1\u20132 seconds after one of the card-update POSTs, on the same payment method, under our platform application, with dashboard-default payment method types. Both are `succeeded` and involve no money. I inferred the cause from timing only; I found no documentation for it. They are not our writes, but the successor has to treat them as known provider-derived objects.\n\n## Stripe behaviour now settled\n- **Cancelling stops collection.** The open invoice stays payable, but it is no longer retried automatically.\n- **The retry never happened inside our window.** Stripe had scheduled it at 1790549124, about 1.8 days after the failure, which is past the window that stops before the next billing cycle. `retryObserved: false` is a timing fact about the sandbox, not a failed recovery.\n- **The stop was correct.** Cancelling asynchronously changed the invoice while the adapter was in the middle of comparing reads. That is real drift, and the adapter should stay strict about it.\n\n## Requirements for the successor\n1. **Pins:**\n   - both spent journals, `dbe91638\u2026` and `8ecfcbbe\u2026`\n   - the failure diagnostic `954fc750\u2026`\n   - the continuation's `provider.json` `a63163ba\u2026` and `provider-run.txt` `922e6cc3\u2026`\n   - `second-stop-local.json` `00cd9d4a\u2026`, root's readback `4284dd4a\u2026`, and mine `d480c315\u2026`\n\n   Use a new latch (`\u2026-continue-2`) and a new key namespace. Rebuild the counts from both journals: 21 unique keys, F 7 advances, H 0.\n2. **What's left:** F advance 1, H advances 6, activations 2, cancel 1. Setups, card changes, clocks, customers, products and prices all stay at zero. H has no spare advances.\n3. **Make a repeat F write impossible in the policy, not just in the driver.** Keep F's schedule and subscription in a known read-only set, outside the sets the policy allows writes to. Add a test that proves an F cancel or card change is refused.\n4. **Pin the inventory.** F's SetupIntents must be exactly those 5 IDs, H's exactly 1. Any new SetupIntent, invoice or subscription means stop.\n5. **Settle F with no POST first.** Before the observation, assert the local org is still readonly. Local `beginObservation` doesn't check readonly, so the observation can run first.\n   - Expect: state `cancellationPending` (not `cancelled`, because an open invoice keeps the commitment non-terminal), paid 301, reserved 602, 2 cycles, no anomaly, and the open cycle's `autoAdvance` false.\n   - Then do the single F advance to fstart+172800+3900 = 1790481889. Expect no new invoice, no new payment, and the same gross.\n   - Only then unset readonly.\n6. **Wait for provider state to settle after the H2 cancel.** The same race could recur there. Before `adapter.observe`, poll with bounded GETs only until two consecutive reads of the invoice, subscription and schedule are identical apart from the links, then run the strict observation. This doesn't widen the comparison.\n7. **Final assertions:** F stays holding 602 permanently, with the open 301 recorded as a potentially payable liability. Cumulative writes \u226431, reserved \u22642709, collected \u22641806. There is no void, pay or forgiveness path.\n\n## Limits and remaining unknowns\n- I couldn't check root's CI run 36090582753; I had no network access beyond the fixture GETs.\n- Still unknown: H's behaviour under a real lost response, the 60-second command expiry, clock readiness time, and whether cancelling a paid H2 invoice also changes it asynchronously.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 90,
+      "outputTokens": 56280,
+      "thinkingTokens": 26495,
+      "cacheReadInputTokens": 4196934,
+      "cacheCreationInputTokens": 168866,
+      "webSearchRequests": 0,
+      "costUSD": 3.3162748000000013,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

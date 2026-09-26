@@ -1,0 +1,57 @@
+{
+  "verdict": "APPROVE bounded additive synthetic import durability and P5 scope correction",
+  "reviewer": "c0_verifier; independent of additive import implementation",
+  "at": "2026-09-24T23:51:04.757661+00:00",
+  "sourceAggregate": "602c2c323fc2a6032d7ef0070ee013b19ad9c704eadca9d5f839e3db55eb0e56",
+  "sourceFiles": 7,
+  "sourceUnchanged": true,
+  "baseline30Unchanged": true,
+  "protectedPrivateFilesPresent": 7,
+  "protectedPrivateFilesUnchanged": true,
+  "rootEnvironmentUnchanged": true,
+  "checks": [
+    {
+      "command": "node proofs/communications/import-baseline.mjs",
+      "exit": 1,
+      "expected": 1,
+      "result": "Expected old SIM cursor loss100 instead200"
+    },
+    {
+      "command": "node proofs/communications/import-replay.mjs iv-frozen-602c2c",
+      "exit": 0,
+      "groups": 5,
+      "sigkillRestarts": 3
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/communications-import-iv/alternative-replay.mjs alternative-finalization-correct-path",
+      "exit": 0,
+      "groups": 6,
+      "sigkillRestarts": 4
+    },
+    {
+      "command": "pnpm --dir proofs/communications test",
+      "exit": 0,
+      "tests": 29
+    }
+  ],
+  "ownScenario": "Two staged pages deduplicate3 items while only1 visible; unchanged-cursor empty final page refused without snapshot change; SIGKILL restart preserves pending; correct empty final commits3 once; exact old-page/final replay duplicate and changed final replay refused.",
+  "reviewHarnessNote": "Initial independent runner relocation used one extra parent segment and failed before backend/source reads. Corrected harness path, preserved error log; not a product defect.",
+  "scopeCorrection": "SealedP5 requires two test mailboxes, not two Google mailboxes. Same-sender two-recipient fixture still needs explicit additional recipient allowance. Existing five/day reciprocal allowance unchanged. Two stale calendar/status rows corrected by root and reread.",
+  "mailReceiptReview": "Recorded Gmail SENT+INBOX labels and exact saved body hash match; no fresh Gmail request made. Email requests owner action, grants no new allowance.",
+  "deskSourceHashes": {
+    "docs/unified-launch/jobs.json": "d231fed571dcf98f9875f4966c45cda4c92380dd096442bdbe593070e25b3902",
+    "docs/unified-launch/accounts-and-subscriptions-addendum.html": "b0fd8d0d2087f540c789bb2b00d93927cc10c80a698656b3c0094a87a9ed678e",
+    "docs/unified-launch/execution.json": "c1d93d91ee7b0d761817b5cefaed2dc12929560446d86309f32962a386ce326c",
+    "evidence/2026-09-24-unified-build/opus-p5-mailbox-scope.json": "82414d140553a2e1eddf04b6612cfd0c1f8ad27125bd379f53a5c2dab5496b18",
+    "evidence/2026-09-24-unified-build/updated-owner-batch-email-sent.json": "cfc87d38774d89cea56014b88ba1b3ee28856397249746bc7e0f98434400178b",
+    "messages-to-client/2026-09-24-updated-owner-batch.html": "7d23a1b2457fb22dab3f16419190a23fe5435124761d2aca469f39a948eec8fd"
+  },
+  "limits": [
+    "SERVICE local Convex with synthetic source pages/contacts only",
+    "No live provider/OAuth/mail/calendar/CRM UI checks",
+    "No I1 audit or production authority claim",
+    "Actual Gmail/IMAP cursor semantics, watch validation, revoke/reconnect and production integration remain unverified",
+    "Independent run had all7 protected files present; clean-clone absence behavior inspected and builder evidence only, not independently repeated",
+    "WholeP5 remains open"
+  ]
+}

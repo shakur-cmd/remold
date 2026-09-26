@@ -1,0 +1,51 @@
+{
+  "verdict": "REVISE",
+  "reviewer": "Independent /root/c0_verifier; not H0 author",
+  "manifestSha256": "68a793519593ef5125272232653a34f857c7e033acf4d42be4274567065cc4ef",
+  "builderGroupsIndependentlyPassed": 39,
+  "independentGroupsPassed": 31,
+  "focusedGroupsFailed": 1,
+  "finding": {
+    "id": "IV-STALE-FINALITY",
+    "severity": "blocker",
+    "location": "convex/harness.ts resolveUnknown, historical consumed permit validation and operation-wide absence",
+    "steps": [
+      "Reserve5 for a model operation; consume step1 and reconcile accepted usage1 with continuation.",
+      "Claim/permit/consume step2; report unknown. Remaining reservation4 and active slot1 are held.",
+      "Deliver final absence with historical step1 fence/step, which already has an accepted receipt."
+    ],
+    "observed": {
+      "denied": false,
+      "state": "refused",
+      "step": 2,
+      "reserved": 0,
+      "active": 0,
+      "absenceFinality": "final"
+    },
+    "expected": "Stale/contradictory step1 absence cannot finalize step2; step2 remains outcomeUnknown, reserved4, active1.",
+    "impact": "Unresolved provider cost remains possible while shared capacity is freed. Historical receipt acceptance does not justify accepting historical finality for another step.",
+    "suggestedBoundary": "Require finality to match the appropriate current unresolved step/attempt and reject contradiction with an existing accepted receipt; preserve valid historical receipt reconciliation."
+  },
+  "limits": [
+    "SERVICE local Convex; provider, identity, finality claims and read surfaces SIM.",
+    "All previous E1\u2013E4 repairs pass changed independent inputs; this new async defect still blocks H0.",
+    "No canonical source edited; no provider/cloud/production actions."
+  ],
+  "portsReleased": [
+    3410,
+    3411
+  ],
+  "hashes": {
+    "reviewed-manifest.json": "a5d8f1532ad09ceed8418722e6121cd0f03ad6703ba6c8851ac25da43c590991",
+    "builder-replay-results.json": "0663622caf74cf3315e76d6f98e5f904049d54820de55fea8d707d508d66a939",
+    "builder-replay-fixture-export.json": "12f7534c6a3d29e62b5da68515d264363897ccd7bf77b97b0705b73dd501b5a2",
+    "independent.mjs": "58450da01c3ec57d17994f0cc9478bbfb79ccf2c9f439a89ad40dacb26ee2f55",
+    "independent-results.json": "37dee901ac2086c46f17f321fe604898f02747b8f173425ffcde002d316f614f",
+    "independent-fixtures.json": "ed017ed31c060df7c87030853413b5335ffcb63aa07fe896d56258f6c1476fbe",
+    "independent-replay.log": "a663eedbd10a37e2033fd02dc09b596a526b7d85e5d0cb8d7ab26aae048097c4",
+    "stale-finality.mjs": "ca2291ccc5a5b95d1fe00cb0269d7d72c95bbc944be7f3f2c29ccab483749e02",
+    "stale-finality-replay.log": "bfd594915b11a02884741e19aa1eeaed901662b7821c5a26c59c7269bb7a17f4",
+    "stale-finality-results.json": "225f3cef547a5d5fd5bfb6d39e789eba8a5792aee0ca8e348020db90223a0c7d",
+    "stale-finality-fixtures.json": "fffced399bf0d13f34eb79269edebebd84afab39b73c221d2a2796fc6582e19d"
+  }
+}

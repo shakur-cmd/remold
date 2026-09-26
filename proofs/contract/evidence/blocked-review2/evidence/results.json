@@ -1,0 +1,164 @@
+{
+  "level": "SERVICE local Convex / SIM provider and identity",
+  "backend": "http://127.0.0.1:3410",
+  "at": "2026-09-24T18:49:08.160Z",
+  "results": [
+    {
+      "name": "A/B known-ID isolation, server-derived actors and full binding tuple collision",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Explicit manage lists cannot authorize firing or regranting an ancestor",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Direct mode executes without human approval; propose mode and invalidated direct grant refuse",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Delegation ancestry revokes queued/read/model paths while independent human grant survives",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Read scopes restrict object/records/fields and every SIM surface has a leakable shape",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Final permit rechecks expired authority without a sweep and honors schedule",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Before-permit fire refuses; after-permit fire preserves one late outcome",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Scoped adapter cannot permit, consume, reconcile, callback or provision in B",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Lost acceptance response reconciles once; missing usage blocks cheaper new spend",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Concurrent logical calls/claims and org budget reservations serialize on real backend",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Per-run/global spend and global concurrency caps bound both tenants",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Model continuation rechecks authority, step/fence and remaining exposure",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Expired unconsumed permits retry safely; consumed crash becomes unknown",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Unknown authoritative absence never resends after firing; terminal rejection releases reservation",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Authoritative absence and retryable rejection preserve logical key and revalidate new permits",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Material edits, audience, currency and approval expiry invalidate immutable snapshot",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Provisioning durable intents preserve delete-before/create-before races",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Partial traversal commits only full checkpoints and later traversal resumes without regression",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Durable cancellation survives rejection, absence, expiry and model continuation",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Scoped adapter sees cancellation signal and records one late accepted tail",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Late consumed outcome settles once after provisional or final absent lookup",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Per-call remaining exposure, missing usage and actual overruns fence final dispatch",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Conflicting provider reference refuses durably and holds spend without rolling back anomaly",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Per-recipient and per-purpose suppression never changes another contact or tenant",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Server scheduler recovers adapter crashes without a callback or manual expiry call",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    }
+  ],
+  "fixtureSha256": "aedc758d208777c59d52638a49791b8a59e995c7ffcb737a624479d195e95398",
+  "sourceHashes": {
+    "convex/contract.ts": "242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59",
+    "convex/schema.ts": "61275c1bfae3661f7dfa4e9079ec8f1cefce17fb42f1f068bbaefa03d29cd3f8",
+    "convex/harness.ts": "c3ada5ac770cdd1486b1ade1e08e9cfc9e4758cecd6c15acc42a0c888bfd861e",
+    "replay.mjs": "9e6ff924b49f0f35653c469eb451141ab9e8c767fe97eac0e1e7d23ba2459c42",
+    "run.mjs": "eef5a7f4c92e3f101868b2d6ac5e586fc2caaf69d7589862263d0ab79413ae65",
+    "package.json": "9c1eb499a14dd5461924f662250b146bb51f12f170cf269be8422214172a00d2"
+  },
+  "providerEffects": 18,
+  "contractManifestSha256": "9a316dc7d28ecf127c83b566f6ddb384b3d6bc80fadc24425dd79c199cb41cdf",
+  "contractManifestAlgorithm": "SHA256 of sorted path + NUL + source SHA256 + LF entries, including package.json"
+}

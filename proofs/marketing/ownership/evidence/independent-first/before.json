@@ -1,0 +1,116 @@
+{
+  "phase": "before",
+  "level": "SERVICE actual native A/B form and identity ownership; no public edge revision or CRM integration",
+  "rows": [
+    {
+      "tenant": "a",
+      "contactId": 179,
+      "before": {
+        "firstname": "Remold owned a",
+        "lastname": "Stable owner a",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "id": 5,
+            "reason": 3,
+            "comments": "Isolated ownership proof",
+            "channel": "email",
+            "channelId": null
+          }
+        ]
+      },
+      "after": {
+        "firstname": "Public replacement a",
+        "lastname": "Stable owner a",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": []
+      },
+      "submission": {
+        "id": 24,
+        "leadId": 180,
+        "results": {
+          "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+          "firstname": "Public replacement a"
+        }
+      },
+      "countersBefore": {
+        "contacts": 176,
+        "anonymousContacts": 24,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 23,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "countersAfter": {
+        "contacts": 177,
+        "anonymousContacts": 24,
+        "pageHits": 12,
+        "assetDownloads": 11,
+        "submissions": 24,
+        "queuedEmails": 0,
+        "emailStats": 170
+      },
+      "authoritativeNamePreserved": false
+    },
+    {
+      "tenant": "b",
+      "contactId": 30,
+      "before": {
+        "firstname": "Remold owned b",
+        "lastname": "Stable owner b",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": [
+          {
+            "id": 3,
+            "reason": 3,
+            "comments": "Isolated ownership proof",
+            "channel": "email",
+            "channelId": null
+          }
+        ]
+      },
+      "after": {
+        "firstname": "Public replacement b",
+        "lastname": "Stable owner b",
+        "company": null,
+        "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+        "points": 0,
+        "doNotContact": []
+      },
+      "submission": {
+        "id": 14,
+        "leadId": 31,
+        "results": {
+          "email": "ownership-ebf170dd-576d-4974-9234-65e9005abca3@example.invalid",
+          "firstname": "Public replacement b"
+        }
+      },
+      "countersBefore": {
+        "contacts": 28,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 13,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "countersAfter": {
+        "contacts": 29,
+        "anonymousContacts": 19,
+        "pageHits": 10,
+        "assetDownloads": 9,
+        "submissions": 14,
+        "queuedEmails": 4,
+        "emailStats": 4
+      },
+      "authoritativeNamePreserved": false
+    }
+  ]
+}

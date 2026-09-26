@@ -1,0 +1,25 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/operations.test.ts (7 tests | 1 failed) 120ms
+   × an authority sweep preserves an unrelated valid proposal awaiting approval 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/operations.test.ts > an authority sweep preserves an unrelated valid proposal awaiting approval
+AssertionError: expected 'paused' to be 'proposed' // Object.is equality
+
+Expected: "proposed"
+Received: "paused"
+
+ ❯ ops/authority/operations.test.ts:67:83
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  16:17:22
+   Duration  268ms (tests 57%, transform 30%, import 12%, worker 1%)
+

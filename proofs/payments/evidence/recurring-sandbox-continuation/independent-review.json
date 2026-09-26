@@ -1,0 +1,31 @@
+{
+  "result": "**localSource: APPROVE. sandboxExecution: APPROVE**, for exact aggregate `65fc2b8d\u2026485b` (75 files), subject to the conditions below. This is approval of the source and a bounded run only. It is not evidence that Stripe will behave as intended. I didn't create `approval.json`, edit any source, run `sandbox-fixture.mjs`, or make any provider or network call.\n\n## Integrity\n- **Hashes:** all 75 file hashes match and the sorted-map aggregate recomputes exactly. The predecessor field says `848233`, and the git HEAD bytes of the 7 changed files equal the hashes that were approved in `848233`.\n- **Delta:** 7 files changed: adapter, local, replay, fixture, gate test, policy, policy test. Seven are new: `continuation.mjs`, `provider-evidence.mjs` and its test, plus 4 pinned checkpoints.\n- **Pins:** these five hashes match the bytes on disk:\n  - the original journal `dbe91638\u2026` (mode 0600)\n  - `provider.json` `0fd8962a\u2026`\n  - `local-first-stop.json` `b7a6edb9\u2026`\n  - root's readback `1104b982\u2026`\n  - my readback `2d4f5ad9\u2026`\n- **Tamper controls, run on isolated copies:** a 1-byte change to the journal is refused, a 1-byte change to my readback is refused, a world-readable journal is refused, and an unmodified copy loads. The copies were deleted afterwards.\n\n## What I checked\n- **Continuation state (`loadFirstStop`):** requires exactly 11 write attempts, 11 responses and no errors. Each attempt's key digest, path and account must match its receipt. It rebuilds the spent counts `{clock 2, advance 2, customer 2, product 1, price 1, setup 2, activate 1}`, 11 unique keys, and 2 advances on F. F sits at start+3960, H at start. The local ledger reads active, paid 0, reserved 903, 0 cycles.\n- **Policy seed:** an invalid, duplicate or mismatched seed is refused, and reusing an old key is refused. The limits work out to exactly 6 more advances each on F and H, and no new clock, product or price.\n- **Driver order:** the first action is a no-POST readback of assets, inventories and the local ledger. Next the original 301 is reconciled through the adapter: paid 301, reserved 602, one cycle, and the activation and advance counts are asserted unchanged. Only after that does any POST happen. Keys use the namespace `\u2026-continue-1`, under a new exclusive latch.\n- **Invoice comparison (`assertSameInvoice`):** removes exactly the two top-level links and requires each to be a string or null. Every other difference is refused, including nested fields and new keys.\n- **Errors:** the public failure keeps only a whitelisted name, an integer status, a fixed category and a digest. Raw diagnostics go only to a 0600 `.failure.json`. The console prints the category only.\n  - Other public outputs are whitelisted or local-ledger only. Errors raised before `try` carry only hashes and paths.\n- **Local resume:** requires an owned `private/local-*` directory, an anonymous deployment, an allowlisted `.env.local` and unchanged restored sources, with no seeding. `registerCustomer` is idempotent by external ID, sessions have no expiry, and `propose` doesn't check start times against the wall clock.\n\n## Tests I ran\n- `node --test` on the gate, policy and provider-evidence tests: **12 of 12 pass**.\n- `replay.mjs` into `recurring-sandbox-continuation/independent/`: **19 of 19 groups pass**. That includes the new link-rotation group and the existing invoice-drift refusal. The output contains no URLs.\n- The original journal and the `.convex` state digest of `local-Wk79yZ` were identical before and after my replay.\n\n## Execution conditions\n1. **Back up the local state first.** Before running, archive `private/local-Wk79yZ` (including `.convex`) in a 0600 archive with its hash recorded.\n   - The resume path overwrites `backend.log`. The original run's log was already overwritten by root's resume test at 23:24, so that log is lost.\n2. **Keep ports 3590, 3591 and 3492 free** during the run.\n3. **Run before 1792897135**, the earliest clock `deletes_after`.\n\n## Non-blocking gaps\n- The resume check doesn't refuse extra files in `cwd/convex`.\n- Schedule and subscription reads during traversal are still compared strictly, as intended. If either drifts, the run stops.\n\n## Provider unknowns\n- Smart-retry timing within 6-hour steps.\n- Whether cancelling stops collection on the open invoice.\n- Whether the H1 first invoice is created synchronously.\n- Whether a real lost response reconciles through the list.\n- Whether GET latency before activation stays inside the 60-second command expiry.\n- Whether clocks become ready within 120 seconds.\n- Stripe CLI webhook delivery.\n\nAny stop leaves all effects in place and needs a separately reviewed continuation. Durable ingress and independent post-run readback are still open.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 76,
+      "outputTokens": 41642,
+      "thinkingTokens": 19658,
+      "cacheReadInputTokens": 3095899,
+      "cacheCreationInputTokens": 138899,
+      "webSearchRequests": 0,
+      "costUSD": 2.5635158000000007,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

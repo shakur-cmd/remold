@@ -1,0 +1,41 @@
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.41525ms)
+✔ concurrent callback replay only exchanges one code (0.751833ms)
+✔ expired state and denied consent cannot exchange an authorization code (1.646458ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (1.997917ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.648625ms)
+✔ nonce and email verification are checked independently of a correct email address (0.959334ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.49175ms)
+✔ mailbox A refuses a partial grant missing send permission (0.334ms)
+✔ profile failure retains a verified private candidate and read-only retry does not exchange again (0.65175ms)
+✖ calendar consent is opt-in and partial calendar grants cannot authorize the fixture (5.586709ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.132917
+
+✖ failing tests:
+
+test at proofs/communications/oauth.test.mjs:62:1
+✖ calendar consent is opt-in and partial calendar grants cannot authorize the fixture (5.586709ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(missing.authorization().searchParams.get('scope').split(' ').includes(scope))
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/oauth.test.mjs:65:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

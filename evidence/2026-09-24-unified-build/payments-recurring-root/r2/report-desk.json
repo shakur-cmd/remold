@@ -1,0 +1,37 @@
+{
+  "at": "2026-09-25T01:20:21.121796+00:00",
+  "reviewer": "/root/h0_builder",
+  "level": "DESK only; no runtime, provider action, implementation or authorization audit",
+  "verdict": "APPROVE documentation accuracy for bounded recurring local checkpoint",
+  "sourceAggregate": "28735f6b846e88b0fecaeee2866a568cf5662cc3baacfa5b2d5aed728bf4a57d",
+  "checks": {
+    "rootGroups": 15,
+    "independentBaselineGroups": 15,
+    "independentAlteredObservations": 11,
+    "independentRestartsRecorded": 3,
+    "lineCases": 10,
+    "recognitionCases": 12,
+    "numericExamplesMatchRawResults": true,
+    "independentEvidenceHashesMatchVerdict": true,
+    "reportRelativeLinksResolve": true,
+    "p4StateRemainsDispatched": true,
+    "actualStripeAndWholeP4RemainOpen": true
+  },
+  "limits": [
+    "This confirms recorded claims and raw evidence consistency, not a new runtime replay.",
+    "Unchanged source and builder-evidence claims are attributed to root and c0 receipts; no new source audit performed.",
+    "No hosted preview action was run."
+  ],
+  "errors": [],
+  "checkedFiles": {
+    "evidence/2026-09-24-unified-build/payments-recurring-root/r2/report.html": "0f6070c252a593ab03b8b2b44fa35635e6297f9b7ac97fcc776963d414422d7c",
+    "evidence/2026-09-24-unified-build/payments-recurring-root/r2/run.json": "eaee64001c2fbed011e22672731c60ec435fba222e787f04f62d422b156a8842",
+    "evidence/2026-09-24-unified-build/payments-recurring-root/r2/local.json": "4ec2b3690943a3f522a6f2c224a9d35f40c62abb0d4b600945a4584289b47efd",
+    "evidence/2026-09-24-unified-build/payments-recurring-root/r2/line-cases.json": "2a1f9cd7995b06b9b7a0bef9f5c203d8469842667fdc5e58fcbb03e3e8f5a213",
+    "evidence/2026-09-24-unified-build/payments-recurring-root/r2/recognition-cases.json": "b76ffb4d60176698361a9c90d467fd92f34f0890ce219644c78d2ac65e1b62f2",
+    "evidence/2026-09-24-unified-build/payments-recurring-iv/r2/verdict.json": "75e93d599258f72199733180d7dac8a59909da3cf3fd0b38b77a884652448b6c",
+    "evidence/2026-09-24-unified-build/payments-recurring-iv/r2/altered-result.json": "c4c39443ce084cd8b3bef834941ea9951fe6a5ab9f8e361d0a4a70f182a59a2a",
+    "docs/unified-launch/execution.json": "5efc7aa11f78d5a678056341aa3d77e60273a33d4485910f45f42c0e6d555835",
+    "docs/unified-launch/build-status.html": "5594cff263586c3a99fcbc67534af26f4a796f81766c6af2364d6870120fdb67"
+  }
+}

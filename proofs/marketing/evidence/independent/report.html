@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P2 independent bounded verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>P2 independent bounded verification</h1>
+<div class="meta">2026-09-24 · Verifier h0_builder, independent of P2 author i2_release · SERVICE, synthetic local recipients</div>
+<div class="decisions"><h2>Verdict</h2><p><strong>APPROVE this bounded native-dispatch proof.</strong> All seven replay groups passed on the unchanged 41-file candidate <code>f38b7ab00f05dae81617c85bd20aaa74be39124437b71d0e55063708ee2b1c9c</code>. This does not complete P2 or select Mautic through D0M. No owner sign-in or real email was needed.</p></div>
+<div class="status"><h2>Independently checked</h2><ul><li>Re-ran the full authored replay and typecheck, both exit 0. Fixtures generated fresh native log IDs; builder evidence was copied before execution.</li><li>Matched all 41 frozen source hashes before and after. Compared all eight installed plugin files, installed bridge and 15 recorded core file hashes. PHP syntax checks passed.</li><li>Checked the internal Docker network and pinned image identities. The engine config contains only the synthetic child session plus scoped adapter, with no owner session.</li><li>Read the queue listener, message stamping/hash, final transport, durable SQLite bridge and replay assertions. Root separately reviews the authored diff.</li></ul></div>
+<h2>Before and after, separate fixture runs</h2><table><tr><th>Scenario</th><th>Builder baseline</th><th>Fresh independent replay</th></tr><tr><td>unapproved</td><td>log 20; 0 receipt(s); proposed</td><td>log 28; 0 receipt(s); proposed</td></tr><tr><td>deliver</td><td>log 21; 1 receipt(s); confirmed</td><td>log 29; 1 receipt(s); confirmed</td></tr><tr><td>revoke</td><td>log 22; 0 receipt(s); paused</td><td>log 30; 0 receipt(s); paused</td></tr><tr><td>kill</td><td>log 23; 0 receipt(s); outcomeUnknown</td><td>log 31; 0 receipt(s); outcomeUnknown</td></tr></table>
+<p>Each safety scenario included three more native cron/worker passes. The kill case sent SIGKILL after permit consumption, waited for Doctrine redelivery and still recorded no sink receipt. This is an actual worker fault on the local fixture, not a mock process status.</p>
+<table><tr><th>Additional native behavior</th><th>Fresh observation</th></tr><tr><td>Open branch</td><td>First approved send produced one local receipt; the real local open pixel changed read state 0→1; its second native send was separately approved. Exactly two total receipts after extra cron/worker passes.</td></tr><tr><td>Re-entry</td><td>Campaign remove/readd advanced rotation to 2, used a new log and intent, and produced one receipt. The old open did not activate the new branch.</td></tr><tr><td>Ordinary API send</td><td>No final transport acceptance without an approved intent. Payload/recipient/intent/instance substitutions in the branch replay were also refused.</td></tr></table>
+<h2>Important limit in native accounting</h2><p>The database’s campaign event still has a triggered timestamp after the worker-kill case. I queried that exact fresh log and confirmed it, while H0 remained <code>outcomeUnknown</code>. Mautic’s triggered/sent bookkeeping must not be presented as authoritative provider delivery. The plugin can deliberately swallow a post-consumption sink failure to avoid resend; unknown outcomes and operational holds need a separate recovery/UI path. This bounded fixture has no general hold resolution.</p>
+<h2>Scope still open</h2><p>Real mail count is zero. Receipts are local HTTP sink records, not mailbox acceptance, inbox placement or reputation evidence. Only one synthetic instance and transactional native email type were exercised. Frequency queues, marketing duplicate rules, click/reply branches, automatic approved-campaign translation, production I1 integration, r3 sync/consent races, a second isolated tenant, public routing, restore/deprovision, Remold editing controls, resource/load/fleet-cost comparison and the equivalent native slice remain required. This replay did not retry the blocked I1 authorization audit or modify financial proofs.</p>
+<p>The original builder red records remain historical evidence, not newly reproduced red runs. Fresh negative checks proved refusal on this installed candidate; no source repair was made during verification. The before/after table compares independent fixture runs rather than implying that a new defect was fixed.</p>
+<h2>Commands and evidence</h2><pre>pnpm --dir proofs/marketing test
+pnpm --dir proofs/marketing typecheck
+node proofs/marketing/evidence/independent/check.mjs</pre>
+<p><a href="replay.log">Full replay log</a> · <a href="typecheck.log">Typecheck</a> · <a href="check.log">Installed/runtime checks</a> · <a href="verdict.json">Machine-readable verdict</a> · <a href="before-source-check.json">Before source check</a> · <a href="after-check.json">After source/runtime check</a> · <a href="before-safety.json">Builder before</a> · <a href="after-safety.json">Fresh after</a> · <a href="after-native-branch.json">Open branch</a> · <a href="after-reentry.json">Re-entry</a> · <a href="after-api-boundary-green.json">API refusal</a></p>
+<p>Services were already initialized and remain available; ports 3540/3542/3545/3546 are released to the coordinator. No provider credentials, customer data or host home were introduced into the marketing fixture. No service selection or deployment is authorized by this report.</p></body></html>

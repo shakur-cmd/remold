@@ -1,0 +1,26 @@
+{
+  "at": "2026-09-25T02:27:59.790Z",
+  "observer": "root builder via cua_repl Chrome",
+  "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+  "before": {
+    "signoutUris": [],
+    "defaultSignout": null,
+    "homepage": "http://localhost:5173"
+  },
+  "after": {
+    "signoutUris": [
+      "http://localhost:5173",
+      "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "defaultSignout": "http://localhost:5173",
+    "homepage": "http://localhost:5173"
+  },
+  "savedAndReopened": true,
+  "ownedByRehearsal": {
+    "pr3": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+    "pr4": "https://pr-4-remold-i2-preview.shakur-949.workers.dev"
+  },
+  "cleanup": "Remove only the closing preview exact signout URI. Existing cleanup helper preserves this extra field; this separate owned UI step is required. Keep localhost default to preserve former homepage fallback.",
+  "independentlyVerified": false
+}

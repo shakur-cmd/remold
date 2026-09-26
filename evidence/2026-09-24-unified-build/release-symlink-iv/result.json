@@ -1,0 +1,39 @@
+{
+  "verdict": "PASS",
+  "oldSha256": "570f4c5f8d7748a39d1c64e8d36330ae922ff4f45fe09dc5d1b04eb32fdd78ad",
+  "sourceHashes": {
+    "ops/release/release.mjs": "012592cb7af8132ad180a66ae8761cb27a73e943ac018ecdec9ad09a7f1afbe5",
+    "ops/release/release.test.mjs": "f134f36b3d416e3231b53198c5d9d5e0fa51610d72a7c81c9adc04c716919bfa"
+  },
+  "directorySymlink": true,
+  "beforeGood": {
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "afterGood": {
+    "status": 0,
+    "stdout": "{\"sha\":\"dddddddddddddddddddddddddddddddddddddddd\",\"deploymentAuthorized\":false}\n",
+    "stderr": ""
+  },
+  "beforeBad": {
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "afterBad": {
+    "status": 1,
+    "stdout": "",
+    "stderr": "Artifact inventory mismatch\n"
+  },
+  "normalImport": {
+    "status": 0,
+    "stdout": "IMPORT_OK\n",
+    "stderr": ""
+  },
+  "evalImport": {
+    "status": 0,
+    "stdout": "EVAL_IMPORT_OK\n"
+  },
+  "providerCalls": 0
+}

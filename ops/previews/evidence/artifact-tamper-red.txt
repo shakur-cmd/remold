@@ -1,0 +1,13 @@
+file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-a-xcxovlze/checkout/ops/release/release.mjs:41
+  if (JSON.stringify(manifest.files) !== JSON.stringify(inventory(directory))) throw new Error('Artifact inventory mismatch');
+                                                                                     ^
+
+Error: Artifact inventory mismatch
+    at verifyArtifact (file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-a-xcxovlze/checkout/ops/release/release.mjs:41:86)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/[eval1]:1:158
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:224:26
+    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:221:20)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0

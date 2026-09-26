@@ -1,0 +1,30 @@
+{
+ "run": "8b47829c",
+ "capturedAt": "2026-09-26T12:29:15.271Z",
+ "tenant": "a",
+ "postStatuses": [
+  200,
+  200,
+  200
+ ],
+ "pendingBefore": 3,
+ "runs": [
+  {
+   "exit": 1,
+   "stderr": "AssertionError [ERR_ASSERTION]: Mautic API refused 400",
+   "settledThisRun": null
+  },
+  {
+   "exit": 1,
+   "stderr": "AssertionError [ERR_ASSERTION]: Mautic API refused 400",
+   "settledThisRun": null
+  }
+ ],
+ "state": {
+  "iv%pct-8b47829c@example.invalid": "pending",
+  "%@%.%": "pending",
+  "iv-after-poison-8b47829c@example.invalid": "pending"
+ },
+ "goodContacts": 0,
+ "pendingAfter": 3
+}

@@ -1,0 +1,33 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:09:02 Convex functions ready! (705.41ms)
+RED B1 ungranted child cannot read secret AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   {
++     public: 'visible A',
++     secret: 'SECRET-A'
++   }
++ ]
+- []
+
+RED B2 downgrade removes direct authority from future new operations AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B3 delegate cannot grant to unrelated peer AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B4 owner cannot grant foreign binding/account AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B5 A adapter cannot reconcile B callback AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED B6 bounded grant can authorize direct action without human approval Error: [Request ID: 173909c0253eef01] Server Error
+Uncaught Error: not claimable
+    at deny (../convex/harness.ts:6:54)
+    at handler (../convex/harness.ts:119:41)
+
+B7/B8 baseline gap: continuation, expiry and unknown-absence APIs do not exist; no contrived missing-function red claimed. Mutation probes required after implementation.
+6 genuine behavior assertions failed on pre-review implementation
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

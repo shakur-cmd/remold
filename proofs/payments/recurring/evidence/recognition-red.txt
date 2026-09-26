@@ -1,0 +1,98 @@
+$ node replay.mjs
+AssertionError [ERR_ASSERTION]: Gross uses retained exact receipts; only valid immutable cycle receipts reduce reservation
++ actual - expected
+... Skipped lines
+
+  [
+    {
+      anomaly: true,
++     held: 702,
+-     held: 602,
+      kind: 'disjoint-valid',
++     paid: 201
+-     paid: 301
+    },
+    {
+      anomaly: true,
++     held: 702,
+-     held: 803,
+      kind: 'line-changed-new-success',
++     paid: 201
+-     paid: 301
+    },
+    {
+      anomaly: false,
+      held: 602,
+      kind: 'pending-then-valid',
+...
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'pending-then-invalid',
+      paid: 301
+    },
+    {
++     anomaly: false,
++     held: 602,
+-     anomaly: true,
+-     held: 903,
+      kind: 'invalid-then-reverted',
+      paid: 301
+    },
+    {
+      anomaly: true,
++     held: 702,
+-     held: 602,
+      kind: 'omitted-invoice',
++     paid: 201
+-     paid: 301
+    },
+    {
++     anomaly: false,
++     held: 301,
+-     anomaly: true,
+-     held: 602,
+      kind: 'duplicate-existing',
+      paid: 602
+    },
+    {
++     anomaly: false,
++     held: 301,
+-     anomaly: true,
+-     held: 903,
+      kind: 'duplicate-same-pull',
+      paid: 602
+    },
+    {
+      anomaly: true,
+...
+      anomaly: true,
++     held: 702,
+-     held: 803,
+      kind: 'amount-regression',
++     paid: 201
+-     paid: 100
+    },
+    {
+      anomaly: true,
++     held: 502,
+-     held: 602,
+      kind: 'overpaid',
+      paid: 401
+    },
+    {
++     anomaly: false,
+-     anomaly: true,
+      held: 602,
+      kind: 'incomplete-then-complete',
+      paid: 301
+    }
+  ]
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:636:20
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:84:16)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:11:5
+[ELIFECYCLE] Test failed. See above for more details.

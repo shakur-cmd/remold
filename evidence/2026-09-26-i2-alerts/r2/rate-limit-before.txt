@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Concurrent writes exceeded token budget
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/rehearsal/rate-limit.mjs:16:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withLocalCore (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/rehearsal/local-core.mjs:41:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/rehearsal/rate-limit.mjs:6:17 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

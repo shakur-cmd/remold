@@ -1,0 +1,24 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ '[synthetic fixture reference]'
+- '[synthetic fixture reference]'
+
+    at checkLocalRecovery (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recovery.mjs:33:132)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recovery-replay.mjs:44:144
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withPayments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:22:10)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recovery-replay.mjs:15:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '[synthetic fixture reference]',
+  expected: '[synthetic fixture reference]',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

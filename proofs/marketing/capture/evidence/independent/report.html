@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent check: capture and callback recovery</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Independent check: capture and callback recovery</h1>
+<div class="meta">2026-09-25 · scope: bounded P2 capture/callback SERVICE slice only · verdict: <b>PASS</b> (bounded slice) · checked by a fresh Opus 5.5 verifier, not the builder</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>None for this slice. Before any production import claim, the builder should add committed importer tests and solve the concurrent-ID gap below. That is builder work, not a decision for you.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Receiver tests 3/3 and the combined 20 Node checks pass (exit 0).</li>
+  <li>My own full recovery run passed (exit 0). It did 3 real Convex SIGKILL restarts and stopped/restarted callback-a. Tenant A submissions went 11 → 15 and contact 171 is now email-suppressed. The local import holds 15 captures with no duplicates.</li>
+  <li>Callback replay passed for both tenants (exit 0). A foreign key gets 401. A duplicate adds no receipt. SIGKILL plus restart keeps the exact receipts.</li>
+  <li>Native queue and mail counters did not change: A 0/170, B 4/4. Tenant B's domain data did not change; only its own receiver restart time moved.</li>
+  <li>All 16 candidate files, the prior 10/7/57 source sets and the 31 earlier capture evidence files are byte-identical before and after.</li>
+  <li>I removed protections in scratch copies. 5 receiver mutants and 5 importer mutants each make a check fail.</li>
+  <li>No runtime bug found in the bounded slice. The findings below are test gaps and risks beyond the claims.</li>
+</ul>
+</div>
+
+<h2>Findings</h2>
+<h3>Actual bugs in the bounded slice</h3>
+<p>None found.</p>
+<h3>Test-strength gaps (code correct, but no committed check would catch a regression)</h3>
+<ul>
+<li><b>No committed importer tests.</b> <code>run.mjs</code> only sends well-formed pages, so these guards go untested: PAGE_GAP, foreign-tenant CAPTURE_SCOPE, REPLAY_CHANGED, TRAVERSAL_IN_PROGRESS and MISSING_CONTACT_MUST_SUPPRESS. I confirmed they work only in my isolated harness (<a href="importer-mutants/baseline.json">baseline.json</a>). Removing each guard makes its case fail (<code>importer-mutants/m-*.json</code>).</li>
+<li><b>The "origin cannot change tenant" check cannot fail.</b> Both <code>receiver.test.mjs</code> and <code>callback-replay.mjs</code> send the foreign <code>X-Origin-Base-URL</code> only with a body that is already stored, so INSERT OR IGNORE hides any rebinding. A mutant that stores the tenant from that header still passes the suite. The real receiver stores a fresh body with a foreign origin as tenant <code>a</code> (<a href="receiver-probe.json">receiver-probe.json</a>).</li>
+<li>The JSON-object refusal (array → 400) and the fatal UTF-8 refusal (→ 400) work at runtime, but removing them passes the suite. The duplicate-signature-header guard is an equivalent mutant: Node joins the two headers and the signature regex already refuses them (raw socket gives 401, see <a href="receiver-duplicate-header-raw.json">receiver-duplicate-header-raw.json</a>). The 400 for that case in receiver-probe.json comes from how my client built the request, not from the receiver.</li>
+</ul>
+<h3>Risks beyond the claims</h3>
+<ul>
+<li><b>Concurrent-ID skip (analysis only, not reproduced; no extra native writes allowed).</b> The cursor is the highest native submission ID. If two submissions insert at the same time and the lower ID commits after the higher one is already visible, that lower ID is skipped forever. Tested runs were sequential, so this is not covered. It must be solved before any production claim.</li>
+<li><b>The 100-capture cap wedges the instance.</b> Reproduced in the isolated copy. After 100 captures, the 101st finish fails with CAPTURE_BOUND. The finished pending traversal stays, and every new scan then gets TRAVERSAL_IN_PROGRESS. This is the acknowledged max100, but the consequence is a permanent stall with no operator recovery path.</li>
+<li><b>Observations are not ordered.</b> A later-committed stale "unsuppressed" observation overwrites a recorded suppression (reproduced). This falls inside the acknowledged read/finalize race boundary. With the prescribed driver, observations are read right before finish, so in practice this is a delay.</li>
+<li>Convex refuses non-ASCII result keys. This fails closed, so only liveness is affected. Native field aliases are ASCII.</li>
+</ul>
+<h3>Acknowledged open, not claimed by this slice</h3>
+<p>Read/finalize observation race; max100; no installed scheduler or callback consumer (the proof driver polls); provider-history rollback; native existing-email identity overwrite; no CRM applyChange integration; native deletion and queue redelivery (webhook_queue stayed 0 and the 3 outage callbacks were logged, not retried); production auth; rate limits, browser/DNS/TLS, dynamic publishing, backup restore, LIVE delivery. I1 was excluded and not retried. This verdict does not certify P2 or any dependency.</p>
+
+<h2>Before and after</h2>
+<table>
+<tr><th>Check</th><th>Before</th><th>After</th></tr>
+<tr><td>Tenant A native</td><td>11 submissions, 170 contacts, email DNC {167}, webhook logs 6, receipts 2, queue 0, email stats 170</td><td>15 submissions, 174 contacts, email DNC {167, 171}, webhook logs 10, receipts 3, queue 0, email stats 170. Page hits, downloads, anonymous contacts, hooks and web config unchanged.</td></tr>
+<tr><td>Tenant B native</td><td>7 submissions, 27 contacts, queue 4, email stats 4, receipts 1, digest b517803e…</td><td>Identical, including the domain digest. callback-b StartedAt changed from the replay's restart.</td></tr>
+<tr><td>Candidate source (16)</td><td colspan="2">Aggregate 85863e6c5e1b2af65f211dc70b2db546760cf11bd97289901c3062d5d7419e80 before and after, 0 mismatches. The deployed receivers' <code>/callback-receiver.mjs</code> matches <code>4157db70…</code>.</td></tr>
+<tr><td>Prior sources 10/7/57</td><td colspan="2">0 mismatches before and after (<a href="hashes-before.json">before</a>, <a href="hashes-after.json">after</a>).</td></tr>
+<tr><td>Prior capture evidence (31 files)</td><td colspan="2">All unchanged. 4 new files come from the prescribed runners: <code>runs/independent-first/*</code> and <code>callback-replay-independent-first.json</code>. A secret-value scan of every new file found 0 hits.</td></tr>
+</table>
+
+<h2>Exact commands (run by this verifier)</h2>
+<pre>node --test proofs/marketing/capture/receiver.test.mjs                       # exit 0, 3/3
+cd proofs/marketing && node --test capture/receiver.test.mjs mime.test.mjs \
+  mime-oracle.test.mjs mime-sink.test.mjs publishing/server.test.mjs          # exit 0, 20/20
+node proofs/marketing/capture/run.mjs independent-first --callback-outage     # exit 0
+node proofs/marketing/capture/callback-replay.mjs independent-first           # exit 0
+node &lt;scratch&gt;/state.mjs                    # read-only native before/after (counts, digests, hook list, config sha)
+python3 receiver-mutants/run.py …            # 9 receiver mutants in scratch copies
+node importer-mutants/harness.mjs …          # isolated Convex 3720/3721, baseline + 5 mutants</pre>
+<p>Console output: <a href="run-outage-console.txt">run</a>, <a href="callback-replay-console.txt">replay</a>, <a href="receiver-test.txt">receiver tests</a>, <a href="combined-tests.txt">combined</a>. Runner evidence: <a href="../runs/independent-first/result.json">result.json</a>, <a href="../runs/independent-first/typecheck.txt">typecheck</a>, <a href="../runs/independent-first/fresh-process-readback.txt">fresh-process readback</a>, <a href="../callback-replay-independent-first.json">callback replay</a>. Native state: <a href="native-before.json">before</a> / <a href="native-after.json">after</a>. Run window: <a href="run-window-utc.txt">UTC</a>.</p>
+
+<h2>Who checked and limits</h2>
+<p>Checked by a fresh Claude Opus 5.5 session acting as independent verifier. It had no role in building this slice and delegated nothing. The builder's root evidence was read but is not counted as verification. Levels: identities SIM; native APIs, callbacks, SQLite and local Convex SERVICE; nothing SANDBOX or LIVE.</p>
+<p>Not run, as instructed: setup-receivers.mjs, allow-callbacks.mjs, the old public host baseline, and payment/mail proofs. No mail, no email worker, no production or provider accounts. Nothing was reset or deleted. Retained: <code>private/capture-independent-first</code>, the isolated harness scratch in <code>$TMPDIR/remold-capture-iv-scratch.*</code> (both backend logs private), and all receiver volumes and DBs. I did not print backend logs or process command lines.</p>
+<p>My isolated Convex harness is a local copy with synthetic rows. It proves importer logic, not native behavior. The concurrent-ID risk is reasoning only.</p>
+
+<h2>Candidate source hashes</h2>
+<table><tr><th>File</th><th>SHA256</th></tr><tr><td><code>capture/allow-callbacks.mjs</code></td><td><code>d4207cd75936ace2…</code></td></tr><tr><td><code>capture/callback-fixture.mjs</code></td><td><code>026d1aaf31148cc1…</code></td></tr><tr><td><code>capture/callback-replay.mjs</code></td><td><code>b4551a053f9f5f95…</code></td></tr><tr><td><code>capture/local/convex/importer.ts</code></td><td><code>44eb4313c601404f…</code></td></tr><tr><td><code>capture/local/convex/schema.ts</code></td><td><code>c754a154e4b181bb…</code></td></tr><tr><td><code>capture/local/convex/tsconfig.json</code></td><td><code>3e974e3d8eb89629…</code></td></tr><tr><td><code>capture/local/convex.json</code></td><td><code>dd3ba7397bb34b37…</code></td></tr><tr><td><code>capture/local/package.json</code></td><td><code>c7f9095c43ea9868…</code></td></tr><tr><td><code>capture/native.mjs</code></td><td><code>0edb182cc483c64f…</code></td></tr><tr><td><code>capture/outage.mjs</code></td><td><code>59ad11350d831bb7…</code></td></tr><tr><td><code>capture/read-replay.mjs</code></td><td><code>daeb978ee2b60a76…</code></td></tr><tr><td><code>capture/readback.mjs</code></td><td><code>e0b6a10c6e1c48e5…</code></td></tr><tr><td><code>capture/receiver.mjs</code></td><td><code>4157db7077602ef7…</code></td></tr><tr><td><code>capture/receiver.test.mjs</code></td><td><code>af7600b690b9fa79…</code></td></tr><tr><td><code>capture/run.mjs</code></td><td><code>a21be47fdd253c4b…</code></td></tr><tr><td><code>capture/setup-receivers.mjs</code></td><td><code>3955f7f31634fb93…</code></td></tr></table>
+</body>
+</html>

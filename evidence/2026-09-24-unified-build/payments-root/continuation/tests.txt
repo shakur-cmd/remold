@@ -1,0 +1,15 @@
+✔ Continuation reuses both exact customers with email-only updates and durable receipts (96.411292ms)
+✔ Continuation refuses wrong-scope before any provider write (9.441042ms)
+✔ Continuation refuses nonempty before any provider write (10.557625ms)
+✔ Continuation refuses incomplete before any provider write (8.073959ms)
+✔ An existing one-shot latch refuses a second start before a provider call (4.835625ms)
+✔ Lost response retains the attempted update and refuses restart (48.620667ms)
+✔ A changed email readback stops before updating the second customer (48.707333ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 278.368167

@@ -1,0 +1,112 @@
+[
+  {
+    "name": "C1 boundary-swap same normalized hash with different MIME structure",
+    "result": "FINDING",
+    "detail": "hash equal=true; python sealed parts=[('text/plain', 'Approved text'), ('text/html', '<p>Approved html</p><!--\\r\\n--EVIL \\r\\nContent-Type: text/html; ')] 0 | dispatched parts=[('text/plain', 'Approved text'), ('text/html', '<p>Approved html</p><!--'), ('text/html', '<p>Unapproved payload</p>\\r\\n-->')] 0"
+  },
+  {
+    "name": "C1b repo Python oracle on dispatched bytes",
+    "result": "AS-EXPECTED",
+    "detail": "sealed:AssertionError: Exactly one native tracking pixel required dispatched:AssertionError"
+  },
+  {
+    "name": "C1c boundary-swap close-delimiter truncation",
+    "result": "FINDING",
+    "detail": "hash equal=true; python dispatched parts=[('text/plain', 'Approved text'), ('text/html', '<p>Approved html</p><!--')] 0"
+  },
+  {
+    "name": "C2 Date text excluded from hash",
+    "result": "FINDING",
+    "detail": "accepted, same hash=true"
+  },
+  {
+    "name": "C2 Message-ID text excluded from hash",
+    "result": "FINDING",
+    "detail": "accepted, same hash=true"
+  },
+  {
+    "name": "C2 Date folded 2KB excluded from hash",
+    "result": "FINDING",
+    "detail": "accepted, same hash=true"
+  },
+  {
+    "name": "C2 Message-ID empty excluded from hash",
+    "result": "FINDING",
+    "detail": "accepted, same hash=true"
+  },
+  {
+    "name": "C3 single-byte mutation sweep",
+    "result": "FINDING",
+    "detail": "tried=3634 acceptedVariants=390 sameHash=12"
+  },
+  {
+    "name": "C4 Resent-Bcc header accepted (hashed)",
+    "result": "AS-EXPECTED",
+    "detail": "accepted"
+  },
+  {
+    "name": "C4 lowercase duplicate to",
+    "result": "AS-EXPECTED",
+    "detail": "rejected"
+  },
+  {
+    "name": "C4 BOUNDARY uppercase param",
+    "result": "AS-EXPECTED",
+    "detail": "accepted"
+  },
+  {
+    "name": "C4 8-bit byte",
+    "result": "AS-EXPECTED",
+    "detail": "rejected"
+  },
+  {
+    "name": "C4 bare LF",
+    "result": "AS-EXPECTED",
+    "detail": "rejected"
+  },
+  {
+    "name": "C4 preamble",
+    "result": "AS-EXPECTED",
+    "detail": "rejected"
+  },
+  {
+    "name": "C4 top-level CTE header",
+    "result": "AS-EXPECTED",
+    "detail": "accepted"
+  },
+  {
+    "name": "C4 folded To with second address",
+    "result": "AS-EXPECTED",
+    "detail": "rejected"
+  },
+  {
+    "name": "C4b uppercase BOUNDARY param stable across retries",
+    "result": "FINDING",
+    "detail": "hash equal=false (fails closed: retry would be held)"
+  },
+  {
+    "name": "C5 wrong key 403",
+    "result": "AS-EXPECTED",
+    "detail": ""
+  },
+  {
+    "name": "C5 boundary-swap variant with approved hash accepted by receiver",
+    "result": "FINDING",
+    "detail": "receiver would store split-view bytes under approved hash"
+  },
+  {
+    "name": "C5 8 concurrent retry-variant POSTs store exactly one",
+    "result": "AS-EXPECTED",
+    "detail": "statuses=200,409,409,409,409,409,409,409 rows=1"
+  },
+  {
+    "name": "C5 oversize 413",
+    "result": "AS-EXPECTED",
+    "detail": ""
+  },
+  {
+    "name": "C6 oracle/JS hash agreement on quoted+unquoted boundary variants",
+    "result": "FINDING",
+    "detail": "0/6"
+  }
+]

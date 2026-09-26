@@ -1,12 +1,15 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getPrincipal, requireMember } from "./identity";
+import { getPrincipal, requireWriter } from "./identity";
+import { unrestrictedHuman } from './authority/inbox';
+import { writable } from './authority/readonly';
 import { fail } from "./errors";
 
 export const create = mutation({ args: { orgId: v.id("orgs"), role: v.union(v.literal("admin"), v.literal("member")) }, handler: async (ctx, args) => {
-  const member = await requireMember(ctx, args.orgId, "admin");
+  const member = await requireWriter(ctx, args.orgId, "admin");
+  if (!unrestrictedHuman(member)) fail('FORBIDDEN', 'Unrestricted workspace access required');
   const token = crypto.randomUUID(), expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
-  await ctx.db.insert("invites", { orgId: args.orgId, token, role: args.role, createdBy: member.user._id, expiresAt });
+  await ctx.db.insert("invites", { orgId: args.orgId, token, role: args.role, createdBy: member.user._id, issuerMembershipId: member.member._id, issuerEpoch: member.member.authorityEpoch ?? 0, expiresAt });
   return { token, expiresAt };
 } });
 export const get = query({ args: { token: v.string() }, handler: async (ctx, args) => {
@@ -21,6 +24,9 @@ export const accept = mutation({ args: { token: v.string() }, handler: async (ct
   if (!invite) fail("NOT_FOUND", "Invite not found");
   const existing = await ctx.db.query("members").withIndex("by_org_user", (q) => q.eq("orgId", invite.orgId).eq("userId", principal.user._id)).unique();
   if (existing) return invite.orgId;
+  await writable(ctx, invite.orgId);
+  const issuer = await ctx.db.query('members').withIndex('by_org_user', q => q.eq('orgId', invite.orgId).eq('userId', invite.createdBy)).unique();
+  if (!issuer || (invite.issuerMembershipId ? issuer._id !== invite.issuerMembershipId || (issuer.authorityEpoch ?? 0) !== invite.issuerEpoch : issuer._creationTime > invite._creationTime) || issuer.role === 'member' || issuer.readScopes !== undefined || issuer.hiddenFieldIds?.length) fail('FORBIDDEN', 'Invitation issuer no longer has unrestricted administrator access');
   if (invite.expiresAt < Date.now() || invite.acceptedAt) fail("INVITE_EXPIRED", "Invite expired");
   await ctx.db.insert("members", { orgId: invite.orgId, userId: principal.user._id, role: invite.role });
   await ctx.db.patch(invite._id, { acceptedBy: principal.user._id, acceptedAt: Date.now() });

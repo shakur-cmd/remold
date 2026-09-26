@@ -1,0 +1,21 @@
+$ node ops/rehearsal/rate-limit.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Concurrent writes exceeded token budget
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/ops/rehearsal/rate-limit.mjs:16:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withLocalCore (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/ops/rehearsal/local-core.mjs:41:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/ops/rehearsal/rate-limit.mjs:6:17 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.18.0
+[ELIFECYCLE] Command failed with exit code 1.
+exit 1

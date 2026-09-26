@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Managed Remold: what flat-price CRMs really charge</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  small { color: #666; }
+</style>
+</head>
+<body>
+<h1>Managed Remold: what flat-price CRMs really charge</h1>
+<div class="meta">2026-09-25 · scope: pricing for the hosted, done-for-you offer, plus the "fork but don't sell" license question · status: research, awaiting your check. No price or license change has been made.</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>License.</b> AGPL can't do what you want. It explicitly allows anyone to sell the software. To allow self-hosting but block resale you need a different license. I recommend <b>FSL-1.1-ALv2</b> (the license Convex uses). Anyone can self-host it for their own business, but nobody can sell it as a competing service. Each version becomes Apache-2.0 after two years. The cost: Remold would be "source-available", not "open source". That reverses the AGPL-3.0-only decision from 2026-09-22 and the project rules. Switching is clean <i>now</i>, because you're the only committer and there are 0 forks. Copies already published stay AGPL for anyone who took them.</li>
+  <li><b>Managed price.</b> Proposed to test: <b>$299/month per business</b>. It covers hosting, unlimited users, and a fixed monthly allowance of changes you make for them. Texting, calling, email sending and AI are passed through at cost with a cap they set. The $49 self-serve price from this morning stays separate. This is a price to test, not a proven one.</li>
+  <li><b>Change allowance.</b> Pick the number, e.g. 2 small changes a month. Until you set one, it's zero. "Unlimited changes" is the one thing I'd never offer at a flat price.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>All four official pricing pages were loaded on 2026-09-25, along with GoHighLevel's help docs on usage fees.</li>
+  <li>License texts were read from the primary sources: AGPL §4 and §10, the Open Source Definition #1 and #6, FSL-1.1 and PolyForm Noncommercial.</li>
+  <li>Reddit and G2 blocked our tools. No Reddit quote below was read directly; those are marked secondhand.</li>
+</ul>
+</div>
+
+<h2>The short version</h2>
+<p>"Fixed price" is mostly a sticker. Three of the four charge extra for the things that cost money to run, and the fourth doesn't say. Only GoHighLevel has real public reviews. PipeBase and Conduyt have zero independent reviews, and Zite isn't a CRM.</p>
+
+<table>
+<tr><th>Product</th><th>Checked price</th><th>What's not in the flat price</th><th>What people say</th></tr>
+<tr><td>GoHighLevel</td><td>$97 Starter (3 sub-accounts), $297 Unlimited, $497 Agency Pro. All plans have unlimited users.</td><td>Everything metered: SMS $0.00747/segment plus carrier fees, calls $0.0166/min, email $0.675 per 1,000, $22.50–64 texting registration, AI Employee $50–97/mo per location. Marking up usage when you resell requires the $497 plan.</td><td>Trustpilot 4.9 (15,060), but mostly praise for named support reps. Capterra 4.2 (89), ease of use 3.7. Complaints: "SO SO SO complicated", surprise charges, downtime that "costs us lost sub-account clients", worse email deliverability.</td></tr>
+<tr><td>PipeBase</td><td>$99/mo, unlimited users, 40,000 records. Each extra 40,000 records is $79.</td><td>The page is silent on call minutes, SMS volume and number fees. Terms page wouldn't load.</td><td>No independent reviews anywhere. Launched 2026 (copyright), owned by WayPoint Labs. Homepage testimonials look like placeholder copy.</td></tr>
+<tr><td>Conduyt</td><td>$299 Starter, $499 Pro, unlimited users. 20-day trial. Enterprise includes self-hosting.</td><td>All calling and texting is on your own Twilio bill. The page contradicts itself on monthly vs annual pricing.</td><td>No independent reviews. Product Hunt shows 0 reviews and 1 follower. Its claims (38 staff, 820+ teams) are self-reported only.</td></tr>
+<tr><td>Zite</td><td>Not $19. Pro is $20/mo billed annually, Business $75. Unlimited users on every plan, even free.</td><td>Credits (100/mo on Pro), workflow runs (5,000 on Pro), records. No code export.</td><td>An AI app builder from the Fillout team, not a CRM. Few reviews. Secondhand complaints that credits run out in a day and layouts are rigid.</td></tr>
+</table>
+
+<h2>What this means for Remold</h2>
+<ul>
+  <li><b>Unlimited users is table stakes.</b> All four do it. It's not a differentiator, it's the entry ticket.</li>
+  <li><b>Nobody at these prices changes the software for you.</b> GoHighLevel's answer is agencies reselling it, and GoHighLevel's own blog suggests they charge clients "$97 – $497+". That's the closest match to your offer. Your edge is the human doing the changes, not the feature list.</li>
+  <li><b>Be honest about usage up front.</b> Surprise charges and wallet top-ups are GoHighLevel's loudest complaint. Say in one line that texts, calls, email and AI are billed at cost, capped at a limit they set. That beats a fake "all included".</li>
+  <li><b>Why $299 and not $99.</b> PipeBase at $99 is cheaper software with bundled calling. But your plan includes your time, and your time is the scarce part. $299 matches GoHighLevel Unlimited and Conduyt Starter, and neither of them makes changes for you. If $299 won't sell in your in-person conversations, lower the change allowance before you lower the price.</li>
+  <li><b>Conduyt is the closest product.</b> Flat price, AI plus MCP, self-hosting on Enterprise. It's also unproven, so don't treat its price as market evidence.</li>
+</ul>
+
+<h2>The license question, simply</h2>
+<table>
+<tr><th>License</th><th>Self-host for own business</th><th>Sell it as a service</th><th>Called open source?</th></tr>
+<tr><td>AGPL-3.0 (today)</td><td>Yes</td><td><b>Yes</b>. §4: "You may charge any price or no price". §10 forbids adding a no-selling rule. They must publish their changes (§13).</td><td>Yes</td></tr>
+<tr><td>FSL-1.1-ALv2 (recommended)</td><td>Yes: "internal use" and professional services are permitted</td><td>No, while the version is under 2 years old. Blocks any "commercial product or service that substitutes for the Software".</td><td>No, "source-available"</td></tr>
+<tr><td>PolyForm Noncommercial</td><td><b>No</b> for businesses. Only personal, charity, education and government use.</td><td>No</td><td>No</td></tr>
+</table>
+<p>PolyForm matches your words literally, but it would stop a small business from self-hosting for itself. FSL matches what you actually described. Either way, Remold stops qualifying as open source, because the Open Source Definition #6 forbids restricting business use. That's a positioning change worth a real decision, not a footnote. If you keep AGPL, the realistic protection is that competitors must publish their changes, and customers buy <i>you</i>, not the code.</p>
+
+<h2>Sources</h2>
+<small>
+Official, loaded: gohighlevel.com/pricing; GHL help docs 48001223556, 155000001156, 155000005200, 155000006652; getpipebase.com/pricing; waypointlabz.com; conduyt.com/pricing; conduyt.com/integrations/twilio; producthunt.com/products/conduyt; zite.com/pricing; zite.com/help FAQ; fillout.com/blog/the-next-chapter; gnu.org/licenses/agpl-3.0.html; opensource.org/osd; fsl.software/FSL-1.1-ALv2.template.md; polyformproject.org/licenses/noncommercial/1.0.0.<br>
+Reviews, loaded: trustpilot.com/review/gohighlevel.com; capterra.com/p/177156/HighLevel/reviews; millo.co/gohighlevel-review; ideas.gohighlevel.com (downtime thread); ai-app-builders.com/tools/zite.<br>
+Secondhand, not verified: G2 scores, all Reddit sentiment (via softr.io and ciela.ai summaries), agency resale prices beyond GHL's own blog, all-in bill estimates (revenuegeeks.com), YouTube reviews (titles only, not watched).
+</small>
+</body>
+</html>

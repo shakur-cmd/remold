@@ -1,0 +1,14 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 15:12:44 Convex functions ready! (830.22ms)
+RED Settled-step provisional absence cannot settle a later unresolved step AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED Settled-step final absence cannot settle a later unresolved step AssertionError [ERR_ASSERTION]: Missing expected rejection.
+PASS Old consumed fence for the same unresolved step still supports provisional absence
+PASS Old consumed fence for the same unresolved step still supports final absence
+TWO OLD-CODE REDS; TWO VALID SAME-STEP CONTROLS PASS

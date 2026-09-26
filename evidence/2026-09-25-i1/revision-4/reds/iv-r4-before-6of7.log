@@ -1,0 +1,19 @@
+FAIL R4-C3 Explicit-list path returns exactly the rows and order the Convex index path gives for the same query, restricted to readable rows (member records.list and agent GET /records) 
+    order/filter differs from the index path: {"nameAsc":{"expected":"10 9 B Z a b é �y 😀x","member":"10 9 B Z a b é 😀x �y"},"nameDesc":{"expected":"😀x �y é b a Z B 9 10","member":"�y 😀x é b a Z B 9 10"},"amountEqMinus0":{"expected":"","member":"é"},"agentNameDesc":{"expected":9,"agent":9,"same":false}}
++ actual - expected
+
++ [
++   'nameAsc',
++   'nameDesc',
++   'amountEqMinus0',
++   'agentNameDesc'
++ ]
+- []
+
+PASS R4-P Every paged surface (list, filtered list, related, events feed, agent filter, CSV) looks identical before and after unreadable rows are added
+PASS R4-C1 Forged, out-of-range, malformed and foreign cursors (list and events) behave the same with and without unreadable rows and never return an unreadable row
+PASS R4-C2 Scope switch mid-paging: a list cursor on the index path, and an index cursor on the list path, are refused (fail closed) and reveal nothing
+PASS R4-C4 Merged events feed (pages of 3): no duplicates, no omissions, same newest-first order as the org index restricted to readable records; including a multi-event transaction (delete that clears references)
+PASS R4-C5 Other reader kinds: field-masked (records all), mixed scopes on one object, two list scopes with different fields, no scope on an object, legacy agent: paged surfaces unchanged by rows they cannot read; hidden-field filters refused identically
+PASS R4-S Residual (disclosed): suggestion and inbox lists. Measures the 1000-row cap and uncached timing against pending items the caller cannot see
+R4 SUMMARY 6 PASS / 1 FAIL

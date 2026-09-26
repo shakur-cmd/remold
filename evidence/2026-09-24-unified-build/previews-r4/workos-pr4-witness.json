@@ -1,0 +1,42 @@
+{
+  "at": "2026-09-25T01:55:30.301184+00:00",
+  "observer": "root CUA Chrome tab1111137281",
+  "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+  "project": "Remold",
+  "environment": "Staging",
+  "actions": [
+    "Added exact PR4 callback; saved; reopened dialog and read both callbacks with localhost default",
+    "Added exact PR4 CORS origin; saved; reopened and read both origins"
+  ],
+  "unchanged": [
+    "homepage",
+    "default callback",
+    "session lifetimes",
+    "sign-out URIs remain not set"
+  ],
+  "normalization": "Arrays ordered existing first, added second; order is not a provider guarantee",
+  "before": {
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "redirectUris": [
+      "http://localhost:5173/callback"
+    ],
+    "corsOrigins": [
+      "http://localhost:5173"
+    ],
+    "homepage": "http://localhost:5173",
+    "defaultRedirect": "http://localhost:5173/callback"
+  },
+  "after": {
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "redirectUris": [
+      "http://localhost:5173/callback",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev/callback"
+    ],
+    "corsOrigins": [
+      "http://localhost:5173",
+      "https://pr-4-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "homepage": "http://localhost:5173",
+    "defaultRedirect": "http://localhost:5173/callback"
+  }
+}

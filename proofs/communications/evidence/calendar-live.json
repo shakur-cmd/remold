@@ -1,0 +1,51 @@
+{
+  "level": "LIVE owner-driven one-event Calendar fixture; no H0 calendar capability claimed",
+  "planSha256": "584e739e76bc1b51f0a40cc6ffc00a4b1e33b16654811ac59023e4ba07e5a6e5",
+  "eventId": "remold62659d16b91b4059834ee280e01edde8",
+  "calendar": "primary",
+  "owner": "shakur@envoylogic.com",
+  "steps": [
+    {
+      "kind": "create-intent",
+      "id": "remold62659d16b91b4059834ee280e01edde8"
+    },
+    {
+      "kind": "created",
+      "id": "remold62659d16b91b4059834ee280e01edde8",
+      "etag": "\"3580573739319902\""
+    },
+    {
+      "kind": "reschedule-intent",
+      "id": "remold62659d16b91b4059834ee280e01edde8",
+      "etag": "\"3580573739319902\""
+    },
+    {
+      "kind": "rescheduled",
+      "id": "remold62659d16b91b4059834ee280e01edde8",
+      "etag": "\"3580573741199102\""
+    },
+    {
+      "kind": "delete-intent",
+      "id": "remold62659d16b91b4059834ee280e01edde8",
+      "etag": "\"3580573741199102\""
+    },
+    {
+      "kind": "deleted",
+      "id": "remold62659d16b91b4059834ee280e01edde8",
+      "deleteStatus": 204,
+      "verificationStatus": 200,
+      "tombstone": true
+    }
+  ],
+  "apiCalls": 6,
+  "result": {
+    "created": 1,
+    "rescheduled": 1,
+    "deleted": 1,
+    "activeTestEventsRemaining": 0,
+    "attendees": 0,
+    "sendUpdates": "none",
+    "deleteVerification": "cancelled tombstone"
+  },
+  "status": "PASS"
+}

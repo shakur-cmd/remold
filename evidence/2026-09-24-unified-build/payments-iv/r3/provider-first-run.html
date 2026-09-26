@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Independent sandbox checkpoint</title><style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style><body><h1>First manual sandbox run: independent read-only checkpoint</h1><p class="meta">2026-09-24T23:18:02.308Z · c0_verifier · actual Stripe SANDBOX GET responses</p><div class="decisions"><h2>Bounded result</h2><p><strong>PASS:</strong> Both exact original test customers exist with matching run metadata and no email. Each complete customer-filtered list contains zero invoices, zero PaymentIntents and zero charges. This does not complete the manual payment lifecycle or authorize a retry.</p></div><div class="status"><h2>Proven</h2><p>Independently ran ten authenticated GET requests using the existing guarded test credential helper. All returned HTTP200. No writes, local backend startup, financial replay or provider mutations occurred.</p></div><table><tr><th>Connected account</th><th>Customer</th><th>Invoices / PaymentIntents / charges</th><th>Verification</th></tr><tr><td>acct_1UJIndJL8hhTtG1o</td><td>cus_VJzrZTORGay5Lp</td><td>0 / 0 / 0</td><td>Complete, matching original run metadata</td></tr><tr><td>acct_1UJL2DR59Pk6MTFE</td><td>cus_VJzr8q1ZtrR81v</td><td>0 / 0 / 0</td><td>Complete, matching original run metadata</td></tr></table><p>Exact original run: <code>3f7c6229-f345-4b59-8b6a-971208c4efe7</code>. Sandbox platform identity and livemodefalse were checked first. Customer IDs and run metadata were asserted against the preserved original run, not accepted solely from the parent report. List requests used the exact customer filter and limit100; every response had has_more:false and an empty data array.</p><p><a href="provider-first-run.json">Fresh API receipt evidence</a> · <a href="provider-first-run.mjs">Read-only check</a> · <a href="provider-first-run.txt">Exit0 output</a> · <a href="../../../../proofs/payments/evidence/manual-sandbox-first-run-reconciliation.json">Parent checkpoint</a>.</p><h2>Limits</h2><p>The original provider run stopped at invoice creation with HTTP400 missing customer email. This checkpoint confirms the resulting state only for the two exact customer scopes. It does not test a continuation, delivery controls, full manual lifecycle, recurring collection, I1/I7 or production behavior. No secrets or unrelated customer data are included.</p></body></html>

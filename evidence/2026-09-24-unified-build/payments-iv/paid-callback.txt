@@ -1,0 +1,26 @@
+{
+  "level": "SERVICE local Convex; synthetic financial observations; no provider calls",
+  "cases": [
+    {
+      "name": "Older unpaid pull after independent paid callback",
+      "epoch": 1,
+      "afterCallback": {
+        "paidMinor": 100,
+        "state": "paid",
+        "epoch": 1
+      },
+      "afterStale": {
+        "paidMinor": 0,
+        "state": "open",
+        "complete": true,
+        "epoch": 1
+      },
+      "staleError": null,
+      "voidPermit": true,
+      "voidError": null,
+      "collectionReserved": true,
+      "collectionError": null,
+      "status": "FAIL"
+    }
+  ]
+}

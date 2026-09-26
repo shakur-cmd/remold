@@ -1,0 +1,51 @@
+[
+  {
+    "command": "node evidence/2026-09-24-unified-build/payments-root/r3/unexplained-remaining-baseline.mjs",
+    "cwd": ".",
+    "exitCode": 1,
+    "expected": 1,
+    "output": "complete-fixture-red.txt"
+  },
+  {
+    "command": "node evidence/2026-09-24-unified-build/payments-root/r3/unexplained-remaining-probe.mjs",
+    "cwd": ".",
+    "exitCode": 0,
+    "expected": 0,
+    "output": "unexplained-remaining-green.txt"
+  },
+  {
+    "command": "node remaining-replay.mjs",
+    "cwd": "proofs/payments",
+    "exitCode": 0,
+    "expected": 0,
+    "output": "remaining.txt"
+  },
+  {
+    "command": "node route-policy-replay.mjs",
+    "cwd": "proofs/payments",
+    "exitCode": 0,
+    "expected": 0,
+    "output": "route-policy.txt"
+  },
+  {
+    "command": "node route-success-replay.mjs",
+    "cwd": "proofs/payments",
+    "exitCode": 0,
+    "expected": 0,
+    "output": "route-success.txt"
+  },
+  {
+    "command": "node repeated-pull-replay.mjs",
+    "cwd": "proofs/payments",
+    "exitCode": 0,
+    "expected": 0,
+    "output": "repeated-pull.txt"
+  },
+  {
+    "command": "pnpm typecheck",
+    "cwd": "proofs/payments",
+    "exitCode": 0,
+    "expected": 0,
+    "output": "typecheck.txt"
+  }
+]

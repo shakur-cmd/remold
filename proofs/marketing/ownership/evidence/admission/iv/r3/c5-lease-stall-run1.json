@@ -1,0 +1,41 @@
+{
+ "run": "c9163ef4",
+ "capturedAt": "2026-09-26T13:04:43.333Z",
+ "section": "stall",
+ "email": "iv-stall-c9163ef4@example.invalid",
+ "second": {
+  "exit": 0,
+  "err": "",
+  "afterMs": 17303,
+  "log": [
+   {
+    "capture": "j572arww3cwvvbcdb7m2bjg7wx8f5bhs",
+    "outcome": "created",
+    "contactId": 428,
+    "reason": null,
+    "result": "settled"
+   }
+  ]
+ },
+ "stalled": {
+  "exit": 1,
+  "err": " const body=await r.json();if(body.status!=='success'){const e=Error('Raw capture '+path+' refused: '+(body.errorData?.code??body.errorMessage));e.code=body.errorData?.code;throw e;}",
+  "out": ""
+ },
+ "contacts": [
+  {
+   "id": 428,
+   "firstname": "Stall suggestion"
+  }
+ ],
+ "capture": {
+  "status": "settled",
+  "outcome": "created",
+  "contactId": 428
+ },
+ "verdict": {
+  "oneContact": true,
+  "settledOnce": true,
+  "stalledFenced": false
+ }
+}

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {createHash,createDecipheriv} from 'node:crypto';
+import {resolve} from 'node:path';
+const dir=resolve('proofs/agents/native/.private/restore/independent-b0caac');
+const bundle=JSON.parse(readFileSync(dir+'/bundle.json','utf8'));
+const entries=execFileSync('unzip',['-Z1',dir+'/full.zip'],{encoding:'utf8'}).trim().split('\n');
+const entry=entries.find(n=>n.startsWith('_storage/'+bundle.file+'.'));
+assert.ok(entry);
+const encrypted=execFileSync('unzip',['-p',dir+'/full.zip',entry]);
+const digest=x=>createHash('sha256').update(x).digest('hex');
+assert.equal(digest(encrypted),bundle.ciphertextSha256);
+const object=JSON.parse(encrypted);
+function decrypt(value,key){const d=createDecipheriv('aes-256-gcm',key,Buffer.from(value.iv,'hex'));d.setAuthTag(Buffer.from(value.tag,'hex'));return Buffer.concat([d.update(Buffer.from(value.bytes,'base64')),d.final()]);}
+const key=Buffer.from(bundle.key,'hex');assert.equal(digest(decrypt(object,key)),bundle.plaintextSha256);
+const wrongKey=Buffer.from(key);wrongKey[0]^=1;assert.throws(()=>decrypt(object,wrongKey));
+const tampered=structuredClone(object),bytes=Buffer.from(tampered.bytes,'base64');bytes[0]^=1;tampered.bytes=bytes.toString('base64');assert.throws(()=>decrypt(tampered,key));
+const result={level:'Independent offline archive inspection; original archive unchanged',storedBlobMatchesPrivateBundle:true,plaintextDigestMatches:true,wrongKeyRejected:true,modifiedCiphertextRejected:true,archiveEntries:entries.length,archiveSha256:digest(readFileSync(dir+'/full.zip')),secretsPrinted:false};
+writeFileSync(new URL('./archive-check.json',import.meta.url),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

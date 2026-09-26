@@ -1,0 +1,72 @@
+$ node --test stripe.test.mjs adjustments.test.mjs && node domain-replay.mjs && node public-payment-replay.mjs && node safety-replay.mjs && node lifecycle-replay.mjs && node collection-replay.mjs && node accounting-replay.mjs
+✔ Complete cursor traversal normalizes every distinct refund and credit receipt (32.140667ms)
+✔ No complete result after failure (8.119375ms)
+✔ No complete result after bound (10.597917ms)
+✔ No complete result after empty (4.362167ms)
+✔ No complete result after repeat (5.359833ms)
+✔ No complete result after unknown (6.012042ms)
+✔ No complete result after link (13.557917ms)
+✔ No complete result after foreign (6.941375ms)
+✔ No complete result after mismatch (15.412792ms)
+✔ Outside pending refund is normalized as held, not silently omitted (17.112334ms)
+✔ provider refuses live or malformed credentials without revealing them (0.456042ms)
+✔ Stripe raw-payload verifier rejects modified bytes, expired signatures and live events (0.384375ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 164.4435
+PASS Human creates integer-minor quote in own workspace
+PASS Cross-tenant customer/account IDs and actor injection cannot create obligations
+PASS Acceptance is bound to immutable version and secret, with duplicate clicks atomic
+PASS Expired public acceptance is refused
+PASS Deposit intent is created once; currency and amount changes are refused
+PASS Browser paid forgery and wrong-account adapter cannot settle an invoice
+PASS Authenticated replay settles once and changed callback bytes are refused
+PASS Deposit allocation is once-only and exact integer arithmetic preserves total
+PASS Concurrent financial commands emit one attributed event per obligation
+PASS Readonly refuses new issuance but incoming reconciliation and export continue
+PASS Removing customer preserves issued snapshot and retained financial attribution
+PASS Restricted/disconnected merchant refuses new issuance while history remains
+PASS Tenant B canonical finance export stays unchanged
+{"passed":13}
+PASS public payment capability
+PASS Current role is checked again at final permit
+PASS Readonly permits one bounded human refund and records its actor
+PASS In-flight reservations prevent concurrent over-refunds
+PASS Tenant, account, binding and agent authority cannot enter the safety path
+PASS Incoming truth settles a late refund after removal without granting new authority
+PASS Cancellation is a zero-value client lifecycle operation; disconnected bindings fail
+{"passed":3}
+{"passed":2}
+PASS Two accepted refund receipts cannot reuse one aggregate observation to restore capacity
+PASS Credit is counted once with callback-first
+PASS Credit is counted once with receipt-first
+PASS Pre-existing refunds, unknown holds and distinct receipts all retain their capacity
+PASS Concurrent credits cannot share a receipt or lose accepted value to an older aggregate
+PASS Outside refund racing a local receipt has distinct identity and blocks excess capacity
+PASS Partial reconciliation blocks permits and retains unknown reservations
+PASS A real HTTP read failure closes adapter reconciliation before the request
+PASS General collection adapter cannot dispatch refunds or cancellation under any capability
+PASS Receipt identities are account scoped, immutable and cannot move between documents
+PASS Newer target generation refuses an older issued snapshot after a credit void
+PASS Callback before a pull observation cannot be overwritten by that pull
+PASS Callback after a pull observation cannot be overwritten by that pull
+PASS A complete adapter HTTP pull observes newly paid and refunded value without invalidating itself
+PASS A refund callback during a pull invalidates its older completion
+PASS A credit callback during a pull invalidates its older completion
+PASS Outside pending refunds stay held until an authoritative terminal refetch
+PASS Refund dispatch refuses disputed value with status needs_response
+PASS Refund dispatch refuses disputed value with status under_review
+PASS Refund dispatch refuses disputed value with status warning_needs_response
+PASS Refund dispatch refuses disputed value with status warning_under_review
+PASS Refund dispatch refuses disputed value with status lost
+PASS Refund dispatch refuses disputed value with status unrecognized
+PASS Refund dispatch refuses disputed value with status null
+PASS Refund dispatch remains available after no dispute
+PASS Refund dispatch remains available after won
+PASS Refund dispatch remains available after warning_closed
+PASS Binding a pending receipt replaces its exact local hold and rejects unrelated metadata

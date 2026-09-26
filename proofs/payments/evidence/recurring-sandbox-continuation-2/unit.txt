@@ -1,0 +1,24 @@
+✔ the already cancelled F commitment cannot receive another cancel or card write (9.268833ms)
+✔ the two spent journals leave exactly one F advance and six H advances (1.315208ms)
+✔ only the two top-level delivery links may differ between invoice reads (1.04975ms)
+✔ the actual driver catch stores raw diagnostics privately and emits no message, URL or object diff (7.558666ms)
+✔ the actual driver gate accepts only source bytes committed by the approved aggregate (3.077291ms)
+✔ only D has writes, and arbitrary payment or email routes never reach Stripe (1.319708ms)
+✔ fixture price and setup parameters cannot increase terms or add a recipient (1.112083ms)
+✔ clock advances require exact ownership, monotonic time, two-interval and per-clock caps (0.455542ms)
+✔ setup permits exactly four card-only off-session confirmations and refuses duplicate keys (2.06525ms)
+✔ only registered exact recurring commands may update a card or cancel without proration (0.185083ms)
+✔ one-shot claim is durable before provider effects and an unknown response never retries (19.069917ms)
+✔ finite activations bind approved terms and stop after exactly three schedules (0.373917ms)
+✔ continuation inherits spent caps and idempotency keys instead of starting a fresh budget (0.238333ms)
+✔ the first-stop budget leaves six advances per clock and no new fixture resources (0.342083ms)
+✔ cancellation waits through real invoice and schedule changes and accepts rotating delivery links (0.662291ms)
+✔ unsettled cancellation stops after eight reads instead of widening financial equality (0.265084ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.207458

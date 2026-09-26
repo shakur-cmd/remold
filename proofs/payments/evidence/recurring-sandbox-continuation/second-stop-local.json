@@ -1,0 +1,169 @@
+{
+  "at": "2026-09-25T03:32:32.726Z",
+  "cwd": "/Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/private/local-Wk79yZ",
+  "commands": [
+    {
+      "_creationTime": 1790305143390.9443,
+      "_id": "kn77jrsa8e28fsp1vpqz7ehyf18f25g0",
+      "actor": "md70we2dds4dnv61jefg485s8s8f2n9v",
+      "actorEpoch": 1,
+      "commitment": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+      "expires": 1790305203390,
+      "kind": "activate",
+      "late": false,
+      "org": "n57ar56f349ez592pakc5pj2mh8f2wh1",
+      "providerRef": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+      "session": "m97bgm95q5dbxdy5rhadytcqg98f29eq",
+      "state": "confirmed"
+    },
+    {
+      "_creationTime": 1790307048197.874,
+      "_id": "kn77rzmbrzjnnn5dprz4td3cd18f30dk",
+      "actor": "md70we2dds4dnv61jefg485s8s8f2n9v",
+      "actorEpoch": 1,
+      "commitment": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+      "expires": 1790307108197,
+      "kind": "cancel",
+      "late": false,
+      "org": "n57ar56f349ez592pakc5pj2mh8f2wh1",
+      "providerRef": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+      "session": "m97bgm95q5dbxdy5rhadytcqg98f29eq",
+      "state": "confirmed"
+    },
+    {
+      "_creationTime": 1790306999186.908,
+      "_id": "kn74jcx2e69c4mx7n1awk9pc5n8f2vkr",
+      "actor": "md70we2dds4dnv61jefg485s8s8f2n9v",
+      "actorEpoch": 1,
+      "commitment": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+      "expires": 1790307059186,
+      "kind": "card",
+      "late": false,
+      "org": "n57ar56f349ez592pakc5pj2mh8f2wh1",
+      "providerRef": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "session": "m97bgm95q5dbxdy5rhadytcqg98f29eq",
+      "setupIntent": "seti_1UJPpiJL8hhTtG1o8OK8eyYa",
+      "state": "confirmed"
+    },
+    {
+      "_creationTime": 1790307020856.133,
+      "_id": "kn7fyssyxf5spzajxxwjzetbbd8f3t6b",
+      "actor": "md70we2dds4dnv61jefg485s8s8f2n9v",
+      "actorEpoch": 1,
+      "commitment": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+      "expires": 1790307080856,
+      "kind": "card",
+      "late": false,
+      "org": "n57ar56f349ez592pakc5pj2mh8f2wh1",
+      "providerRef": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "session": "m97bgm95q5dbxdy5rhadytcqg98f29eq",
+      "setupIntent": "seti_1UJPq3JL8hhTtG1oKFDaEqvU",
+      "state": "confirmed"
+    }
+  ],
+  "commitment": {
+    "_creationTime": 1790305143390.944,
+    "_id": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+    "actor": "md70we2dds4dnv61jefg485s8s8f2n9v",
+    "actorEpoch": 1,
+    "author": "md70we2dds4dnv61jefg485s8s8f2n9v",
+    "binding": "j97abvvt4vpahyzfjvp5p7adqs8f3p5g",
+    "cancelRequested": true,
+    "capMinor": 903,
+    "complete": false,
+    "customer": "kd7ezp3e8cgdjm2y53d3qc0y198f2qm7",
+    "generation": 1,
+    "observation": 8,
+    "org": "n57ar56f349ez592pakc5pj2mh8f2wh1",
+    "paidMinor": 301,
+    "plan": "m17541pdvfj6ns2vm4x62jebks8f3aky",
+    "providerEnd": 1790564389,
+    "recognizedMinor": 301,
+    "reservedMinor": 602,
+    "schedule": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+    "service": "finite-F",
+    "session": "m97bgm95q5dbxdy5rhadytcqg98f29eq",
+    "state": "cancellationPending",
+    "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+    "subscriptionItem": "si_VK3Sci4vzesLGt"
+  },
+  "cycles": [
+    {
+      "_creationTime": 1790306997662.532,
+      "_id": "kx787m7e5h827487hw47m9tjy18f280y",
+      "amountMinor": 301,
+      "autoAdvance": false,
+      "binding": "j97abvvt4vpahyzfjvp5p7adqs8f3p5g",
+      "commitment": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+      "cycleIndex": 0,
+      "invoice": "in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "line": {
+        "id": "il_1UJPMXJL8hhTtG1oDi66HMMJ",
+        "price": "price_1UJPLkJL8hhTtG1ogKQZq82g",
+        "serviceEnd": 1790391589,
+        "serviceStart": 1790305189,
+        "subscriptionItem": "si_VK3Sci4vzesLGt"
+      },
+      "lineDecision": "valid",
+      "observedLine": {
+        "id": "il_1UJPMXJL8hhTtG1oDi66HMMJ",
+        "price": "price_1UJPLkJL8hhTtG1ogKQZq82g",
+        "serviceEnd": 1790391589,
+        "serviceStart": 1790305189,
+        "subscriptionItem": "si_VK3Sci4vzesLGt"
+      },
+      "observedPaidMinor": 301,
+      "paidMinor": 301,
+      "payments": [
+        {
+          "amountMinor": 301,
+          "eligible": true,
+          "id": "pi_3UJPLuJL8hhTtG1o1ijPgsYT",
+          "invoicePayment": "inpay_1UJPLuJL8hhTtG1oTzVC63hS",
+          "status": "succeeded"
+        }
+      ],
+      "period": 1790305189,
+      "status": "paid",
+      "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV"
+    },
+    {
+      "_creationTime": 1790307019263.536,
+      "_id": "kx7e13272r59jq24heb71m7ys18f2rct",
+      "amountMinor": 301,
+      "autoAdvance": true,
+      "binding": "j97abvvt4vpahyzfjvp5p7adqs8f3p5g",
+      "commitment": "ks71vmyjaaj68c21zxbjrjnnnh8f3svy",
+      "cycleIndex": 1,
+      "invoice": "in_1UJPpnJL8hhTtG1oCfWk7Ewf",
+      "line": {
+        "id": "il_1UJlq5JL8hhTtG1oUNye7LjB",
+        "price": "price_1UJPLkJL8hhTtG1ogKQZq82g",
+        "serviceEnd": 1790477989,
+        "serviceStart": 1790391589,
+        "subscriptionItem": "si_VK3Sci4vzesLGt"
+      },
+      "lineDecision": "valid",
+      "observedLine": {
+        "id": "il_1UJlq5JL8hhTtG1oUNye7LjB",
+        "price": "price_1UJPLkJL8hhTtG1ogKQZq82g",
+        "serviceEnd": 1790477989,
+        "serviceStart": 1790391589,
+        "subscriptionItem": "si_VK3Sci4vzesLGt"
+      },
+      "observedPaidMinor": 0,
+      "paidMinor": 0,
+      "payments": [
+        {
+          "amountMinor": 301,
+          "id": "pi_3UJPpqJL8hhTtG1o0brTQ5zJ",
+          "invoicePayment": "inpay_1UJPprJL8hhTtG1oEe4JSyag",
+          "status": "failed"
+        }
+      ],
+      "period": 1790305189,
+      "status": "open",
+      "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV"
+    }
+  ]
+}

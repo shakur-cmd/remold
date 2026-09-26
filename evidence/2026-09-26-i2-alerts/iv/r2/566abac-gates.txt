@@ -1,0 +1,22 @@
+$ tsc -b && tsc --noEmit -p convex
+$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-rel
+
+
+ Test Files  25 passed (25)
+      Tests  73 passed (73)
+   Start at  12:39:37
+   Duration  905ms (tests 71%, transform 15%, import 13%, worker 1%)
+
+$ vitest run --config ops/authority/vitest.config.ts
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-rel
+
+
+ Test Files  17 passed (17)
+      Tests  97 passed (97)
+   Start at  12:39:38
+   Duration  1.06s (tests 76%, transform 15%, import 9%, worker 1%)
+
+exit 0

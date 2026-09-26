@@ -1,0 +1,49 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (2 tests | 1 failed) 16ms
+   × every frozen H0 replay group maps to production tests that exercise its operations 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations
+AssertionError: expected [ …(15) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Explicit manage lists cannot authorize firing or regranting an ancestor: mapped tests never fire an actor",
++   "Read scopes restrict object/records/fields and every SIM surface has a leakable shape: mapped tests never attempt an out-of-scope grant",
++   "Authoritative absence and retryable rejection preserve logical key and revalidate new permits: mapped tests never record provider absence, mark outcome unknown",
++   "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly: mapped tests never claim",
++   "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship: mapped tests never claim, issue a permit, consume a permit",
++   "Durable cancellation survives rejection, absence, expiry and model continuation: mapped tests never record provider absence, mark outcome unknown, fail an attempt",
++   "Scoped adapter sees cancellation signal and records one late accepted tail: mapped tests never fire an actor",
++   "Unresolved consumed attempt survives sweep and holds global exposure: mapped tests never fire an actor, fail an attempt",
++   "Unresolved consumed attempt survives expiry and holds global exposure: mapped tests never fire an actor, fail an attempt",
++   "Unresolved consumed attempt survives failure and holds global exposure: mapped tests never fire an actor, fail an attempt",
++   "Cancellation cannot release confirmed work with missing usage: mapped tests never cancel",
++   "Unconsumed unknown is ignored and scheduler recovers false: mapped tests never cancel",
++   "Unconsumed unknown is ignored and scheduler recovers true: mapped tests never cancel",
++   "Settled-step provisional absence cannot settle a later unresolved step: mapped tests never record provider absence, mark outcome unknown",
++   "Settled-step final absence cannot settle a later unresolved step: mapped tests never record provider absence, mark outcome unknown",
++ ]
+
+ ❯ ops/authority/h0-parity.test.ts:61:16
+     59|     if (missing.length) gaps.push(`${row.h0}: mapped tests never ${mis…
+     60|   }
+     61|   expect(gaps).toEqual([]);
+       |                ^
+     62| });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  11:02:04
+   Duration  98ms (tests 39%, transform 35%, import 21%, worker 4%)
+

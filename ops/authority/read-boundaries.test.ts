@@ -1,0 +1,42 @@
+import { expect, it } from 'vitest';
+import { anyApi } from 'convex/server';
+import { agentFor, api, objectFields, rest, userAndOrg } from '../../convex/test.helpers';
+const policies = anyApi['authority/policies'], grants = anyApi['authority/grants'];
+it('daily task membership cannot reveal due or done fields denied for that particular record', async () => {
+  const f = await userAndOrg(), task = await objectFields(f.client, f.orgId, 'task');
+  const today = Math.floor(Date.now() / 86400000) * 86400000;
+  const create = (title: string) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: task.object._id, values: { [task.fields.title._id]: title, [task.fields.dueDate._id]: today, [task.fields.done._id]: false } });
+  const a = await create('Visible due'), b = await create('Private due');
+  const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'tasks', origin: 'external' });
+  const scopes = [{ objectId: task.object._id, records: [a.recordId], fields: [task.fields.title._id, task.fields.dueDate._id, task.fields.done._id] }, { objectId: task.object._id, records: [b.recordId], fields: [task.fields.title._id] }];
+  for (const scope of scopes) await f.client.mutation(grants.grant, { orgId: f.orgId, target: agent.agentId, capability: 'read', scope: { kind: 'records', ...scope }, mode: 'direct', delegate: false, expiresAt: Date.now() + 60000 });
+  expect.soft((await rest(f.t, agent.key)('GET', '/api/v1/today')).json.tasks.map((r: any) => r.id)).toEqual([a.recordId]);
+  const memberId = await f.t.run(async ctx => (await ctx.db.query('members').collect())[0]._id);
+  await f.client.mutation(policies.setMember, { orgId: f.orgId, memberId, scopes, hiddenFieldIds: [] });
+  expect.soft((await f.client.query(api.today.get, { orgId: f.orgId, today })).tasks.map((r: any) => r._id)).toEqual([a.recordId]);
+});
+it('deleted-record suggestions remain scoped to the original record and cannot be adopted or inspected outside it', async () => {
+  const f = await userAndOrg(), company = await objectFields(f.client, f.orgId, 'company');
+  const create = (name: string) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: company.object._id, values: { [company.fields.name._id]: name } });
+  const a = await create('Allowed'), b = await create('Retained secret');
+  const writer = await agentFor(f.client, f.orgId, { name: 'writer' });
+  const suggested = (await rest(f.t, writer.key)('POST', '/api/v1/suggestions', { action: 'update', record: b.recordId, values: { name: 'Future secret' }, reason: 'Private explanation' })).json.suggestion.id;
+  await f.client.mutation(api.records.remove, { orgId: f.orgId, recordId: b.recordId });
+  const reader = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'reader', origin: 'external' });
+  const scope = { objectId: company.object._id, records: [a.recordId], fields: [company.fields.name._id] };
+  await f.client.mutation(grants.grant, { orgId: f.orgId, target: reader.agentId, capability: 'read', scope: { kind: 'records', ...scope }, mode: 'direct', delegate: false, expiresAt: Date.now() + 60000 });
+  expect.soft((await rest(f.t, reader.key)('GET', '/api/v1/suggestions')).json).toEqual([]);
+  const memberId = await f.t.run(async ctx => (await ctx.db.query('members').collect())[0]._id);
+  await f.client.mutation(policies.setMember, { orgId: f.orgId, memberId, scopes: [scope], hiddenFieldIds: [] });
+  expect.soft(await f.client.query(api.suggestions.list, { orgId: f.orgId })).toEqual([]);
+  await expect.soft(f.client.mutation(api.suggestions.apply, { orgId: f.orgId, suggestionId: suggested })).rejects.toMatchObject({ data: { code: 'NOT_FOUND' } });
+  await expect.soft(f.client.mutation(api.suggestions.adopt, { orgId: f.orgId, suggestionId: suggested })).rejects.toMatchObject({ data: { code: 'NOT_FOUND' } });
+});
+it('record-specific read masks also constrain proposal fields even when another record exposes the same field', async () => {
+  const f = await userAndOrg(), company = await objectFields(f.client, f.orgId, 'company'), agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'proposer', origin: 'external' });
+  const create = (name: string) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: company.object._id, values: { [company.fields.name._id]: name, [company.fields.city._id]: 'Private city' } });
+  const a = await create('A'), b = await create('B');
+  const grant = (capability: string, recordId: any, fields: any[]) => f.client.mutation(grants.grant, { orgId: f.orgId, target: agent.agentId, capability, scope: { kind: 'records', objectId: company.object._id, records: [recordId], fields }, mode: 'propose', delegate: false, expiresAt: Date.now() + 60000 });
+  await grant('read', a.recordId, [company.fields.city._id]); await grant('read', b.recordId, [company.fields.name._id]); await grant('propose', b.recordId, [company.fields.city._id]);
+  expect((await rest(f.t, agent.key)('POST', '/api/v1/suggestions', { action: 'update', record: b.recordId, values: { city: 'Hidden write' }, reason: 'Outside read mask' })).status).toBe(400);
+});

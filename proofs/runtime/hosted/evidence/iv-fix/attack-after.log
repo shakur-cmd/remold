@@ -1,0 +1,21 @@
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3950 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3950
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 10:48:58 Convex functions ready! (900.54ms)
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+PASS hostile guest cannot escape sandbox, cross-read the other tenant, or reach the host/control plane
+PASS forged tenant ids on stdout never cross-bill another tenant
+FAIL DEFECT PROBE: guest-controlled usage report is billed verbatim for finished runs (under- and over-reporting) - under-report expected billed<streamed, got {"tokensStreamed":4,"usageBilled":4,"orgSpent":4,"applied":false}
+PASS oversized output does not crash the executor; the next run still works
+FAIL DEFECT PROBE: widened org-kill race applies output after the org is killed - expected the race to apply output at least once
+PASS a finished run using less than its reservation returns reserved to zero (no leak)
+PASS late result after cancel is billed but never applied even with a rushed reconcile
+PASS concurrent higher-pressure load never exceeds org or global hard caps
+Command `node attack.mjs` exited with code 1

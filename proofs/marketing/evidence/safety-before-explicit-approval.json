@@ -1,0 +1,44 @@
+{
+  "level": "SERVICE Mautic/Doctrine/Convex with synthetic operator approvals and local HTTP sink; no real mail",
+  "results": [
+    {
+      "scenario": "deliver",
+      "status": "PASS",
+      "nativeLog": 8,
+      "rotation": 1,
+      "operationState": "confirmed",
+      "bridgeState": "delivered",
+      "deliveries": 1,
+      "workerKilled": false,
+      "additionalCronPasses": 3
+    },
+    {
+      "scenario": "revoke",
+      "status": "PASS",
+      "nativeLog": 9,
+      "rotation": 1,
+      "operationState": "paused",
+      "bridgeState": "refused-or-unknown",
+      "deliveries": 0,
+      "workerKilled": false,
+      "additionalCronPasses": 3
+    },
+    {
+      "scenario": "kill",
+      "status": "PASS",
+      "nativeLog": 10,
+      "rotation": 1,
+      "operationState": "outcomeUnknown",
+      "bridgeState": "consumed",
+      "deliveries": 0,
+      "workerKilled": true,
+      "additionalCronPasses": 3
+    }
+  ],
+  "limits": [
+    "Only one synthetic Mautic instance",
+    "Source/binding/workflow mapping is fixture operator configuration, not production identity integration",
+    "One-second Doctrine redelivery timeout is a fault-test override; not production policy",
+    "Engagement branch execution, frequency queue and full P2/S4 remain open"
+  ]
+}

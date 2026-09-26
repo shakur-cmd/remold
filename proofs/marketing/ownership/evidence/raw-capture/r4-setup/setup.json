@@ -1,0 +1,84 @@
+{
+  "capturedAt": "2026-09-26T12:42:34.993Z",
+  "level": "SERVICE two internal public-edge sidecars; no host ports/DNS/TLS",
+  "rows": [
+    {
+      "tenant": "a",
+      "name": "remold-marketing-proof-public-a",
+      "id": "53e12c2d8437a639c163c685f2886c89ab2a0e7da62ba5400361fa6b978616d9",
+      "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+      "network": "remold-marketing-proof",
+      "host": "tenant-a.marketing-proof.invalid",
+      "publishedPorts": 0,
+      "memoryBytes": 67108864,
+      "serverSha256": "f6f3713e644f16d0483ab06dc8a9f2e93f214d32d40a448e9c9eebd8ab531f4c",
+      "formPath": "/form/intake",
+      "fieldSchema": [
+        {
+          "name": "email",
+          "type": "email",
+          "label": "Email"
+        },
+        {
+          "name": "firstname",
+          "type": "text",
+          "label": "First name"
+        }
+      ],
+      "captureKeySha256": "a86940eb72ec61483f80d41f80bd12ec97eb18b76f99ddce8f87c2c5213d613f",
+      "routes": [
+        {
+          "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-a",
+          "nativePath": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-a",
+          "contentType": "text/html"
+        },
+        {
+          "path": "/asset/d05d2f9d-2e42-4a2a-b1cd-009c9cbfc863",
+          "nativePath": "/asset/d05d2f9d-2e42-4a2a-b1cd-009c9cbfc863",
+          "contentType": "text/plain"
+        }
+      ],
+      "keySha256": "fb5882bd2a7bd86d09fc586e2567f6c86f7e4f5cc943cb87ba91ccf1ce93b164",
+      "hasNativeAdminCredential": false
+    },
+    {
+      "tenant": "b",
+      "name": "remold-marketing-proof-public-b",
+      "id": "1b539b9d648a65bf328e0eee59e3a2ac18ac0e0a9a902f8218f968a04a0e4cc0",
+      "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+      "network": "remold-marketing-proof-tenant-b",
+      "host": "tenant-b.marketing-proof.invalid",
+      "publishedPorts": 0,
+      "memoryBytes": 67108864,
+      "serverSha256": "f6f3713e644f16d0483ab06dc8a9f2e93f214d32d40a448e9c9eebd8ab531f4c",
+      "formPath": "/form/intake",
+      "fieldSchema": [
+        {
+          "name": "email",
+          "type": "email",
+          "label": "Email"
+        },
+        {
+          "name": "firstname",
+          "type": "text",
+          "label": "First name"
+        }
+      ],
+      "captureKeySha256": "b02ea4b0c4706148736317eafca5604f639aced695153b8716b0dd4563b9f105",
+      "routes": [
+        {
+          "path": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-b",
+          "nativePath": "/remold-public-49397c35-be26-485a-812e-f715ebd472ef-b",
+          "contentType": "text/html"
+        },
+        {
+          "path": "/asset/abba8ef1-7c95-40cd-9e6b-fc6b429ee7d9",
+          "nativePath": "/asset/abba8ef1-7c95-40cd-9e6b-fc6b429ee7d9",
+          "contentType": "text/plain"
+        }
+      ],
+      "keySha256": "ef61406dc8392a28f6634372628dccce375da605e72a1bdc55a6b93f5789cb38",
+      "hasNativeAdminCredential": false
+    }
+  ]
+}

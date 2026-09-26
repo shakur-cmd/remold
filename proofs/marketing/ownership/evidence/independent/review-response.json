@@ -1,0 +1,34 @@
+{
+  "result": "**Verdict: PASS, within limits.** Raw capture-only intake works on the native service for both A and B at the exact 3-file source (`adc4d035\u2026c28e2`). It does not promote form 1 or the public edge, and it does not integrate the CRM.\n\nI read the actual installed Mautic 7.2.1 source and ran the checks myself; I didn't rely on the root report.\n\n| Step | Exit | Result |\n|---|---|---|\n| `replay.mjs independent-first before` | 1 (expected) | Both tenant rows were written, then the check failed as planned. Native merges turned A 179 into 180 and B 30 into 31, and the email DNC was lost on both. |\n| `kiosk-replay.mjs \u2026 --privacy` | 0 | A180 and B31 kept their profile and the restored DNC. The contact count didn't change. |\n| `capture-only.mjs independent-first` | 0 | A form 7 and B form 5 each stored 4 concurrent submissions, none linked to a contact. Nothing changed in contacts, the profile, DNC, tracking, campaign memberships (A 135, B 0), the mail queue (A 0, B 4) or email stats. |\n| Optional negative on A form 7, same headers without the cookie | 0 | One post created anonymous contact 181 and linked it to submission 30. So DNT/GPC alone aren't enough; the fixed cookie is what prevents the link. I kept the row. |\n\n**What stayed the same:**\n- Every pre-existing contact row is byte-identical.\n- The old form definitions (A 1\u20135, B 1\u20133, including form 1) and the old DNC rows are unchanged.\n- The source hashes match before and after, for the 3 ownership files and the older sets (capture 16, public 10, tenant 7, MIME 57).\n- The approved core hash `a8c8cd\u2026` recomputes correctly.\n- I made no source edits, cleanup, commits or delegation, and sent no mail.\n\n**Why it works:** In the installed source, `ContactTracker.php:51-53` returns no contact when the `Blocked-Tracking` cookie is present. With no mapped fields, `SubmissionModel.php:269-273` never creates or matches a contact.\n\n**Assessment:** This fits the approved core (Convex owns records, suppression takes precedence) better than any mapped-field path, because every native merge path proven here can delete the DNC. I haven't claimed any core writes are built.\n\n**Superseded:** The report replaces the consultation's \"at least one mapped field\" gate (N6) for the raw intake path only. If the mapped-email kiosk path is used instead, all of its gates still apply, including duplicate-email handling and concurrent new emails.\n\n**Still open:**\n- The public edge still posts to form 1. The server-set cookie and the allowlist of approved forms aren't built yet.\n- A raw form linked to any campaign would fail natively and must be refused (none are linked on either tenant today).\n- Carried over from the capture proof:\n  - The import cursor could skip a lower ID that commits late.\n  - Consent could change after the read.\n  - The importer stops at 100 captures.\n- I didn't run the importer against these raw forms.\n\n**Two notes:**\n- The authorized scripts wrote their evidence to `evidence/independent-first/`, not `independent/`.\n- The brief limited my writes to the evidence folder, so I didn't append to the decisions log. Root should add the entry.\n\nFiles are in `proofs/marketing/ownership/evidence/independent/`:\n- report.html\n- verdict.json\n- negative-no-cookie.json\n- scratch-copy/",
+  "is_error": false,
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 3544,
+      "outputTokens": 17,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003629,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 68,
+      "outputTokens": 24981,
+      "cacheReadInputTokens": 1812073,
+      "cacheCreationInputTokens": 78383,
+      "webSearchRequests": 0,
+      "costUSD": 1.4893706000000002,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 4075,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  }
+}

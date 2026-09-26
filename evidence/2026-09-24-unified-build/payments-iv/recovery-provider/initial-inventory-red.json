@@ -1,0 +1,91 @@
+{
+  "status": "FAIL",
+  "level": "SANDBOX actual Stripe read-only reconciliation",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-25T00:14:00.832Z",
+  "runId": "3f7c6229-f345-4b59-8b6a-971208c4efe7-manual-continuation-1",
+  "proofSha256": "c35ff4ca91a5abce87ac1f19f2b2ddf762ca205c502ea919d6c73406a425c6dc",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "customers": [],
+  "invoices": [],
+  "payments": [],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_blWxnZGBlsGfEh",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_BKQKCDhcN6FmL4",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzrZTORGay5Lp",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_mdhcxMKlNsjKNg",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzrZTORGay5Lp/cash_balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_tWjHCJLsj1Funt",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_8EIHF9PTHyx9VZ",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoiceitems",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_Y6ZQgRPKKlPmnf",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_VVYz7oiun9Ol9u",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "failure": {
+    "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'pi_3UJMihJL8hhTtG1o00fmF0SR',\n    'pi_3UJMikJL8hhTtG1o052vE6tn',\n+   'pi_3UJMisJL8hhTtG1o1BeeB8dp',\n    'pi_3UJMivJL8hhTtG1o1dNY7e1K',\n    'pi_3UJMj2JL8hhTtG1o1UT4Z7nY',\n+   'pi_3UJMjFJL8hhTtG1o0JDbXNw4',\n+   'pi_3UJMjMJL8hhTtG1o1dWy9hP1',\n    'pi_3UJMjVJL8hhTtG1o047JovLR',\n+   'pi_3UJMjaJL8hhTtG1o0EenEstY',\n    'pi_3UJMjdJL8hhTtG1o00qp2Pfp'\n  ]\n",
+    "status": null
+  }
+}

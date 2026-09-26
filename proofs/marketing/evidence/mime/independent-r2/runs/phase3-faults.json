@@ -1,0 +1,47 @@
+{
+  "level": "SERVICE native Mautic queue and local authority/receiver only",
+  "results": [
+    {
+      "scenario": "body-after-consume",
+      "status": "PASS",
+      "intent": "f548701a14fbe214860c7000d9aea3b1be1c3f43fa06b6fd9f20b6d04fa71bde",
+      "normalizedHash": "42f3b2ba800679917ca27dbd9fec3259a0689b77ca2fea777e0c23e8c5f72a92",
+      "bridgeState": "consumed",
+      "authorityState": "outcomeUnknown",
+      "receiverPosts": 0,
+      "receiverDeliveries": 0,
+      "h0Receipts": 0,
+      "conflictingSyntheticReceipt": false,
+      "transportAccepted": 0,
+      "failedMessageEvents": 3
+    },
+    {
+      "scenario": "subject-before-consume",
+      "status": "PASS",
+      "intent": "4d99d1e8dc4d979b813b41bcce395dbf2376dd44b6ebc841e5f2fe936fb9e329",
+      "normalizedHash": "1dd842308e7ffe3ac6a60dc68046c338a0bb3f7dd16520b68c4878cfdf537f90",
+      "bridgeState": "sealed",
+      "authorityState": "approved",
+      "receiverPosts": 0,
+      "receiverDeliveries": 0,
+      "h0Receipts": 0,
+      "conflictingSyntheticReceipt": false,
+      "transportAccepted": 0,
+      "failedMessageEvents": 4
+    },
+    {
+      "scenario": "reconcile-collision",
+      "status": "PASS",
+      "intent": "977fcaf16e7df01003675cb53d04869da0564596a91d1e36a1b45ae64d84ced2",
+      "normalizedHash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+      "bridgeState": "delivered",
+      "authorityState": "confirmed",
+      "receiverPosts": 1,
+      "receiverDeliveries": 1,
+      "h0Receipts": 1,
+      "conflictingSyntheticReceipt": true,
+      "transportAccepted": 0,
+      "failedMessageEvents": 3
+    }
+  ]
+}

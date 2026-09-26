@@ -1,0 +1,25 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /External capability denied/. Input:
+
+'403:{"error":{"code":"FORBIDDEN","message":"Approval changed or expired"}}'
+
+    at refuse (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-h0.mjs:8:178)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-h0.mjs:81:274
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:21:76)
+    at async Object.replayH0Parity [as h0] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-h0.mjs:78:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:56:84)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:17:16 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '403:{"error":{"code":"FORBIDDEN","message":"Approval changed or expired"}}',
+  expected: /External capability denied/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

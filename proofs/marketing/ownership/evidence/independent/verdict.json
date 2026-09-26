@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-25",
+  "checkedBy": "claude-opus-5-5 fresh independent session (not builder, not prior consultant)",
+  "verdict": "PASS",
+  "bounded": "SERVICE native A/B raw capture-only intake at exact 3-file source; not public-edge promotion, Mautic adoption, CRM/core integration or P2 completion",
+  "source": {"aggregateSha256": "adc4d0352121693e8a65e4406d52055af8add59447693cf9dfce0ee1508c28e2", "unchangedAfter": true, "priorSetsUnchanged": {"capture": 16, "public": 10, "tenant": 7, "mime": 57}, "coreSha256Recomputed": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe"},
+  "runs": [
+    {"cmd": "replay.mjs independent-first before", "exit": 1, "expected": 1, "result": "A179->180, B30->31 merged, DNC lost, both rows written"},
+    {"cmd": "kiosk-replay.mjs independent-first --privacy", "exit": 0, "result": "PASS canonical A180/B31 profile+restored DNC kept, contacts unchanged"},
+    {"cmd": "capture-only.mjs independent-first", "exit": 0, "result": "PASS A form7/B form5, 4 concurrent each, all lead null, zero contact/profile/DNC/tracking/campaign/queue/stats change"},
+    {"cmd": "scratch negative.mjs (A form7, no Blocked-Tracking cookie, DNT/GPC kept)", "exit": 0, "result": "anonymous contact 181 created and linked to submission 30; cookie is load-bearing"}
+  ],
+  "outsideFixtureUnchanged": {"preexistingContactRows": true, "oldFormDefinitions": "A1-5,B1-3 identical incl form1", "oldDncRows": true, "campaignLeads": true, "queue": true, "emailStats": true},
+  "supersedes": "Consultation N6 'at least one mapped field' for raw intake path only; mapped kiosk path keeps N2/N3/N4/N5/N6 gates",
+  "open": ["edge fixed-cookie/allowlist admission not built; edge still posts form1", "late lower-ID cursor skip", "stale consent after read", "importer max 100 captures", "importer not run on raw forms", "core Person reconciliation/send-time suppression/applyChange not built", "raw form must be refused if linked to any campaign (null addContact)"]
+}

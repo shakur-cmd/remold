@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P4 callback ingestion: independent verification, round 2</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>P4 callback ingestion: independent verification, round 2</h1>
+<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion-iv · target: cd2b630 on p4/callback-ingestion-2026-09-26 · evidence level: SERVICE/SIM · verifier: Opus 5.5 (independent, not the builder) · verdict: PASS for the claimed fixes, 2 new defects open · supersedes round 1 report <code>iv/report.html</code> for the current code</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Should 401 (and 403) from the provider close a receipt forever?</b> Today they do. An expired or rotated platform key closes every due receipt of every merchant in one drain pass. I recommend retrying 401 and 403 as merchant or platform conditions, and stopping the drain for that merchant, instead of refusing the event.</li>
+  <li><b>Is 7.5 minutes long enough before a receipt is closed as failed?</b> The backoff is 30, 60, 120 and 240 seconds, and the 5th attempt closes the receipt. The provider already got a 200, so it will not redeliver. A provider API outage longer than about 7.5 minutes loses the trigger for every event received in that window. The document stays marked incomplete, so money is safe, but nothing re-reads it until another event or a pull. I recommend a longer cap (hours) or a sweep that re-reads incomplete documents.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Builder suite <code>--all</code> rerun on my ports 3740/3741/3742: exit 0, all 13 runs meet expectation, same as the builder (<code>rerun/summary.json</code>, <code>logs/rerun.log</code>).</li>
+  <li>My 13 round 1 attacks plus the charge.refunded check all pass at cd2b630, both with production-style error hiding and without it (<code>attacks/none.json</code>, <code>attacks-plain/none.json</code>).</li>
+  <li>The builder's wiring diff is exact. I recomputed <code>diff iv-attacks-copy.mjs iv-attacks-after.mjs</code> and it is byte-identical to <code>fix/iv-after-wiring.diff</code>. It only touches imports, the schema copy, deps wiring, <code>row.id??row._id</code> in ack, and <code>backoffMs:0</code>. No attack and no assertion changed. <code>iv-attacks-copy.mjs</code> equals my round 1 script apart from the output path.</li>
+  <li>11 new attacks (R2-0 to R2-11). 8 pass fully. The fails are R2-3b and R2-4b (defect 1), R2-3c (defect 3) and R2-11 (defect 2).</li>
+  <li>18 verifier mutants: my 6 round 1 mutants adapted to the new code, plus 12 for the fixes. Every one is caught by at least one attack that passes on the real code (<code>attacks/&lt;mutant&gt;.json</code>, <code>logs/m-*.log</code>).</li>
+  <li>Frozen files: cd2b630 differs from base 4fbe55f by additions only. All 392 base files under <code>proofs/payments</code> are byte-identical, and <code>proofs/payments/convex/</code> has zero diff against base (<code>frozen-hash-cd2b630.txt</code>).</li>
+  <li><code>tsc --noEmit</code> exits 0. Local Convex deployed the assembled schema with typecheck enabled in every run. Builder source hashes match the handover.</li>
+  <li>No provider activity: all reads went to an in-process stub, with no Stripe key present. I checked this by reading the code, not with a network monitor.</li>
+</ul>
+</div>
+
+<h2>Verdict per claim (round 2)</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Fix 1: per-merchant and per-receipt isolation</td><td>PASS</td><td>Attack 12, R2-1 and R2-2 pass. A revoked merchant first or in the middle is reported as <code>merchant_error adapter_denied</code>, and later merchants drain. An ack failure on one receipt does not stop the next one. The merchant-isolation and item-isolation mutants are both caught.</td></tr>
+<tr><td>Fix 2a: classification by error type, not text</td><td>PASS as stated; see defects 1 and 3</td><td>R2-3: 400, 402 and 404 are final. 408, 409, 429, 500, 502, 503, fetch TypeError, abort timeout, OutcomeUnknown, redacted plain errors and ConvexError are all retryable. AssertionError is final. The 404-retryable and final-everything mutants are caught.</td></tr>
+<tr><td>Fix 2b: backoff and 5-attempt cap</td><td>PASS</td><td>R2-5 checks the exact schedule with a 30s base. Attempts 1 to 4 retry, the receipt is skipped whenever it is not due (including 1 ms early), and attempt 5 closes it as failed with exactly one <code>payment.callback.failed:provider_503</code> row. A newer receipt applies meanwhile. The document is left <code>adjustmentsComplete:false</code>. The backoff-skip and attempt-cap mutants are caught.</td></tr>
+<tr><td>Fix 2c: 1000-row due scan</td><td>PARTIAL (disclosed limit, now measured)</td><td>R2-11 with 1001 receipts backing off: the due query does not error. The newer receipt is starved at the same clock, and also after the first backoff expires (30 drains). See defect 2.</td></tr>
+<tr><td>Fix 3: typed refusals and ConvexError codes</td><td>PASS</td><td>R2-7: invalid_code, adapter_denied, ingress_denied, invalid_account and account_bound all arrive as ConvexError codes through redaction. R2-0 confirms redaction is really on: a frozen plain error arrives as <code>[Request ID: redacted] Server Error</code>. Attack 6 passes redacted, with code <code>unbound_document</code>. The typed-refusal mutant is caught.</td></tr>
+<tr><td>Fix 4: unsupported_event_type</td><td>PASS</td><td>R2-6: charge.refunded, charge.dispute.created, credit_note.created, customer.subscription.updated, invoice_payment.paid and invoiceitem.created are all refused with <code>unsupported_event_type</code>, with audit rows and zero provider reads. An <code>invoice.paid</code> naming a charge id is refused <code>unbound_document</code>. The unsupported mutant is caught.</td></tr>
+<tr><td>Fix 5: park unbound accounts (200, bounded, no effect, alert)</td><td>PASS</td><td>R2-8: parked once, and redelivery and same-id-different-body stay one row with alert count 1. No change to A or B finance. A binding that exists in the database but is missing from the receiver config gets 400 <code>account_bound</code>, not parked. R2-9: at 501 the event gets 200, is not stored, rows stay 500, and a <code>park_overflow</code> alert counts it (3 arrivals, count 3). A duplicate at cap is still recognised. Park needs the ingress token; an adapter token gets <code>ingress_denied</code>. The park-dedupe, park-cap, park-bound, ingress-auth and park-alert mutants are all caught.</td></tr>
+<tr><td>Additive schema (callback/schema.ts)</td><td>PASS</td><td>R2-10: the deployed <code>payment_schema.ts</code> is byte-identical to the frozen <code>convex/schema.ts</code>. The 4 new tables do not shadow any base table. The base schema has no options object that the spread would drop.</td></tr>
+<tr><td>Round 1 claims (receiver, dedupe, signature, binding, tenant B)</td><td>PASS</td><td>All of my round 1 attacks and the builder's 10 checks pass redacted. Tenant B is unchanged at every checkpoint.</td></tr>
+<tr><td>54 frozen files unchanged; convex/ equals base</td><td>PASS</td><td>Hash comparison above.</td></tr>
+</table>
+
+<h2>Defects (new in round 2)</h2>
+<p><b>1. 401 and 403 are treated as final, so a credential problem closes every due receipt (medium, liveness only).</b> <code>classify()</code> treats every 4xx other than 408, 409 and 429 as final. A 401 means the platform key is invalid, expired or rotated; a 403 means a permission problem such as a revoked Connect account. Neither is a property of the event. Repro R2-4b: a stub returning <code>new StripeFailure(401,…)</code> for a bound invoice gives outcome <code>refused provider_401</code>, the receipt is closed, and there is an audit row. The provider will not redeliver because it already got a 200. Money is safe because the document stays incomplete, but the trigger is lost.</p>
+<p><b>2. The 1000-row scan still starves newer receipts behind a large backlog (low, disclosed by the builder).</b> Repro R2-11: 1001 receipts failing with 503. Ten drains defer 1000 of them. The 1001st row and a newer valid receipt sit beyond the scan limit. The newer receipt is not applied at the same clock, and still not after 30 drains at the next backoff time, because the first 1000 rows are re-deferred before the scan reaches it. By reading the code, the starvation ends only when those 1000 close as failed (about 7.5 minutes of clock). That fits the builder's disclosure, but "newer receipts are not starved" holds only below 1000 open receipts per merchant.</p>
+<p><b>3. classify() throws on a non-Error thrown value (low).</b> <code>'requestId' in error</code> throws a TypeError for a thrown string or number (R2-3c). In <code>drain()</code> the inner catch calls classify, so the outer catch records <code>item_error</code>. The receipt stays open with no attempt counting and no backoff, so it is retried on every drain. The current adapter only throws Error objects, so this is latent.</p>
+
+<h2>Observations</h2>
+<ul>
+  <li>A parked duplicate with a different body is accepted silently as a duplicate, with no digest comparison. It has no effect because parked rows are never applied.</li>
+  <li>The <code>parked</code> query shows at most 100 alert rows and the alerts table is not capped. The number of alert rows is bounded by the number of distinct connected accounts on the platform.</li>
+  <li>Ack-loss duplicate audit row: the probe is unchanged. The ledger is equal to a clean drain, and the duplicate row stays harmless.</li>
+  <li>The builder's <code>backoffMs:0</code> wiring for my attack 10 is legitimate. I tested real 30s backoff separately in R2-5.</li>
+</ul>
+
+<h2>Mutants (all run with production-style error hiding)</h2>
+<table>
+<tr><th>Mutant</th><th>What it removes</th><th>Caught by</th></tr>
+<tr><td>ack-before-store</td><td>200 sent before ingest or park</td><td>15 attacks, including backend-down</td></tr>
+<tr><td>ack-on-error</td><td>ack instead of defer on retryable failure</td><td>transient, R2-4, R2-5</td></tr>
+<tr><td>final-everything</td><td>every non-provider error final</td><td>transient, R2-3</td></tr>
+<tr><td>header-binding</td><td>Stripe-Account header picks tenant</td><td>attack 2</td></tr>
+<tr><td>refuse-scope</td><td>adapter check in refuse</td><td>attack 11</td></tr>
+<tr><td>digest-compare</td><td>frozen ingest digest check</td><td>attacks 1 and 4</td></tr>
+<tr><td>merchant-isolation</td><td>per-merchant catch</td><td>attack 12, R2-2</td></tr>
+<tr><td>item-isolation</td><td>per-receipt catch</td><td>run aborts at attack 5 (drain throws), exit 1</td></tr>
+<tr><td>404-retryable</td><td>404 no longer final</td><td>attack 13, R2-3 and others</td></tr>
+<tr><td>backoff-skip</td><td>due skip of waiting receipts</td><td>R2-5</td></tr>
+<tr><td>attempt-cap</td><td>5-attempt limit</td><td>R2-5</td></tr>
+<tr><td>typed-refusal</td><td>unbound_document in prepare</td><td>attack 6, R2-6</td></tr>
+<tr><td>unsupported</td><td>invoice-only type check</td><td>R2-6</td></tr>
+<tr><td>park-dedupe</td><td>parked (account, event) dedupe</td><td>R2-8, R2-9</td></tr>
+<tr><td>park-cap</td><td>500-row cap</td><td>R2-9</td></tr>
+<tr><td>park-bound</td><td>refuse parking a bound account</td><td>R2-7, R2-8</td></tr>
+<tr><td>ingress-auth</td><td>ingress token on park</td><td>R2-7</td></tr>
+<tr><td>park-alert</td><td>parked alert row</td><td>R2-8</td></tr>
+</table>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>A real production Convex deployment. Redaction was simulated with the builder's client hook, which I read (14 lines) and confirmed active with R2-0.</li>
+  <li>Real Stripe error shapes, retry timing and Connect deliveries. Classification was tested with the repo's own <code>StripeFailure</code> class.</li>
+  <li>The full wall-clock end of the R2-11 starvation. I stopped at 30 drains at the first backoff time; the rest is based on reading the code.</li>
+  <li>Network-level proof of zero provider traffic.</li>
+</ul>
+
+<h2>Files</h2>
+<p>All under <code>proofs/payments/evidence/callback-ingestion/iv/r2/</code>: <code>report.html</code>, <code>iv-r2.mjs</code> (SHA256 5373821893c1aed5cc67ede2b5f8285334cd5cfd79f42422c2d538f119821b20; it is my round 1 attacks with the builder's wiring, followed by round 2 attacks and 18 mutants), <code>attacks/</code>, <code>attacks-plain/</code>, <code>attacks-scan/</code>, <code>rerun/</code>, <code>logs/</code>, <code>wiring-diff-recomputed.diff</code> and <code>frozen-hash-cd2b630.txt</code>. To rerun, copy <code>iv-r2.mjs</code> into <code>proofs/payments/</code> at cd2b630 and run <code>IV_REDACT=1 node iv-r2.mjs [--scan] [--mutant=NAME]</code>. Ports 3750 to 3753 must be free.</p>
+</body>
+</html>

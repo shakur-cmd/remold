@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 1 failed) 1123ms
+   × inbox lists and the agent summary ignore any number of other people's private notes 31ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:13
+   Duration  1.42s (tests 78%, transform 14%, import 7%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > inbox lists and the agent summary ignore any number of other people's private notes
+AssertionError: expected [] to deeply equal [ '0000000000000000011158agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000011158agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:142:93
+    140|   await restrictMember(f, [{ objectId: company.object._id, records: []…
+    141|   const mineAsMember = await f.client.mutation(api.inbox.add, { orgId:…
+    142|   expect((await f.client.query(api.inbox.list, { orgId: f.orgId })).ma…
+       |                                                                                             ^
+    143| }, 60000);
+    144| it('quiet deals ignore any number of hidden deals untouched for longer…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

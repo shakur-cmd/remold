@@ -1,0 +1,103 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 4 failed) 832ms
+   × member suggestion list fills its limit with readable suggestions 18ms
+   × agent suggestion list fills its limit with readable suggestions 9ms
+   × member inbox list fills its limit with items the member may see 8ms
+   × agent inbox list fills its limit with items the agent may see 12ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  4 failed | 87 passed (91)
+   Start at  08:23:43
+   Duration  1.06s (tests 77%, transform 13%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member suggestion list fills its limit with readable suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:88:114
+     86| it('member suggestion list fills its limit with readable suggestions',…
+     87|   const w = await suggestionWorld(200); await restrictMember(w.f, [{ o…
+     88|   expect((await w.f.client.query(api.suggestions.list, { orgId: w.f.or…
+       |                                                                                                                  ^
+     89| }, 30000);
+     90| it('agent suggestion list fills its limit with readable suggestions', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  ops/authority/limits.test.ts > agent suggestion list fills its limit with readable suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:93:103
+     91|   const w = await suggestionWorld(100), agent = await w.f.client.actio…
+     92|   await grant(w.f, agent.agentId, w.company.object._id, [w.mine], Obje…
+     93|   expect(((await rest(w.f.t, agent.key)('GET', '/api/v1/suggestions'))…
+       |                                                                                                       ^
+     94| }, 30000);
+     95|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  ops/authority/limits.test.ts > member inbox list fills its limit with items the member may see
+AssertionError: expected [] to deeply equal [ '0000000000000000010151agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000010151agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:106:93
+    104|   await restrictMember(f, [{ objectId: company.object._id, records: []…
+    105|   const own = await f.client.mutation(api.inbox.add, { orgId: f.orgId,…
+    106|   expect((await f.client.query(api.inbox.list, { orgId: f.orgId })).ma…
+       |                                                                                             ^
+    107| }, 30000);
+    108| it('agent inbox list fills its limit with items the agent may see', as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  ops/authority/limits.test.ts > agent inbox list fills its limit with items the agent may see
+AssertionError: expected [] to deeply equal [ '0000000000000000010151agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000010151agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:111:95
+    109|   const f = await inboxWorld(), agent = await f.client.action(api.agen…
+    110|   const own = (await rest(f.t, agent.key)('POST', '/api/v1/inbox', { t…
+    111|   expect(((await rest(f.t, agent.key)('GET', '/api/v1/inbox')).json as…
+       |                                                                                               ^
+    112| }, 30000);
+    113|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+

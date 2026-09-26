@@ -1,0 +1,20 @@
+{
+  "verdict": "REVISE bounded native P1 proof",
+  "reviewer": "c0_verifier independent",
+  "nineBuilderGroupsReplayed": true,
+  "typecheckExit": 0,
+  "sourceChangedDuringReview": [],
+  "finding": "Accepted response lost, then manager fired, leaves paused task with outcomeUnknown operation. Public owner recover refuses paused task; reassignment also refuses unsettled prior operation. No exposed task recovery path settles this known provider effect after firing.",
+  "affectedSource": [
+    "convex/runner.ts recover",
+    "convex/runner.ts lookupContext",
+    "convex/runner.ts reassign"
+  ],
+  "requiredBehavior": "Allow scoped owner-initiated read-only provider lookup for paused unresolved tasks; record recovered artifact without resuming fired work or dependencies/recurrences. Define explicit new-owner continuation without repeating already accepted effect.",
+  "limits": [
+    "Nine groups are bounded synthetic-provider SERVICE, not whole P1/OS certification",
+    "No I1 authorization audit performed",
+    "Red active-fire baseline failed missing fault validator, not evidence prior final-dispatch bypass",
+    "Extra IV first fixture failed missing agent.manage; corrected fixture produced lifecycle defect"
+  ]
+}

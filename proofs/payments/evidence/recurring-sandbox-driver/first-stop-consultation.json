@@ -1,0 +1,31 @@
+{
+  "result": "**Read-only checkpoint: PASS. Minimal successor direction: CONCUR, with the constraints below.** This is a consultation only. It approves no implementation, continuation or execution.\n\n## Checkpoint\nI made 17 exact fixture GETs through `provider(credentials())`, with zero writes. Every response carried `Stripe-Version: 2025-05-28.basil`. I didn't open or print the credential file, any signed URL, or anything under `private/`. The readback is saved to `first-stop-independent-readback.json`; before writing, the script refused to save if the text contained any `http(s)://`, `sk_`/`rk_`/`whsec_` or \"secret\".\n\n- **Invoice read twice, 1.3 seconds apart:** only `hosted_invoice_url` and `invoice_pdf` changed. With those two keys removed, the canonical digests are equal. Both link values are strings.\n  - The invoice itself is `paid`, 301/301, 0 remaining, `subscription_create`, attempt_count 1, auto_advance false, issuer `self`.\n  - It has one line: il_\u2026HMMJ, 301, quantity 1, no proration, the fixture price, item `si_VK3Sci4vzesLGt`, period 1790305189 to 1790391589.\n- **Clocks:** both are `ready` with the same frozen and deletion times as root's readback.\n  - F: frozen 1790309089 (the F subscription start + 3900 s), deletes_after 1792897135.\n  - H: frozen 1790305129 (the run start), deletes_after 1792897139.\n- **Inventories:** all six filtered lists are complete (`has_more` false).\n  - F has one schedule, `active`; one subscription, `active`; one invoice, `paid`.\n  - H has nothing in any of the three lists.\n- **Schedule and subscription:** they link to each other and to the F clock. end_behavior is `cancel`, and the phase end and subscription `cancel_at` are both 1790564389 (the F start + 3 days). Stripe returns `iterations` as null after creation; the end date is the binding fact now.\n- **Invoice payments:** one row, `inpay_\u202663hS`, paid 301 via `pi_3UJPLuJL8hhTtG1o1ijPgsYT`.\n- **Fee proof:** `proveNoPlatformFee` passes. The PaymentIntent and charge `ch_3UJPLuJL8hhTtG1o14hTDeFd` have explicit-null fee fields, and the platform fee list is complete and empty.\n- **E control:** E has no test clocks (complete list).\n\n## My miss\nI checked public outputs for credentials but didn't follow the error path. `assert.deepEqual` in `adapter.mjs` builds its message from whole provider objects, and the driver copied `error.message` into `provider.json` and printed it with `console.error` into the run log. I said there were no secrets in public outputs; that was wrong for this path.\n\n## Minimal repair\n1. **Invoice comparison (adapter.mjs:338):** drop exactly the top-level `hosted_invoice_url` and `invoice_pdf`, assert each is a string or null on both reads, and deep-compare everything else. Strip nothing nested and nothing else, so status, amount, line, payment and identity drift is still refused. Leave the schedule and subscription comparisons strict. If they drift, the run should stop.\n2. **Public errors:** the public failure keeps only `{name, code, status, fixed category}` from a whitelist. Full messages go to the private 0600 journal only. The console line prints the category, never `error.message`.\n3. **Tests that can fail:**\n   - a link-only change passes;\n   - each of these is refused: a change to `amount_paid`, `status`, a line amount or period, a nested field, or a new top-level key;\n   - no URL or diff text reaches the public output.\n\n## Continuation constraints\n- **Latches:** a new exclusive continuation latch with its own run ID and key namespace. The old journal and its latch are pinned by digest and never reset or reused. The consumed `approval.json` doesn't authorize the successor, which needs a new aggregate and a new approval.\n- **Restore:** reuse the exact `private/local-*` directory and current local ledger. Rebuild the registry from the old journal plus a fresh readback: 2 clocks with their actual frozen times, 2 customers, the product, the price, 2 payment methods, the F schedule and subscription.\n- **Caps:** seed the policy counts and used keys from the 11 old write attempts. Cumulative limits stay 31 writes, 2709 reserved, 1806 collected, F \u22648 advances and H \u22646. That leaves at most 20 writes:\n\n  | Write | Remaining |\n  |---|---|\n  | F advances | 6 |\n  | H advances | 6 |\n  | setups (F-fail, F-recovery) | 2 |\n  | activations (H1, H2) | 2 |\n  | card changes | 2 |\n  | cancels | 2 |\n\n  No new customer, clock, product or price.\n- **Reconcile first:** before any write, re-observe F and reconcile the local ledger so it shows `paidMinor` 301 and the first-invoice lineage. It is stale now, because the stop came after `beginObservation` but before `observe`. Any mismatch stops the run.\n- **Timing:**\n  - the next F advance must stay within 2 days of 1790309089;\n  - independent readback must happen before the clocks' `deletes_after` (1792897135 for F, 1792897139 for H).\n\n## Still unknown\nLink rotation on other objects, smart-retry behaviour, whether cancelling stops collection on the open invoice, and whether a schedule or subscription drifts while being read.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 50,
+      "outputTokens": 28782,
+      "thinkingTokens": 13504,
+      "cacheReadInputTokens": 1497628,
+      "cacheCreationInputTokens": 93172,
+      "webSearchRequests": 0,
+      "costUSD": 1.6207416000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

@@ -1,0 +1,34 @@
+{
+  "result": "# Verdict: APPROVE the new preview source; APPROVE the git plan, but most of it has already run\n\nI reviewed this myself and didn't run the pasted script. It starts another `claude` session, which would be delegation, and it writes files. So `independent-review.json` wasn't written; save it from this reply if you want it on record. I made no repo edits, external calls or deployments. I did briefly change `identity-session.ts` in the temp clean checkout to test that the tests can fail. I put it back, and its hash matches the candidate again.\n\n## The delta is what you described\n- The 4 identity files match `candidate.json` in both root and the clean checkout (`b6a240c`).\n- No saved copy of the r4-approved sources exists, so I rebuilt them. Undoing only the claimed changes gives back the exact r4 hashes for `policy.mjs`, `frontend.mjs`, `build.mjs` and `policy.test.mjs`. The changes are:\n  - the `VITE_AUTH_SESSION_MODE` allowlist entry;\n  - `VITE_AUTH_SESSION_MODE:'preview-local'`;\n  - 10007 \u2192 10025;\n  - the one new test.\n\n## Checks I ran\n- **Clean checkout:** vitest passes 5/5 across the 2 files, and `pnpm typecheck` exits 0.\n- **Root:** `node --test ops/previews/policy.test.mjs` passes 17/17.\n- **My own login-setting cases, all pass:**\n  - Persistent sessions stay off for 10 lookalikes: a prefixed host, `pr--`, uppercase `PR-`, a wrong dot, trailing spaces in the flag or client ID, uppercase flag, `localhost.evil.com` and `127.0.0.1.nip.io`.\n  - Localhost stays on even with the production client ID, so local behavior is kept.\n  - `app.remoldcrm.com` stays in cookie mode even with the flag and the staging client.\n  - An empty `apiHostname` becomes undefined.\n- **The builder's tests can fail:** removing the `$` anchor, the flag check or the client check each makes the test fail.\n- **Cloudflare cases:**\n  - 404 with code 10025 returns null (absent).\n  - 404 with 10007 throws, as do 404 with no codes, a wrong name, and a DELETE 404 with 10025.\n  - The saved response (`missing-preview-response.json`) is a real 404 with 10025 for `pr-3`.\n- **Saved witnesses:** `refresh-before.json` shows a PR4 reload landing signed out with no console errors. The consultation's source diagnosis matches the fix: without `devMode`, the refresh token is kept only in memory.\n\n## Non-blocking gaps (fix whenever)\n1. **One missing test case.** Removing the `^` anchor still passes the builder's test. Add a case like `\"x\"+host`.\n2. **Loose code match.** `errors.some(code===10025)` also treats a 404 that carries both 10007 and 10025 as absent. Accepting only when every code is 10025 would be tighter.\n3. **Weak red evidence:**\n   - `session-red.txt` says \"no tests\" because the file was missing, not because the test failed.\n   - `missing-preview-red.txt` names a different test than the green run.\n   - My checks above fill both gaps, but the saved before/after pairs aren't like-for-like.\n\n## Security properties: all hold\n- Persistent sessions need all three: the flag, the staging client and the exact owned preview host pattern.\n- Local development is unchanged.\n- Real production stays in cookie mode, since nothing in its build sets the flag.\n- The production API hostname is optional and does nothing unless set.\n- Proof that the custom auth domain works is still open. Nothing here claims it.\n\n## Git continuation: the plan is sound, but it wasn't just a proposal\n**Most of it had already happened by the time I checked the local refs.**\n- Root `b9345f8` holds only the 4 identity files.\n- `3db0e6c` is a single commit on top of `73b060d`, and its 4 files match the candidate hashes exactly.\n- Both `origin/i2/preview-a` (`954bdfb`) and `origin/i2/preview-b` (`31c8434`) are merge commits of `3db0e6c` on top of `fd85bec` and `c666909`. The merges themselves aren't fast-forwards, but updating the remote branches is, since both new heads descend from the old ones. No force push was needed.\n- None of the 5 identity-related files differ between `73b060d` and `b6a240c`, so the cherry-pick is clean.\n\nI couldn't verify that CI ran on the new heads (no external calls). Record that as unverified.\n\n**Before any hosted writes:**\n- `scope.sha` is still `73b060d\u2026`. The new base or head SHAs need the metadata update you said you'd show; `previewPlan` refuses anything outside its allowlist.\n- The new receipts must carry the old `backend.id` or `name` and `cloudflare.id` with `absentBefore:true`, so that `assertFrontendReplacement` can pass.\n- The backend and schema hashes must be unchanged.\n\nThe new CI run on the exact heads, and moving the receipts, still need independent review before anything touches the hosts.\n\n**Blockers: none for the source.** For the process, CI on `954bdfb` and `31c8434` is unverified, and the pushes came before this review finished.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2238,
+      "outputTokens": 14,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002308,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 30,
+      "outputTokens": 10612,
+      "cacheReadInputTokens": 383301,
+      "cacheCreationInputTokens": 32949,
+      "webSearchRequests": 0,
+      "costUSD": 0.5526122,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 2852,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

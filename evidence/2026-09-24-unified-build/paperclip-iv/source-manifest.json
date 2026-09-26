@@ -1,0 +1,54 @@
+{
+  "commit": "e006c18f2036d95d47ca8f7eb068670f3c54942d",
+  "reviewedSourceSha256": {
+    "server/src/adapters/process/execute.ts": "658ec0aedf362cc350eaf8ad796b14f937b79c1bc761f6506fe8d2dfb04d8c2e",
+    "packages/adapter-utils/src/server-utils.ts": "052a2c4b41d1dac0c5a371cebdcc54bbbae23b61a52748a9296957760ad81849",
+    "server/src/routes/agents.ts": "768daedeee2a8735203dab80b287e2e83320eda2a81edec252c4da6575addfa4",
+    "server/src/routes/issues.ts": "362930ad5f8fb02d5be91382670ce87362772d0d637dc6a6540e90ee88b455df",
+    "packages/adapters/codex-local/src/index.ts": "dd17b7eb249d68c68d25b61580fbdfc78a9a7d2f5c12f8e943c13d5d37a5def6",
+    "packages/adapters/codex-local/src/server/codex-args.ts": "5e5f3e8610324eaab84f1fbd652b92ce7a506a90558b03b042b9f9cf1fa48a37",
+    "packages/shared/src/validators/agent.ts": "130f8a19a40586f07a7421687b6c0b8663aab5f0c46df27d7bbbac0d3b88a3e4",
+    "server/src/runtime-tools-token.ts": "f4e3a56e8965b04b54b62e68a6b730c74c4b4bc65d87be3ce6384ecb03218ba6",
+    "server/src/routes/connection-intents.ts": "b5148be98093590e78c12ef45cee86b00f7338dd23bfd0a50dc1742814c1fce8",
+    "server/src/services/connection-intents.ts": "6b9536778660c9046b94d05ed55e9801022527ee363da7ff32eb8311b0f48380",
+    "server/src/services/heartbeat.ts": "f79bb7b84119b82b874c25e7d91de1ef22f4d17ff8e56d44b3b9062d4197b88d",
+    "server/src/adapters/http/execute.ts": "cfb8167f53ce4bc897c4d6ca452bf6c96d666173cb624b1269ae66485f2751cb",
+    "server/src/app.ts": "1224cf1dc5bc08b4241b2837edca463634f5c7ec1e623b34f240e757ffef7ff7"
+  },
+  "proofSha256": {
+    "probe.mjs": "d78476f0ba9af32cf5c52572f2f0d391568709cb64791ff819f754f7bbbfaaac",
+    "scope-probe.mjs": "4efad2475b32c4665f67cd889f4236080109c65092f5708488adf336b0ca616d",
+    "service.json": "3b4159d0fecb7a95f292f421b00bab7bb286782940f0a6fdf38e63f2cb7025d5",
+    "scope-service.json": "e8887208dd781f8e63a45e0d72883b5b98392a6c37e7e66224974ef9b658b075",
+    "task-bridge-probe.mjs": "ef6ac53db5b53f65fb2296fb4449b7aa9e2885a4aa2bd14a0cb165adef80396d",
+    "task-bridge-service.json": "8886a78a92bbeee3b9109c73857876e52c101d93f4ed703491fdc39eeeeb23db",
+    "report.html": "677732edd60aed35b0bc611c155fac4a70e77cfb88ca044ac06be00358baef87",
+    "verdict.json": "680ce2c75ae7356954d239b13c15fdef5c0c77b8c03dc4f0217a78ef8c0d07fe",
+    "runtime-token-probe.mjs": "e8003c88f9ab74c1799da47eafac64794a4c5786358915a0c6f98ef17573c76a",
+    "runtime-token-service.json": "5b02f28c4a088f76ef171b8fd7990f09f75ad3024cf3de46aa45bc185185c6a4",
+    "runtime-token-wrong-prefix.json": "6ac03aae67682b22c258f9fd03651e68b823d9f392981d7050d8124ffacca730",
+    "runtime-token-report.html": "95bf6acbfddbca0f2af7e7c59222b9907ee411a53209c30cc719d8c9e4f5677c"
+  },
+  "image": "ghcr.io/paperclipai/paperclip@sha256:52510c246809a1c0978e67e39a855bff6c9cfdfe2114f115791ab0add15d1411",
+  "container": {
+    "context": "colima-remold-proof",
+    "name": "remold-paperclip-proof-prepared",
+    "user": "1000:1000",
+    "readOnlyRoot": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "mounts": [
+      {
+        "type": "volume",
+        "name": "remold-paperclip-proof",
+        "destination": "/paperclip",
+        "rw": true
+      }
+    ],
+    "inspection": "Whitelisted docker inspect fields only; no environment values read or emitted."
+  }
+}

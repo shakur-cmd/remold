@@ -1,0 +1,52 @@
+{
+  "capturedAt": "2026-09-25T06:27:16.688Z",
+  "level": "Read-only installed native inventory; no callback/poll integration yet",
+  "rows": [
+    {
+      "tenant": "a",
+      "config": {
+        "queue_mode": "immediate_process",
+        "webhook_allowed_private_addresses": []
+      },
+      "hookStatus": 200,
+      "hookCount": 0,
+      "submissionStatus": 500,
+      "firstSubmissionKeys": []
+    },
+    {
+      "tenant": "b",
+      "config": {
+        "queue_mode": "immediate_process",
+        "webhook_allowed_private_addresses": []
+      },
+      "hookStatus": 200,
+      "hookCount": 0,
+      "submissionStatus": 500,
+      "firstSubmissionKeys": []
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": "WebhookBundle/Http/Client.php",
+      "sha256": "d33316dcb61c6350856316941ca39f9369d3d7783c0141fd667f63b7fe75813c"
+    },
+    {
+      "path": "WebhookBundle/Config/config.php",
+      "sha256": "417cc5a1dfa0a4621f1b15d45bf7ac89d23590fc26df1d51a8ac34357e56f22d"
+    },
+    {
+      "path": "FormBundle/Controller/Api/SubmissionApiController.php",
+      "sha256": "733404fd8fdde5c4f5044c9d4379f03080609a163cd6165679cca174d6184f1f"
+    },
+    {
+      "path": "FormBundle/Entity/SubmissionRepository.php",
+      "sha256": "f18e578bf96097f5222022b6d2cc9073c5832a1487be5512d60838464f6c777b"
+    }
+  ],
+  "observations": [
+    "Native webhook client signs exact JSON with base64 HMAC-SHA256 in Webhook-Signature",
+    "X-Origin-Base-URL is metadata, not a trustworthy tenant identity",
+    "Native private-address checker must allow a specific owned internal receiver before a real callback can be delivered",
+    "Submission API is paginated and supplies form/contact identity; no cursor/dedup behavior proven yet"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "verdict": "PASS bounded independent actual SANDBOX provider reconciliation, with explicit residual payable900",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-25T00:20:25.630075+00:00",
+  "sourceAggregate": "fc21064f9f4197bd02872ad078f73cec61b91400804e9692c8bc89e68300398e",
+  "source54Unchanged": true,
+  "checks": {
+    "exhaustiveCheckpoint": "75 GET requests,65 HTTP200 and10 expected platform-scope404",
+    "metadataAndTiming": "17 GET requests HTTP200",
+    "earlierStrictInventory": "Failed expected5PI vsactual10; original source/output preserved",
+    "exactOpusConsultation": {
+      "auth": {
+        "loggedIn": true,
+        "authMethod": "claude.ai",
+        "apiProvider": "firstParty",
+        "subscriptionType": "max"
+      },
+      "models": [
+        "claude-haiku-4-5-20251001",
+        "claude-opus-5-5"
+      ],
+      "evidence": "opus-review.json"
+    }
+  },
+  "totals": {
+    "invoices": 5,
+    "invoiceOriginalTotal": 12584,
+    "grossInvoicePaid": 10808,
+    "totalPaymentIntents": 10,
+    "chargedPaymentIntents": 5,
+    "unchargedInvoiceLinkedIntents": 5,
+    "outstandingPayableInvoiceRemaining": 900,
+    "grossPayments": 10917,
+    "refund": 101,
+    "credit": 99,
+    "dispute": 805,
+    "boundaryUnattachedPayment": 109
+  },
+  "statusClarification": "Provider runner12manualPASS; requiredrecurringBLOCKED so entire runINCOMPLETE/exit1. This read-only checkpoint passes and is not fullP4 acceptance.",
+  "residual": "Credit invoice remains open900 with defaultPIrequires_payment_method, nocharge, received0. It remains payable in testmode; auto_advancefalse/noautomaticretry is not inert/uncollectible. No cleanup performed.",
+  "proofCorrections": [
+    "Expected PI inventory superseded5\u219210:5explicit charged and5invoice-linked uncharged; exhaustive exactIDs/links required",
+    "Three canceled formerly-default associations currently is_default:false; default-at-finalization origin inferred from officialdocs plus created/finalized0\u20131sec timing and absence of explicit requests, not historical flag witness",
+    "Opus suggested all explicitPIrunmarkers; actual boundary request intentionally lacks marker, so4matchrun and boundary has approvedshape/no marker; all5havecommanddigest",
+    "Open/defaultamounts are current synchronized remaining amounts, not asserted exactoriginalfinalization amounts"
+  ],
+  "limits": [
+    "No provider mutations, recovery rerun, localbackend or I1 audit",
+    "Root H0/webhook/timeline checks not independently replayed; current financial state and retained event evidence only",
+    "Hosted-payer default payment through receipt and no-fee path not tested; remains open",
+    "No platform application fees on five exactchargedpayments; not a statement about Stripeprocessing/disputefees",
+    "Current platform scope: exact10 PIs404 and exact5 charge-filtered fee listscompleteempty; historical entireplatformunchanged remains root evidence",
+    "Recurring/fullP4/I1/I7/production remain open"
+  ]
+}

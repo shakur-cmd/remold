@@ -1,0 +1,23 @@
+$ node --test ops/release/release.test.mjs
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.735458ms)
+✔ changed, missing and injected artifact bytes are refused (1.249667ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (0.799917ms)
+✔ version metadata must name the artifact commit (0.841ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.7145ms)
+✔ failed real process halts checks before a later process can run (22.24725ms)
+✔ successful real processes run in order (42.772917ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.18975ms)
+✔ missing metadata and destructive contraction are refused (0.091334ms)
+✔ a rollback to a schema without the expanded fields is refused (0.140583ms)
+✔ persisted changes remain blocked even when a caller supplies a synthetic passing restore claim (0.046458ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.405292ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (20.854375ms)
+✔ PR changes use their common ancestor when the target branch advances independently (250.6185ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 381.19775

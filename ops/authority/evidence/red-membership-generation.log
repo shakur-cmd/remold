@@ -1,0 +1,32 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/operations.test.ts (6 tests | 1 failed) 165ms
+   × removing and rejoining a human does not revive the prior approval or operation 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/operations.test.ts > removing and rejoining a human does not revive the prior approval or operation
+AssertionError: promise resolved "{ fence: 1, step: 1 }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "fence": 1,
++   "step": 1,
+  }
+
+ ❯ ops/authority/operations.test.ts:61:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  16:13:16
+   Duration  319ms (tests 64%, transform 25%, import 9%, worker 2%)
+

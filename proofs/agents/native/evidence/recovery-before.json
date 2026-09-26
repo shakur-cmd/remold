@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "name": "Owner assigns work; foreign tenant cannot read known task ID",
+      "pass": true
+    },
+    {
+      "name": "Scheduled retry preserves one effect; dependent work waits and returns attributed artifact",
+      "pass": true
+    },
+    {
+      "name": "Three scheduled recurrence occurrences each produce one logical effect",
+      "pass": true
+    },
+    {
+      "name": "Lost accepted response stays unknown and does not blindly retry",
+      "pass": true
+    }
+  ],
+  "error": "[Request ID: 786ed446a9c465f4] Server Error\nCould not find public function for 'runner:recover'.\n"
+}

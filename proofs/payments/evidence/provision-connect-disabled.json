@@ -1,0 +1,20 @@
+{
+  "level": "SANDBOX",
+  "provenance": "Transcribed from actual provision.mjs tool output before successful new idempotency key; no provider response bodies or secrets copied.",
+  "account": "acct_1UJHeKJjT84hNemU",
+  "method": "POST",
+  "path": "/v1/accounts",
+  "attempts": [
+    {
+      "httpStatus": 400,
+      "requestId": "req_RRE2n7Xj0AZjFU",
+      "error": "EnableConnect required"
+    },
+    {
+      "httpStatus": 400,
+      "requestId": "req_w1fKchLZACeT8O",
+      "error": "EnableConnect required; reused original failed idempotency key"
+    }
+  ],
+  "resolution": "Root completed sandbox Connect wizard; list accounts confirmed zero existing matches; fresh provisioning key created A/B. Later repeated reads preserve enabled-state evidence separately."
+}

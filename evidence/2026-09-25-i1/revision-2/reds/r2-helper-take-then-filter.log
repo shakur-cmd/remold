@@ -1,0 +1,77 @@
+$ vitest run --config ops/authority/vitest.config.ts
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/oracles.test.ts (7 tests | 2 failed) 352ms
+   × search fills its limit with readable matches, so hidden matches change nothing 78ms
+   × name matching still finds a readable record when many unreadable near-matches outrank it 34ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+AssertionError: expected { text: [], textInObject: [], …(3) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }
+
+- Expected
++ Received
+
+  {
+-   "agentRecent": [
+-     "Alpha Mine",
+-   ],
+-   "agentText": [
+-     "Alpha Mine",
+-   ],
+-   "recent": [
+-     "Alpha Mine",
+-   ],
+-   "text": [
+-     "Alpha Mine",
+-   ],
+-   "textInObject": [
+-     "Alpha Mine",
+-   ],
++   "agentRecent": [],
++   "agentText": [],
++   "recent": [],
++   "text": [],
++   "textInObject": [],
+  }
+
+ ❯ ops/authority/oracles.test.ts:84:18
+     82|   };
+     83|   const hidden = await run(true);
+     84|   expect(hidden).toEqual(await run(false));
+       |                  ^
+     85|   expect(Object.values(hidden)).toEqual(Array(5).fill(['Alpha Mine']));
+     86| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches outrank it
+AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true, value: { …(2) } }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "companyCreated": false,
+-     "recordId": "0000000000000000000010102records",
+-   },
++   "ok": false,
+  }
+
+ ❯ ops/authority/oracles.test.ts:106:123
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  2 failed | 68 passed (70)
+   Start at  07:40:37
+   Duration  711ms (tests 69%, transform 20%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.

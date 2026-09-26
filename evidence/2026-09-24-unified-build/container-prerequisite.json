@@ -1,0 +1,22 @@
+{
+  "before": "docker, colima, podman absent",
+  "after": {
+    "colima": "0.10.3",
+    "dockerClient": "29.8.1",
+    "dockerServer": "29.5.2",
+    "profile": "remold-proof",
+    "cpu": 2,
+    "memoryGiB": 4,
+    "diskGiB": 16,
+    "hostMounts": "none",
+    "activeDockerContextChanged": false
+  },
+  "commands": [
+    "brew install colima docker",
+    "colima start remold-proof --cpu 2 --memory 4 --disk 16 --mount none --activate=false",
+    "docker --context colima-remold-proof info",
+    "colima --profile remold-proof ssh -- mount"
+  ],
+  "effect": "local removable prerequisites; no candidate engine or hosted workload tested",
+  "cleanup": "colima stop remold-proof; preserve fixture volumes until evidence export"
+}

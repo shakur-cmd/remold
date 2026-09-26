@@ -1,0 +1,22 @@
+{
+  "slug": "remold-preview-pr3-independent",
+  "requestedOutcome": "Independent browser sign-in, refresh retention, own synthetic fixture visibility, logout, signed-out reload and exact deep-link reauthentication return",
+  "allowedOrigins": [
+    "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+    "https://api.workos.com",
+    "https://detailed-neutron-08-staging.authkit.app",
+    "https://accounts.google.com"
+  ],
+  "accountLabel": "Shakur Remold staging preview",
+  "riskClass": "sandbox verification; existing Google sign-in/session transitions only; no production or domain data writes",
+  "target": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+  "authorization": "Shakur explicitly answered Use opus for required independent browser verification on 2026-09-25; existing approved I2 synthetic preview scope",
+  "driver": "/Users/urkel/Documents/CodeMyVibe/Business/agent-setup/lib/cdp.py",
+  "canonicalRecipeStore": "/Users/urkel/Documents/CodeMyVibe/Business/agent-setup/web-recipes",
+  "recipeStorePreflight": {
+    "read": true,
+    "write": true,
+    "execute": true
+  },
+  "at": "2026-09-25T09:05:19.282331+00:00"
+}

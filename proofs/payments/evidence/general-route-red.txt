@@ -1,0 +1,32 @@
+PASS Two accepted refund receipts cannot reuse one aggregate observation to restore capacity
+PASS Credit is counted once with callback-first
+PASS Credit is counted once with receipt-first
+PASS Pre-existing refunds, unknown holds and distinct receipts all retain their capacity
+PASS Concurrent credits cannot share a receipt or lose accepted value to an older aggregate
+PASS Outside refund racing a local receipt has distinct identity and blocks excess capacity
+PASS Partial reconciliation blocks permits and retains unknown reservations
+PASS A real HTTP read failure closes adapter reconciliation before the request
+FAIL General collection adapter cannot dispatch refunds or cancellation under any capability
+PASS Receipt identities are account scoped, immutable and cannot move between documents
+PASS Newer target generation refuses an older issued snapshot after a credit void
+PASS Outside pending refunds stay held until an authoritative terminal refetch
+PASS Binding a pending receipt replaces its exact local hold and rejects unrelated metadata
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"name":"General collection adapter cannot dispatch refunds or cancellation under any capability","status":"FAIL","error":"The input did not match the regular expression /general collection route refused/. Input:\n\n'Error: Synthetic provider read unavailable'\n"}]
+
+1 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/accounting-replay.mjs:134:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

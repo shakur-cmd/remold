@@ -1,0 +1,34 @@
+{
+  "result": "**Opus 5.5 consultation: preview session persistence**\n\nI read only `src/lib/identity.tsx`, `create-client.ts` and `utils/session-data.ts` from authkit-js 0.20.3. I made no edits and took no actions.\n\n**Source diagnosis (from the code, not WorkOS claims)**\n\n- `identity.tsx:13-17` passes only `clientId`, `redirectUri` and `onRedirectCallback`. That leaves `devMode` on its default, which is true only for `localhost` or `127.0.0.1` (`create-client.ts:97-98`). On `*.workers.dev` it is false.\n- With `devMode` false, the refresh token goes into `memoryStorage` (`session-data.ts:27`). A reload wipes it.\n- On reload, `initialize()` (`create-client.ts:133-136`) only tries a refresh if it finds a `workos-has-session` cookie in `document.cookie` or a stored refresh token. The stored token is gone.\n- Inference, not proven: the session cookie is set by the WorkOS API host (`useCookie: true`, line 579). That host is on a different site from workers.dev, so the page can't read the cookie, and browsers may also block it as third-party. Either way, no refresh is attempted and the user shows as signed out. This matches what was observed.\n\n**Provider claims (from the docs, not verified here)**\n\n- Production should set `apiHostname` to a custom auth domain on the same site as the app, so the cookie is first-party.\n- `devMode` stores the refresh token in `localStorage`.\n\nThe source agrees with the second claim. I did not test the first.\n\n**Recommendation: accept both changes, tightly bounded**\n\n1. **Preview-only `devMode`.** Enable it only when both of these hold:\n   - A build-time flag set only by the preview builder, e.g. `VITE_AUTH_SESSION_MODE === \"preview-local\"`.\n   - A runtime check that `location.hostname` ends with `.workers.dev` and matches the preview naming pattern.\n\n   If either fails, `devMode` stays false. Two keys means a leaked env var alone can't switch production to `localStorage`. The preview builder should also use a WorkOS **staging** client ID, never the production one. That keeps any `localStorage` refresh token scoped to synthetic fixtures.\n\n2. **Optional `apiHostname` from `VITE_WORKOS_API_HOSTNAME`.** Pass it through only when set, and leave it unset in previews. This adds support without changing current behaviour. Don't set it on any deploy until the custom domain exists.\n\nThis is the smallest supported fix because `devMode` is a documented public option. The alternatives are worse:\n- Proxying WorkOS through the Worker adds hosting surface and would be our own cookie code.\n- Custom session storage isn't exposed by this SDK version.\n\nThe trade-off: a `localStorage` refresh token can be stolen by any XSS on the preview origin. That is acceptable for isolated synthetic staging, and it is exactly why the flag must not reach production.\n\n**How to label the evidence:** a reload that stays signed in on PR4 proves **SANDBOX preview session persistence** only. It says nothing about production cookie sessions.\n\n**The production-domain gate that remains**\n\nProduction needs all of the following, still unproven:\n- App on a custom domain.\n- A WorkOS custom auth domain on the same registrable domain, configured and verified in WorkOS.\n- `apiHostname` set to it, `devMode` false, and the production client ID.\n- Evidence of a reload staying signed in, with `workos-has-session` visible and refreshes going through the first-party host, in Chrome and Safari with third-party cookies blocked.\n- The sign-out path verified.\n\nUntil then, production cookie readiness is **BLOCKED**, not integrated. This also sits behind I2 and L0 (the Clerk-to-WorkOS cutover), so no production switch before L0.\n\n**cfPreview: accepting only the two exact 404 codes**\n\nI didn't read `cfPreview`, which was outside the allowed source list, so this is about the principle only. Treating only exact (HTTP status, Cloudflare error code) pairs as \"absent\" is reasonable and stays fail-closed, with two conditions:\n\n- **Tie each code to its call.** Accept 10007 only on the parent lookup and 10025 only on the preview lookup. If the parent is expected to exist and returns 10007 on the PR lookup, that's an error.\n- **Everything else fails closed:** other codes, a 404 with no code, bodies that don't parse, `success:true` with a missing result, and all 5xx and 429 responses.\n\n**Source of the codes:** both come from observed Cloudflare responses in r4/r5 evidence, not a documented contract. Label them \"observed\" in the policy test, and include the recorded response bodies as fixtures, so a changed code breaks the test instead of silently counting as \"absent\".",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1895,
+      "outputTokens": 18,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001985,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 8,
+      "outputTokens": 2831,
+      "cacheReadInputTokens": 53662,
+      "cacheCreationInputTokens": 17298,
+      "webSearchRequests": 0,
+      "costUSD": 0.2057684,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 736,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

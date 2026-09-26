@@ -80,7 +80,8 @@ describe("agent safety", () => {
   it("resolves the inbox item when its suggestion is applied", async () => {
     const { t, client, orgId } = await userAndOrg();
     const agent = await agentFor(client, orgId, { name: "agent" }), call = rest(t, agent.key);
-    const inboxId = await client.mutation(api.inbox.add, { orgId, text: "Add Atlas as a company" });
+    await client.mutation(api.agents.setSharedInbox, { orgId, agentId: agent.agentId, enabled: true });
+    const inboxId = await client.mutation(api.inbox.add, { orgId, shareWithAgents: true, text: "Add Atlas as a company" });
     const proposal = await call("POST", "/api/v1/suggestions", { action: "create", object: "company", values: { name: "Atlas" }, reason: "from inbox", inboxId });
     expect((await call("GET", "/api/v1/inbox")).json).toHaveLength(1);
     await client.mutation(api.suggestions.apply, { orgId, suggestionId: proposal.json.suggestion.id });
@@ -97,7 +98,7 @@ describe("agent safety", () => {
     const after = await client.query(api.records.get, { orgId, recordId: blocked.recordId });
     expect(after!.record.values[task.fields.blockedBy._id] ?? []).toEqual([]);
     const events = await client.query(api.events.forRecord, { orgId, recordId: blocked.recordId });
-    expect(events[0]).toMatchObject({ action: "update", reason: "Linked Blocker was deleted" });
+    expect(events[0]).toMatchObject({ action: "update", reason: "Linked record was deleted" });
   });
 
   it("still deletes a task that a retired links field pointed at", async () => {
@@ -126,7 +127,8 @@ describe("agent safety", () => {
   it("links an inbox item to the suggestion an agent resolves it with", async () => {
     const { t, client, orgId } = await userAndOrg();
     const agent = await agentFor(client, orgId, { name: "agent" }), call = rest(t, agent.key);
-    const inboxId = await client.mutation(api.inbox.add, { orgId, text: "Add Atlas" });
+    await client.mutation(api.agents.setSharedInbox, { orgId, agentId: agent.agentId, enabled: true });
+    const inboxId = await client.mutation(api.inbox.add, { orgId, shareWithAgents: true, text: "Add Atlas" });
     const proposal = await call("POST", "/api/v1/suggestions", { action: "create", object: "company", values: { name: "Atlas" }, reason: "from inbox" });
     const resolved = await call("POST", `/api/v1/inbox/${inboxId}/resolve`, { suggestionId: proposal.json.suggestion.id, note: "proposed Atlas" });
     expect(resolved.status).toBe(200);

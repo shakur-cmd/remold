@@ -1,13 +1,13 @@
 # Remold
 
-Build from docs/build-plan.html, the approved 2026-09-22 r3 plan (source SHA256 prefix 74a7c7965e4c). This file resolves stale instructions in the earlier build prompt.
+Build from `docs/unified-launch/integration-and-build-jobs.html`, approved r3 core SHA256 `a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe`, and its `jobs.json` companion. Shakur authorized implementation on 2026-09-24. The pack supersedes conflicting scope and ordering in `docs/build-plan.html` and `docs/launch/PLAN.md`; preserve their applicable data, recovery, consent and release safeguards. See `docs/unified-launch/build-status.html` for reconciliation and actual evidence.
 
-- AGPL-3.0-only, from scratch, public repository. No copied Twenty code.
-- Use pnpm. Convex for all backend data and functions; Clerk behind one identity module.
-- React, Vite, strict TypeScript, React Router, Tailwind, shadcn/ui, TanStack Table, dnd-kit when the frontend step begins. No UI during the Step 0 design spike.
-- Metadata first. Standard and custom objects use the same path.
-- Every production write goes through applyChange and an attributed event. Agents suggest by default. No LLM key or provider adapter; subscription sessions connect over MCP/REST. Jev later, with rules fallback.
-- The spike branch contains internal-only benchmark functions, synthetic data and both candidate schemas. Do not deploy it to production or treat it as the selected schema.
-- Step 0 requires 50,000 records per candidate, 12 fields, correct IDs and cursor order, three runs of 20 samples, engine timing and read evidence, and an independent verifier. Local emulator timings do not qualify.
-- Do not progress to Step 1 before the design gate passes. Builder evidence is not independent certification.
-- Keep reports and handovers single-file HTML. Preserve before/after evidence. Never invent performance numbers.
+- AGPL-3.0-only, public repository, from scratch. No copied Twenty code. Use pnpm.
+- Convex owns core data and domain functions. Supporting engines and bounded hosted agents require their service-specific proof and selection gates. Existing Clerk stays until I2 proves the WorkOS AuthKit replacement behind the identity module; no production cutover before L0.
+- React, Vite, strict TypeScript, React Router, Tailwind, shadcn/ui, TanStack Table and dnd-kit. Standard/custom objects share the metadata path.
+- CRM writes use applyChange plus attributed events. Domain/lifecycle/financial commands use narrow validated mutations plus attributed events. Agents propose by default; explicit scoped grants authorize direct action. Customer execution never uses Shakur's subscription, home directory or global connectors.
+- Follow C1–C5, job dependencies and evidence levels in the pack. C0 precedes H0 and isolated I2. H0 typed shapes require root, Fable and Opus approval before I1. Independent verification is required; builder results are not certification.
+- Existing slot schema is the inherited baseline. The old Step 0 report remains historically UNVERIFIED on timing variance and engine-native range evidence; the approved unified plan authorizes work on the existing baseline, not retroactive certification or deploying benchmark schemas.
+- Preserve live data/identity. No automatic empty-production assumption or destructive migration. Schema changes are additive with a compatible rollback target.
+- Account, spend, channels, recipients, content, commercial terms and live-action gates remain explicit. Missing numeric cap means zero. Batch owner sign-in tasks. Consult Opus 5.5 on blockers; if still unresolved, Shakur authorizes email from/to shakur@codemyvibe.com with subject "need your input".
+- Reports and handovers are single-file HTML based on the shared report template. Preserve before/after evidence. Mark SIM/SERVICE/SANDBOX/LIVE accurately; required blocked checks never count as integrated or complete. Microsoft/Jev remain optional; private EspoCRM cutover requires actual data and approval.

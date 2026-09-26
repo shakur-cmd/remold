@@ -1,0 +1,52 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/metadata.test.ts (4 tests | 2 failed) 97ms
+   × readonly scope changes may reduce authority but cannot combine a reduction with a new field grant 8ms
+   × an invitation cannot create unrestricted access after its issuer loses that authority 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/metadata.test.ts > readonly scope changes may reduce authority but cannot combine a reduction with a new field grant
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ ops/authority/metadata.test.ts:29:148
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/metadata.test.ts > an invitation cannot create unrestricted access after its issuer loses that authority
+AssertionError: promise resolved "'0000000000000000000000010001orgs'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"0000000000000000000000010001orgs"
+
+ ❯ ops/authority/metadata.test.ts:37:76
+     35|   await f.client.mutation(anyApi['authority/policies'].setMember, { or…
+     36|   const guest = f.t.withIdentity({ tokenIdentifier: 'clerk|guest' }); …
+     37|   await expect(guest.mutation(api.invites.accept, { token: invite.toke…
+       |                                                                            ^
+     38| });
+     39|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  17:11:22
+   Duration  250ms (tests 51%, transform 34%, import 13%, worker 1%)
+

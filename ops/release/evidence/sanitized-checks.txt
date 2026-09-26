@@ -1,0 +1,68 @@
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/Users/urkel/Documents/CodeMyVibe/Projects/remold[39m
+
+ [32m✓[39m convex/seed.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m convex/applyChange.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 143[2mms[22m[39m
+ [32m✓[39m convex/capture.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 164[2mms[22m[39m
+ [32m✓[39m convex/csv.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 147[2mms[22m[39m
+ [32m✓[39m convex/suggestions.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 193[2mms[22m[39m
+ [32m✓[39m convex/rest.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 253[2mms[22m[39m
+ [32m✓[39m convex/fixes.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 340[2mms[22m[39m
+ [32m✓[39m convex/agents.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m convex/agentSafety.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 419[2mms[22m[39m
+ [32m✓[39m convex/inbox.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 120[2mms[22m[39m
+ [32m✓[39m convex/related.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32m✓[39m convex/slots.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m convex/members.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 118[2mms[22m[39m
+ [32m✓[39m convex/refs.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 151[2mms[22m[39m
+ [32m✓[39m convex/invites.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m convex/rateLimit.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 530[2mms[22m[39m
+   [33m[2m✓[22m[39m limits a workspace across agent keys and rejects a write without changing customer data[33m 375[2mms[22m[39m
+ [32m✓[39m src/lib/csv.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m convex/diff.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m convex/identity.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m convex/isolation.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 37[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m      Tests [22m [1m[32m51 passed[39m[22m[90m (51)[39m
+[2m   Start at [22m 13:58:23
+[2m   Duration [22m 846ms[2m (tests 71%, import 16%, transform 12%, worker 2%)[22m
+
+$ tsc -b && tsc --noEmit -p convex
+$ vitest run src
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/Users/urkel/Documents/CodeMyVibe/Projects/remold/packages/mcp[39m
+
+ [32m✓[39m src/client.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 13:58:27
+[2m   Duration [22m 76ms[2m (transform 42%, tests 37%, import 16%, worker 5%)[22m
+
+$ tsc
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 2166 modules transformed.
+
+(!) outDir /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/index.html                                              0.45 kB │ gzip:   0.28 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/index-BYimn4tU.css                              71.48 kB │ gzip:  12.50 kB
+../../../../../../var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-sanitized-1dYAk3/frontend/assets/index-D5hO2zAA.js                              724.67 kB │ gzip: 219.48 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 290ms

@@ -1,0 +1,91 @@
+{
+  "level": "SERVICE local Convex, synthetic observations; no provider calls",
+  "results": [
+    {
+      "scenario": "before-own-observe",
+      "staleAccepted": false,
+      "after": {
+        "paidMinor": 100,
+        "state": "paid",
+        "complete": false
+      },
+      "voidAllowed": false,
+      "collectionAllowed": false,
+      "status": "PASS"
+    },
+    {
+      "scenario": "after-own-observe",
+      "staleAccepted": false,
+      "after": {
+        "paidMinor": 100,
+        "state": "paid",
+        "complete": false
+      },
+      "voidAllowed": false,
+      "collectionAllowed": false,
+      "status": "PASS"
+    },
+    {
+      "scenario": "lower-callback",
+      "after": {
+        "paidMinor": 0,
+        "state": "open",
+        "complete": false
+      },
+      "voidAllowed": false,
+      "collectionAllowed": false,
+      "status": "PASS"
+    },
+    {
+      "scenario": "renewal",
+      "staleAccepted": false,
+      "after": {
+        "paidMinor": 100,
+        "state": "paid",
+        "complete": false
+      },
+      "voidAllowed": false,
+      "collectionAllowed": false,
+      "status": "PASS"
+    },
+    {
+      "scenario": "first-unpaid-observation",
+      "before": false,
+      "voidBefore": false,
+      "collectionAfter": true,
+      "status": "PASS"
+    },
+    {
+      "scenario": "never-observed-intent",
+      "collectionAllowed": true,
+      "status": "PASS"
+    },
+    {
+      "scenario": "pending-void",
+      "collectionAllowed": true,
+      "status": "FAIL",
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "scenario": "voided",
+      "collectionAllowed": true,
+      "status": "FAIL",
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "scenario": "outside-paid-plus-local",
+      "firstLocal": true,
+      "extraLocal": true,
+      "totalPotential": 110,
+      "status": "FAIL",
+      "error": "Outside20 plus local60 leaves only20, not30\n\ntrue !== false\n"
+    },
+    {
+      "scenario": "unpaid-credit",
+      "creditedMinor": 30,
+      "collectionAllowed": true,
+      "status": "FAIL",
+      "error": "Unpaid100 less credit30 cannot collect100\n\ntrue !== false\n"
+    }
+  ]
+}

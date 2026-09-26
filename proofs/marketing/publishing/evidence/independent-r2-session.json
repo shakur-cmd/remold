@@ -1,0 +1,34 @@
+{
+  "result": "**BOUNDED PASS at the SERVICE level for the r2 public edge (frozen 10-file `6d127512\u2026`).** Full P2 is still open. I ran every required check myself with no delegation and none was blocked. I made no source edits, setup, restarts, deletes, worker or mail runs, and nothing was committed or pushed.\n\n**Runtime proof** (actual native DB counts; columns are contacts / anonymous / page hits / downloads / submissions / queued mail / email stats):\n\n| Step | Tenant A | Tenant B |\n|---|---|---|\n| Start | 163/23/12/11/4/0/170 | 24/19/10/9/4/4/4 |\n| After read-effects check, client opt-out reads, controls and 16 extra cases | unchanged | unchanged |\n| After the one full replay | **164**/23/12/11/**5**/0/170 | **25**/19/10/9/**5**/4/4 |\n\n- **Read-effects check** (ran once into `independent-r2/runs/`, exit 0): page and asset reads changed nothing.\n- **Client opt-out values are overridden:** page/asset GET and HEAD sent with `DNT: 0`, `Sec-GPC: 0` and a tracking cookie all returned 200 with no Set-Cookie and changed no counters. The benign `?utm_source=x` query returned 404 and a foreign Host returned 421.\n- **Extra raw cases:** all 16 were refused on both edges with no capture, including the two chunked-oversize cases and the raw invalid UTF-8 byte.\n- **Full replay** (ran once, exit 0): exactly +1 identified contact and +1 submission per tenant, and nothing else changed. The native API shows submission 5 linked to contact 164 in A (\"Route A\") and contact 25 in B (\"Route B\"), with the same email. Earlier submissions are kept and contact 1 is unchanged in both tenants. The IP is stored as 0 and the client Referer was not forwarded.\n- **Page and asset bytes** match the native reads made with privacy headers. I did not rerun the old host baseline or any native GET without those headers.\n- **Tests:** unit 6/6 and CI 17/17. All 10 earlier mutants and all 4 new privacy-header mutants are killed.\n- **Hashes:** the 10/57/7 source aggregates, the installed server hash on both edges (`2187710a\u2026`, same as the repo) and all 76 earlier evidence files match before and after.\n- **Edge setup:** each edge uses the pinned image on its own internal network, with no ports, all capabilities dropped, no-new-privileges and no restarts.\n- **Secrets:** the edges hold no admin or DB credentials, and the HMAC key is only in the root-only 0400 config. None of 8 secret values appears in anything I wrote.\n\n**New findings (none blocks this bounded pass):**\n1. **Decision for you before LIVE:** anyone who knows a contact's email can overwrite that contact's first name through the public form. I found this by reading Mautic's installed `SubmissionModel::createLeadFromSubmit` and did not test it live, because that would change real contact data. The existing \"contact 1 unchanged\" proof only covers the tracking-cookie case, not a submission using contact 1's email. The choices are to accept it, only create new contacts, or require a confirmation email.\n2. **10 new mutants survive the unit tests.** None is a bypass in the current code, but these checks could break without any unit test failing: the form-submit success checks (status, error and validation fields), email and first-name validation, the GET/HEAD method check, the empty HEAD body, the exact form content type, the size precheck and the CSP header.\n3. **The DNT fix depends on Mautic's own code.** `IpLookupHelper` honors DNT/Sec-GPC with no config switch, so it holds on the pinned image. The read-effects check must be rerun after any Mautic upgrade.\n4. **Network scope:** the tenant-A edge shares its internal network with db-a, the bridge, the MIME sink and authority. It holds no credentials for any of them.\n\n**Not verified:** browser rendering and CSP enforcement, DNS/TLS/LIVE, rate limits and abuse (the static form token can be replayed), slow clients, callback binding, dynamic publish, duplicate or lost-response recovery, native JS forms and uploads, and the email-overwrite behavior at runtime.\n\nI appended the result to `decisions.jsonl`. This is still my own check, so it awaits your review or a fresh session's.\n\nFiles are in `proofs/marketing/publishing/evidence/independent-r2/`:\n- `report.html`\n- `verdict.json`\n- `logs/`\n- `runs/`",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 3098,
+      "outputTokens": 19,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003193,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 66,
+      "outputTokens": 34278,
+      "cacheReadInputTokens": 2092946,
+      "cacheCreationInputTokens": 92327,
+      "webSearchRequests": 0,
+      "costUSD": 1.8430292000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 7355,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

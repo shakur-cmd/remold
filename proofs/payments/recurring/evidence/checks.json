@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-25T01:09:22.957294+00:00",
+  "builder": "i2_release",
+  "command": "pnpm --dir proofs/payments/recurring test",
+  "exit": 0,
+  "groups": 15,
+  "typecheck": {
+    "command": "pnpm --dir <preserved private local fixture> exec tsc --noEmit",
+    "exit": 0
+  },
+  "syntax": {
+    "command": "node --check adapter.mjs/replay.mjs/local.mjs/baseline.mjs (each separately)",
+    "exit": 0
+  },
+  "before": {
+    "baseline-red.txt": 1,
+    "receipt-history-red.txt": 1,
+    "snapshot-red.txt": 1,
+    "cancellation-red.txt": 1,
+    "preactivation-red.txt": 1,
+    "line-red.txt": 1,
+    "recognition-red.txt": 1
+  },
+  "old54Preserved": true,
+  "rootEnvPreserved": true,
+  "externalProviderCalls": 0,
+  "independentVerification": "pending",
+  "lineCases": 10,
+  "recognitionCases": 12,
+  "predecessor": "private/frozen-71a13358",
+  "predecessorAggregate": "71a13358f83cf44495e9f2a9494e1c727e2c54c2d5535c6c8df0c507d7b49743"
+}

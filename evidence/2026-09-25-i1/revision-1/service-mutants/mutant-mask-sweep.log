@@ -1,0 +1,25 @@
+PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+PASS Production dispatch records cancelled late acceptance exactly once
+READONLY SWEEP {"agents:create":"refused: Workspace is read only","agents:setGrants":"refused: Workspace is read only","agents:setSharedInbox":"refused: Workspace is read only","agents:createScoped":"refused: Workspace is read only","authority/grants:grant":"refused: Workspace is read only","capture:save":"refused: Workspace is read only","csv:importRows":"refused: Workspace is read only","fields:create":"refused: Workspace is read only","fields:update":"refused: Workspace is read only","fields:retire":"refused: Workspace is read only","inbox:add":"refused: Workspace is read only","inbox:remove":"refused: Workspace is read only","integrations/bindings:provision":"refused: Workspace is read only","integrations/commands:proposeHuman":"refused: Workspace is read only","integrations/commands:editHuman":"refused: Workspace is read only","integrations/commands:approve":"refused: Workspace is read only","integrations/commands:claimHuman":"refused: Workspace is read only","integrations/commands:adopt":"refused: Workspace is read only","integrations/connections:connect":"refused: Workspace is read only","invites:create":"refused: Workspace is read only","invites:accept":"refused: Workspace is read only","objects:create":"refused: Workspace is read only","orgs:rename":"refused: Workspace is read only","orgs:setRole":"refused: Workspace is read only","records:create":"refused: Workspace is read only","records:update":"refused: Workspace is read only","records:remove":"refused: Workspace is read only","seed:demo":"refused: Workspace is read only","suggestions:apply":"refused: Workspace is read only","suggestions:adopt":"refused: Workspace is read only","HTTP POST /api/v1/changes":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/suggestions":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/inbox":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/inbox/:id/resolve":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/operations":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/operations/:id/edit":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/operations/:id/claim":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","HTTP POST /api/v1/authority/grant":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","integrations/outcomes:operatorResolveUnknown":"allowed","integrations/safety:prepare":"allowed","integrations/safety:consume":"allowed","agents:revoke":"allowed","authority/grants:revoke":"allowed","authority/policies:setMember":"allowed","authority/policies:setAgentMasks":"allowed","integrations/commands:cancelHuman":"allowed","integrations/connections:disconnect":"allowed","orgs:removeMember":"allowed","orgs:leave":"allowed","suggestions:dismiss":"allowed","HTTP POST /api/v1/operations/:id/cancel":"200 null"}
+PASS Readonly workspace refuses every public human write and every agent REST write
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: csv:exportPage leaked a hidden field value
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-sweeps.mjs:151:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:21:76)
+    at async Object.replaySweeps [as sweeps] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-sweeps.mjs:130:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:56:84)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:17:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

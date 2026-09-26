@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent check: P2 public form admission (82cd269)</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Independent check: P2 public form admission</h1>
+<div class="meta">2026-09-26 · scope: proofs/marketing, commit 82cd269 on p2/admission-2026-09-26 · level: SERVICE, isolated local Mautic A/B in the colima-remold-proof Docker context, synthetic data · checker: independent verifier session (Claude Opus 5.5), not the builder · verdict: BOUNDED PASS with two real defects</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Post-publish edits are a real hole, not a theoretical one.</b> I mapped the fields and added a remove-DNC action to the live admitted form after publish. The running edge kept posting, and the owner's name was replaced, the email do-not-contact was removed, and a new contact was created. The forced tracking cookie does not stop this. Choose: re-admit the form before every post (needs a read-only native credential at the edge or a sidecar), or accept a native-side lock (admin role that cannot edit published intake forms). Until one ships, treat any admin edit of an intake form as able to undo this fix.</li>
+  <li><b>Admission lets a form that saves nothing through.</b> With "save result" off on both fields, the edge still says "Submission received" and Mautic stores NULL for email and first name. Small fix: also refuse <code>saveResult !== true</code> and a publish window that is not open now. I can hand this to the builder as a one-line rule plus a unit test.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by me, on the same tenants)</h2>
+<ul>
+  <li>Baseline reproduced: I redeployed the old edge (82cd269~1, form 1) and ran the builder's replay. Tenant A owner 197 was merged into 200, name replaced, DNC 1 to 0, two contacts for one new email (198, 199). Tenant B owner 47 merged into 49, DNC 1 to 0, one post lost with 502. Exit 1. <code>iv-baseline.json</code></li>
+  <li>After reproduced: the replay's <code>after</code> mode passed (exit 0). All four unsafe forms refused on both tenants before any native write, the form 1 publish refused with both edges untouched, three bad policies refused at start, 4/4 posts per tenant captured with no contact link, owner and DNC unchanged, contacts A 197 and B 45 unchanged. <code>iv-after.json</code></li>
+  <li>16 concurrent posts per tenant, both tenants at once, through the deployed edges: 16/16 accepted and stored each, all unlinked, owner unchanged, zero new contacts. <code>a5-concurrency-16.json</code></li>
+  <li>Header and path attacks, both tenants: 29 raw-socket cases each (duplicate and case-varied Cookie, client Blocked-Tracking=0, DNT 0, Sec-GPC 0, device id cookie, obs-fold, pipelining, traversal, encoded ids, absolute-form target, other form ids, native submit path, cross-tenant token and Host). Every case got the expected status; the 7 accepted posts per tenant are exactly the 7 new submissions, all unlinked and on the admitted form. <code>a2-smuggle-bypass.json</code></li>
+  <li>My own 15 mutants: 14 killed by unit tests, and every admission and tracking mutant I ran live also caused real harm or admitted a bad form. One survived (queue poisoning, test gap). <code>a7-mutants.json</code></li>
+  <li>Unit tests 13/13 pass at 82cd269. The deployed server hash is c9951a8a96bd10f4 in both edges, the same as the repo.</li>
+</ul>
+</div>
+
+<h2>Per-claim verdict</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Why</th></tr>
+<tr><td>Admission refuses unpublished, non-standalone, any action, any mapped field, not exactly email+firstname, or campaign-linked forms, before any native write</td><td>PASS, with gaps</td><td>Every refusal reproduced live, with counters unchanged. Hidden, freetext, select, swapped-type and company-mapped forms were also refused. Gaps: a form with save-result off is admitted and loses the data (D2), and a form whose publish window has closed is admitted and then fails with 502 (D3). "Campaign-linked" covers campaign sources only. A campaign decision that names the form in its properties is admitted, but it did not fire through the edge (see below).</td></tr>
+<tr><td>Setup admits both tenants first</td><td>PASS</td><td>The replay's form 1 publish exited 1, and both edge container IDs and start times were unchanged. The code computes both admissions before the container loop.</td></tr>
+<tr><td>Edge refuses to start without the server tracking policy</td><td>PASS</td><td>Missing, undefined and foreign policy all refused. Mutants that remove the check (SM4) or ignore the form id (SM5) are killed. Caveat: the policy is a constant string in the config, not proof of admission. Anyone who writes the config file can start an edge for any form. setup.mjs is the only writer today.</td></tr>
+<tr><td>Forces Blocked-Tracking cookie + DNT + Sec-GPC on every upstream post and ignores client cookies</td><td>PASS</td><td>The unit test checks the exact headers. Live, every hostile cookie and header variant left submissions unlinked. The live mutants show the header matters: without the cookie (SM1), with it set to 0 (SM2), or with privacy headers on GET only (SM3), each run of 4 posts made 4 anonymous contacts and linked all 4 submissions.</td></tr>
+<tr><td>Edge serializes upstream posts</td><td>PASS, per process only (as disclosed)</td><td>16 concurrent posts got 16/16 on both tenants. Two edge processes on one form: 1 of 16 lost with 502, and InnoDB shows the same <code>UPDATE forms SET submission_count</code> deadlock (<code>deadlock-twoedges-a.txt</code>). With serialization removed (SM6, live): 8 of 16 lost.</td></tr>
+<tr><td>Concurrent existing/new-email posts on both tenants keep identity and DNC, with no anonymous contacts</td><td>PASS</td><td>Shown at 4 posts (replay) and 16 posts (mine), both tenants.</td></tr>
+<tr><td>Mutants (admission removed, cookie removed) fail</td><td>PASS</td><td>My narrower versions were killed: each admission rule removed separately (AM1 to AM8) and the cookie removed or wrong (SM1 to SM3). AM1, AM2, AM3 and AM8 also admitted the builder's live unsafe forms.</td></tr>
+<tr><td>Disclosed: deadlock, post-publish gap, old replay broken</td><td>Confirmed</td><td>Deadlock confirmed with two edges. The post-publish gap is confirmed and causes real harm (D1). <code>publishing/replay.mjs</code> exits 1 on <code>404 !== 200</code> for GET /form/1, with zero native change (<code>old-replay-console.txt</code>).</td></tr>
+</table>
+
+<h2>Defects and findings, with repro</h2>
+<table>
+<tr><th>#</th><th>Severity</th><th>What</th><th>Repro</th></tr>
+<tr><td>D1</td><td>High for the goal of this fix</td><td>After publish, an admin maps email and firstname and adds <code>lead.remove_do_not_contact</code> on admitted form A 38. The running deployed edge, with no restart, posted 4 times: owner 222 name became "Edited existing 2", DNC 1 to 0, new contact 223 created, all 4 submissions linked. Blocked-Tracking does not help, because mapped fields identify the contact directly. An edge restart would not help either, because it re-reads the same static config.</td><td><code>node a4-post-publish-edit.mjs a</code>. It edits, posts, then reverts. Admission re-accepted form 38 after the revert.</td></tr>
+<tr><td>D2</td><td>Medium</td><td>A form with <code>saveResult:false</code> on email and firstname is admitted. The edge returns 200 "Submission received" and native stores NULL, NULL. Silent capture loss on both tenants.</td><td><code>node a1-admission-routes.mjs a|b</code>, variant <code>email-not-saved</code></td></tr>
+<tr><td>D3</td><td>Low</td><td>A form with isPublished true but publishDown in the past is admitted, and every post then fails with 502. It is honest and causes no harm, but an unusable form gets published.</td><td>Same script, variant <code>publish-down-past</code></td></tr>
+<tr><td>D4</td><td>Low (disclosed)</td><td>More than one edge process per form brings back the deadlock loss (1/16 lost with 2 processes).</td><td><code>node a5-concurrency.mjs 16</code>, twoEdges section</td></tr>
+<tr><td>D5</td><td>Low</td><td>Restart mid-queue (SIGKILL after the first reply, 32 queued): 2 accepted, 29 got ECONNRESET and were not stored, and 1 was stored while its client saw ECONNRESET. No duplicates, no links, owner unchanged, and the edge served again after restart. The queue is in memory only. A client retry of the ambiguous one would duplicate it.</td><td><code>node a6-restart-midqueue.mjs a 32</code></td></tr>
+<tr><td>D6</td><td>Test gap</td><td>Mutant SM7 (<code>queue=run</code> instead of <code>queue=run.catch(()=&gt;{})</code>) passes all 13 unit tests. After one native network error or timeout, every later post would fail with 502 until restart. The shipped code is correct; no test protects it.</td><td><code>node a7-mutants.mjs</code></td></tr>
+<tr><td>N1</td><td>Note</td><td>Baseline B also deadlocked on mapped form 1 (1 of 4 posts got 502). The builder's handover says mapped form 1 did not hit it. That was true for their run only.</td><td><code>iv-baseline.json</code></td></tr>
+</table>
+
+<h2>Other routes I tried that were safe</h2>
+<ul>
+  <li>Campaign decision <code>form.submit</code> naming the form in event properties: admitted (campaign_form_xref 0). The owner was a campaign member. Posting through the edge added 0 campaign log rows and 0 points. Positive control on the same campaign and a published "any form" point action: a mapped form posted natively without the tracking block logged decision event 294 for owner 221 and point actions. So the decision was live, and the edge's null contact is what stopped it (<code>a1b-decision-control-a.json</code>, <code>a1c-control-untracked.mjs</code>). With the tracking block on, even the mapped form did not fire the decision. It still linked the submission to the contact.</li>
+  <li>Admitted but harmless: alias case variants (Mautic lowercases them), a mapped button, autofill plus a default value, a post-action redirect, kiosk mode.</li>
+  <li>Page and asset reads after all this: zero native counter change (<code>read-effects-after.json</code>).</li>
+</ul>
+
+<h2>What I changed on the tenants (all synthetic)</h2>
+<ul>
+  <li>Restored: <code>private/publishing/fixtures.json</code> is byte-identical to before (intake A 34, B 29). The edges were re-set up and serve A 34 and B 29 again. The container IDs and server hash are the same. The configs match except <code>admittedAt</code>. The start times changed. <code>snap-initial.json</code>, <code>snap-restored.json</code></li>
+  <li>Left behind, as the builder also did: forms A 35 to 67 and B 30 to 47 (the IV variants, still published but not served by any edge), IV contacts with DNC, submissions, and 13 anonymous contacts on A (12 from the live cookie mutants, 1 from an mtc_id control) and 1 on B.</li>
+  <li>Unpublished and inert: campaigns A 145, 146 and B 8; segments A 137 to 139 and B 1; point actions A 1, 2 and B 1. The replay also created unpublished campaigns A 144 and B 7. The point actions had no form filter (my properties format was ignored), so while published they awarded points on any tracked submission: 26 log rows on A, all to IV-created contacts. They never fired for edge posts. Campaign memberships: A +2, B +1. Form A 38 was edited and then reverted (action 9 deleted, mappings cleared, field IDs kept).</li>
+  <li><b>Incident:</b> db-b was OOM-killed (512 MiB limit) at 11:52:37Z during my cleanup, while the campaign 8 unpublish PATCH returned 500. I restarted the same container. InnoDB crash recovery was clean, and the counts match the snapshot taken 20 s before the crash except +2 audit_log rows. db-b idles at about 448 of 512 MiB, so it is fragile under any load. I cannot prove my request was the only cause. For the two segments on A and one on B, I set is_published=0 by SQL instead of using the API, to avoid loading it again.</li>
+  <li>Not touched: Convex backends on 3450 to 3453 and 3490 to 3491, mail, DNS, TLS, host ports, provider accounts.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>Cookie and header values as Mautic actually received them on the wire. I proved them by the unit test (fake upstream) and by native effects, not by packet capture.</li>
+  <li>Admission for campaign "decision" routes on other event types (for example email or page decisions naming the form), webhooks beyond the existing form_on_submit callback, and plugin integrations.</li>
+  <li>Many edge replicas behind a load balancer, or native posts that bypass the edge. The edge network is internal-only, but I did not test Mautic's own public form route from outside, because there are no host ports by design.</li>
+  <li>This closes a P2 gap at SERVICE level only. P2 and D0M stay open (importer, core reconciliation, send-time suppression and the others listed in the builder handover).</li>
+</ul>
+
+<h2>Commands (from proofs/marketing, worktree ../remold-p2-iv at 82cd269, private linked to the main checkout)</h2>
+<pre>node --test publishing/server.test.mjs publishing/admission.test.mjs        13 pass
+(cd ../../../remold-p2-iv-base/proofs/marketing &amp;&amp; node publishing/setup.mjs)   old edge on form 1
+node ownership/admission-replay.mjs iv-baseline baseline                     exit 1 (expected)
+node ownership/admission-replay.mjs iv-after after                           exit 0 PASS
+cd ownership/evidence/admission/iv
+node a1-admission-routes.mjs a ; node a1-admission-routes.mjs b
+node a1b-decision-control.mjs a ; node a1c-control-untracked.mjs
+node a2-smuggle-bypass.mjs
+node a4-post-publish-edit.mjs a                                              harm shown, then reverted
+node a5-concurrency.mjs 16
+node a6-restart-midqueue.mjs a 32
+node a7-mutants.mjs                                                          14/15 killed
+node ../../../../publishing/replay.mjs                                       exit 1, 404 !== 200 (disclosed)
+restore: cp private/iv-admission/fixtures.json private/publishing/ &amp;&amp; node publishing/setup.mjs</pre>
+<p>The a4 raw client first half-closed its sockets, so its recorded response statuses are empty. The four posts still reached Mautic, as its submissions show. The client was fixed before the a2 run, and a note is in the JSON. The a6 first run (<code>a6-restart-midqueue-a-16-late.json</code>) restarted too late to hit the queue and is kept only as a record.</p>
+</body>
+</html>

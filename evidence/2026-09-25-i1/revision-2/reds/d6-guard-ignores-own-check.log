@@ -1,0 +1,26 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (3 tests | 1 failed) 176ms
+   × no single production test can stand in for more than five groups 158ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > no single production test can stand in for more than five groups
+AssertionError: expected 25 to be less than or equal to 5
+ ❯ ops/authority/h0-parity.test.ts:85:18
+     83|   const widest = Math.max(...allBodies.map(b => parity.filter(row => a…
+     84|   expect(allBodies.length).toBeGreaterThan(100);
+     85|   expect(widest).toBeLessThanOrEqual(5);
+       |                  ^
+     86| });
+     87|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  07:43:27
+   Duration  310ms (tests 80%, import 12%, transform 8%, worker 1%)
+

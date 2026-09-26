@@ -1,0 +1,164 @@
+{
+  "status": "PASS",
+  "level": "SERVICE disposable local Convex; synthetic HTTP fault injection",
+  "before": {
+    "httpStatus": 500,
+    "clientMs": 319.552584,
+    "metric": {
+      "buckets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clientErrors": 0,
+      "count": 1,
+      "maxMs": 306,
+      "meanMs": 306,
+      "overflowAboveMs": 10000,
+      "p50UpperMs": 500,
+      "p95UpperMs": 500,
+      "rateLimited": 0,
+      "serverErrorRate": 1,
+      "serverErrors": 1,
+      "statusCounts": {
+        "500": 1
+      }
+    }
+  },
+  "after": {
+    "httpStatus": 200,
+    "clientMs": 11.00104199999987,
+    "metric": {
+      "buckets": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "clientErrors": 0,
+      "count": 1,
+      "maxMs": 0,
+      "meanMs": 0,
+      "overflowAboveMs": 10000,
+      "p50UpperMs": 10,
+      "p95UpperMs": 10,
+      "rateLimited": 0,
+      "serverErrorRate": 0,
+      "serverErrors": 0,
+      "statusCounts": {
+        "200": 1
+      }
+    }
+  },
+  "concurrent": {
+    "requests": 50,
+    "successfulHttpResponses": 50,
+    "recordedDelta": 50
+  },
+  "operatorReadAndWriteRefusedPublicly": true,
+  "noRequestContentPersisted": true,
+  "realSchedulerFailurePreservedResponse": true,
+  "expiredRowPurged": true,
+  "overhead": {
+    "enabled": {
+      "n": 20,
+      "meanMs": 6.2804707499999495,
+      "maxMs": 15.586875000000873,
+      "samplesMs": [
+        8.10229199999958,
+        15.586875000000873,
+        11.908625000000029,
+        9.455291000000216,
+        4.710457999999562,
+        5.381583000000319,
+        4.97400000000016,
+        4.468874999998661,
+        4.42437499999869,
+        4.510958000000755,
+        8.099167000000307,
+        5.9519579999996495,
+        5.551625000000058,
+        4.89049999999952,
+        4.663000000000466,
+        4.729374999998981,
+        4.374667000000045,
+        4.84820800000125,
+        4.258040999999139,
+        4.719542000000729
+      ]
+    },
+    "disabled": {
+      "n": 20,
+      "meanMs": 3.846477099999811,
+      "maxMs": 7.885624999998981,
+      "samplesMs": [
+        7.885624999998981,
+        3.1333749999994325,
+        3.6494169999987207,
+        3.598959000000832,
+        3.279916999999841,
+        3.215874999999869,
+        1.8616250000013679,
+        3.6360829999994166,
+        3.9581249999991996,
+        3.4380829999990965,
+        6.474207999999635,
+        4.287707999999839,
+        3.7094580000011774,
+        3.7299590000002354,
+        3.9622499999986758,
+        3.276792000000569,
+        3.1882499999992433,
+        3.362583000000086,
+        3.7897499999999127,
+        3.4915000000000873
+      ]
+    },
+    "note": "Observed local alternating blocks; excludes neither noise nor drift; no causal performance claim."
+  },
+  "probe": {
+    "coveredBefore": [
+      {
+        "minute": 29840671,
+        "probeResult": "sent",
+        "state": "covered"
+      }
+    ],
+    "gapMinute": 29840672,
+    "gap": {
+      "minute": 29840672,
+      "probeResult": "sent",
+      "state": "transport-gap"
+    },
+    "restored": true,
+    "unauthorizedStatus": 401
+  },
+  "release": "unknown: artifact SHA pinning not implemented",
+  "sourceHashes": {
+    "http": "82bdda9ddefe98f41c82ac3974925746a03c85e1034e4f940559d41c17fb04fe",
+    "telemetry": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "telemetryHttp": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120"
+  },
+  "limitations": [
+    "No delivered alerts, hosted dashboard, provider traffic or production deployment.",
+    "Canary does not detect partial loss or crashes before response completion.",
+    "No true release before/after comparison while backend release is unknown."
+  ],
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-PoOEnN"
+}

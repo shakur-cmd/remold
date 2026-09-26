@@ -1,0 +1,93 @@
+{
+ "run": "bc19e44a",
+ "capturedAt": "2026-09-26T12:24:14.469Z",
+ "docker": {
+  "remold-marketing-proof-capture": [
+   "instance-secret"
+  ]
+ },
+ "logs": {
+  "remold-marketing-proof-capture": [],
+  "remold-marketing-proof-callback-b": [],
+  "remold-marketing-proof-callback-a": [],
+  "remold-marketing-proof-public-b": [],
+  "remold-marketing-proof-public-a": [],
+  "remold-marketing-proof-media-probe-after-f61e8eef": [],
+  "remold-marketing-proof-media-probe-before-61a65416": [],
+  "remold-marketing-proof-media-probe-after-c7f33215": [],
+  "remold-marketing-proof-media-probe-after-3c238bbc": [],
+  "remold-marketing-proof-web-b": [],
+  "remold-marketing-proof-media-probe-before-8593db8a": [],
+  "remold-marketing-proof-web-b-before-media": [],
+  "remold-marketing-proof-db-b": [],
+  "remold-marketing-proof-mime-sink": [],
+  "remold-marketing-proof-web-a": [],
+  "remold-marketing-proof-bridge": [],
+  "remold-marketing-proof-web-a-before-guard": [],
+  "remold-marketing-proof-authority": [],
+  "remold-marketing-proof-db-a": []
+ },
+ "containerFiles": {
+  "remold-marketing-proof-public-a": {
+   "/public-config.json": [
+    "edge-a",
+    "form-hmac-a"
+   ]
+  },
+  "remold-marketing-proof-public-b": {
+   "/public-config.json": [
+    "edge-b",
+    "form-hmac-b"
+   ]
+  },
+  "remold-marketing-proof-capture": {
+   "instance-secret": [
+    "/convex/data/credentials/instance_secret"
+   ]
+  }
+ },
+ "hostFiles": {
+  "marketingTree": {
+   "private/iv-admission/config-a.json": [
+    "form-hmac-a"
+   ],
+   "private/iv-admission/config-b.json": [
+    "form-hmac-b"
+   ],
+   "private/publishing/config-a.json": [
+    "edge-a",
+    "form-hmac-a"
+   ],
+   "private/publishing/config-b.json": [
+    "edge-b",
+    "form-hmac-b"
+   ],
+   "private/publishing/key-a": [
+    "form-hmac-a"
+   ],
+   "private/publishing/key-b": [
+    "form-hmac-b"
+   ],
+   "private/rawcapture/convex.env": [
+    "instance-secret"
+   ],
+   "private/rawcapture/keys.json": [
+    "edge-a",
+    "edge-b",
+    "reconciler-a",
+    "reconciler-b"
+   ],
+   "private/rawcapture/state.json": [
+    "admin-key",
+    "instance-secret"
+   ]
+  },
+  "gitTrackedHits": {}
+ },
+ "hashesStored": {
+  "edge-a": "a86940eb72ec",
+  "edge-b": "b02ea4b0c470",
+  "reconciler-a": "db44bfba0d9a",
+  "reconciler-b": "38d034e1e36d"
+ }
+}

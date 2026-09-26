@@ -1,0 +1,75 @@
+{
+ "section": "poison",
+ "label": "r3b-r2",
+ "at": "2026-09-26T13:30:28.629Z",
+ "status": "FAIL",
+ "failed": [
+  "reconciler completes despite poison",
+  "underscore email resolved by exact match, one contact",
+  "capture behind the poison is created with its suggested name",
+  "nothing left pending on A"
+ ],
+ "checks": [
+  {
+   "ok": false,
+   "name": "reconciler completes despite poison",
+   "detail": " const r=api(tenant,'/contacts?limit=100&search='+encodeURIComponent(email));if(Number(r.data?.total)>=100)throw Error('Do not truncate the email match set');"
+  },
+  {
+   "ok": false,
+   "name": "underscore email resolved by exact match, one contact",
+   "detail": {
+    "contactId": null,
+    "email": "_43f552cf@example.invalid",
+    "firstname": "Underscore",
+    "id": "j574a0g5dh32ek43c5zqjxdvy18f53g6",
+    "idempotencyKey": "4f8c8890658cbeafd391aa5727359314",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "capture behind the poison is created with its suggested name",
+   "detail": []
+  },
+  {
+   "ok": false,
+   "name": "nothing left pending on A"
+  }
+ ],
+ "out": {
+  "reconciler": {
+   "exit": 1,
+   "err": " const r=api(tenant,'/contacts?limit=100&search='+encodeURIComponent(email));if(Number(r.data?.total)>=100)throw Error('Do not truncate the email match set');"
+  },
+  "underscore": {
+   "contactId": null,
+   "email": "_43f552cf@example.invalid",
+   "firstname": "Underscore",
+   "id": "j574a0g5dh32ek43c5zqjxdvy18f53g6",
+   "idempotencyKey": "4f8c8890658cbeafd391aa5727359314",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": null,
+   "email": "good-43f552cf@example.invalid",
+   "firstname": "Good after poison",
+   "id": "j574ez0pvz1h3dybcxkhanvtyh8f5ntk",
+   "idempotencyKey": "52f9a072409b7615c35d7c6031f9db67",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "contacts": {
+   "underscore": [],
+   "good": []
+  }
+ }
+}

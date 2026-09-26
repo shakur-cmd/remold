@@ -1,0 +1,75 @@
+$ node verify-runtime.mjs && node install-plugin.mjs && node safety-replay.mjs && node branch-replay.mjs && node reentry-replay.mjs && node api-boundary-replay.mjs
+PASS exact H0 source, SDK version, pinned runtime images and isolated network.
+
+ // Clearing the cache for the prod environment with debug false                
+
+ [OK] Cache for the "prod" environment (debug=false) was successfully cleared.  
+
+
+0 new plugins were installed and 0 updated.
+
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/urkel/.nvm/versions/node/v24.18.0/bin/node /Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/native-fixture.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: 'ECONNRESET',
+    syscall: 'read'
+  }
+}
+
+Node.js v24.18.0
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at run (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/safety-replay.mjs:8:27)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/safety-replay.mjs:11:2
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    Buffer(0) [Uint8Array] [],
+    Buffer(289) [Uint8Array] [
+      110, 111, 100, 101,  58, 105, 110, 116, 101, 114, 110,  97,
+      108,  47, 109, 111, 100, 117, 108, 101, 115,  47, 114, 117,
+      110,  95, 109,  97, 105, 110,  58,  49,  48,  55,  10,  32,
+       32,  32,  32, 116, 114, 105, 103, 103, 101, 114,  85, 110,
+       99,  97, 117, 103, 104, 116,  69, 120,  99, 101, 112, 116,
+      105, 111, 110,  40,  10,  32,  32,  32,  32,  94,  10,  10,
+       91,  84, 121, 112, 101,  69, 114, 114, 111, 114,  58,  32,
+      102, 101, 116,  99, 104,  32, 102,  97, 105, 108, 101, 100,
+       93,  32, 123,  10,
+      ... 189 more items
+    ]
+  ],
+  pid: 49066,
+  stdout: Buffer(0) [Uint8Array] [],
+  stderr: Buffer(289) [Uint8Array] [
+    110, 111, 100, 101,  58, 105, 110, 116, 101, 114, 110,  97,
+    108,  47, 109, 111, 100, 117, 108, 101, 115,  47, 114, 117,
+    110,  95, 109,  97, 105, 110,  58,  49,  48,  55,  10,  32,
+     32,  32,  32, 116, 114, 105, 103, 103, 101, 114,  85, 110,
+     99,  97, 117, 103, 104, 116,  69, 120,  99, 101, 112, 116,
+    105, 111, 110,  40,  10,  32,  32,  32,  32,  94,  10,  10,
+     91,  84, 121, 112, 101,  69, 114, 114, 111, 114,  58,  32,
+    102, 101, 116,  99, 104,  32, 102,  97, 105, 108, 101, 100,
+     93,  32, 123,  10,
+    ... 189 more items
+  ]
+}
+
+Node.js v24.18.0
+[ELIFECYCLE] Test failed. See above for more details.

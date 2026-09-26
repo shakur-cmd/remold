@@ -1,0 +1,27 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /current finance membership/. Input:
+
+'Error: [Request ID: 799946a1baf5e35f] Server Error\n' +
+  "Could not find public function for 'payments:prepareSafety'.\n"
+
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/safety-replay.mjs:20:2
+    at async withPayments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:20:10)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/safety-replay.mjs:8:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: Error: [Request ID: 799946a1baf5e35f] Server Error
+  Could not find public function for 'payments:prepareSafety'.
+  
+      at ConvexHttpClient.mutationInner (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/browser/http_client.js:297:15)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async ConvexHttpClient.processMutationQueue (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/browser/http_client.js:310:24),
+  expected: /current finance membership/,
+  operator: 'rejects',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

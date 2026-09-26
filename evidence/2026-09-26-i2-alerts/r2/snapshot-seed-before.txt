@@ -1,0 +1,22 @@
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/release/snapshot.mjs:43
+  const wait = async (offset = 0, validation = false) => { const end = Date.now() + 180_000; for (;;) { const recent = logs.slice(offset); if (validation && /Schema validation failed|Failed to|Document with ID .* does not match the schema/i.test(recent)) throw new Error(recent.match(/.*(?:Schema validation failed|Failed to|Document with ID .* does not match the schema).*$/im)?.[0]?.slice(0, 500) ?? recent.slice(0, 500)); if (/Convex functions ready/.test(recent)) return; if (backend.exitCode !== null || Date.now() > end) throw new Error(`Local backend failed to become ready: ${recent.slice(-500)}`); await new Promise(done => setTimeout(done, 200)); } };
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ^
+
+Error: Local backend failed to become ready: ot resolve "../../packages/contracts/authority"
+
+    convex/integrations/tables.ts:3:22:
+      3 │ import { actor } from '../../packages/contracts/authority';
+        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+✘ [ERROR] Could not resolve "../../packages/contracts/integrations"
+
+    convex/integrations/tables.ts:4:83:
+      4 │ ...e, financialReceipt } from '../../packages/contracts/integrations';
+        ╵                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    at wait (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/release/snapshot.mjs:43:534)
+    at async local (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/release/snapshot.mjs:45:9)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/[eval1]:3:11
+
+Node.js v24.18.0

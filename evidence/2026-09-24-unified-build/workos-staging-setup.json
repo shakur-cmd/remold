@@ -1,0 +1,43 @@
+{
+  "ts": "2026-09-24T18:33:40.808627+00:00",
+  "project": "Remold",
+  "environment": "Staging only",
+  "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+  "environmentId": "environment_01M3AAH2KZYSFXQSGBAEMXA552",
+  "applicationId": "app_01M3AAH3423C2MCBAZA77G1SNQ",
+  "changes": [
+    {
+      "setting": "new project",
+      "before": "absent",
+      "after": "Remold with free Staging only; Production checkbox disabled by root before creation",
+      "verified": "independent full navigation returned Remold/Staging project and defaultapplication"
+    },
+    {
+      "setting": "redirectUris",
+      "before": [],
+      "after": [
+        "http://localhost:5173/callback"
+      ],
+      "verified": "saved configuration displayed in redirects table"
+    },
+    {
+      "setting": "appHomepageUrl",
+      "before": null,
+      "after": "http://localhost:5173",
+      "verified": "saved configuration displayed in redirects table"
+    },
+    {
+      "setting": "corsOrigins",
+      "before": [],
+      "after": [
+        "http://localhost:5173"
+      ],
+      "verified": "saved configuration displayed in Sessions table"
+    }
+  ],
+  "limitations": [
+    "Browser settings verified by root only; independentcheck and end-to-end actuallogin still pending",
+    "No productionenvironment, billing, Clerk change or cloudConvex deployment",
+    "No APIkeys copied"
+  ]
+}

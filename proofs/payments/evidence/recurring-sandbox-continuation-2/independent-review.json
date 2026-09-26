@@ -1,0 +1,31 @@
+{
+  "result": "**localSource: APPROVE. sandboxExecution: APPROVE**, for exact aggregate `670c6629\u20265127` (84 files), subject to the conditions below. This approves source and a bounded run only; it is not service evidence. I made no provider calls, didn't run the driver or the full replay, and edited no source. There is still no continue-2 latch and no `approval.json` for this candidate.\n\n## Integrity\n- **Hashes:** all 84 file hashes match, and the sorted-map aggregate recomputes exactly. The predecessor field says `65fc2b8d`, and the git HEAD bytes of `continuation.mjs` and `sandbox-fixture.mjs` equal the 65fc hashes.\n- **Delta:** those 2 files changed. New: `continuation-policy.test.mjs`, `settled-cancellation.mjs` and its test, `stop-readback.mjs` (GETs only), and 5 pinned evidence files. The adapter, domain, local and policy files are unchanged.\n- **Pins:** `loadSecondStop` checks the spent journal `8ecfcbbe` (mode 0600), the failure diagnostic `954fc750`, `provider.json` `a63163ba`, the run log `922e6cc3`, `second-stop-local.json` `00cd9d4a`, root's readback `4284dd4a` and mine `d480c315`, on top of the first-stop pins.\n- **Tamper controls, on isolated copies:** a 1-byte change to each of the continue-1 journal, the failure diagnostic, the local snapshot, the run log and my readback is refused. A world-readable journal is refused. An unmodified copy loads 21 keys. The copies were deleted, and the originals still hash `dbe91638`, `8ecfcbbe` and `954fc750`.\n\n## Behaviour I checked\n- **Budget rebuild:** the 10 new attempts map to 2 setups, 2 card changes, 1 F cancel and 5 F advances. Each card and cancel is tied to a confirmed local command key. No key repeats across journals. Totals match `proof.counts`: 21 writes, F 7 advances, H 0. F is at start+60+172799 = 1790477988, and the final advance is +3901.\n- **F write guard:** F's schedule and subscription are removed from the policy's writable sets and kept only as read-only records.\n- **Before any POST:** the driver requires F's SetupIntents to be exactly 5 and H's exactly 1, and the local org to be readonly (read via `harness:dump`; the result stays in memory).\n- **F order:**\n  1. a no-POST observation expecting `cancellationPending`, paid 301, reserved 602, 2 cycles, and the open invoice with `autoAdvance` false;\n  2. the single F advance;\n  3. the same assertions again;\n  4. readonly off.\n\n  The final assertions keep F's 602 hold and the open invoice, and enforce \u226431 writes, \u22642709 reserved and \u22641806 collected.\n- **Settle wait:** at most 8 reads and 7 waits. The schedule and subscription must be exactly equal between reads, and the invoice may differ only in the two links. Any other error, including a bad link type, stops the run immediately. Then the strict adapter observation runs.\n\n## Tests\n- `node --test` on all 5 test files: **16 of 16 pass**, matching `unit.txt`.\n- **My own challenges:** 15 of 15 pass, run against fake providers built from `loadSecondStop`:\n  - F cancel is refused with a fresh key and with the spent key;\n  - a setup is refused (4 of 4 spent), and a card change is refused even for a writable H subscription (2 of 2 spent);\n  - an F advance of 172801 seconds is refused;\n  - a new product is refused, and an E write is refused;\n  - no refused call reached the provider;\n  - exactly one H cancel remains;\n  - the settle wait:\n    - stops after the first stable pair;\n    - passes a bad link type and read errors straight through without retrying;\n    - stops with 8 reads and 7 waits when the schedule keeps drifting.\n\n## Non-blocking notes\n1. Two identical reads 1 second apart could come before a slow asynchronous change has started. If so, the strict observation stops the run again. That's safe, and it doesn't widen the comparison.\n2. The read-only sets are for the record only. The actual guard is removing F from the writable sets, and the test covers that. An activation for customer F is blocked by driver order and the remaining activation count, not by a policy rule.\n3. H has exactly 6 advances left, with no spare.\n\n## Conditions for execution\n- Back up the same database privately (0600, with its hash recorded) and confirm ports 3590, 3591 and 3492 are free.\n- Run before **1792897135**.\n- Create `approval.json` only with this exact aggregate.\n- If the run stops, don't rerun it. Any further continuation needs a new review.\n\nAll the earlier provider unknowns still apply: a real H1 response loss, the 60-second command expiry, clock readiness time, whether the H2 cancel settles within the wait, and webhook delivery.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 106,
+      "outputTokens": 66659,
+      "thinkingTokens": 30156,
+      "cacheReadInputTokens": 5710601,
+      "cacheCreationInputTokens": 198314,
+      "webSearchRequests": 0,
+      "costUSD": 4.062236200000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

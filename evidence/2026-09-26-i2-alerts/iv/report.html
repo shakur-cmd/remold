@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 alerts: independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>I2 alerts: independent verification</h1>
+<div class="meta">2026-09-26 · scope: I2 alert row, builder commit <code>a173192</code> on <code>i2/alerts-2026-09-26</code> (base <code>d66eb0b</code>) · level: SERVICE (disposable local Convex) · verdict: <b>REVISE, not certified</b> · checked by: fresh Opus 5.5 independent verifier, not the builder</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>None new from this check. The builder's open calls still stand: pick the alert channel, confirm the 15 minute stall and 5 minute REST window defaults.</li>
+  <li>Before any release that carries this schema: <code>ops/release/notes.json</code> still names rollback target <code>bb8e3ed</code>, whose schema differs, so release preflight refuses. The builder or release integrator needs to set a schema-identical rollback target the same way as the earlier expand release. No decision from you unless you want a different rollback policy.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Baseline reproduced: on <code>d66eb0b</code> the same three faults gave 0 notifications in 75 s (<code>base-service.json</code>).</li>
+  <li>After reproduced: the builder rehearsal passes on my own ports, 3 opens and 3 resolves, 6 unique ids, 0 leaks, first alert by cron alone after 41 s (<code>after-service.json</code>).</li>
+  <li>Scrubbing holds under my own attacks: error text with an email, a secret and a URL with a token, scheduled arguments with record text, a REST path with a record id and query string, and a Bearer header. Nothing reached the sink or the stored alert tables.</li>
+  <li>Dedupe holds: six concurrent manual checks racing to open a fresh key produced one alert row and one delivery.</li>
+  <li>Typecheck, app tests 80/80, authority tests 97/97, release tests, build all pass. Builder mutants 13/13 killed again. My 5 inventory guard mutants all killed.</li>
+  <li>The local-core fix works for what it fixes: base fails with "Could not resolve ../packages/contracts"; after it, <code>proof:flags</code> and the telemetry rehearsal pass.</li>
+  <li><b>High defect:</b> the 5000 row scan cap is above Convex's 4096 read limit. Once more than about 4096 scheduled rows exist in the last hour, <code>alerts:check</code> throws every minute. No coverage alert, no other alert, and nothing reports it. 5100 ordinary REST requests were enough to trigger it, because each request schedules <code>telemetry:record</code>.</li>
+</ul>
+</div>
+
+<h2>Verdict per claim</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Minute cron detects failed scheduled functions</td><td>PASS</td><td>after-service.json, attacks.json scrub phase</td></tr>
+<tr><td>REST 500 detected, 503 migration pause excluded</td><td>PASS</td><td>unit tests, after-service.json</td></tr>
+<tr><td>Stalls (&gt;15 min unfinished)</td><td>PARTIAL, defect</td><td>Fires correctly inside 60 min. A stall still pending after 60 min is reported "Resolved" (D2). Jobs scheduled more than about 45 min ahead are never checked (latent, no current caller). Mutant "stall measured from creation, not due time" survives.</td></tr>
+<tr><td>One alert row per key</td><td>PASS</td><td>6 concurrent checks on a fresh key: 1 row, 1 delivery, 0 duplicate ids (attacks.json concurrent)</td></tr>
+<tr><td>Notices only on open and resolve</td><td>PASS, with a note</td><td>A flapping fault gives one notice per open and per resolve (5 flaps = 10 notices). No hysteresis. That fits the claim but can be noisy.</td></tr>
+<tr><td>Built only from kind, function name, counts, timestamp</td><td>PASS</td><td>0 leaks over 9 forbidden strings in sink bytes, headers, paths and stored tables. A function name can't carry customer data: scheduling a nonexistent, email-shaped function name is refused at schedule time.</td></tr>
+<tr><td>Delivered only to HTTPS or loopback HTTP</td><td>PARTIAL, low defect</td><td>The direct rule holds (URL table in iv-unit-attacks.txt: <code>localhost.</code>, <code>[::1]</code>, <code>0.0.0.0</code>, <code>127.0.0.1.nip.io</code>, userinfo tricks all refused). But fetch follows redirects: a 307 from the loopback sink to <code>http://[::1]</code> delivered the full POST body there (D4). HTTPS to private or link-local hosts (<code>https://169.254.169.254</code>, <code>https://10.0.0.1</code>) is accepted. DNS rebinding is not relevant because the check is on the string, not the resolved address, and any HTTPS host is allowed anyway. 3 of my channel mutants survive the builder tests.</td></tr>
+<tr><td>Claim before send, retry</td><td>PASS for normal sinks, low defect</td><td>Retry and no resend after success reproduce. A batch slower than the 60 s claim lets an overlapping manual check resend both notices (D5). The code comment "a claim outlives any send attempt" is wrong because the claim covers the whole batch of up to 20 sends at 10 s each. The payload carries an id, so receivers can dedupe.</td></tr>
+<tr><td>5000 row cap raises a coverage alert</td><td><b>FAIL</b></td><td>D1 below. The coverage alert can never fire; the check crashes first. The builder's coverage test calls <code>detect()</code> with <code>truncated: true</code> directly, so my mutant that stops <code>evaluate</code> from ever setting it survives.</td></tr>
+<tr><td>13 unit mutants + 1 service mutant</td><td>13/13 reproduced</td><td>builder-mutants-rerun.txt. I did not rerun the builder's service mutant. My own 16: 10 killed, 6 survived (iv-mutants.txt).</td></tr>
+<tr><td>Additive tables opsAlerts, opsNotices</td><td>PASS, release gap</td><td>The schema diff only adds tables. Release preflight with the current notes refuses: "Rollback schema differs" (preflight-probe.txt, D3).</td></tr>
+<tr><td>Inventory rows, internal-only, readonly-aware</td><td>PASS</td><td>All 4 functions are internal. The rows match the telemetry conventions (<code>outside-workspace</code>, status <code>not-a-write</code>). Alerts write only opsAlerts and opsNotices. The guard kills: status made public, cron row removed, cron renamed, unlisted new function, evaluate row claiming no writes.</td></tr>
+<tr><td>local-core.mjs fix</td><td>PASS for the fix, rehearsal gap</td><td>flags and telemetry pass. <code>proof:rate-limit</code> still fails: all 50 writes get 503 AUTHORITY_MIGRATING. That is the same on base with the fix applied, so it comes from I1 and not this slice (rate-limit-diag.txt).</td></tr>
+<tr><td>Notice queue growth with no channel</td><td>Bounded by age</td><td>Notices are kept 7 days and then deleted, including ones never delivered, at up to 100 per minute. There is no count cap. My mutant that removes retention survives the builder tests.</td></tr>
+</table>
+
+<h2>Defects with repro</h2>
+<p><b>D1 (high): the scan cap is above the platform read limit, so alerting stops silently under ordinary load.</b> <code>evaluate</code> does <code>take(SCAN_CAP)</code> with <code>SCAN_CAP = 5000</code> on <code>_scheduled_functions</code>. The local backend (convex 1.46.0) refuses more than 4096 reads in one function. Every REST request schedules <code>telemetry:record</code>, so about 68 requests per minute sustained over an hour is enough. Repro: <code>node evidence/2026-09-26-i2-alerts/iv/scripts/alerts-attacks.mjs</code>. Phase coverage sends 5100 GET requests, then <code>alerts:check</code> returns "Too many reads in a single function execution (limit: 4096)". The large-arguments phase gives the same error. Counter-check with the cap set to 3500 (attacks-cap3500.json): the read limit is gone, but under the same burst <code>evaluate</code> then failed on write conflicts. Its range read over <code>_scheduled_functions</code> and <code>opsMetrics</code> conflicts with every new <code>telemetry:record</code>. So lowering the cap alone is not enough. The scan probably needs an index on state or a smaller window, and something outside must notice when the check itself fails. I did not measure whether it recovers under steady moderate load. I also did not check whether the hosted limit is the same number.</p>
+<p><b>D2 (medium): a long stall reports as resolved.</b> The scan only covers rows created in the last 60 minutes. Repro (<code>scripts/alerts.iv.test.ts</code>, copy it into <code>convex/</code> and run vitest): a job stays pending. At 16 min the stall opens. At 61 min a "Resolved: Scheduled function telemetry:record was stalled" notice is queued while the job is still pending. In the same way, a job scheduled 50 min ahead and 20 min overdue produces no alert.</p>
+<p><b>D3 (release gap): preflight refuses this schema with the current rollback target.</b> <code>notes.json</code> is class expand with target <code>bb8e3ed</code>. Schema digests: candidate <code>e6b37063...</code>, target <code>2077681f...</code>. <code>preflight</code> throws "Rollback schema differs". This is not a code bug, but the slice cannot ship until it is fixed, and the handover does not mention it.</p>
+<p><b>D4 (low): the loopback-only HTTP rule is bypassed by a redirect.</b> Repro in attacks.json redirect phase: webhook <code>http://127.0.0.1:3922/redirect</code> answers 307 to <code>http://[::1]:3923/landed</code>. The IPv6 listener received the POST with the full notice. Setting the same <code>[::1]</code> URL directly is refused. Fix: <code>redirect: "error"</code> or <code>"manual"</code> on the fetch. The impact is small because the notice holds no customer data and the operator sets the URL.</p>
+<p><b>D5 (low): a slow sink can double-send even with the claim.</b> Repro in alerts.iv.test.ts: two queued notices, the first send takes 70 s, and a manual check runs meanwhile. Both ids are sent twice. Convex does not overlap runs of the same cron, so this needs a manual check or a slow batch. This is within "at least once", but it contradicts the "sends a notice once even when two checks overlap" test name and the code comment.</p>
+
+<h2>Test gaps (my surviving mutants)</h2>
+<ul>
+  <li>Channel: <code>0.0.0.0</code> accepted; any host starting with "localhost" accepted; any non-http scheme (ftp, file) accepted. All three survive.</li>
+  <li>Stall measured from creation time instead of due time survives.</li>
+  <li><code>evaluate</code> never marks the scan truncated survives (the coverage test bypasses <code>evaluate</code>).</li>
+  <li>Retention removed survives.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>Delivery to a real owner channel. There is no account and none is allowed.</li>
+  <li>Hosted Convex limits and behavior. All runs were local anonymous backends on loopback ports 3420/3421 (rate-limit, flags), 3460/3461 (telemetry), 3910 to 3916 and 3920 to 3923 (alerts), synthetic data only.</li>
+  <li>Whether D1 or the write conflicts recover on their own under steady moderate traffic.</li>
+  <li>The builder's service mutant (error text forwarded) was not rerun. My scrub attack covers the same path with different strings.</li>
+  <li>Platform function logs. Convex logs the error text of failed scheduled functions, which is outside this slice.</li>
+</ul>
+
+<h2>Other notes</h2>
+<ul>
+  <li><code>convex/_generated/api.d.ts</code> as committed lacks the authority and integrations modules. A rehearsal regenerated it (codegen-drift.diff). This came before this slice, and typecheck still passes. I restored it.</li>
+  <li>The builder's rehearsal hard-codes ports 3830 to 3832. <code>scripts/alerts-ports.mjs</code> is a copy that only changes the ports and the import path.</li>
+  <li>No source was changed on this branch. Only this evidence folder was committed.</li>
+</ul>
+
+<h2>Files</h2>
+<p>All files are in <code>evidence/2026-09-26-i2-alerts/iv/</code>. Commands: typecheck.txt, app-tests.txt, authority-tests.txt, release-tests.txt, build.txt. Rehearsals: base-rate-limit.txt, after-rate-limit.txt, rate-limit-diag.txt, after-flags*.{txt,json}, after-telemetry*.{txt,json}. Alerts: base-service.*, after-service.*, attacks.*, attacks-cap3500.*. Mutants: builder-mutants-rerun.txt, iv-mutants.txt. Unit attacks: iv-unit-attacks.txt. Scripts are in <code>scripts/</code>.</p>
+</body>
+</html>

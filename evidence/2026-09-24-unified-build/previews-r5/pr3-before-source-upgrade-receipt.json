@@ -1,0 +1,113 @@
+{
+  "phase": "artifact-ready",
+  "plan": {
+    "sha": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+    "accountId": "949fc86de7efe057aac100389701d2b4",
+    "worker": "remold-i2-preview",
+    "subdomain": "shakur-949.workers.dev",
+    "team": "shakur-46299",
+    "project": "remold",
+    "projectId": 3049070,
+    "clientId": "client_01M3AAH302D3TVVDJN9SBNYARF",
+    "format": 1,
+    "pr": 3,
+    "baseSha": "73b060d97cf506a5ddff9ccc00ab8e475b19a462",
+    "name": "pr-3",
+    "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+    "callback": "https://pr-3-remold-i2-preview.shakur-949.workers.dev/callback"
+  },
+  "planSha256": "dafed461b588de121fd5b64761c7e15a35185b7ec039ba5605499aa8a8e63298",
+  "configSha256": "ebb8252a5c3f0ef89ec36a952308266c975d90f33eb100279423a0bff0a38c43",
+  "checkout": "/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-i2-preview-a-xcxovlze/checkout",
+  "backend": {
+    "id": 5678975,
+    "name": "neat-squid-188",
+    "createTime": 1790299164306,
+    "projectId": 3049070,
+    "deploymentType": "preview",
+    "kind": "cloud",
+    "isDefault": false,
+    "reference": "preview/pr-3",
+    "previewIdentifier": "pr-3",
+    "deploymentUrl": "https://neat-squid-188.convex.cloud",
+    "expiresAt": 1790731164324
+  },
+  "cloudflare": null,
+  "workosOwned": null,
+  "artifact": {
+    "manifestSha256": "e0232bb565d916611d765b81bb7a8b734ade71ea3e7f40b754d59e2305cbe3f2",
+    "sha": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+    "ci": {
+      "conclusion": "success",
+      "event": "pull_request",
+      "headSha": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+      "status": "completed",
+      "url": "https://github.com/shakur-cmd/remold/actions/runs/36079125382",
+      "workflowName": "Verify release candidate"
+    },
+    "configSha256": "ebb8252a5c3f0ef89ec36a952308266c975d90f33eb100279423a0bff0a38c43"
+  },
+  "hostedEffects": 0,
+  "ci": {
+    "conclusion": "success",
+    "event": "pull_request",
+    "headSha": "fd85becf56e728a699947966c4e248dab0a3d3f1",
+    "status": "completed",
+    "url": "https://github.com/shakur-cmd/remold/actions/runs/36079125382",
+    "workflowName": "Verify release candidate"
+  },
+  "backendAbsentBefore": true,
+  "attemptedAt": "2026-09-25T01:19:23.976Z",
+  "recovery": {
+    "at": "2026-09-25T02:04:15.077Z",
+    "expectedBackend": {
+      "kind": "cloud",
+      "id": 5678975,
+      "name": "neat-squid-188",
+      "createTime": 1790299164306,
+      "deploymentType": "preview",
+      "projectId": 3049070,
+      "creator": 540371,
+      "previewIdentifier": "pr-3",
+      "region": "aws-us-east-1",
+      "isDefault": false,
+      "reference": "preview/pr-3",
+      "dashboardEditConfirmation": null,
+      "deploymentUrl": "https://neat-squid-188.convex.cloud",
+      "expiresAt": 1790731164324,
+      "class": "s16",
+      "sendLogsToClient": null
+    },
+    "inventory": [
+      {
+        "args": [
+          "function-spec",
+          "--deployment",
+          "neat-squid-188"
+        ],
+        "stdout": "{\n  \"url\": \"https://neat-squid-188.convex.cloud\",\n  \"functions\": []\n}\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "data",
+          "--deployment",
+          "neat-squid-188"
+        ],
+        "stdout": "",
+        "stderr": "There are no tables in the neat-squid-188 deployment's database.\n"
+      },
+      {
+        "args": [
+          "env",
+          "list",
+          "--preview-name",
+          "pr-3"
+        ],
+        "stdout": "",
+        "stderr": "No environment variables set (on preview deployment neat-squid-188)\n"
+      }
+    ]
+  },
+  "clientIdVerified": true
+}

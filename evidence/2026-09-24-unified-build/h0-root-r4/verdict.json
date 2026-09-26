@@ -1,0 +1,29 @@
+{
+  "verdict": "APPROVE bounded H0 contract",
+  "reviewer": "root",
+  "at": "2026-09-24T19:24:54.480322+00:00",
+  "manifestSha256": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+  "sources": {
+    "convex/contract.ts": "242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59",
+    "convex/schema.ts": "61275c1bfae3661f7dfa4e9079ec8f1cefce17fb42f1f068bbaefa03d29cd3f8",
+    "convex/harness.ts": "8b023314f8dfe8d4ff4d5655d26aff9de320b9e05650e0534c4fb678b862d29b",
+    "replay.mjs": "fb2163f5d91533e662dbb06fa39b889a78e09fc1b39596880f71857e5278e23e",
+    "run.mjs": "eef5a7f4c92e3f101868b2d6ac5e586fc2caaf69d7589862263d0ab79413ae65",
+    "package.json": "9c1eb499a14dd5461924f662250b146bb51f12f170cf269be8422214172a00d2"
+  },
+  "proofCommand": "pnpm --dir proofs/contract proof",
+  "exitCode": 0,
+  "behavioralGroups": 43,
+  "fixtureSha256": "462f73ccd7f5d6234fe260e14a51e2dce2620c45a93edbdf4d2de6dc868cf0e1",
+  "independentVerifier": "/root/c0_verifier: 43 baseline + 36 independent groups PASS",
+  "modelApprovals": [
+    "claude-fable-5 exact manifest r4 APPROVE",
+    "claude-opus-5-5 exact manifest r4 APPROVE"
+  ],
+  "level": "SERVICE local Convex; SIM identity/providers",
+  "limits": [
+    "No production integration code or real provider finality certified",
+    "I1 must rerun H0 behavior on actual product authorization and migration",
+    "P jobs retain named account/cost/live gates"
+  ]
+}

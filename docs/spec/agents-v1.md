@@ -231,3 +231,7 @@ pnpm --filter @remold/mcp build && pnpm --filter @remold/mcp test
 ```
 
 Do not run `convex dev` or `convex deploy`. Do not edit anything under `src/` (the web UI is built separately against this contract) or `docs/` other than this file's companion README in `packages/mcp`. Do not commit.
+
+## I2 operational amendment, 2026-09-24
+
+REST v1 POST requests have a first-party Convex token-bucket limit per authenticated agent key: 120 writes per minute, capacity 120. GET requests do not consume this allowance. Exhaustion returns HTTP 429 with `Retry-After` seconds and `{error:{code:"RATE_LIMITED",message,retryAfter}}`, before dispatching the requested write. Revoked or unknown keys still fail authentication. Other keys and workspaces retain independent allowances. This is implemented and verified locally, not yet deployed; evidence is in `evidence/2026-09-24-unified-build/rate-limit-verdict.json`.

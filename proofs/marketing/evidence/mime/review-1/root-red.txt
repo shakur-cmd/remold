@@ -1,0 +1,74 @@
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (22.583ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (15.476542ms)
+✖ the receiver refuses a boundary that changes how a mail parser reads approved parts (4.720416ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.677792ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (1.144459ms)
+✔ the encoding and every extra header remain part of the approved hash (0.143042ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.117625ms)
+✖ changing a boundary cannot split or truncate the approved HTML (0.690459ms)
+✖ volatile headers accept generated metadata only, never arbitrary unapproved text (0.150084ms)
+✔ the serialized intent and exactly two MIME parts are required (0.101ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 7
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.866292
+
+✖ failing tests:
+
+test at proofs/marketing/mime-sink.test.mjs:23:1
+✖ the receiver refuses a boundary that changes how a mail parser reads approved parts (4.720416ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/mime-sink.test.mjs:27:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at proofs/marketing/mime.test.mjs:21:1
+✖ changing a boundary cannot split or truncate the approved HTML (0.690459ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/mime.test.mjs:25:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /proof MIME/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at proofs/marketing/mime.test.mjs:28:1
+✖ volatile headers accept generated metadata only, never arbitrary unapproved text (0.150084ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/mime.test.mjs:30:311)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /proof MIME/,
+    operator: 'throws',
+    diff: 'simple'
+  }

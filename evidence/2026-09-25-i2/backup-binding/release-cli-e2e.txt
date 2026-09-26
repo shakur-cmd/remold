@@ -1,0 +1,22 @@
+# release 5b652bcd7cb72cb934cb727509486afd06cab4e1, pinned manifest e19c75ec02a8b95fa216eed25dae3d81bfcec0602eee7f61686ee832836f672b, expected backup = PR4 free-plan export sha256 3f6c1b02886ae9cb074bd80da5f8aeb8a50803c19737a6d865f4c0290923bb34
+## snapshot drill: genuine
+PASS snapshotSha256 3f6c1b02886ae9cb app docs 116
+## snapshot drill: emptied
+PASS snapshotSha256 d4f39a482a2e8f32 app docs 0
+## snapshot drill: edited
+PASS snapshotSha256 2b0966d480e66f1c app docs 116
+## preflight with genuine receipt but no expected backup
+Persisted preflight requires the expected backup
+exit 1
+## preflight: genuine receipt vs expected backup
+{"snapshot":"restored-and-validated","snapshotSha256":"3f6c1b02886ae9cb074bd80da5f8aeb8a50803c19737a6d865f4c0290923bb34","deploymentAuthorized":false}
+exit 0
+## preflight: emptied receipt vs expected backup
+Snapshot receipt restored empty app tables but the expected backup has data
+exit 1
+## preflight: edited receipt vs expected backup
+Snapshot receipt is not for the expected backup
+exit 1
+## preflight: genuine receipt with random 64-hex snapshotSha256
+Snapshot receipt is not for the expected backup
+exit 1

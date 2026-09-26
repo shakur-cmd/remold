@@ -1,0 +1,48 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
++   'pi_3UJMihJL8hhTtG1o00fmF0SR',
+    'pi_3UJMikJL8hhTtG1o052vE6tn',
++   'pi_3UJMisJL8hhTtG1o1BeeB8dp',
+    'pi_3UJMivJL8hhTtG1o1dNY7e1K',
+    'pi_3UJMj2JL8hhTtG1o1UT4Z7nY',
++   'pi_3UJMjFJL8hhTtG1o0JDbXNw4',
++   'pi_3UJMjMJL8hhTtG1o1dWy9hP1',
+    'pi_3UJMjVJL8hhTtG1o047JovLR',
++   'pi_3UJMjaJL8hhTtG1o0EenEstY',
+    'pi_3UJMjdJL8hhTtG1o00qp2Pfp'
+  ]
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/evidence/2026-09-24-unified-build/payments-iv/recovery-provider/check.mjs:25:44
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'pi_3UJMihJL8hhTtG1o00fmF0SR',
+    'pi_3UJMikJL8hhTtG1o052vE6tn',
+    'pi_3UJMisJL8hhTtG1o1BeeB8dp',
+    'pi_3UJMivJL8hhTtG1o1dNY7e1K',
+    'pi_3UJMj2JL8hhTtG1o1UT4Z7nY',
+    'pi_3UJMjFJL8hhTtG1o0JDbXNw4',
+    'pi_3UJMjMJL8hhTtG1o1dWy9hP1',
+    'pi_3UJMjVJL8hhTtG1o047JovLR',
+    'pi_3UJMjaJL8hhTtG1o0EenEstY',
+    'pi_3UJMjdJL8hhTtG1o00qp2Pfp'
+  ],
+  expected: [
+    'pi_3UJMikJL8hhTtG1o052vE6tn',
+    'pi_3UJMivJL8hhTtG1o1dNY7e1K',
+    'pi_3UJMj2JL8hhTtG1o1UT4Z7nY',
+    'pi_3UJMjVJL8hhTtG1o047JovLR',
+    'pi_3UJMjdJL8hhTtG1o00qp2Pfp'
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

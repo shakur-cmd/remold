@@ -1,0 +1,157 @@
+{
+ "section": "faults",
+ "label": "iv-r4-r1",
+ "at": "2026-09-26T13:39:30.049Z",
+ "status": "FAIL",
+ "failed": [
+  "a create Mautic refuses (400) settles as rejected with the reason",
+  "a refused name update is recorded and the contact kept unnamed",
+  "captures after both refusals are still created",
+  "once Mautic answers normally the pending capture is created"
+ ],
+ "checks": [
+  {
+   "ok": false,
+   "name": "a create Mautic refuses (400) settles as rejected with the reason",
+   "detail": {
+    "contactId": null,
+    "email": "f400-612db501@example.invalid",
+    "firstname": "Refused",
+    "id": "j57dsgmexmbjqhzc3nxrzkbnqs8f4nma",
+    "idempotencyKey": "bbdecd9c1fc3b4c5a341c15d23ac22e3",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "a refused name update is recorded and the contact kept unnamed",
+   "detail": {
+    "contactId": null,
+    "email": "fname-612db501@example.invalid",
+    "firstname": "Name refused",
+    "id": "j57ay7m5ghm0g7m8s8dv448dtx8f568h",
+    "idempotencyKey": "fdd3937de12114be8b4f4bb8acfc4d8e",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": false,
+   "name": "captures after both refusals are still created",
+   "detail": []
+  },
+  {
+   "ok": true,
+   "name": "a 500 on create stops the run and leaves the capture pending, never rejected",
+   "detail": {
+    "exit": 1,
+    "row": {
+     "contactId": null,
+     "email": "f500-612db501@example.invalid",
+     "firstname": "Outage",
+     "id": "j57epqf5twe2nfppnvdjwc642n8f5ftp",
+     "idempotencyKey": "28b7b6ab2025ca9aaa9d295732545eba",
+     "outcome": null,
+     "reason": null,
+     "status": "pending",
+     "tenant": "a"
+    }
+   }
+  },
+  {
+   "ok": false,
+   "name": "once Mautic answers normally the pending capture is created",
+   "detail": {
+    "exit": 1,
+    "err": "     else throw Error('Mautic create failed '+r.status);",
+    "e500": {
+     "contactId": null,
+     "email": "f500-612db501@example.invalid",
+     "firstname": "Outage",
+     "id": "j57epqf5twe2nfppnvdjwc642n8f5ftp",
+     "idempotencyKey": "28b7b6ab2025ca9aaa9d295732545eba",
+     "outcome": null,
+     "reason": null,
+     "status": "pending",
+     "tenant": "a"
+    }
+   }
+  }
+ ],
+ "out": {
+  "faultyRun": {
+   "exit": 1,
+   "err": "     else throw Error('Mautic create failed '+r.status);"
+  },
+  "e400": {
+   "contactId": null,
+   "email": "f400-612db501@example.invalid",
+   "firstname": "Refused",
+   "id": "j57dsgmexmbjqhzc3nxrzkbnqs8f4nma",
+   "idempotencyKey": "bbdecd9c1fc3b4c5a341c15d23ac22e3",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "en": {
+   "contactId": null,
+   "email": "fname-612db501@example.invalid",
+   "firstname": "Name refused",
+   "id": "j57ay7m5ghm0g7m8s8dv448dtx8f568h",
+   "idempotencyKey": "fdd3937de12114be8b4f4bb8acfc4d8e",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": null,
+   "email": "fgood-612db501@example.invalid",
+   "firstname": "Good",
+   "id": "j57bx22qewg31yfv0122vwybfn8f4980",
+   "idempotencyKey": "eab4c11cc510d6c0225ce2414fff4f0e",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "e500": {
+   "contactId": null,
+   "email": "f500-612db501@example.invalid",
+   "firstname": "Outage",
+   "id": "j57epqf5twe2nfppnvdjwc642n8f5ftp",
+   "idempotencyKey": "28b7b6ab2025ca9aaa9d295732545eba",
+   "outcome": null,
+   "reason": null,
+   "status": "pending",
+   "tenant": "a"
+  },
+  "contacts": {
+   "e400": [],
+   "en": [],
+   "good": [],
+   "e500": []
+  },
+  "realRun": {
+   "exit": 1,
+   "err": "     else throw Error('Mautic create failed '+r.status);",
+   "e500": {
+    "contactId": null,
+    "email": "f500-612db501@example.invalid",
+    "firstname": "Outage",
+    "id": "j57epqf5twe2nfppnvdjwc642n8f5ftp",
+    "idempotencyKey": "28b7b6ab2025ca9aaa9d295732545eba",
+    "outcome": null,
+    "reason": null,
+    "status": "pending",
+    "tenant": "a"
+   }
+  }
+ }
+}

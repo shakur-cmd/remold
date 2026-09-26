@@ -1,0 +1,44 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-rMpCQt[39m
+
+ [31m❯[39m ops/authority/grants.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 172[2mms[22m[39m
+   [32m✓[39m explicit record fields govern actual agent reads and direct applyChange writes[32m 134[2mms[22m[39m
+   [32m✓[39m delegated reads stop after manager downgrade while an independent human field grant survives[32m 11[2mms[22m[39m
+   [32m✓[39m a manager cannot escalate fields, manage peers, or fire its grant ancestor[32m 8[2mms[22m[39m
+   [32m✓[39m a restricted human cannot widen authority through legacy agent creation, replacement, or explicit grants[32m 10[2mms[22m[39m
+[31m   [31m×[31m an all-records grant is still confined to its one object[39m[32m 8[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 11:10:45
+[2m   Duration [22m 287ms[2m (tests 72%, transform 20%, import 7%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/grants.test.ts[2m > [22man all-records grant is still confined to its one object
+[31m[1mAssertionError[22m: expected [ 'company', 'person', …(5) ] to deeply equal [ 'company' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "company",[22m
+[31m+   "person",[39m
+[31m+   "opportunity",[39m
+[31m+   "project",[39m
+[31m+   "task",[39m
+[31m+   "note",[39m
+[31m+   "campaign",[39m
+[2m  ][22m
+
+[36m [2m❯[22m ops/authority/grants.test.ts:[2m59:47[22m[39m
+    [90m 57|[39m   const f = await fixture(); await f.issue(f.manager.agentId, 'read');
+    [90m 58|[39m   const objects = await rest(f.t, f.manager.key)('GET', '/api/v1/objec…
+    [90m 59|[39m   expect(objects.json.map((o: any) => o.key)).toEqual(['company']);
+    [90m   |[39m                                               [31m^[39m
+    [90m 60|[39m });
+    [90m 61|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+

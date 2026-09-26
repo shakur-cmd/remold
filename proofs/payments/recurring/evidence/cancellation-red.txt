@@ -1,0 +1,19 @@
+$ node replay.mjs
+AssertionError [ERR_ASSERTION]: Unknown activation must retain human cancellation intent
++ actual - expected
+
+  {
++   cancellationError: true,
+-   cancellationError: false,
+    held: 903,
++   requested: false,
++   state: 'outcomeUnknown'
+-   requested: true,
+-   state: 'cancellationPending'
+  }
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:270:20
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:73:16)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:11:5
+[ELIFECYCLE] Test failed. See above for more details.

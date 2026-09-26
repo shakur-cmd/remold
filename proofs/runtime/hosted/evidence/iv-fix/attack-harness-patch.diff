@@ -1,0 +1,10 @@
+13c13
+< if (url !== 'http://127.0.0.1:3940') throw new Error('attack refuses unexpected target ' + url);
+---
+> if (url !== 'http://127.0.0.1:3950') throw new Error('attack refuses unexpected target ' + url);
+15c15
+< const call = (name, args) => client.mutation(api.harness[name], args);
+---
+> const call = (name, args) => client.mutation(name === 'settle' ? api.settle.settle : api.harness[name], args);
+203a204
+>   writeFileSync('evidence/.run-result.json', JSON.stringify({ code }));

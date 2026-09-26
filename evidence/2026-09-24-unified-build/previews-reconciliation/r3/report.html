@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold preview checkpoint</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Remold preview checkpoint</h1><div class="meta">2026-09-24 · I2 · bounded SERVICE evidence; full rehearsal incomplete</div>
+<div class="decisions"><h2>Next build work</h2><p>No new owner decision needed for this checkpoint. Correct the missing preview callback build variable, then review and execute an explicit rebuild of PR4. Recover PR3’s existing claim through a separately reviewed path. Do not rerun either creation command or mark I2 complete.</p></div>
+<div class="status"><h2>Checked and proven</h2><p>Root and fresh Opus 5.5 approved the metadata repair. Root13 and independent13 plus14 altered cases passed. The later Wrangler repair passed root14 and independent14 plus26 altered cases; the reviewer also independently fetched the expected hosted commit.</p><p>PR4 backend <code>kindred-hyena-171</code> deployed with its staging client ID verified. Its frontend exists at <a href="https://pr-4-remold-i2-preview.shakur-949.workers.dev">PR4 preview</a>. Root reconciled its receipt without another upload: exact provider identity, current open PR and CI, local artifact verification, and byte-equal hosted version and release manifest. Chrome displayed the Remold signed-out shell. Hosted sign-in remains blocked.</p></div>
+<h2>Before and after</h2><table><tr><th>Before</th><th>After and evidence</th></tr><tr><td>PR3 claim stopped: deployment GET returned a null preview identifier.</td><td>Two endpoint responses must agree on database identity and exact PR reference. Real preview-key read reproduces old rejection and new acceptance. <a href="provider-readback.json">Provider read</a>, <a href="before/policy.mjs">before source</a>, <a href="independent-review.json">independent review</a>.</td></tr><tr><td>Wrangler progress text and nested preview.id failed the original parser after PR4 upload.</td><td>Parser accepts that real output and refuses mismatched identities, commit, origin or extra JSON. <a href="frontend-red.txt">red</a>, <a href="frontend-green.txt">green</a>, <a href="frontend-independent-review.json">fresh independent checks</a>.</td></tr><tr><td>PR4 receipt remained frontend-attempted despite an existing preview.</td><td>Local receipt now frontend-ready with exact owned ID. CLI exit status remains unknown; readiness rests on readbacks. <a href="pr4-reconciled-receipt.json">Reconciliation receipt</a>.</td></tr><tr><td>No hosted sign-in baseline.</td><td>Actual Chrome Sign in returns Invalid Redirect URI. Build omits VITE_WORKOS_REDIRECT_URI, so AuthKit receives the root instead of /callback. <a href="browser-witness.json">Failure witness</a>. No WorkOS settings changed.</td></tr></table>
+<h2>Remaining requirements</h2><p>PR3 <code>neat-squid-188</code>, ID5678975, remains claimed with backend-attempted and no recorded backend push. Do not reset its receipt. Both preview databases expire September30; the scoped key expires earlier. Existing authorization permits bounded rehearsal, not production cutover.</p><p>The callback build correction, exact staging callback/CORS setup, hosted sign-in, two independent synthetic workspaces, close-one cleanup and survivor checks remain open. Partial cleanup and explicit recovery need their own review. Full I1 and I2 are not certified. The existing I1 work was not edited or tested in this checkpoint.</p><p>Fresh independent reviewer: Opus5.5 through the verified Claude Max route; telemetry records claude-opus-5-5. Root performed provider operations and local reconciliation. Full browser journey and post-reconciliation lifecycle still await independent verification.</p></body></html>

@@ -1,0 +1,24 @@
+{
+  "verdict": "APPROVE corrected I2 rate-limit slice, SERVICE only",
+  "verifier": "/root/c0_verifier",
+  "tests": "51 passed; typecheck exit0",
+  "independentAlteredFixture": {
+    "preconsumed": 113,
+    "requests": 61,
+    "allowed": 7,
+    "limited": 54,
+    "durationMs": 349,
+    "inboxWrites": 9
+  },
+  "checks": [
+    "reads unaffected",
+    "same-org other key unaffected",
+    "tenant B unaffected",
+    "first-party component keyed by server-derived agent ID",
+    "root deployment configuration unchanged"
+  ],
+  "limits": [
+    "not deployed",
+    "I2 overall remains open"
+  ]
+}

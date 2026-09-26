@@ -1,0 +1,38 @@
+✔ two PR plans have distinct stable origins while retaining one staging identity realm (0.790291ms)
+✔ preview configuration cannot carry production routes, bindings or another account (1.048625ms)
+✔ child environment drops inherited production targets and provider secrets (0.099125ms)
+✔ AuthKit add preserves existing origins, homepage and default; repeated add is idempotent (0.091375ms)
+✔ close A removes only its owned entries and exact backend; B and concurrent additions survive (0.134167ms)
+✔ cleanup never removes AuthKit entries that predated this receipt (0.054084ms)
+✔ cleanup refuses wrong tenant, prod, reused backend name, changed identity or another PR receipt (0.248084ms)
+✔ an already absent exact backend does not generate another deletion (0.04325ms)
+✔ resuming an owned AuthKit add retains ownership for later cleanup (0.06375ms)
+✖ cleanup refuses a pre-existing or replaced Cloudflare preview (0.138958ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36.988959
+
+✖ failing tests:
+
+test at ops/previews/policy.test.mjs:19:1
+✖ cleanup refuses a pre-existing or replaced Cloudflare preview (0.138958ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/previews/policy.test.mjs:21:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'throws',
+    diff: 'simple'
+  }

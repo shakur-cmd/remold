@@ -4,8 +4,8 @@ import { fail } from "./errors";
 
 const profile = v.object({ name: v.optional(v.string()), email: v.optional(v.string()), imageUrl: v.optional(v.string()) });
 
-// The Clerk token carries no profile claims, so the signed-in app sends what
-// Clerk shows it. It can only describe the caller, never anyone else.
+// The signed-in app supplies display profile fields for its authenticated caller.
+// Membership and identity are derived from the verified token, never this profile.
 export const store = mutation({ args: { profile: v.optional(profile) }, handler: async (ctx, args) => {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) fail("UNAUTHENTICATED", "Sign in first");

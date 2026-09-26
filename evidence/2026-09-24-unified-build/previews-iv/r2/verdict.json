@@ -1,0 +1,50 @@
+{
+  "verdict": "APPROVE bounded offline preview operator successor",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-25T01:17:01.361744+00:00",
+  "sourceAggregate": "d92702a0909fcbf7927b8bfa787be35f358bd3147b14bd896a9d2450217a5104",
+  "files": 12,
+  "sourceUnchanged": true,
+  "predecessor": "../review.html",
+  "checks": [
+    {
+      "command": "node --test ops/previews/policy.test.mjs",
+      "exit": 0,
+      "tests": 12
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/previews-iv/r2/offline.mjs",
+      "exit": 0,
+      "groups": 5,
+      "additionalCases": "false/missing backend ownership both refused"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/previews-iv/r2/lifecycle.mjs",
+      "exit": 0,
+      "cases": "OPEN exact head/base accepted; CLOSED/head/base deviations refused; relocation refused; same-directory alias accepted"
+    }
+  ],
+  "reviewedChanges": [
+    "Backend absent-before receipt strictly required by cleanupPlan",
+    "verifyCI now checks current open PR/exact head/isolated base before fixed historical successful CI",
+    "Backend/frontend and environment build all use shared current PR guard",
+    "load canonicalizes output and configured artifact paths and requires exact OUTPUT/artifact"
+  ],
+  "providerCalls": 0,
+  "sourceEdits": 0,
+  "limits": [
+    "All gh responses in independent lifecycle probe are mocked offline",
+    "No hosted resource creation/deploy/delete, WorkOS mutation or credentials accessed",
+    "No tests-on-environment-rebuilt-bytes claim",
+    "No automatic lifecycle, app/auth/I1 or whole I2 certification"
+  ],
+  "hashes": {
+    "policy.txt": "e1762f52377ffe9eb601390ced8ffea19b65116a39d5f357e6fcee1dc0d7ce2f",
+    "offline.mjs": "428daca89729efe2a9e22a32471405015dcb0733781cbe336ba39376b5079d08",
+    "offline-result.json": "a2e8b5b57d9a266ff947f8f1470cabf3f8c8a0a3f8f7b54f10a0fe4726244425",
+    "offline.txt": "3d8a829d262d75f469908d58510365db2e5353d790afe803ff7a102b307958e0",
+    "lifecycle.mjs": "8ef877ca0232dbcd95d176241c1043f32b6b5538378d9013a9ab46bad3190b90",
+    "lifecycle-result.json": "2eda2e63e23a1512cf1706a1b1e3920fd12aba6a76cb416bf2d432f97dd006bf",
+    "lifecycle.txt": "95ed59c8156ba2482b076768f8c013af529cd47a279e9e6ffa1a918aa523966f"
+  }
+}

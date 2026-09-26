@@ -1,0 +1,107 @@
+{
+ "at": "2026-09-25T06:37:10.399Z",
+ "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+ "tenants": {
+  "a": {
+   "replayRow": {
+    "tenant": "a",
+    "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+    "contactId": 164,
+    "firstname": "Route A",
+    "before": 4,
+    "after": 5,
+    "oldContactUnchanged": true,
+    "allNegativeRequestsLeftNoSubmissions": true
+   },
+   "newSubmissions": [
+    {
+     "id": 5,
+     "leadId": 164,
+     "results": {
+      "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+      "firstname": "Route A"
+     },
+     "formId": 1,
+     "page": null,
+     "referer": "",
+     "trackingId": "jrr58nebit6kikba6qjtvck"
+    }
+   ],
+   "priorSubmissionsRetained": true,
+   "contact": {
+    "id": 164,
+    "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+    "firstname": "Route A",
+    "lastname": null,
+    "points": 0,
+    "ipAddresses": [
+     "0"
+    ],
+    "doNotContact": 0,
+    "utmtags": 0,
+    "owner": null
+   },
+   "contact1": {
+    "beforeSha256": "1692e36d18d51b7db470f1e54369f5bc1b543db7bd852f90c8fb538c5b550640",
+    "afterSha256": "1692e36d18d51b7db470f1e54369f5bc1b543db7bd852f90c8fb538c5b550640",
+    "unchanged": true,
+    "email": "synthetic-a6feaa4f@example.invalid"
+   }
+  },
+  "b": {
+   "replayRow": {
+    "tenant": "b",
+    "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+    "contactId": 25,
+    "firstname": "Route B",
+    "before": 4,
+    "after": 5,
+    "oldContactUnchanged": true,
+    "allNegativeRequestsLeftNoSubmissions": true
+   },
+   "newSubmissions": [
+    {
+     "id": 5,
+     "leadId": 25,
+     "results": {
+      "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+      "firstname": "Route B"
+     },
+     "formId": 1,
+     "page": null,
+     "referer": "",
+     "trackingId": "x23wugixmpr9phldiak45vk"
+    }
+   ],
+   "priorSubmissionsRetained": true,
+   "contact": {
+    "id": 25,
+    "email": "edge-373fea23-57b2-4f4a-8711-e45958beca89@example.invalid",
+    "firstname": "Route B",
+    "lastname": null,
+    "points": 0,
+    "ipAddresses": [
+     "0"
+    ],
+    "doNotContact": 0,
+    "utmtags": 0,
+    "owner": null
+   },
+   "contact1": {
+    "beforeSha256": "fe5e3005128950e4a39b9547c870f96a011d975c4275aea654697d76a7465c7c",
+    "afterSha256": "fe5e3005128950e4a39b9547c870f96a011d975c4275aea654697d76a7465c7c",
+    "unchanged": true,
+    "email": "synthetic-a6feaa4f@example.invalid"
+   }
+  }
+ },
+ "checks": {
+  "oneNewSubmissionEach": true,
+  "submissionLinksContact": true,
+  "sameEmail": true,
+  "differentTenantFields": true,
+  "contact1Unchanged": true,
+  "priorRetained": true
+ },
+ "pass": true
+}

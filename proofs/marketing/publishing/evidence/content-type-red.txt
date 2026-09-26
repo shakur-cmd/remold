@@ -1,0 +1,34 @@
+✔ only the exact host and published paths reach the native service (20.746584ms)
+✔ rendered form token binds tenant, form and published field labels (2.962958ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.445792ms)
+✔ client tracking headers and native cookies or redirects are not forwarded (1.376458ms)
+✖ native validation failure, redirect and oversized responses cannot report success (4.442583ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.982959
+
+✖ failing tests:
+
+test at proofs/marketing/publishing/server.test.mjs:43:1
+✖ native validation failure, redirect and oversized responses cannot report success (4.442583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 502
+  
+      at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/server.test.mjs:44:398
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async fixture (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/server.test.mjs:14:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 502,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

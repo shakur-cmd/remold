@@ -1,0 +1,817 @@
+{
+  "runId": "46c068ad",
+  "image": "remold-p6-stub:c9364d8de070",
+  "at": "2026-09-26T14:54:40.610Z",
+  "level": "SERVICE control plane (local Convex, verbatim H0) / SIM model (stub) / local Docker sandbox",
+  "results": [
+    {
+      "name": "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets",
+      "status": "PASS",
+      "ms": 1440,
+      "evidence": {
+        "targets": [
+          {
+            "host": "172.17.0.2",
+            "port": 8080
+          },
+          {
+            "host": "172.17.0.1",
+            "port": 22
+          },
+          {
+            "host": "1.1.1.1",
+            "port": 443
+          },
+          {
+            "host": "169.254.169.254",
+            "port": 80
+          }
+        ],
+        "probes": {
+          "A": {
+            "secrets": [
+              {
+                "path": "/work/tenant-secret-A.txt",
+                "text": "SECRET-A-46c068ad"
+              }
+            ],
+            "reachable": [],
+            "interfaces": [
+              "lo"
+            ],
+            "env": [
+              "HOME",
+              "HOSTNAME",
+              "NODE_VERSION",
+              "PATH",
+              "YARN_VERSION"
+            ],
+            "uid": 65534,
+            "rootWritable": false,
+            "hostPaths": [],
+            "ownWorkspace": [
+              "tenant-secret-A.txt"
+            ]
+          },
+          "B": {
+            "secrets": [
+              {
+                "path": "/work/tenant-secret-B.txt",
+                "text": "SECRET-B-46c068ad"
+              }
+            ],
+            "reachable": [],
+            "interfaces": [
+              "lo"
+            ],
+            "env": [
+              "HOME",
+              "HOSTNAME",
+              "NODE_VERSION",
+              "PATH",
+              "YARN_VERSION"
+            ],
+            "uid": 65534,
+            "rootWritable": false,
+            "hostPaths": [],
+            "ownWorkspace": [
+              "tenant-secret-B.txt"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "missing cap means zero: no executor cap refuses before any reservation",
+      "status": "PASS",
+      "ms": 680,
+      "evidence": {
+        "refused": {
+          "tenant": "A",
+          "id": "jh758893g8cxfy898gzrvpncdn8f4cxf",
+          "mode": "normal",
+          "units": 1,
+          "applied": false,
+          "refused": "executor policy cap"
+        },
+        "control": {
+          "tenant": "B",
+          "id": "jh73z51222c1fcwbqv8h1g17n58f4hec",
+          "mode": "normal",
+          "units": 1,
+          "applied": true,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 1,
+          "exitAt": 1790434461632,
+          "tokens": 1,
+          "providerRef": "stub:remold-p6-46c068ad-B-1",
+          "usage": 1,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        }
+      }
+    },
+    {
+      "name": "concurrent reservations never exceed org or global hard caps",
+      "status": "PASS",
+      "ms": 3390,
+      "evidence": {
+        "orgs": [
+          {
+            "cap": 10,
+            "spent": 4,
+            "reserved": 0
+          },
+          {
+            "cap": 10,
+            "spent": 8,
+            "reserved": 0
+          }
+        ],
+        "global": {
+          "_creationTime": 1790434461831.709,
+          "_id": "jx75rhr32g490ytpsgzjngt2k18f474d",
+          "active": 0,
+          "cap": 15,
+          "maxConcurrent": 3,
+          "reserved": 0,
+          "spent": 12
+        },
+        "peaks": {
+          "global": 2,
+          "B": 1,
+          "A": 1
+        },
+        "waves": [
+          [
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 60a5751870e2838b] Server Error\nUncaught Error: outstanding permit cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:373:37)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 01d3d52dd9392578] Server Error\nUncaught Error: concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: df13c867dd3e01ff] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: fd6158390ad59e1f] Server Error\nUncaught Error: concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 7a77ba9f3fda0a62] Server Error\nUncaught Error: concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": true,
+              "usage": 4
+            },
+            {
+              "tenant": "B",
+              "applied": true,
+              "usage": 4
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 187ba2dc14c77db5] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 54d722864980f885] Server Error\nUncaught Error: concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: fd16b56033a3d1bc] Server Error\nUncaught Error: concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 62a12db5ac11aa5d] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: c469fb770ec2d628] Server Error\nUncaught Error: outstanding permit cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:373:37)\n"
+            }
+          ],
+          [
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: bd6c6488fb095e3a] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: fac0f7dcc6892f52] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: e9deb24b0b7308bb] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 732891872fa9cd01] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: d8ef741a53b73e1f] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: b96a435e7e0509c5] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": true,
+              "usage": 4
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 0f277d8aa3871452] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 8579caaf7a0c9e2e] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 983964163627cd50] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 09db407bef5b2a3c] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 67385736abcf78f7] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            }
+          ],
+          [
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 7c9c5e6ffa0f09d1] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 53e1cf189f40a3a2] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: a93a188d0b090851] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: ab2a9691d4421a4a] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: bf392ce96e415e44] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "A",
+              "applied": false,
+              "refused": "[Request ID: 4f640495e2dec775] Server Error\nUncaught Error: global budget/concurrency cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: d2bc0068ae14813f] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: fe1185f81e9b977a] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 74bc4c0f22b30ac9] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 0034bae55de9e884] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 13dd372a4c7b54dc] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            },
+            {
+              "tenant": "B",
+              "applied": false,
+              "refused": "[Request ID: 073f07abda499de9] Server Error\nUncaught Error: budget cap\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "name": "org kill switch stops the running sandbox within the bound, refuses queued work, leaves the other tenant running",
+      "status": "PASS",
+      "ms": 1480,
+      "evidence": {
+        "latencyMs": 157,
+        "boundMs": 1500,
+        "watchIntervalMs": 100,
+        "a": {
+          "tenant": "A",
+          "id": "jh7291j90xh9cs9rw21sg8wmbd8f5g64",
+          "mode": "normal",
+          "units": 8,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 8,
+          "exitAt": 1790434465870,
+          "tokens": 2,
+          "killed": "cancel",
+          "killLatencyMs": 55,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 2,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": true
+        },
+        "b": {
+          "tenant": "B",
+          "id": "jh79e7asdqqwe1r368am3czx018f55qg",
+          "mode": "normal",
+          "units": 7,
+          "applied": true,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 7,
+          "exitAt": 1790434466164,
+          "tokens": 7,
+          "providerRef": "stub:remold-p6-46c068ad-B-2",
+          "usage": 7,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        },
+        "queued": {
+          "tenant": "A",
+          "id": "jh741qmv0ydm2h49b1sxc8dw798f4hdk",
+          "mode": "normal",
+          "units": 1,
+          "applied": false,
+          "refused": "[Request ID: cf1937fc728eb3f7] Server Error\nUncaught Error: readonly\n    at deny (../convex/harness.ts:7:58)\n    at writable (../convex/harness.ts:47:0)\n    at async checked (../convex/harness.ts:116:47)\n    at async handler (../convex/harness.ts:329:17)\n"
+        },
+        "orgA": {
+          "spent": 2,
+          "reserved": 0
+        }
+      }
+    },
+    {
+      "name": "cancel stops a running sandbox; a result reported after cancel is recorded as late and has no effect",
+      "status": "PASS",
+      "ms": 1299,
+      "evidence": {
+        "cancelLatencyMs": 112,
+        "running": {
+          "tenant": "A",
+          "id": "jh74bpw800p091cy4p4gyc1gg98f5fhg",
+          "mode": "normal",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434467351,
+          "tokens": 1,
+          "killed": "cancel",
+          "killLatencyMs": 65,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 1,
+          "accepted": true,
+          "late": true,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": true
+        },
+        "held": {
+          "tenant": "A",
+          "id": "jh7afm09vd3xjf2y4nqkgmkq218f5qps",
+          "mode": "normal",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434467546,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-46c068ad-A-2",
+          "usage": 4,
+          "accepted": true,
+          "late": true,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": true
+        },
+        "replay": "[Request ID: 5708d8653dcdb971] Server Error\nUncaught Error: stale/unpermitted outcome\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:416:94)\n",
+        "orgA": {
+          "spent": 5,
+          "reserved": 0
+        }
+      }
+    },
+    {
+      "name": "an org kill landing just before the result is applied never applies it (8 tries)",
+      "status": "PASS",
+      "ms": 5362,
+      "evidence": {
+        "tries": [
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          },
+          {
+            "applied": false,
+            "late": false,
+            "spent": 4,
+            "outputs": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "a global kill landing just before the result is applied never applies it",
+      "status": "PASS",
+      "ms": 882,
+      "evidence": {
+        "held": {
+          "tenant": "A",
+          "id": "jh7c0eedvvg6mpwcwk8a4n65jx8f5zww",
+          "mode": "normal",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434473590,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 4,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        }
+      }
+    },
+    {
+      "name": "revoking the agent grant mid-run stops the sandbox within the bound and applies nothing",
+      "status": "PASS",
+      "ms": 1054,
+      "evidence": {
+        "latencyMs": 143,
+        "run": {
+          "tenant": "A",
+          "id": "jh7f2p6dtr57pbg633pb3g71js8f5dcq",
+          "mode": "normal",
+          "units": 8,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 8,
+          "exitAt": 1790434474849,
+          "tokens": 2,
+          "killed": "cancel",
+          "killLatencyMs": 55,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 2,
+          "accepted": true,
+          "late": true,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": true
+        }
+      }
+    },
+    {
+      "name": "a replayed result never applies or bills twice",
+      "status": "PASS",
+      "ms": 676,
+      "evidence": {
+        "first": {
+          "tenant": "A",
+          "id": "jh7f3dna4mt2ae55v3tcydzp2d8f5avx",
+          "mode": "normal",
+          "units": 4,
+          "applied": true,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434475515,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 4,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        },
+        "replay": {
+          "accepted": true,
+          "applied": false,
+          "cancelled": true,
+          "underreport": false,
+          "usage": 4
+        }
+      }
+    },
+    {
+      "name": "a guest that under-reports usage is billed the executor meter, flagged, and not applied",
+      "status": "PASS",
+      "ms": 905,
+      "evidence": {
+        "underreport": {
+          "tenant": "A",
+          "id": "jh7cxz74h1zq97sa43h2ngqe6x8f4a8x",
+          "mode": "underreport",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434476188,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 4,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": true,
+          "cancelledBeforeReconcile": false
+        },
+        "control": {
+          "tenant": "B",
+          "id": "jh7c43g9mcya2fbtx3ys1g22p98f4qdf",
+          "mode": "normal",
+          "units": 4,
+          "applied": true,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434476664,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-46c068ad-B-2",
+          "usage": 4,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        }
+      }
+    },
+    {
+      "name": "global kill switch stops every running sandbox within the bound and refuses new runs",
+      "status": "PASS",
+      "ms": 1070,
+      "evidence": {
+        "latenciesMs": [
+          105,
+          105
+        ],
+        "records": [
+          {
+            "tenant": "A",
+            "id": "jh7cb392ydxjkn69nzhf5pt6r58f4ce2",
+            "mode": "normal",
+            "units": 8,
+            "applied": false,
+            "fence": 1,
+            "step": 1,
+            "maxUnits": 8,
+            "exitAt": 1790434477726,
+            "tokens": 2,
+            "killed": "global",
+            "killLatencyMs": 105,
+            "providerRef": "stub:remold-p6-46c068ad-A-1",
+            "usage": 2,
+            "accepted": true,
+            "late": false,
+            "overrun": false,
+            "underreport": false,
+            "cancelledBeforeReconcile": false
+          },
+          {
+            "tenant": "B",
+            "id": "jh7edph1d0w1p67yhhxbxbr8c98f5cz6",
+            "mode": "normal",
+            "units": 7,
+            "applied": false,
+            "fence": 1,
+            "step": 1,
+            "maxUnits": 7,
+            "exitAt": 1790434477726,
+            "tokens": 2,
+            "killed": "global",
+            "killLatencyMs": 105,
+            "providerRef": "stub:remold-p6-46c068ad-B-2",
+            "usage": 2,
+            "accepted": true,
+            "late": false,
+            "overrun": false,
+            "underreport": false,
+            "cancelledBeforeReconcile": false
+          }
+        ],
+        "refused": {
+          "tenant": "A",
+          "id": "jh7e89petwm2n9rhcrc94ehttd8f4d35",
+          "mode": "normal",
+          "units": 1,
+          "applied": false,
+          "refused": "hosted disabled"
+        }
+      }
+    },
+    {
+      "name": "missing usage report fails closed for that tenant only",
+      "status": "PASS",
+      "ms": 919,
+      "evidence": {
+        "missing": {
+          "tenant": "A",
+          "id": "jh7a4hmx6jygt562bp4zzqmgkh8f4v5c",
+          "mode": "noUsage",
+          "units": 2,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 2,
+          "exitAt": 1790434478166,
+          "tokens": 2,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        },
+        "next": {
+          "tenant": "A",
+          "id": "jh7fxbeq6je31p4hxnf8qfhd758f42eb",
+          "mode": "normal",
+          "units": 1,
+          "applied": false,
+          "refused": "[Request ID: c3107ac38a022052] Server Error\nUncaught Error: usage unresolved\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+        },
+        "other": {
+          "tenant": "B",
+          "id": "jh73nwg417c7ws973kfmbfacg98f42kw",
+          "mode": "normal",
+          "units": 1,
+          "applied": true,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 1,
+          "exitAt": 1790434478667,
+          "tokens": 1,
+          "providerRef": "stub:remold-p6-46c068ad-B-3",
+          "usage": 1,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        }
+      }
+    },
+    {
+      "name": "token overshoot and duration limits stop the sandbox and fail visibly",
+      "status": "PASS",
+      "ms": 1760,
+      "evidence": {
+        "over": {
+          "tenant": "A",
+          "id": "jh7b80kapcf88frj3ckrpra2jn8f5vvc",
+          "mode": "overshoot",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434479049,
+          "tokens": 9,
+          "killed": "tokens",
+          "killLatencyMs": 37,
+          "providerRef": "stub:remold-p6-46c068ad-A-1",
+          "usage": 9,
+          "accepted": true,
+          "late": false,
+          "overrun": true,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        },
+        "blocked": {
+          "tenant": "A",
+          "id": "jh7f6p372acn8n24t12v7qa8z58f4mvh",
+          "mode": "normal",
+          "units": 1,
+          "applied": false,
+          "refused": "[Request ID: 010a091221aa9a6e] Server Error\nUncaught Error: operator anomaly hold\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+        },
+        "hang": {
+          "tenant": "B",
+          "id": "jh7fbpy3ay2eakm3bwn5dccrbd8f5jrr",
+          "mode": "hang",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434480426,
+          "tokens": 1,
+          "killed": "duration",
+          "killLatencyMs": 72,
+          "providerRef": "stub:remold-p6-46c068ad-B-3",
+          "usage": 1,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        }
+      }
+    }
+  ]
+}

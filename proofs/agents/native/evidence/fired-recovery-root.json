@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-24T21:41:21.091704+00:00",
+  "before": "fired-recovery-before.txt: actual unknown outcome required, exit1",
+  "after": "fired-recovery-after.txt:10 groups pass, exit0",
+  "typecheck": "pnpm --dir proofs/agents/native typecheck exit0",
+  "scope": "Synthetic provider and local SERVICE scheduler; no production recovery claim",
+  "files": {
+    "proofs/agents/native/convex/runner.ts": "87a758e9421bf1a9532f6fd8af60d533d79a644026b10f56fe9da5480c4a2b19",
+    "proofs/agents/native/replay.mjs": "00d1e9db5bfce9e05464e1afbd3dc827b3614ea79a6440bfa77b44f22f46e64b"
+  },
+  "gap": "Owner acceptance/closure of a confirmed paused result is not implemented; no automatic continuation"
+}

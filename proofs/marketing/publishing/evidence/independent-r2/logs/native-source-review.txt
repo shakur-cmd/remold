@@ -1,0 +1,79 @@
+# Read-only excerpts from installed pinned Mautic (web-a). Not copied into Remold source.
+ddf67f36364106074e9d487825545118d3f22630836074bd9f032ace215825f3  app/bundles/CoreBundle/Helper/IpLookupHelper.php
+041db937f8770e13e43991e406933a4fd882823c9be00282da5698ff3e9550d3  app/bundles/FormBundle/Model/SubmissionModel.php
+511e9ad16450f22f7b0b6c5e40e66e42c6786e0006817065fef5028c4c5fcb00  app/bundles/LeadBundle/Model/LeadModel.php
+## IpLookupHelper::isRequestTrackable
+    public function isRequestTrackable(): bool
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (null === $request) {
+            return $this->getIpAddress()->isTrackable();
+        }
+
+        // Skip HEAD requests - often used by bots/monitoring tools
+        if ($request->isMethod('HEAD')) {
+            return false;
+        }
+
+        // Skip prefetch requests (browser prefetching links)
+        $purpose = $request->headers->get('Purpose') ?? $request->headers->get('Sec-Purpose');
+        if ($purpose && in_array(strtolower($purpose), ['prefetch', 'prerender'], true)) {
+            return false;
+        }
+
+        // Respect privacy signals - Global Privacy Control (legally required in California/CCPA)
+        $secGpc = trim((string) ($request->headers->get('Sec-GPC') ?? $request->server->get('HTTP_SEC_GPC')));
+        if ('1' === $secGpc) {
+            return false;
+        }
+
+        // Respect Do Not Track header
+        $dnt = trim((string) ($request->headers->get('DNT') ?? $request->server->get('HTTP_DNT')));
+        if ('1' === $dnt) {
+            return false;
+        }
+
+        // Use existing IP/User-Agent based bot filtering
+        return $this->getIpAddress()->isTrackable();
+    }
+
+## SubmissionModel::createLeadFromSubmit found-lead branch and field write
+        [$data, $uniqueFieldsWithData] = $getData($leadFieldMatches);
+        $this->logger->debug('FORM: Unique fields submitted include '.implode(', ', $uniqueFieldsWithData));
+
+        // Check for duplicate lead
+        /** @var Lead[] $leads */
+        $leads = (!empty($uniqueFieldsWithData)) ? $this->leadRepository->getLeadsByUniqueFields(
+            $uniqueFieldsWithData,
+            $leadId
+        ) : [];
+
+        $uniqueFieldsCurrent = $getData($currentFields, true);
+        if (count($leads)) {
+            $this->logger->debug(count($leads).' found based on unique identifiers');
+
+            /** @var Lead $foundLead */
+            $foundLead = $leads[0];
+
+            $this->logger->debug('FORM: Testing contact ID# '.$foundLead->getId().' for conflicts');
+
+            // Check for a conflict with the currently tracked lead
+            $foundLeadFields = $foundLead->getProfileFields();
+
+            // Get unique identifier fields for the found lead then compare with the lead currently tracked
+            $uniqueFieldsFound         = $getData($foundLeadFields, true);
+            [$hasConflict, $conflicts] = $checkForIdentifierConflict($uniqueFieldsFound, $uniqueFieldsCurrent);
+
+            if ($inKioskMode || $hasConflict || !$lead->getId()) {
+                // Use the found lead without merging because there is some sort of conflict with unique identifiers or in kiosk mode and thus should not merge
+                $lead = $foundLead;
+
+
+        // set the mapped fields
+        $this->leadModel->setFieldValues($lead, $data, false, true, true);
+
+## LeadModel::setFieldValues signature
+    public function setFieldValues(Lead $lead, array $data, $overwriteWithBlank = false, $fetchSocialProfiles = true, $bindWithForm = false): void
+ddf67f36364106074e9d487825545118d3f22630836074bd9f032ace215825f3  /var/www/html/docroot/app/bundles/CoreBundle/Helper/IpLookupHelper.php
+041db937f8770e13e43991e406933a4fd882823c9be00282da5698ff3e9550d3  /var/www/html/docroot/app/bundles/FormBundle/Model/SubmissionModel.php

@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>I2 independent flags and version verification</title><style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style></head><body>
+<h1>I2 independent flags and version verification</h1>
+<p class="meta">24 September 2026 · Reviewer /root/c0_verifier · Builder /root · Bounded slice APPROVED</p>
+<div class="decisions"><h2>Your calls</h2><p>No new owner decision for these local slices. Existing account, production, commercial and live-action gates remain open. This approval does not complete I2 or authorize a deployment.</p></div>
+<div class="status"><h2>Done and proven independently</h2><p>55 tests in 21 files pass; typecheck exits 0. Fresh local Convex SERVICE runs verify operator-only flag changes and the refactored rate limiter. A fresh local Workers runtime verifies the version route using a changed synthetic SHA. No product source was edited by this verifier.</p></div>
+<h2>Before and after</h2><table><tr><th>Before</th><th>After independently exercised</th></tr>
+<tr><td>Baseline schema has no org flags or opsEvents. In the fresh fixture, the flag is absent and effectively false.</td><td>Changed fixture key verifier_rollout enables and disables only A. B stays byte-equivalent; two transitions yield exactly two internal-admin audit events. Repeated enable and false-on-absent create no extra events.</td></tr>
+<tr><td>Public clients must not acquire operator authority.</td><td>Actual unauthenticated public mutation HTTP call refuses ops:setFlag as non-public. Flag smuggling through org create/rename, B reading A, and six malformed setter payloads are refused without state or audit changes.</td></tr>
+<tr><td>Rate runner previously owned local-backend setup directly.</td><td>Shared local-core helper replay admits 10 of 50 concurrent writes and rejects 40 in 287 ms. Reads, another key in A and tenant B work; exactly 12 inbox rows remain including two control writes.</td></tr>
+<tr><td>Builder preserved version-before.txt: /version returned text/html, failing the JSON assertion.</td><td>Verifier changed synthetic SHA from a repeated 40 times to b repeated 40 times. Both /version and /version.json return exact JSON, HTTP200 and no-store for fetch/navigation-mode probes. Ordinary deep path retains SPA fallback.</td></tr></table>
+<h2>Scope and safety review</h2><p>The schema adds optional org flags and a new opsEvents table. Setter validation, patch and audit insertion share one mutation; unchanged effective values are no-ops. The setter is internal; generated public API filtering and an actual public-HTTP probe support that boundary. Existing membership checks protect org reads. The enabled helper is internal application code, not a registered public function.</p><p>The rehearsal copies code into a fresh temporary directory, overrides auth configuration there, uses anonymous local Convex with an environment allowlist, fixed loopback ports and no root env-file copy. The service URL must be loopback. Root .env.local checksum stays unchanged. The helper stops its process group and retains scratch logs. These checks do not certify a customer runtime sandbox or production credentials.</p>
+<h2>Evidence and replay</h2><ul>
+<li><a href="flags-service-iv.json">Flags SERVICE result</a>: altered flag, malformed strings/boolean, absent false no-op, cross-org read, create/rename smuggling, enable/retry/disable and exact audit.</li>
+<li><a href="rate-limit-helper-service-iv.json">Rate SERVICE regression result</a>: actual concurrent HTTP calls against local Convex.</li>
+<li><a href="version-service-iv.txt">Version SERVICE result</a>; <a href="version-before.txt">preserved failing baseline</a>; <a href="version-after.txt">builder passing replay</a>.</li>
+<li><a href="flags-version-verdict.json">Verdict, command exits and reviewed source hashes</a>.</li>
+</ul><p>Standard replays: pnpm test; pnpm typecheck; pnpm proof:flags; pnpm proof:rate-limit; pnpm proof:version. Run scratch services sequentially on their reserved ports. Independent additions and fixture changes are listed above; do not reinterpret their synthetic IDs or SHA as a release.</p>
+<h2>Limits</h2><p>Convex identities were impersonated using the local admin CLI, so authentication is SIM while backend execution is SERVICE. Operator attribution deliberately remains internal-admin; a named authenticated operator route is not proven. Timed browser subscription updates and application feature consumption of flags remain open. Workers routing used a synthetic artifact and local runtime, not a hosted deploy or the actual final release SHA. Request-mode probes do not establish cross-origin CORS authorization.</p><p>Managed backups, restore/rollback, hosted previews, AuthKit, delivered alerts and full I2 acceptance remain unverified. No production or cloud changes were performed. Ports3420/3421 and3460 were released after the checks.</p></body></html>

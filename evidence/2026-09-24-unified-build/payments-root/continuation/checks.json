@@ -1,0 +1,22 @@
+{
+  "source": "3f2328e9e2c936b9258d47edbc7b1047c16a9f0acd2dd6df2402762efbceb7dd",
+  "reviewedBy": "root",
+  "checks": [
+    {
+      "command": "node --test continuation.test.mjs",
+      "exitCode": 0,
+      "output": "tests.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "output": "typecheck.txt"
+    },
+    {
+      "command": "node --check sandbox-replay.mjs",
+      "exitCode": 0,
+      "output": "syntax.txt"
+    }
+  ],
+  "providerCalls": false
+}

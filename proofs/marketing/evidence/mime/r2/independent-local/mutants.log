@@ -1,0 +1,12 @@
+KILLED   drop in-part boundary refusal
+KILLED   weaken boundary refusal to exact delimiter only
+SURVIVED drop Date shape
+SURVIVED drop Date.parse finiteness
+KILLED   drop Message-ID shape+domain
+KILLED   drop Message-ID domain binding only
+KILLED   drop intent header binding
+KILLED   drop two-part rule
+KILLED   receiver ignores expected hash
+SURVIVED oracle drops epilogue check
+SURVIVED oracle drops parsed-body comparison
+KILLED   oracle drops epilogue AND body check (combined)

@@ -1,0 +1,31 @@
+✔ two PR plans have distinct stable origins while retaining one staging identity realm (1.186ms)
+✔ preview configuration cannot carry production routes, bindings or another account (0.8645ms)
+✔ child environment drops inherited production targets and provider secrets (0.102042ms)
+✔ AuthKit add preserves existing origins, homepage and default; repeated add is idempotent (0.097625ms)
+✔ close A removes only its owned entries and exact backend; B and concurrent additions survive (0.135583ms)
+✔ cleanup never removes AuthKit entries that predated this receipt (0.049375ms)
+✔ cleanup refuses wrong tenant, prod, reused backend name, changed identity or another PR receipt (0.249167ms)
+✔ an already absent exact backend does not generate another deletion (0.050583ms)
+✔ resuming an owned AuthKit add retains ownership for later cleanup (0.063042ms)
+✔ cleanup refuses a pre-existing or replaced Cloudflare preview (0.676125ms)
+✔ Convex child uses the same project preview key for selection and authorization (0.136458ms)
+✔ cleanup refuses false or missing backend absence ownership (0.177167ms)
+✔ provider detail with null identifier is reconciled only with its exact project-list identity (0.676208ms)
+✖ Wrangler progress output binds the actual preview identity and exact candidate before ownership (0.31575ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 40.931667
+
+✖ failing tests:
+
+test at ops/previews/policy.test.mjs:45:1
+✖ Wrangler progress output binds the actual preview identity and exact candidate before ownership (0.31575ms)
+  TypeError: frontendReceipt is not a function
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/previews/policy.test.mjs:49:19)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)

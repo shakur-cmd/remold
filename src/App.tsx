@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
-import { useUser } from "@clerk/clerk-react";
+import { useIdentity } from "@/lib/identity";
 import { api } from "../convex/_generated/api";
 import { Toaster } from "@/components/ui/sonner";
 import { Loading } from "@/components/Loading";
@@ -22,7 +22,7 @@ export default function App() {
     <>
       <Toaster position="top-center" />
       <AuthLoading>
-        <Loading />
+        <Loading page />
       </AuthLoading>
       <Unauthenticated>
         <SignInPage />
@@ -52,16 +52,16 @@ export default function App() {
 }
 
 // Convex only knows a signed-in person after users.store has run once. The
-// token carries no name, so the profile Clerk shows the app goes along.
+// provider profile supplies display information; membership stays in Convex.
 function Stored({ children }: { children: ReactNode }) {
   const store = useMutation(api.users.store);
   const me = useQuery(api.users.me);
-  const { user } = useUser();
-  const name = user?.fullName ?? undefined, email = user?.primaryEmailAddress?.emailAddress, imageUrl = user?.imageUrl;
+  const { user } = useIdentity();
+  const name = user?.name, email = user?.email, imageUrl = user?.imageUrl;
   useEffect(() => {
     store({ profile: { name, email, imageUrl } }).catch(console.error);
   }, [store, name, email, imageUrl]);
-  if (!me) return <Loading />;
+  if (!me) return <Loading page />;
   return children;
 }
 

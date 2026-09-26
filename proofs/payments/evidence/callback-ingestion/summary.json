@@ -1,0 +1,51 @@
+[
+ {
+  "mode": "baseline",
+  "mutant": "none",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "substituted account refused or bound only to the claimed merchant, no effect on A"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "none",
+  "expected": "pass",
+  "exit": 0,
+  "failedCases": [],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "dedupe",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "crash between durable receipt and reconciliation, then restart",
+   "exact replay produces no second effect"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "signature",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "bad signature refused with no durable effect"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "account",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "substituted account refused or bound only to the claimed merchant, no effect on A"
+  ],
+  "meetsExpectation": true
+ }
+]

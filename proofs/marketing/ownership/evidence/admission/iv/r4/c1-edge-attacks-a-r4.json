@@ -1,0 +1,717 @@
+{
+ "run": "ba3e3aaa",
+ "capturedAt": "2026-09-26T13:42:38.258Z",
+ "tenants": {
+  "a": {
+   "formId": 34,
+   "ownerId": 846,
+   "d1Edit": {
+    "mapped": [
+     "email",
+     "firstname"
+    ],
+    "actions": [
+     "lead.remove_do_not_contact"
+    ]
+   },
+   "d1Revert": {
+    "mapped": 0,
+    "actions": 0
+   },
+   "rows": [
+    {
+     "kind": "duplicate Cookie headers",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "lowercase cookie, DNT 0, Sec-GPC 0",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "obs-fold continuation",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "X-Forwarded-Host",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mauticform key in body",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "CRLF in firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "missing nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "upper-case nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "31-hex nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "33-hex nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "duplicate nonce key",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "forged client nonce (all zero)",
+     "expected": "200",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": false
+    },
+    {
+     "kind": "fresh nonce, first post",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same body replayed",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, first post for conflict",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, changed firstname",
+     "expected": "409",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, changed email",
+     "expected": "409",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "nonce shared with the other tenant",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant token",
+     "expected": "403",
+     "statuses": [
+      403
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "missing token",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant Host",
+     "expected": "421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "oversized Content-Length",
+     "expected": "413",
+     "statuses": [
+      413
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "chunked oversized",
+     "expected": "413",
+     "statuses": [
+      413
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "invalid UTF-8",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "bad percent encoding",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "multipart",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "urlencoded with charset",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "JSON body",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "255-char email",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "101-char firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email without dot",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: unicode local part",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: IDN unicode domain",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: punycode domain",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: punycode TLD",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: Cyrillic homoglyph a",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: fullwidth letters",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: zero-width space",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: upper-case owner email",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: plus-addressed owner",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: local part 64",
+     "expected": "200",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": false
+    },
+    {
+     "kind": "email rule: local part 65",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: label 63",
+     "expected": "200",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": false
+    },
+    {
+     "kind": "email rule: label 64",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: total 254",
+     "expected": "200",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": false
+    },
+    {
+     "kind": "email rule: total 255",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: apostrophe",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: IP literal",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: numeric TLD",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: trailing dot",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: leading hyphen label",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: underscore domain",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: percent",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email rule: quoted local",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake/",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake?x=1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path //form/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/%69ntake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /FORM/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake/../intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path http://tenant-a.marketing-proof.invalid/form/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/34",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/submit?formId=34&ajax=1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "PUT on form path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    }
+   ],
+   "addedCaptures": [
+    {
+     "idempotencyKey": "41390d860b06e03c58efc29f4e856be8",
+     "firstname": "dup",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "67689f4fc86e74a4915137393d28441e",
+     "firstname": "lower",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "f4353b9329b000bc9b0debfc6dbd190b",
+     "firstname": "replay",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "e7eac7a601ac856bdea68e0f669bd317",
+     "firstname": "orig",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "3b1681117e6a7e9833c6888c854d9e25",
+     "firstname": "shared",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "c682660f982578009c08cfb8f1179305",
+     "firstname": "Rule punycode domain",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "64bb2fd22be1c4eeb24831bb7b73c23a",
+     "firstname": "Rule upper-case owner email",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "04944eb43f15963d481feead3353b8a2",
+     "firstname": "Rule plus-addressed owner",
+     "tenant": "a"
+    }
+   ],
+   "mauticBefore": {
+    "formSubmissions": 184,
+    "submissionCountSum": 184,
+    "contacts": 841,
+    "anonymousContacts": 42,
+    "maxLeadId": 846,
+    "dnc": 149,
+    "campaignLeads": 137,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "mauticAfter": {
+    "formSubmissions": 184,
+    "submissionCountSum": 184,
+    "contacts": 841,
+    "anonymousContacts": 42,
+    "maxLeadId": 846,
+    "dnc": 149,
+    "campaignLeads": 137,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "ownerBefore": {
+    "id": 846,
+    "firstname": "IV owner r2edge",
+    "lastname": "Stable r2edge",
+    "email": "iv-own-ba3e3aaa-r2edge@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "ownerAfter": {
+    "id": 846,
+    "firstname": "IV owner r2edge",
+    "lastname": "Stable r2edge",
+    "email": "iv-own-ba3e3aaa-r2edge@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "verdict": {
+    "allAsExpected": false,
+    "addedEqualsExpected": false,
+    "allOwnTenant": true,
+    "conflictKeptOriginal": true,
+    "mauticUnchanged": true,
+    "ownerUnchanged": true
+   }
+  }
+ },
+ "crossTenant": {
+  "sharedNonce": "3b1681117e6a7e9833c6888c854d9e25",
+  "a": [
+   "shared"
+  ],
+  "bReadOnly": 0
+ }
+}

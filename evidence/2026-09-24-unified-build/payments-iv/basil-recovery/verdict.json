@@ -1,0 +1,83 @@
+{
+  "verdict": "APPROVE bounded frozen Basil invoice contract and exact-draft recovery candidate",
+  "reviewer": "c0_verifier, independent of payment implementation",
+  "at": "2026-09-25T00:02:24.543313+00:00",
+  "sourceAggregate": "fc21064f9f4197bd02872ad078f73cec61b91400804e9692c8bc89e68300398e",
+  "sourceFiles": 54,
+  "sourceUnchanged": true,
+  "actualParentJournalAndPinUnchanged": true,
+  "actualRecoveryLatchAbsent": true,
+  "checks": [
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/basil-recovery/absent-field-before.mjs",
+      "exit": 1,
+      "expected": 1,
+      "result": "Archived49 adapter reproduces absent invoice field undefined!=null"
+    },
+    {
+      "command": "node proofs/payments/recovery-replay.mjs",
+      "exit": 0,
+      "groups": 7
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/basil-recovery/finalize-response.mjs",
+      "exit": 0,
+      "result": "Independent post-effect explicit-fee response stop/unconfirmed/journal retained/restart refused"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-iv/basil-recovery/attach-fee.mjs",
+      "exit": 0,
+      "groups": 4
+    },
+    {
+      "command": "node --test proofs/payments/stripe.test.mjs proofs/payments/adjustments.test.mjs proofs/payments/continuation.test.mjs proofs/payments/invoice-contract.test.mjs",
+      "exit": 0,
+      "tests": 42
+    },
+    {
+      "command": "node proofs/payments/route-policy-replay.mjs",
+      "exit": 0,
+      "groups": 44
+    },
+    {
+      "command": "node proofs/payments/remaining-replay.mjs",
+      "exit": 0,
+      "groups": 20
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exit": 0
+    }
+  ],
+  "sourceReview": [
+    "Changed54-file successor runtime/test/docs reviewed versus accepted49",
+    "H0/core/schema/normalizer unchanged; fixture internal indexed query takes at most3 ops, requires exactly1 matching org/logical",
+    "Recovery uses pinned parent, saved exact fixture/quote/deposit/create logical, existing draft; no new seed/customer/deposit/acceptance",
+    "Provider preconditions require exact metadata/command/empty scoped inventories and existing empty draft",
+    "Basil absent invoice fee is unobserved; present non-null refused; actual no-fee requires explicit PI/Charge null and complete charge-filtered platform fee list",
+    "Private journal records successful provider result before adapter post-response checks; one-shot prevents reexecution"
+  ],
+  "independentProbeProvenance": [
+    {
+      "file": "finalize-response.mjs",
+      "base": "recovery-replay.mjs",
+      "baseSha256": "6e635ad1eff657a5ee1c6fe15401a8887d4a87458cb4ad512f33f460af55e7fe",
+      "change": "Only finalized HTTP response carries fee7; assert exactly one finalize effect, no H0 accepted receipt, durable provider response and restart refusal; imports/output relocated"
+    },
+    {
+      "file": "attach-fee.mjs",
+      "base": "route-success-replay.mjs",
+      "baseSha256": "d7e71f32c1571dc0a2eb3b9b0b4ebf25200bad3db43d4fb8e01a3d82ba8de5f7",
+      "change": "Add explicit invoice fee7 after valid heldPI creation; attach must refuse zero writes, remove fee then samePI succeeds; imports/output relocated"
+    }
+  ],
+  "limits": [
+    "SERVICE local Convex/loopback with synthetic parent/provider state only",
+    "No Stripe calls, actual recovery execution, actual latch creation or private journal mutation",
+    "Real namespace preflight builder evidence inspected, not independently rerun",
+    "No actual no-fee/payment lifecycle/recurring/fullP4/I1/I7/production certification",
+    "Finalize response fee is post-effect failure: H0 remains dispatching unconfirmed, separate operator reconciliation required",
+    "Did not rerun entire legacy financial suite; meaningful changed behavior and balance controls repeated; builder full suite retained"
+  ],
+  "harnessNote": "Relocated attachment probe initially had unresolved relative imports and stopped before backend. Corrected only independent harness; error retained."
+}

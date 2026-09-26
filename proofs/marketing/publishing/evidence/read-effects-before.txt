@@ -1,0 +1,50 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Public page/asset reads must not mutate native contacts or tracking rows
++ actual - expected
+
+  {
++   anonymousContacts: 23,
++   assetDownloads: 11,
++   contacts: 162,
+-   anonymousContacts: 21,
+-   assetDownloads: 10,
+-   contacts: 160,
+    emailStats: 170,
++   pageHits: 12,
+-   pageHits: 11,
+    queuedEmails: 0,
+    submissions: 3
+  }
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/publishing/read-effects-replay.mjs:13:31
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: {
+    contacts: 162,
+    anonymousContacts: 23,
+    pageHits: 12,
+    assetDownloads: 11,
+    submissions: 3,
+    queuedEmails: 0,
+    emailStats: 170
+  },
+  expected: {
+    contacts: 160,
+    anonymousContacts: 21,
+    pageHits: 11,
+    assetDownloads: 10,
+    submissions: 3,
+    queuedEmails: 0,
+    emailStats: 170
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

@@ -1,0 +1,426 @@
+{
+  "schema": 1,
+  "at": "2026-09-25T09:16:00Z",
+  "checkedBy": "Opus (claude-opus-5-5), fresh independent verifier session; not the builder",
+  "level": "SANDBOX",
+  "scope": "Staging preview browser behavior for PR3 and PR4 only. No full I2, production, cross-tenant authorization or I1 audit claim.",
+  "verdict": "PASS",
+  "method": {
+    "driver": "/Users/urkel/Documents/CodeMyVibe/Business/agent-setup/lib/cdp.py (called by subprocess, not copied)",
+    "profile": "/Users/urkel/.web-automate/chrome-profile",
+    "accountLabel": "Shakur Remold staging preview",
+    "perCall": "--target, --account-label and the run's four --allowed-origin values on every nav/eval/click/box/activate call",
+    "verification": "sanitized DOM predicates read by eval after each action (booleans for fixture text/ids, control labels with any '@' string dropped, same-origin link paths), target URL origin+path; CDP acknowledgements not counted",
+    "notRead": "no cookie, token, localStorage/sessionStorage values, network auth data, page bodies or account PII were read or saved",
+    "unrelatedTabs": "three pre-existing tabs (WorkOS dashboard, Google Cloud console, Instagram) not attached or touched",
+    "resourcesKept": "PR3 tab 1 and PR4 tab 2 left open; PR3 ends signed in on its record, PR4 ends signed in on its record; no provider, preview, setting or data change"
+  },
+  "notRun": [
+    "I1 audit",
+    "provider cleanup/deploy/create",
+    "closing PR3",
+    "recipe freeze/activation/replay",
+    "any app consent, scope, setting, message or data write",
+    "marketing/pricing surfaces",
+    "third-party-cookie-blocked browser check"
+  ],
+  "runs": [
+    {
+      "pr": 3,
+      "target": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+      "head": "954bdfb792fcfcd8c857482cc174828f616d03eb",
+      "policy": "policy-pr3.json",
+      "window": [
+        "2026-09-25T09:06Z",
+        "2026-09-25T09:11:59Z"
+      ],
+      "criteria": {
+        "hostedHeadBinding": {
+          "status": "PASS",
+          "source": "read-only curl of hosted release-manifest.json, index.html and its referenced JS; gh pr view headRefOid",
+          "before": "expected head 954bdfb792fcfcd8c857482cc174828f616d03eb",
+          "after": "manifest sha 954bdfb792fcfcd8c857482cc174828f616d03eb; PR head 954bdfb792fcfcd8c857482cc174828f616d03eb OPEN; manifest/html/js sha256 ffb63afeb4dc6241154a94f96119b16888ee8a3a095ffc0082690fe4c7bc94c3 / be1c3ab137ad176abb8e71f377d5f83d7c9e1974d858b5fbb2cd08f4ce82106e / 56acfa145545c5bb11fd7a7f115067749120bfee9898229fcde4ea4c05d53bdb equal the 2026-09-25 builder hosted-readback",
+          "effect": "the browser checks below ran against the expected build (supplementary, not a browser criterion)"
+        },
+        "signIn": {
+          "status": "PASS",
+          "source": "DOM probe before/after trusted click on Sign in",
+          "before": "path / with Sign in + Create an account controls, no Sign out",
+          "after": "path /o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/today with workspace nav and Sign out",
+          "effect": "sign-in reached the expected workspace; this first sign-in reused an existing staging AuthKit session without a Google prompt (full Google round trip is proven in deepLinkReauthentication)"
+        },
+        "ownFixtureOnly": {
+          "status": "PASS",
+          "source": "DOM probe of Companies list reached by clicking the nav link; body text and same-origin link paths",
+          "before": "Today page, no fixture text",
+          "after": "exactly 1 row: 'PR3-only red fixture'; link /o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b; other-color fixture text and record id absent",
+          "effect": "list shows only this preview's own synthetic fixture. Display-level only; not a cross-tenant authorization certification"
+        },
+        "refreshRetention": {
+          "status": "PASS",
+          "source": "window marker set before location.reload(); after: marker undefined, performance navigation type 'reload', new timeOrigin; DOM probe",
+          "before": "record page /o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b, signed in, fixture shown",
+          "after": "same path, still signed in (Sign out present, no Sign in), fixture shown",
+          "effect": "a real document reload keeps the preview session, workspace and record"
+        },
+        "logoutReturnsOwnOrigin": {
+          "status": "PASS",
+          "source": "target URL (origin+path) and DOM probe after trusted click on Sign out; pre-click window marker gone, navigation type 'navigate'",
+          "before": "signed-in record page",
+          "after": "https://pr-3-remold-i2-preview.shakur-949.workers.dev/ with Sign in control, no query, no fixture",
+          "effect": "logout returns to this preview's own origin, not localhost or the other preview"
+        },
+        "signedOutReloadStaysSignedOut": {
+          "status": "PASS",
+          "source": "location.reload() (navigation type 'reload') then DOM probe",
+          "before": "signed-out root",
+          "after": "signed-out root: Sign in present, Sign out and fixture absent",
+          "effect": "session does not reappear on reload after logout"
+        },
+        "deepLinkReauthentication": {
+          "status": "PASS",
+          "source": "signed-out nav to the record path copied from the Companies row link; then trusted clicks Sign in -> AuthKit Google provider link -> Google account chooser entry matching the confirmed staging account; target URL and DOM probe",
+          "before": "signed out at /o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b: Sign in shown, record hidden",
+          "after": "returned to exactly /o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b (no query), signed in, 'PR3-only red fixture' shown, other fixture absent. Origins traversed: preview -> detailed-neutron-08-staging.authkit.app -> accounts.google.com -> preview",
+          "effect": "signed-out deep link survives a full AuthKit + Google reauthentication and lands on the same record"
+        }
+      },
+      "observations": [
+        {
+          "step": "01-initial",
+          "action": "fresh tab at root",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "02-signedin",
+          "action": "after clicking Sign in",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/today",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "03-companies",
+          "action": "after clicking Companies nav link",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company",
+          "hasQuery": false,
+          "red": true,
+          "blue": false,
+          "redId": true,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "04-record",
+          "action": "after clicking the fixture row link",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b",
+          "hasQuery": false,
+          "red": true,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "05-after-reload",
+          "action": "after location.reload(); navigation type reload, pre-reload window marker gone",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b",
+          "hasQuery": false,
+          "red": true,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "06-after-signout",
+          "action": "after clicking Sign out",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "07-signedout-reload",
+          "action": "after reload while signed out",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "08-signedout-deeplink",
+          "action": "signed-out navigation to the UI-derived record path",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "09-deeplink-return",
+          "action": "after Sign in -> AuthKit -> Continue with Google -> confirmed account",
+          "origin": "https://pr-3-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx78qdp65rsq0sk50g2et7f3x98f3c6k/company/kh7ack3zpx2vdnt4x9tsvkp9a18f2k7b",
+          "hasQuery": false,
+          "red": true,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        }
+      ]
+    },
+    {
+      "pr": 4,
+      "target": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+      "head": "31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+      "policy": "policy-pr4.json",
+      "window": [
+        "2026-09-25T09:12Z",
+        "2026-09-25T09:14:53Z"
+      ],
+      "criteria": {
+        "hostedHeadBinding": {
+          "status": "PASS",
+          "source": "read-only curl of hosted release-manifest.json, index.html and its referenced JS; gh pr view headRefOid",
+          "before": "expected head 31c8434d140d4e241ea03b305c39a1a29d85fb9e",
+          "after": "manifest sha 31c8434d140d4e241ea03b305c39a1a29d85fb9e; PR head 31c8434d140d4e241ea03b305c39a1a29d85fb9e OPEN; manifest/html/js sha256 775eb90871ef205d9a236931c1ac44dae63b3154eeefd80efbc5c5e8ca8a9d0d / f7e7f6dcbed8df2a731ba441727c58550b146f2d6ee90c6203665235c0e01337 / 7507dac3cd59769ec3033bb902e25ae8d59954dcced8da557fe65383777b5594 equal the 2026-09-25 builder hosted-readback",
+          "effect": "the browser checks below ran against the expected build (supplementary, not a browser criterion)"
+        },
+        "signIn": {
+          "status": "PASS",
+          "source": "DOM probe before/after trusted click on Sign in",
+          "before": "path / with Sign in + Create an account controls, no Sign out",
+          "after": "path /o/kx7b18secgbfdzha4z182d6vdd8f2atf/today with workspace nav and Sign out",
+          "effect": "sign-in reached the expected workspace; this first sign-in reused an existing staging AuthKit session without a Google prompt (full Google round trip is proven in deepLinkReauthentication)"
+        },
+        "ownFixtureOnly": {
+          "status": "PASS",
+          "source": "DOM probe of Companies list reached by clicking the nav link; body text and same-origin link paths",
+          "before": "Today page, no fixture text",
+          "after": "exactly 1 row: 'PR4-only blue fixture'; link /o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq; other-color fixture text and record id absent",
+          "effect": "list shows only this preview's own synthetic fixture. Display-level only; not a cross-tenant authorization certification"
+        },
+        "refreshRetention": {
+          "status": "PASS",
+          "source": "window marker set before location.reload(); after: marker undefined, performance navigation type 'reload', new timeOrigin; DOM probe",
+          "before": "record page /o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq, signed in, fixture shown",
+          "after": "same path, still signed in (Sign out present, no Sign in), fixture shown",
+          "effect": "a real document reload keeps the preview session, workspace and record"
+        },
+        "logoutReturnsOwnOrigin": {
+          "status": "PASS",
+          "source": "target URL (origin+path) and DOM probe after trusted click on Sign out; pre-click window marker gone, navigation type 'navigate'",
+          "before": "signed-in record page",
+          "after": "https://pr-4-remold-i2-preview.shakur-949.workers.dev/ with Sign in control, no query, no fixture",
+          "effect": "logout returns to this preview's own origin, not localhost or the other preview"
+        },
+        "signedOutReloadStaysSignedOut": {
+          "status": "PASS",
+          "source": "location.reload() (navigation type 'reload') then DOM probe",
+          "before": "signed-out root",
+          "after": "signed-out root: Sign in present, Sign out and fixture absent",
+          "effect": "session does not reappear on reload after logout"
+        },
+        "deepLinkReauthentication": {
+          "status": "PASS",
+          "source": "signed-out nav to the record path copied from the Companies row link; then trusted clicks Sign in -> AuthKit Google provider link -> Google account chooser entry matching the confirmed staging account; target URL and DOM probe",
+          "before": "signed out at /o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq: Sign in shown, record hidden",
+          "after": "returned to exactly /o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq (no query), signed in, 'PR4-only blue fixture' shown, other fixture absent. Origins traversed: preview -> detailed-neutron-08-staging.authkit.app -> accounts.google.com -> preview",
+          "effect": "signed-out deep link survives a full AuthKit + Google reauthentication and lands on the same record"
+        }
+      },
+      "observations": [
+        {
+          "step": "01-initial",
+          "action": "fresh tab at root",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "02-signedin",
+          "action": "after clicking Sign in",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx7b18secgbfdzha4z182d6vdd8f2atf/today",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "03-companies",
+          "action": "after clicking Companies nav link",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx7b18secgbfdzha4z182d6vdd8f2atf/company",
+          "hasQuery": false,
+          "red": false,
+          "blue": true,
+          "redId": false,
+          "blueId": true,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "04-record",
+          "action": "after clicking the fixture row link",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq",
+          "hasQuery": false,
+          "red": false,
+          "blue": true,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "05-after-reload",
+          "action": "after location.reload(); navigation type reload, pre-reload window marker gone",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq",
+          "hasQuery": false,
+          "red": false,
+          "blue": true,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        },
+        {
+          "step": "06-after-signout",
+          "action": "after clicking Sign out",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "07-signedout-reload",
+          "action": "after reload while signed out",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "08-signedout-deeplink",
+          "action": "signed-out navigation to the UI-derived record path",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq",
+          "hasQuery": false,
+          "red": false,
+          "blue": false,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [
+            "Sign in"
+          ],
+          "signOutCtl": []
+        },
+        {
+          "step": "09-deeplink-return",
+          "action": "after Sign in -> AuthKit -> Continue with Google -> confirmed account",
+          "origin": "https://pr-4-remold-i2-preview.shakur-949.workers.dev",
+          "path": "/o/kx7b18secgbfdzha4z182d6vdd8f2atf/company/kh7bnkax073x33s03gxgpgegzd8f3hdq",
+          "hasQuery": false,
+          "red": false,
+          "blue": true,
+          "redId": false,
+          "blueId": false,
+          "signInCtl": [],
+          "signOutCtl": [
+            "Sign out"
+          ]
+        }
+      ]
+    }
+  ],
+  "privateRaw": "unique private temp dir (0700/0600), path reported to caller only; contains sanitized probe JSON, fetched public manifest/html/js"
+}

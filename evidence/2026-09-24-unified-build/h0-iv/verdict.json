@@ -1,0 +1,44 @@
+{
+  "verdict": "REVISE",
+  "reviewer": "independent Codex agent /root/c0_verifier (did not author H0)",
+  "manifest": "da267c64f6eb02fe5938e1c0c66217d92f4614fa51385dd1f6a9158eb4309d22",
+  "evidenceLevel": "SERVICE local Convex database, transactional mutations and independent HTTP requests; SIM identity, adapters and provider behavior",
+  "baselineGroupsPassed": 21,
+  "independentGroupsPassed": 6,
+  "independentBlockingFailures": 5,
+  "deferredFinanceProbeFailures": 1,
+  "blockers": [
+    {
+      "id": "IV-CANCEL-1",
+      "paths": [
+        "retryable provider rejection",
+        "authoritative absence after unknown outcome",
+        "unconsumed permit expiry",
+        "model continuation"
+      ],
+      "observed": "Each path changes cancelled pending operation to queued and issues a new dispatch permit.",
+      "required": "Persist cancellation intent through every transition; prevent fresh permit while preserving truth and settlement for an already-issued tail."
+    },
+    {
+      "id": "IV-CANCEL-2",
+      "observed": "Accepted pre-cancel permit reconciles confirmed, late:false, plain confirmed event after cancellationRequested.",
+      "required": "Retain and present cancellation/late-tail distinction in status and attributed audit."
+    }
+  ],
+  "notBlocker": "Readonly refund probe denied; H0 handover explicitly defers finance to P4/I7/I11. This is not certification of C5 finance exceptions.",
+  "scopeLimitations": [
+    "No product read surfaces, live identities, provider signatures, external dispatches or production deployments tested.",
+    "Typed-shape root/Fable/Opus approvals are separate; any repaired revision needs fresh hash and review.",
+    "Six passing extra adversarial groups do not clear Opus additional findings."
+  ],
+  "files": {
+    "reviewed-manifest.json": "45bf8cfc223c24da4f5b22de8ee13e90b2ec1bea793690a21d42160ab11caecf",
+    "builder-replay-results.json": "365358aff7e908e9450f1329bf4442dab39696321c43338aea10597c87d1e739",
+    "builder-replay-fixture-export.json": "0633cdc3922cd3e808ee034014683ca0cd34b9dfc40bacb2efaa33e075c71d43",
+    "independent.mjs": "b4238fe07f9443adda9b111b0af1d6f69f5dbe5225b6a6099c7c54791c580ccb",
+    "independent-final-replay.log": "76768ed19a0993bf945f912cd8542ad6288183d0ef97d367080ff928312aba27",
+    "independent-results.json": "3cf34ea40037d1e087f19a97b84fd35ace0f6a7bc56e2d45a4e4ebf1ddb096c8",
+    "independent-fixtures.json": "a1bb65a558c4d24ea0b73340aaa6f67d30b383e0d81270974584cd7996a564e1",
+    "cancellation-tail-evidence.json": "45ec6c20d74f19b7e87b0ebaeb413fedcf6bffa8d1350cfb449eb76a3875cece"
+  }
+}

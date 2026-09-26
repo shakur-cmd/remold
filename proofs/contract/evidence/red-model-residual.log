@@ -1,0 +1,45 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+Could not find project with name anonymous-agent!
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ Added table indexes:
+  [+] bindings.key   provider, environment, account, kind, externalId, _creationTime
+  [+] callbacks.key   binding, eventId, _creationTime
+  [+] consent.recipient   org, recipient, purpose, channel, _creationTime
+  [+] operations.logical   org, logical, _creationTime
+  [+] sessions.token   token, _creationTime
+✔ 14:18:52 Convex functions ready! (783.71ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:107:280
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:14:30)
+    at async main (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:105:2)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/contract/replay.mjs:142:5 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.

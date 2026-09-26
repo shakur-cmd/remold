@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Native form ownership and capture-only proof</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Public intake without native identity writes</h1><div class="meta">2026-09-25 · SERVICE, synthetic fixtures · Root and fresh Opus 5.5 independent verification passed</div>
+<div class="decisions"><h2>Decision boundary</h2><p>Recommend capture-only native form revisions: all input fields stored as results, no mapped contact fields, no native actions, and a fixed upstream Blocked-Tracking cookie plus privacy headers. Leave identity resolution and attributed CRM changes to Remold. This is a proof recommendation, not a public-edge promotion, Mautic adoption or full P2 completion.</p></div>
+<div class="status"><h2>Root runtime evidence</h2><p>Both native tenants store four concurrent form submissions, including two for one new email, with no contact, profile, email suppression, anonymous tracking, campaign membership or mail-queue change. Each result has no native contact link. No record is silently selected by email.</p></div>
+<h2>Before and after</h2><table><tr><th>Attempt</th><th>Observed outcome</th></tr>
+<tr><td>Inherited form1 with mapped identity fields</td><td>A175 →176 and B28 →29 through native merges. The authoritative name changed and DNC vanished on both. Failing assertion and before/after snapshots retained.</td></tr>
+<tr><td>Unmapped name only, A form2</td><td>Name survived but176 →177 still merged. Driver failed exact-ID assertion before claiming success.</td></tr>
+<tr><td>Kiosk mode, A form3</td><td>Canonical ID177/profile/DNC survived. Contact count175 →176 because an anonymous contact was created. Driver failed count assertion.</td></tr>
+<tr><td>Kiosk plus DNT1/Sec-GPC1, A form4/B form2</td><td>Existing canonical IDs177/29, profiles and restored DNC survived; one stored suggestion each, no contact count change. Still chooses a native contact by email, so duplicate/concurrent-new identity risks remain.</td></tr>
+<tr><td>All fields unmapped, fixed Blocked-Tracking=1 cookie plus privacy headers, A form5/B form3</td><td>Four concurrent captures per tenant, zero native contact links or identity writes. Existing-email and same-new-email submissions retain distinct results. Native contacts, suppression, tracking, campaign membership and mail counters unchanged.</td></tr></table>
+<h2>Why the first approach failed</h2><p><a href="../../../../evidence/2026-09-25-price-and-ownership-review/report.html">Opus source consultation</a> traced native7.2.1 tracking →merge →loser deletion →DNC cascade, with no DNC-copy listener. Native API reads of old IDs resolve merge aliases. Existing capture adapter explicitly refuses a returned contact-ID mismatch; the old ownership baseline intentionally exposes aliases to record the failure.</p><p>Kiosk mode avoids the merge for a unique existing email. Capture-only intake removes native identity matching from this path altogether. Installed SubmissionModel saves results separately and accepts no managed lead; ContactTracker returns null for the fixed Blocked-Tracking cookie. This is transport-controlled configuration, never a client-selected cookie or permission to change consent.</p>
+<h2>Independent check</h2><p><a href="independent/report.html">Fresh Opus verification</a> reproduced the mapped-form failure on both tenants, then passed the privacy and raw capture-only runs. A form7 and B form5 each stored four concurrent unlinked submissions without identity, suppression, tracking, campaign or mail changes. Removing only the fixed cookie created anonymous contact181 and linked submission30, proving DNT/GPC alone are insufficient. Existing contacts, form definitions and suppression rows remained unchanged. A campaign-linked raw form must be refused; that admission check is still unbuilt.</p><h2>Evidence</h2><ul><li><a href="root-first/before.json">Default-form red</a> and <a href="root-first/before-console.txt">failure</a>.</li><li><a href="root-first/after-console.txt">Unmapped-name failure</a>; <a href="root-first/kiosk-console.txt">kiosk count failure</a>; <a href="root-first/kiosk-failure-inventory.json">read-only reconciliation</a>.</li><li><a href="root-first/privacy.json">Mapped-email kiosk/privacy success</a>; <a href="root-first/capture-only.json">capture-only concurrent success</a>.</li><li><a href="source-manifest.json">Three-source manifest</a>; original kiosk driver archived under root-first/r1-source.</li></ul>
+<h2>Retained state and boundaries</h2><p>All forms, contacts, raw receipts and journals remain. Native merging itself removed the old synthetic contact rows; API aliases and explicit pre-test evidence remain. Restoring DNC creates a new synthetic DNC record, not the lost original history. Only the known synthetic fixtures’ names and suppression were restored. A’s extra anonymous contact is retained. No mail workers or provider sending ran.</p>
+<p>Original public sidecars still publish inherited form1. Do not promote or adopt that route. Safe form publishing, strict admission of unmapped/action-free/unlinked forms, server-owned tracking policy, current send-time suppression, core duplicate-email ambiguity handling and CRM applyChange attribution remain required. Native campaign-source admission is not implemented; these new forms have no campaign membership effects. Simultaneous public requests with retry/response loss are separate intentional submissions here, not a claim of client-request deduplication. Callback/importer production limits from the prior checkpoint remain open.</p>
+<p>Builder: root. Independent verifier: fresh Claude Opus 5.5, actual native replays and installed-source inspection. This report is not certification of current production or the full marketing engine.</p></body></html>

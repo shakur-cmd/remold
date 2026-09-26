@@ -1,0 +1,41 @@
+ok   V0 sealed control accepted by new JS
+ok   V0 sealed control accepted by new oracle, hash equal :: {"hash":"7b2942a2d0073824bf02ffd58517585f497afaa2102c37e5d2e
+ok   V0 retry control (new boundary/Date/MID, same quoting) same hash
+ok   B1a padded delimiter in HTML comment: sealed valid under new JS
+ok   B1a padded delimiter in HTML comment: old normalizer collides :: py sealed=2 '' disp=3 ''
+ok   B1a padded delimiter in HTML comment: new JS refuses dispatched
+ok   B1a padded delimiter in HTML comment: new oracle refuses dispatched :: AssertionError
+ok   B1b close delimiter truncates HTML: sealed valid under new JS
+ok   B1b close delimiter truncates HTML: old normalizer collides :: py sealed=2 '' disp=2 '--><p>Required foot
+ok   B1b close delimiter truncates HTML: new JS refuses dispatched
+ok   B1b close delimiter truncates HTML: new oracle refuses dispatched :: AssertionError: Unexpected parsed content outside MIME parts
+ok   B1c close delimiter in plain text (native shape): sealed valid under new JS
+ok   B1c close delimiter in plain text (native shape): old normalizer collides :: py sealed=2 '' disp=1 'Required footer\r\n
+ok   B1c close delimiter in plain text (native shape): new JS refuses dispatched
+ok   B1c close delimiter in plain text (native shape): new oracle refuses dispatched :: AssertionError: Unexpected parsed content outside MIME parts
+ok   B1d tab-padded delimiter in plain text: sealed valid under new JS
+ok   B1d tab-padded delimiter in plain text: old normalizer collides :: py sealed=2 '' disp=3 ''
+ok   B1d tab-padded delimiter in plain text: new JS refuses dispatched
+ok   B1d tab-padded delimiter in plain text: new oracle refuses dispatched :: AssertionError
+ok   B1e case-variant --CHOSEN-- not a parser delimiter (py parts=2, empty epilogue) :: py=2 '' newJS=accepted
+ok   B2 refuse Date phishing text
+ok   B2 refuse Date folded
+ok   B2 refuse Date double space
+ok   B2 refuse Date trailing comment
+ok   B2 refuse MID URL
+ok   B2 refuse MID other domain
+ok   B2 refuse MID subdomain
+ok   B2 refuse MID uppercase hex
+ok   B2 refuse MID 31 hex
+ok   B2 refuse MID trailing text
+ok   B2 refuse MID empty
+info B2 residual weekday mismatch -> ACCEPTED Date.parse=1790298000000
+info B2 residual Feb 31 -> ACCEPTED Date.parse=1772499600000
+info B2 residual year 9999 -> ACCEPTED Date.parse=253393837200000
+info B2 residual year 0000 -> ACCEPTED Date.parse=969843600000
+info B2 residual offset +9999 -> ACCEPTED Date.parse=1789935660000
+ok   B2 case variant DATE: refused (fail-closed)
+ok   B2 case variant Message-Id: refused (fail-closed)
+ok   C3 single-byte sweep: same-hash only inside Date/MID values :: tried=5761 accepted=923 sameHash=71 "\nDate: Fri, "^ "Date: Fri, 2"^ "Fri, 25 Sep "^ "i, 25 Sep 20"^
+FAILURES 0
+quote-style change alters hash (fails closed, by design): true

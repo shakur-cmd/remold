@@ -1,0 +1,96 @@
+{
+  "result": "PASS",
+  "level": "SERVICE-local; synthetic fixture",
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-migration-2GKKdK",
+  "checks": {
+    "idempotentRepeat": true,
+    "wrapperRefusedEarlierTarget": true,
+    "recordsAndKeyRetained": true,
+    "actualBackendRejectedOldSchemaWithoutDataLoss": true
+  },
+  "limitations": [
+    "Managed backup snapshot restore is not tested",
+    "Actual old browser and production identities are not tested",
+    "No production deployment or release authorization"
+  ],
+  "baseline": {
+    "records": 1000,
+    "canonicalHash": "bf3a74625ce294fb0a562c13d70808bb922bdcdc2d4937398e1abbcf8be4a80e",
+    "schemaHash": "7d0212667d8d032d178bae0014078812709f28db0797d32741f85b8e26f86435"
+  },
+  "oldMcpSourceHash": "5c43101c44dfd72e84a2ee43b765608648bd096a2c10de1656be4b980d9a246e",
+  "expand": {
+    "sourceHash": "3497db105a2131f4b1d5335fbe3a97f0f1403c51a3306ce20d73de016991e429",
+    "schemaHash": "046446f07d9dba3fcf96b7eef74e177af06ec83ea6350fbd85cf31eeec7edeab"
+  },
+  "interruption": {
+    "cursor": "[1790274091258.456,\"k97c6vkwd8nc8207bpmhzhahjh8f02vb\"]",
+    "error": "Uncaught Error: REHEARSAL_INTERRUPTED_400\n    at migrateOne (../convex/migrationBackfill.ts:11:100)\n    at async doOne (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:483:24)\n    at async handler (../../../../../../../../Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/migrations/node_modules/.pnpm/@convex-dev+migrations@0.3.6_convex-helpers@0.1.124_convex@1.46.0__convex@1.46.0/node_modules/@convex-dev/migrations/src/client/index.ts:498:14)\n",
+    "isDone": false,
+    "latestStart": 1790274094551,
+    "name": "migrationBackfill:markRecords",
+    "processed": 400,
+    "state": "failed",
+    "markedRecords": 400,
+    "canonicalHash": "ab09e253ed208cec2e1c2d38adf5c780f0e48841b4d8a4ed0abf44cf85501056"
+  },
+  "resumed": {
+    "cursor": null,
+    "isDone": true,
+    "latestEnd": 1790274097034,
+    "latestStart": 1790274094551,
+    "name": "migrationBackfill:markRecords",
+    "processed": 1002,
+    "state": "success"
+  },
+  "negativeSchema": {
+    "refused": true,
+    "diagnostic": "- Preparing Convex functions...\n\n✖ Schema validation failed.\nDocument with ID \"k9701v01swjey1mr03gjw1tnqs8f1fkc\" in table \"records\" does not match the schema: Object contains extra field `migrationRevision` that is not in the validator.\n\nObject: {createdBy: \"kh727kf096mqjd85g2twxxv1mx8f18af\", migrationRevision: 1.0, objectId: \"k17agej38p3wvtjqdbnmz7jyg98f0hw0\", orgId: \"kn7390s7505m96jqph1bgmes4d8f0v42\", title: \"Migration fixture 0797\", updatedAt: 0.0, values: {jh7b352d4exgr2k9cg18ymd8rh8f1gt5: \"Migration fixture 0797\"}}\nValidator: v.object({b0: v.optional(v.boolean()), b1: v.optional(v.boolean()), b2: v.optional(v.boolean()), b3: v.optional(v.boolean()), createdBy: v.union(v.id(\"users\"), v.id(\"agents\")), d0: v.optional(v.float64()), d1: v.optional(v.float64()), d2: v.optional(v.float64()), d3: v.optional(v.float64()), n0: v.optional(v.float64()), n1: v.optional(v.float64()), n2: v.optional(v.float64()), n3: v.optional(v.float64()), n4: v.optional(v.float64()), n5: v.optional(v.float64()), n6: v.optional(v.float64()), n7: v.optional(v.float64()), objectId: v.id(\"objects\"), orgId: v.id(\"orgs\"), ref: v.optional(v.string()), s0: v.optional(v.string()), s1: v.optional(v.string()), s2: v.optional(v.string()), s3: v.optional(v.string()), s4: v.optional(v.string()), s5: v.optional(v.string()), s6: v.optional(v.string()), s7: v.optional(v.string()), title: v.string(), updatedAt: v.float64(), values: v.record(v.string(), v.any())})\n"
+  },
+  "clientObservations": [
+    {
+      "phase": "baseline",
+      "iteration": 0,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "interrupted-migration",
+      "iteration": 1,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "migrate",
+      "iteration": 2,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "migrate",
+      "iteration": 3,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "rollback",
+      "iteration": 4,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "rollback",
+      "iteration": 5,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    }
+  ],
+  "fixtureSourceHashes": {
+    "fixture.ts": "f7abdd3ecc52addc009a302ea8228913cc0b09ea72ce85d9bd6c4627ca0bcea1",
+    "backfill.ts": "269d37b9d6ec10067646457c8c8fd03c0406ba0ae8c4f8c15de20651f5e6725e",
+    "rehearse.mjs": "15103439699704ea2259041090ee84d1534ade10470b0d41ecee9357af30f833",
+    "rollback.mjs": "4e7cc40cfa06d036ab6c8370c9c7cac646dd7b836871de68837bad21f48ce304"
+  },
+  "rootSha": "63d7d92a5ec9f38af69112be6483d83aa6638d06",
+  "rootDeploymentConfigUnchanged": true
+}

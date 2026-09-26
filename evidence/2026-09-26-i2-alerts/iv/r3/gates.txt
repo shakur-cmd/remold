@@ -1,0 +1,71 @@
+$ tsc -b && tsc --noEmit -p convex
+$ vitest run
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-r2
+
+
+ Test Files  26 passed (26)
+      Tests  93 passed (93)
+   Start at  13:22:19
+   Duration  1.20s (tests 70%, transform 16%, import 13%, worker 1%)
+
+$ vitest run --config ops/authority/vitest.config.ts
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-r2
+
+
+ Test Files  17 passed (17)
+      Tests  97 passed (97)
+   Start at  13:22:21
+   Duration  1.04s (tests 76%, transform 14%, import 9%, worker 1%)
+
+$ node --test ops/release/release.test.mjs
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.631292ms)
+✔ changed, missing and injected artifact bytes are refused (1.472292ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (50.434834ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.312333ms)
+✔ version metadata must name the artifact commit (0.842667ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.760042ms)
+✔ failed real process halts checks before a later process can run (20.828291ms)
+✔ successful real processes run in order (40.895208ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.197916ms)
+✔ missing metadata and destructive contraction are refused (0.0955ms)
+✔ a rollback to a schema without the expanded fields is refused (0.113084ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.409291ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (42.476916ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.0465ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (25.808292ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (21.519208ms)
+✔ PR changes use their common ancestor when the target branch advances independently (214.339042ms)
+✔ after the I1 freeze, rollback to code that predates I1 authority is refused (567.609166ms)
+✔ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (683.380084ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1712.1415
+$ tsc -b && vite build
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 2113 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                              0.45 kB │ gzip:   0.28 kB
+dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+dist/assets/index-Bghzk4qC.css                              68.01 kB │ gzip:  12.38 kB
+dist/assets/index-9gi0KQir.js                              643.28 kB │ gzip: 197.03 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 453ms
+exit 0

@@ -1,0 +1,94 @@
+{
+  "level": "LIVE reciprocal mail; SERVICE local frozen H0; SIM tenant/member bindings",
+  "planSha256": "0ec83eae29171c597b29cd90b3654125ac82221bb790820cdcdb5f7b7efd477c",
+  "contractManifest": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+  "receipts": [
+    {
+      "name": "P1",
+      "messageId": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-P1@repliedfor.com>",
+      "providerRef": "1a0d54706f6417b3",
+      "thread": "1a0d54706f6417b3",
+      "at": "2026-09-24T21:16:37.187Z"
+    },
+    {
+      "name": "Q1",
+      "messageId": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-Q1@repliedfor.com>",
+      "providerRef": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-Q1@repliedfor.com>",
+      "at": "2026-09-24T21:16:37.744Z"
+    },
+    {
+      "name": "reply-P",
+      "messageId": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-reply-P@repliedfor.com>",
+      "providerRef": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-reply-P@repliedfor.com>",
+      "at": "2026-09-24T21:24:12.053Z"
+    },
+    {
+      "name": "Q2",
+      "messageId": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-Q2@repliedfor.com>",
+      "providerRef": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-Q2@repliedfor.com>",
+      "at": "2026-09-24T21:26:11.375Z"
+    },
+    {
+      "name": "Q3",
+      "messageId": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-Q3@repliedfor.com>",
+      "providerRef": "<remold-p5-ff0397a6-74ae-4bbc-bd9b-b5262ac66e11-Q3@repliedfor.com>",
+      "at": "2026-09-24T21:28:11.891Z"
+    }
+  ],
+  "observed": [
+    {
+      "name": "P1",
+      "at": "2026-09-24T21:24:11.355Z",
+      "uid": 28
+    },
+    {
+      "name": "Q1",
+      "at": "2026-09-24T21:24:11.650Z",
+      "providerId": "1a0d5470efdf5577",
+      "thread": "1a0d5470efdf5577"
+    },
+    {
+      "name": "reply-P",
+      "at": "2026-09-24T21:24:15.515Z",
+      "providerId": "1a0d54dfd1ec9709",
+      "thread": "1a0d54706f6417b3"
+    },
+    {
+      "name": "Q2",
+      "at": "2026-09-24T21:26:18.008Z",
+      "providerId": "1a0d54fd7623d0a3",
+      "thread": "1a0d5470efdf5577"
+    },
+    {
+      "name": "Q3",
+      "at": "2026-09-24T21:28:18.498Z",
+      "providerId": "1a0d551ac01e4fed",
+      "thread": "1a0d5470efdf5577"
+    }
+  ],
+  "cutoffChecks": [
+    {
+      "step": 2,
+      "at": "2026-09-24T21:26:10.897Z",
+      "denied": true
+    },
+    {
+      "step": 3,
+      "at": "2026-09-24T21:28:11.427Z",
+      "denied": true
+    }
+  ],
+  "actualMailAccepted": {
+    "shakur@envoylogic.com": 1,
+    "reply@repliedfor.com": 4
+  },
+  "resuming": true,
+  "priorSendsRepeated": false,
+  "resumeH0State": "new isolated H0 fixture for unsent effects; prior provider receipts retained, no original workflow-state recovery claim",
+  "calendarCalls": 0,
+  "twoGoogleMailboxes": false,
+  "originalSameSourceTwoContactProof": false,
+  "elapsedMs": 540003,
+  "status": "PASS",
+  "rootEnvironmentUnchanged": true
+}

@@ -1,0 +1,73 @@
+{
+  "status": "FROZEN reliability repair; builder regression/reliability/typecheck pass; fresh independent verification pending; full P2/D0M open",
+  "capturedAt": "2026-09-24T22:24:55.329373+00:00",
+  "aggregateSha256": "9b213e350938242517dccf85e5ee11d9129d2e42f65c0d1f50d10406b0d55625",
+  "aggregateMethod": "SHA256 of sorted compact JSON files map",
+  "gitHeadAtFreeze": "77db408283aa9830b1a4614e82f2430505590adf",
+  "files": {
+    ".gitignore": "791d357aee309795c92f02a0eb5451fcd3097249ff06f76acd4d46d8b7c7ca5c",
+    "api-boundary-replay.mjs": "c71c6f8b515bd4ae05b98d36d8fce462dbd17178d78ec2597a0b17d3712c947e",
+    "api.mjs": "c30aba0bc15ba56f71eb14be02e0ea380e5323514991705389b8677e048fd846",
+    "authority.mjs": "8acc99005063c6a7536a0ead03a2a17ecbffda68011039c59307ce69be1c3357",
+    "branch-replay.mjs": "6f26e08bf23cb238dc4776037b41647ac14b354b9dc5d5f3cd17e86df7ca5a49",
+    "bridge.mjs": "5b1dbe063ea0b3986c2d263923da9526e2c3930bcc29881e4aa1dcbf13eb11b1",
+    "configure.mjs": "f08fadaa8b0d58fa6c2c1bd1a868a859b881f5c70eb19fdb03b506455fec16bf",
+    "convex.json": "dd3ba7397bb34b37a2475660f4b1658b4a3836da713b71f82644f731af15aeea",
+    "convex/_generated/api.d.ts": "2aeab2aea9a3e2f78a50d192c9cc71c96229b6395e2d51326f92b31499349a13",
+    "convex/_generated/api.js": "f513058549831e85376f8d19cafaf2a4a770b6eb1b859fb371141f2c9dec0d70",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/_generated/server.js": "0cdd1d842b9458d8a6f2444c35eb9929312316a384ca76a4b1d964bedde8a6f2",
+    "convex/contract.ts": "242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59",
+    "convex/harness.ts": "8b023314f8dfe8d4ff4d5655d26aff9de320b9e05650e0534c4fb678b862d29b",
+    "convex/marketingFixture.ts": "9089068bc38d7504a7fe7e6d39f654c5c30c96841b72d7a5cb65ca8cd474f052",
+    "convex/schema.ts": "61275c1bfae3661f7dfa4e9079ec8f1cefce17fb42f1f068bbaefa03d29cd3f8",
+    "convex/tsconfig.json": "b7f94282db5106a68d95d522bf16d9518d9ef3eca014b8b26d9c92e2ccf62a95",
+    "enable-guard.mjs": "92efd0e2e8702efbe792e1e4f738c6ac7bfff47fc49ad60027c2ba6bff720eda",
+    "handover.html": "9641b73514e9246369b8a5cc66a2f71faa1c863722c3fad7b3f41aa94b909e45",
+    "initialize.mjs": "cb23cb414cf6826aa4a2e3921c612008ffe62f0668304735aacc28b528b47fc2",
+    "install-plugin.mjs": "a4cf0d2902c6c9b02ab7811ebe58707f151c35c47d11c2d904dc13020b82a9fb",
+    "native-fixture.mjs": "1892bdff91079310468c2f29cd94e84439c83ea84da9ac58bf04d07ff2fa7b2a",
+    "native-hook-replay.mjs": "6ca460e2343d5c8dff8cc36ed59835e07a53e58e5904f9fc44bd90ef68e9f437",
+    "package.json": "4bda9dd20c2154922e154755f069bf991f3a2e7888181d875cfdbef75182abc6",
+    "plugin/Bridge.php": "068126e8393efd970119fd683d106f257dc2db3db7c8a97b29c403b8bc638e94",
+    "plugin/Config/config.php": "f11a6b1b2ed209d340468c91c7b602202c85cbcdeb4c3d00eb5552190b9384c3",
+    "plugin/Config/services.php": "adb488a64a3f8d66f902771bd70f97989551892d2475a802baf6aabb106e58a0",
+    "plugin/DependencyInjection/RemoldGuardExtension.php": "f822c3c618594dfc2f6e4f8f106511dc5f6ce8cce2d012d563e90fd0b43d1725",
+    "plugin/EventListener/OccurrenceSubscriber.php": "efe0042f4b9a49bcd7a29b74a58e4d24d7e3cf8145690203d6d97a41776e95cf",
+    "plugin/RemoldGuardBundle.php": "e99294af8094e555ae55b43cf2b76a902aa1ea156c0ccd538b1389a65f7fcdd3",
+    "plugin/Transport/GuardTransport.php": "947925c9a55bc9df76da4562f341e45229d2a33f132cdc8ae6a6509fbb2d03a6",
+    "plugin/Transport/GuardTransportFactory.php": "e93fb6ff096fbb643cfd708ebd6794c08c47ff47deb5adc0b0e4aa26343f688f",
+    "reentry-replay.mjs": "28f364f45274e52d9cb99383a929028050243839c62b4527733d72e0b215c28c",
+    "reliability-replay.mjs": "6958d5dde41b25da1bc63260b4c225335982535918d8b544661bb7bdfd4e16ed",
+    "runtime.mjs": "b995c36bced15cebc4a8ff408900ca0215ba080d7e3013dfc28f14c95af21f1d",
+    "safety-replay.mjs": "8b4a7b62d762e12e2895b7a0178511420233008fa0a0d0af253140e4fbf953d7",
+    "setup-bridge.mjs": "2d769227d0249ff2b27561365d0152308c875e6ffa44eb3e4bc16c90782f7417",
+    "setup.mjs": "52e80f700255324f7395fc5e1fac9a742cdfe74979706a0bec17ad037713e51a",
+    "source-inspection.html": "8b75105be6ef1abb8268e587edf9be7170d8265e93b669e38d7577381b39e5ca",
+    "tsconfig.json": "cfd2d8c18d748734720547fb50bfa178e358d7a84b9ec64e327b1203addaa7a5",
+    "verify-runtime.mjs": "548685ee30692f2f7a02fab00b056feb2238595dce3807139a6416a94476a5d9"
+  },
+  "previousAggregateSha256": "f38b7ab00f05dae81617c85bd20aaa74be39124437b71d0e55063708ee2b1c9c",
+  "previousManifest": "evidence/reliability-before/source-manifest.json",
+  "checks": {
+    "originalRegression": {
+      "command": "pnpm --dir proofs/marketing test",
+      "exit": 0,
+      "evidence": "evidence/reliability-regression.txt"
+    },
+    "reliability": {
+      "command": "pnpm --dir proofs/marketing proof:reliability",
+      "exit": 0,
+      "groups": 5,
+      "evidence": "evidence/reliability.json"
+    },
+    "typecheck": {
+      "command": "pnpm --dir proofs/marketing typecheck",
+      "exit": 0,
+      "evidence": "evidence/reliability-typecheck.txt"
+    },
+    "runtime": "evidence/reliability-runtime.json"
+  },
+  "scope": "Synthetic hash-reported sink, not MIME bytes. One bridge process, no full P2 or selection. Original41-file approval does not certify this42-file repair."
+}

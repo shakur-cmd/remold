@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Same-sender mail test: actual results</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Same-sender mail test: actual results</h1><p class="meta">2026-09-24 · P5 bounded LIVE fixture · root checks passed; c0 independently approved the bounded fixture</p>
+<div class="decisions"><h2>Current allowance</h2><p>No new owner decision is needed. The one-shot test is spent. Both authorized senders have used five reservations within the rolling 24-hour window, including earlier tests. Preserve the shared ledger and do not rerun this fixture.</p></div>
+<div class="status"><h2>Proven and independently checked</h2><p>One sender ran two sequences to different recipients. A reply from Replied For stopped P2 and P3 before a send reservation. The other sequence delivered Q1, Q2 and Q3 to shakur@codemyvibe.com. Root read those exact Gmail receipts; c0 independently read the same three message IDs and confirmed the envelope, thread and INBOX labels.</p><p>The one-shot process exited 0; the sequence observation lasted 540,007 ms from sequence start. Q follow-ups were separated by 120,609 ms and 120,691 ms. This run sent four messages from Envoylogic and one reply from Replied For. It sent none from CodeMyVibe and made no Calendar calls.</p></div>
+<h2>Before and after</h2><table><tr><th>Before</th><th>After</th></tr><tr><td>Owner had just authorized the additional recipient; source review and 38 offline tests passed, but this exact two-recipient LIVE fixture had not run.</td><td>Five accepted messages correlate to five unique reservations and accepted outcomes. Q1–Q3 were observed at the actual receiving mailbox. P2/P3 were denied by local H0 claims, with zero reservations for those follow-ups.</td></tr><tr><td>The shared rolling cap held A1/B4 from the previous test.</td><td>This fixture added A4/B1, reaching A5/B5. No separate quota or reset was used.</td></tr><tr><td>Driver intentionally leaves C delivery to a separate account witness.</td><td>Root and c0 supplied exact C metadata receipts independently. The original driver's C-receipts-pending label is preserved as execution provenance, not a remaining receipt gap.</td></tr></table>
+<p><a href="../communications-same-sender-iv/live-review.html">c0 terminal independent approval</a> verifies all five reservations/outcomes, preserved prior ledger prefix, rolling caps, source hashes and completed timing. This is a fresh receipt/evidence review, not a second send execution.</p><h2>Evidence and boundaries</h2><p>Source commit <code>fd1c9b8446e75bc7005c2371ad65035f5c7e070a</code>, 34-file aggregate <code>c29dfab5c14e841ce38d31d702a54bc6ecea5063a9b3284b892dd7ee45722fa9</code>. All 34 files remained unchanged. Plan <code>37e76789aea0bf39348e3f03324ee21070395596e13737630ba44c74a823a025</code>, run <code>237331e2-1fab-416a-b433-3232acedeab3</code>.</p>
+<p><a href="actual-check.json">Root terminal arithmetic, source hashes and ledger reconciliation</a> · <a href="../../../proofs/communications/evidence/same-sender/live-result.json">Actual execution timeline</a> · <a href="../../../proofs/communications/evidence/same-sender/root-execution.json">One-shot exit receipt</a> · <a href="../../../proofs/communications/evidence/same-sender/root-C-receipts.json">Root exact C mailbox receipts</a> · <a href="../communications-same-sender-iv/C-receipts.html">Independent C mailbox witness</a>.</p>
+<p>Actual Gmail and Purelymail transport ran against an isolated local H0 backend with simulated workspace identities. This does not prove hosted CRM UI, real identity integration, provider watch/history/reconnect persistence, two-browser display or complete P5. Metadata proves delivery and threading, not a received body-content hash comparison. Only one actual sequence run occurred; independent verification reads its evidence and three provider receipts, without repeating sends. I1 remains separately unverified.</p></body></html>

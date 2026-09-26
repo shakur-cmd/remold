@@ -1,0 +1,83 @@
+[
+  {
+    "id": "G-platform",
+    "blocks": [
+      "I2",
+      "I11",
+      "L0"
+    ],
+    "status": "open",
+    "needed": "WorkOS admin/Google sign-in configuration; isolated previews; backup and alert account; platform Stripe sandbox; real price and commercial policy. No production cutover authorized.",
+    "accessUpdate": "Verified Remold WorkOS Staging configured; real Google/AuthKit local login, logout, refresh, deep invite, valid-JWT issuer rejection and membership isolation tested. AuthKit commit3932963 passedCI36045807967. Separate hosted previews/production, email-password, managedbackup/restore and deliveredalerts still required. Stripe isolated test sandbox created and read-only account/mode verified.",
+    "spendAllowance": {
+      "monthlyUSD": 50,
+      "approvedBy": "Shakur explicit chat",
+      "scope": "initial hosting and recovery infrastructure",
+      "excludes": [
+        "existing AI subscriptions",
+        "later marketing/social services"
+      ],
+      "providerHardCapVerified": false
+    }
+  },
+  {
+    "id": "G-pay",
+    "blocks": [
+      "P4",
+      "D0P",
+      "I7",
+      "L0"
+    ],
+    "status": "open",
+    "needed": "Stripe Connect sandbox with two merchants; merchant country/legal configuration and retention/readonly collection policy. Live charges/refunds need exact allowance.",
+    "accessUpdate": "Remold integration sandbox acct_1UJHeKJjT84hNemU verified test-only. Distinct OAuth standard test merchants D acct_1UJIndJL8hhTtG1o and E acct_1UJL2DR59Pk6MTFE enabled: card_payments/transfers active, charges/payouts enabled, current requirements clear, balance.livemode=false. Read-only health evidence at proofs/payments/evidence/oauth-D-health-followup.json and oauth-E-health-second.json. Cartes Bancaires remains pending. Financial lifecycle and recurring proof remain open; live account unchanged. Manual sandbox recovery now12PASS; independent exhaustive5invoices/10PIs/5charges checkpoint passed. Extra5PIs have nocharge,4canceled and1open900creditbalance. Required recurring and hosted-payer follow-through remainopen. No livechanges."
+  },
+  {
+    "id": "G-mail",
+    "blocks": [
+      "P2",
+      "P5",
+      "D0C",
+      "I5",
+      "I8"
+    ],
+    "status": "open",
+    "needed": "Full mail/calendar product integration and remaining P5/P2 criteria. Authorized A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests, plus A to additional recipient shakur@codemyvibe.com for same-sender P/Q fixture. Five FROM each A/B per rolling24h, existing durable ledger retained; no sends from new recipient, customer sends or broad history import.",
+    "accessUpdate": "LIVE reciprocal proof passed: Envoylogic Google sent1, Purelymail reply mailbox sent4, all5 received; reply cut off2planned follow-ups. Initial Message-ID receipt mismatch repaired via exact accepted message lookup, no sends repeated. One authorized primary Envoylogic event created,rescheduled,deleted with no guests; exact-ID GET confirmed cancelled tombstone. Fresh bounded review passed with independent exact-event GET; whole P5 remains open. Same-sender P/Q actual test now passed: P2/P3 blocked, Q1–Q3 delivered to C with independent exact receipt reads. Added A4/B1 to earlier A1/B4; both caps fully used at2026-09-25T00:34:39Z. Nine-minute observation and source/ledger checks independently approved; full product integration remains open.",
+    "ownerBatch": "Owner recipient response implemented and independently checked. No new mailbox/sign-in request; spent fixture must not rerun. No C sender authorization."
+  },
+  {
+    "id": "G-social",
+    "blocks": [
+      "P3",
+      "D0S",
+      "I6"
+    ],
+    "status": "open",
+    "needed": "Provider/developer access and API connections for TikTok @shakur.abdullah5, Instagram @remoldcrm, own LinkedIn, Remold CRM Facebook Page and X @abdullah_s3854. Exact publication content/visibility allowance still needed. CodeMyVibe Instagram deferred.",
+    "accessUpdate": "Remold CRM Facebook Page61594926953344 created and owner controls verified; existing X @abdullah_s3854 recovered; own LinkedIn /in/abdulshakur-abdullah identified. Latest root CUA profile checks verified TikTok @shakur.abdullah5 owner Edit profile controls in Helium and Instagram @remoldcrm Edit profile/View archive in actual Google Chrome. Supersedes earlier signed-out checks. API connections remain unverified; no public posts.",
+    "ownerBatch": "Owner completed requested existing-account sign-ins. No repeat request needed. Evidence: evidence/2026-09-24-unified-build/owner-batch-response.json"
+  },
+  {
+    "id": "G-runtime",
+    "blocks": [
+      "P6",
+      "D0A",
+      "I4"
+    ],
+    "status": "open",
+    "needed": "Prove official user-owned subscription-authenticated Codex/Claude Code worker with scoped Remold MCP, execution limits, revocation and isolation. No API funding needed for this owner route; no API fallback or subscription pooling. Managed hosted route remains separately required and unproven.",
+    "accessUpdate": "Official Codex0.156.1 owner-local ChatGPT subscription text completion and pre-output interruption ran. Root independently repeated no-inference preflight/evidence checks; no second LIVE inference. Every-call/continuation permit hook absent from installed server-request schema; tokenBudget semantics and residual usage unverified. Connected worker integration continues; full P6/hosted route remains open. No API purchase or fallback."
+  },
+  {
+    "id": "G-private",
+    "blocks": [
+      "I3",
+      "I13",
+      "I14"
+    ],
+    "status": "open",
+    "needed": "Verify existing records before any cutover; optional EspoCRM/Microsoft/Jev inputs remain separate. No real data deletion.",
+    "blockingScope": "Only named private-data migration/deletion and optional Microsoft/Jev rows; synthetic and provider-independent work in these jobs continues."
+  }
+]

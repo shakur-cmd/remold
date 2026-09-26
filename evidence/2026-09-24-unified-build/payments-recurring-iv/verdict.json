@@ -1,0 +1,51 @@
+{
+  "verdict": "REVISE",
+  "at": "2026-09-25T00:55:43.968756+00:00",
+  "reviewer": "c0_verifier",
+  "sourceAggregate": "71a13358f83cf44495e9f2a9494e1c727e2c54c2d5535c6c8df0c507d7b49743",
+  "sourceFiles": 13,
+  "sourceAndBuilderEvidenceUnchanged": true,
+  "baseline": {
+    "command": "pnpm --dir proofs/payments/recurring test",
+    "exit": 0,
+    "groups": 13,
+    "typecheck": "Actual isolated local helper uses Convex --typecheck enable; passed on all three fresh backends"
+  },
+  "independentProbes": [
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-recurring-iv/period-probe.mjs",
+      "exit": 1,
+      "evidence": "period-result.json",
+      "finding": "Offset17seconds and offset3days at accepted term end both normal-terminal/release0 with no anomaly; on-term control normal-terminal as expected"
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/payments-recurring-iv/disjoint-probe.mjs",
+      "exit": 1,
+      "evidence": "disjoint-result.json",
+      "finding": "Success receipt100 then disjoint new success201 preserves301 receipt union but cycle/commitment gross201; anomaly sticky and authority remains blocked. Complete combined positive control gross301."
+    }
+  ],
+  "fixtureProvenance": "Independent altered cases reuse frozen replay loopback/setup scaffolding with imports redirected; scenario body and assertions independently authored; frozen source untouched. IDs/random seeds differ on each fresh backend.",
+  "portsReleased": [
+    3590,
+    3591
+  ],
+  "externalProviderCalls": 0,
+  "providerFinancialWrites": 0,
+  "limits": [
+    "Local Convex SERVICE and loopback synthetic provider only",
+    "No claim that Stripe produces inconsistent receipt sequence",
+    "Actual Stripe line service-period semantics require pinned contract review before repair",
+    "No I1 authorization audit, no provider execution approval, no whole P4 certification"
+  ],
+  "evidenceHashes": {
+    "baseline.txt": "caabe8d11ea2da9e2703b360f769776537f8169da62cae67c32ea557f0d8304f",
+    "baseline-result.json": "181c804729182b6938ffe093ac8dc7475caf8f919f1b7ae8790410844efc1828",
+    "period-probe.mjs": "317f1f7fac7c705d322522ce221f8e7933b9b30b8c73959a6b3ef9dfac16feab",
+    "period-result.json": "34e56c3e1948170fcfeba9fa020ea69f861eb40437bc59b4b65ec635b499ac1b",
+    "period-red.txt": "88efac98d12eb5bf3ea32bf7ffd9e690873f091e95698fd329274974eb3a502b",
+    "disjoint-probe.mjs": "89466445db8e4fcbe88eae9e0d6bb07a09f07946d63f5a90772dc02de2eb95ea",
+    "disjoint-result.json": "7afc02e7626fcdbfc3616c04ba960575007656854af51a31cf4e323728c8b796",
+    "disjoint-red.txt": "e1a1b8279c5ecfbdde8f8fb1749c61f9b237e9f4a258e53a6b763a207247be70"
+  }
+}

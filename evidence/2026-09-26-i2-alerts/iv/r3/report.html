@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 alerts: independent verification, round 3</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>I2 alerts: independent verification, round 3</h1>
+<div class="meta">2026-09-26 · target <code>4fb573b</code> (code <code>d9c798e</code>) on <code>i2/alerts-2026-09-26</code> · level: SERVICE, disposable local Convex, synthetic data · verdict: <b>PASS. The I2 alert row can be marked done at SERVICE; delivery to the owner channel stays gated.</b> · checked by: fresh Opus 5.5 independent verifier, not the builder</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Pick the alert channel and account. Delivery to it is the last open part of this row.</li>
+  <li>Set up an outside "no message in N minutes" heartbeat on that channel, so a dead alert check gets noticed.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li><b>D1 is fixed on real local Convex, not just in the test harness.</b> I ran a failing job due 2 hours in the past. The real system row has <code>completedTime</code> set (<code>scheduledTime</code> is 2 h earlier), and the alert <code>background-error:ivWm:failPast</code> opened. On 117917d, the same repro stored the failure but opened nothing.</li>
+  <li><b>D2 is fixed.</b> All 11 host cases I flagged are now refused: <code>localhost.</code>, <code>foo.localhost.</code>, <code>metadata.google.internal.</code>, <code>printer.local.</code>, <code>[::7f00:1]</code>, NAT64, 198.18.0.1, 224.0.0.1, 255.255.255.255, plus the earlier cases. <code>https://hooks.example.com</code> is still accepted. Only DNS names like <code>127.0.0.1.nip.io</code> pass, which is the disclosed limit.</li>
+  <li><b>My 10 survivor mutants are now killed.</b> My full set is 32 of 32 and the builder's is 43 of 43. Restored source is green.</li>
+  <li><b>Suites pass:</b> typecheck, app 93/93, authority 97/97, release tests, build.</li>
+  <li><b>Preflight holds</b> on a clean 4fb573b checkout. The schema is byte-identical to 566abac and notes.json still names 566abac. With a fresh receipt, preflight against 566abac passes with <code>deploymentAuthorized: false</code>. Without one it is blocked. bb8e3ed, a173192 and d66eb0b are refused with "Rollback schema differs", and an undeclared target is refused.</li>
+  <li><b>No regression in the load and scrub sample.</b> My attack script ran with 0 leaks in sink bytes and stored tables, 0 duplicate ids, 1 alert row per key, and the 307 to <code>[::1]</code> not followed. After 5100 REST requests and 4 KB rows, checks applied and raised coverage without throwing. The watermark tie (1599 distinct creation times, failure seen) and 10 of 10 big-row failures reproduce.</li>
+</ul>
+</div>
+
+<h2>Notes</h2>
+<ul>
+  <li>The builder's two new tests fake system-row states in the test harness. My real-Convex run covers the scan path of D1. The stall-then-fail path reads the same <code>completedTime</code> field, and that field is populated on real rows. I did not drive a stall-then-fail on real Convex.</li>
+  <li>The builder reported one unexplained flaky backend start in its synthetic backup run. Mine started cleanly every time. It is not reproduced and not explained.</li>
+  <li>Still open and disclosed: delivery to the owner channel, hosted Convex limits and timing, DNS names that resolve to private IPs, and a check that dies entirely (needs an outside heartbeat). The telemetry capacity note from round 2 is a pre-existing telemetry issue, not part of this row.</li>
+</ul>
+
+<h2>Files</h2>
+<p>All outputs are next to this file: gates.txt, builder-mutants.txt, iv-mutants.txt, channel-table.txt, watermark.json (the <code>pastJob</code> and <code>past</code> phases), attacks.json, release-flow.txt, preflight-targets.txt, release/. Scripts are in <code>scripts/</code>. Ports used: 3970 to 3975, plus the release scripts' own 3460 to 3463.</p>
+</body>
+</html>

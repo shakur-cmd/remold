@@ -1,0 +1,22 @@
+{
+  "verdict": "APPROVE desk-only root report consistency",
+  "at": "2026-09-25T01:18:48.551296+00:00",
+  "reviewer": "c0_verifier",
+  "sourceAggregate": "d92702a0909fcbf7927b8bfa787be35f358bd3147b14bd896a9d2450217a5104",
+  "files": {
+    "evidence/2026-09-24-unified-build/previews-root/r2/report.html": "a70cffd381743de39ed6f8a2fbc7e4f01eed0e324c2fbb43321d98c44db2d92f",
+    "evidence/2026-09-24-unified-build/previews-root/r2/source-check.json": "21447d48c4927ced4b78b137974e4b1e8157a363e37b8ff82c2add00aeaba04c",
+    "evidence/2026-09-24-unified-build/previews-root/hosted/workos-before-witness.json": "41744cc0ce3d4ae93ae8976538fccaa430dcb0abca3819590e3a8b7df77bc2b3"
+  },
+  "localLinksChecked": 7,
+  "missingLinks": 0,
+  "findings": [
+    "Three repaired failures and independent offline check counts match r2 evidence",
+    "Root WorkOS Chrome observation clearly attributed to root; not independently reobserved",
+    "First hosted attempt described as next action, not completed proof",
+    "Provider allocation/sign-in/data/cleanup and full I2 remain pending",
+    "Source CI versus environment-configured rebuild distinction preserved"
+  ],
+  "newProviderCalls": 0,
+  "sourceEdits": 0
+}

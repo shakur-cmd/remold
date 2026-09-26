@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P4 financial verification checkpoint</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>P4 financial verification checkpoint</h1><div class="meta">2026-09-24 · bounded local proof · full P4 remains open</div><div class="decisions"><h2>Current decision</h2><p>The paid-observation and collection-accounting repair passed root replay and fresh independent verification. This accepts that local slice only. Do not run the provider lifecycle proof yet: its old invoice-pay and subscription-creation routes do not establish the same collection-reservation guarantees.</p></div><div class="status"><h2>Done and proven</h2><p>Builder, root and c0_verifier ran the local payment suite and typecheck. The independent reviewer repeated the original paid100 callback followed by stale unpaid pull: the stale pull now fails, paid100 is retained, and void/collection are refused pending reconciliation. Six fresh fixtures used an obligation of137, outside payment29 and local collection61: remaining47 is allowed and48 refused across hold/receipt orders. No Stripe transaction was made by these checks.</p></div><p><a href="../../evidence/2026-09-24-unified-build/payments-iv/r2/review.html">Independent before/after review</a> · <a href="collection-reconciliation.html">Frozen builder handover and limits</a> · <a href="evidence/root-collection-check.json">Root replay record</a> · <a href="evidence/source-manifest.json">41-file manifest</a></p><p>Accepted source aggregate: <code>97cbec6399219e43bdf5d1e9c6d836490c645273afd103528cefe441d93052f6</code>. The earlier builder handover states verification pending because it is preserved as part of that frozen source. This later checkpoint records the completed bounded review.</p><h2>Newly identified open scope</h2><p>The old sandbox driver needs a complete pull after finalizing a bound invoice and before its first collection. It also calls invoice payment and subscription creation through routes outside the new PI-create reservation path. Those paths remain unverified; captured functional probes and an Opus5.5 route review are in progress. Do not infer financial route completeness from this bounded approval. Full provider allocation/refund/credit/recurring/dispute/webhook behavior, UI and production integration remain open.</p><h2>Separate account prerequisite</h2><p><a href="evidence/oauth-D-health-followup.html">D is enabled for card payments and payouts in the sandbox</a>, confirmed by read-only account and balance requests. E onboarding is in progress. This verifies account health, not Remold financial correctness.</p><p>DESK documentation review by c0_verifier confirmed this checkpoint and the P4 execution row match the completed bounded independent verification, retain the new route gaps, and do not claim provider lifecycle or whole P4 completion. No customer or live financial effects occurred.</p></body></html>

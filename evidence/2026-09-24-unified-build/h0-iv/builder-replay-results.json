@@ -1,0 +1,121 @@
+{
+  "level": "SERVICE local Convex / SIM provider and identity",
+  "backend": "http://127.0.0.1:3410",
+  "at": "2026-09-24T18:29:46.148Z",
+  "results": [
+    {
+      "name": "A/B known-ID isolation, server-derived actors and full binding tuple collision",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Explicit manage lists cannot authorize firing or regranting an ancestor",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Direct mode executes without human approval; propose mode and invalidated direct grant refuse",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Delegation ancestry revokes queued/read/model paths while independent human grant survives",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Read scopes restrict object/records/fields and every SIM surface has a leakable shape",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Final permit rechecks expired authority without a sweep and honors schedule",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Before-permit fire refuses; after-permit fire preserves one late outcome",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Scoped adapter cannot permit, consume, reconcile, callback or provision in B",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Lost acceptance response reconciles once; missing usage blocks cheaper new spend",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Concurrent logical calls/claims and org budget reservations serialize on real backend",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Per-run/global spend and global concurrency caps bound both tenants",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Model continuation rechecks authority, step/fence and remaining exposure",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Expired unconsumed permits retry safely; consumed crash becomes unknown",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Unknown authoritative absence never resends after firing; terminal rejection releases reservation",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Authoritative absence and retryable rejection preserve logical key and revalidate new permits",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Material edits, audience, currency and approval expiry invalidate immutable snapshot",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Provisioning durable intents preserve delete-before/create-before races",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    },
+    {
+      "name": "Partial traversal commits only full checkpoints and later traversal resumes without regression",
+      "status": "PASS",
+      "level": "SERVICE backend / SIM provider and identity"
+    }
+  ],
+  "fixtureSha256": "0633cdc3922cd3e808ee034014683ca0cd34b9dfc40bacb2efaa33e075c71d43",
+  "sourceHashes": {
+    "convex/contract.ts": "242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59",
+    "convex/schema.ts": "e149dcddf813e36943a460b42dc3ce6e3f71cff7a5c2de76c351dc702b58aeba",
+    "convex/harness.ts": "8f0a8faf4589ba81c57839206a5ff8f5fa2fa5ecc82b933b8c58d6feb4178edf",
+    "replay.mjs": "a76449868a604ced2bd14f422ccd610aab71a9b8d92b3ca2bfe049c5290f3429",
+    "run.mjs": "3f55cded8f049b79839a1f6c4cabe9ac0264b2eebce211eaddbd03bf96510354"
+  },
+  "providerEffects": 6
+}

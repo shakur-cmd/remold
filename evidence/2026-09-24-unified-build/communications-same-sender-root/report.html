@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Same-sender mail: root preparation review</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Same-sender mail: root preparation review</h1><p class="meta">Root read all authored changes and ran checks on frozen34 c29dfab5; fresh independent final review passed by /root/c0_verifier</p><div class="decisions"><h2>Existing allowance</h2><p>The owner approved Envoylogic and RepliedFor reciprocal tests, then added shakur@codemyvibe.com as recipient only. Five FROM each original mailbox per rolling24h remains enforced in the same durable ledger. No further owner permission is needed for this exact test.</p></div><div class="status"><h2>Root checked</h2><p>38 offline tests pass, exit0. Exact-plan no-provider preflight passes; wrong-hash invocation refuses, exit1. Root verified all34 source hashes, existing ledger unchanged and release/start markers absent. Independent c0_verifier repeated38 tests and preflight plus five altered checks, including wrong sender/reference, unknown Q2 stopping Q3, exact reservation replay refusal and old-parser fail-closed behavior. This is preparation evidence, not delivery.</p></div><table><tr><th>Before</th><th>After</th></tr><tr><td>Old parser refuses the newly authorized A→C route.</td><td>Minimal route change admits only A→B, A→C and B→A through the same lock, quota and file. Unknown attempts still count; no sending from C.</td></tr><tr><td>Reciprocal proof used different senders for P and Q.</td><td>Prepared fixture uses A for both P→B and Q→C. A stripped B reply must match P alone; both P follow-ups refuse before quota reservation. Three Q accepts must be at least120seconds apart, with a nine-minute observation.</td></tr></table><p>Current A1/B4 plus planned A4/B1 fits exactly A5/B5. The preflight and individual reservations recheck capacity; no quota reset or second ledger. The one-shot driver refuses automatic rerun. Actual Gmail metadata supplies reply references because Gmail previously replaced the requested Message-ID. Root will inspect exact Q receipts in C separately; send acceptance alone never proves delivery.</p><p>Local H0 identities/bindings are synthetic; no production integration, broad import, Calendar effects, new provider-history proof or full P5 claim. The archived old parser fails closed once a C reservation exists; historical frozen proofs use their retained old snapshot. No dependencies or H0 shape changed.</p><p><a href="checks.json">Root checks</a> · <a href="tests.txt">38 tests</a> · <a href="preflight.txt">Exact-plan preflight</a> · <a href="wrong-hash.txt">Refusal</a> · <a href="../../../proofs/communications/same-sender-handover.html">Exact messages and builder evidence</a>.</p><p><a href="../communications-same-sender-iv/review.html">Independent final review</a>. Root may release this exact plan after a fresh capacity/hash check.</p></body></html>

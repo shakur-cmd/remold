@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Native restore: root acceptance</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Native restore: root acceptance</h1><p class="meta">Root replay and source review; independent final verifier /root/i2_release</p><div class="decisions"><h2>Scope</h2><p>No owner step needed for this local rehearsal. Full P1, managed backup, upgrade, hosted execution and OS isolation remain open.</p></div><div class="status"><h2>Proven</h2><p>Root ran the actual local Convex export/import/storage replay: three groups passed, exit0. Root read both runtime files and the final report. The later change added only the missing private-directory ignore; all four final hashes match b0caacbc0da80aef7af7fe250000b0fdf97aa530d9caa9cf10aa167c13eaeda4. No private file is tracked. Independent i2_release then repeated the final candidate and checked archive integrity and refusal with a wrong key or altered ciphertext.</p></div><table><tr><th>Before / negative</th><th>After</th></tr><tr><td>Empty target cannot find source tasks; data-only restore cannot retrieve stored artifact; missing key cannot decrypt.</td><td>Full archive plus saved synthetic key restores all17 user tables and exact encrypted/decrypted bytes.</td></tr><tr><td>Accepted fake effect has a lost response; another operation has no receipt.</td><td>Restored accepted task recovers the same operation with one attempt and one receipt. Total fake effects stay2. No-receipt operation remains unknown with reservation1.</td></tr><tr><td>.private was incorrectly described as ignored; git check-ignore returned1.</td><td>Configuration fix returns0; private tracked files0. Runtime files unchanged.</td></tr></table><p>Source reaches stable unknown state before export and SIGKILL. The fake provider ledger is restored in the same database snapshot; no independently durable remote effect or effect after backup is proven. No production restore, scheduler in-flight recovery or I1 certification.</p><p><a href="replay.txt">Root replay</a> · <a href="final-hash-check.json">Final checks</a> · <a href="../native-restore-iv/review.html">Independent final review</a> · <a href="../../../proofs/agents/native/evidence/restore/root-frozen-a3a4e8/result.json">Root before/after result</a>.</p></body></html>

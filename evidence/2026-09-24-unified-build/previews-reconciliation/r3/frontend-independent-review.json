@@ -1,0 +1,34 @@
+{
+  "result": "I independently checked the parser repair and approve it. I also approve the local receipt reconciliation, but only with three required changes listed below. I made no edits, no provider writes and no uploads. The only network request was one public GET of `version.json`.\n\n## What I checked myself\n\n| Check | Result |\n|---|---|\n| `node --test ops/previews/policy.test.mjs` (Node v24.18.0) | 14 passed, 0 failed |\n| `frontend.mjs` compared with `r3/before/frontend.mjs` | Only the import and lines 36\u201337 changed. The old parser had two bugs: `JSON.parse` over the whole stdout breaks on the Wrangler progress lines, and it read `preview_id` at the top level, but the ID is at `preview.id`. The fix addresses both. |\n| Saved log and receipt compared with the evidence copies | Byte-identical. Log sha256 `4f3452\u2026eb654`, receipt sha256 `ed0b4cf6\u2026a47a2`. |\n| Receipt state | `phase` is `frontend-attempted`, `cloudflareAbsentBefore` is true, `cloudflare` is null, and `unresolvedCloudflare.id` is `567c0b1448364e4786f2bafb238b372d`, which matches the ID in the CLI output. |\n| `verifyArtifact` on the sealed artifact (read-only) | Passes for `c666909\u2026` with manifest `1b50ae0d\u2026c923c2` |\n| Public GET `/version.json` at 01:29:59Z | HTTP 200, body `{\"sha\":\"c666909bfe07af46732a56671858b65f748a4744\"}`. The body is byte-identical to the sealed `version.json` (sha256 `6e959eca\u20263aba`). The response was a cache HIT. |\n| My own altered offline cases (26, in `/tmp/remold-fe-iv-Bp2z/iv.mjs`) | All 26 behaved as expected. The old parser fails on the real log, as expected. The new parser accepts the real log, bare JSON, Windows line endings and trailing whitespace. It refuses 21 bad inputs: a JSON line before the real output, two JSON objects, truncated output, progress lines with no JSON, the old flat-ID format, missing deployment details or labels, the PR3 or base commit in the deploy message, extra or trailing-slash URLs, a changed ID, and the wrong worker, account, name or PR plan. |\n| Mutation checks on a temporary copy of the tests | Reverting the parse, bypassing the ID check, or removing the commit-message, URL or returned-name checks each makes the repo test fail. Removing the check that the live preview is on the right worker does **not** make it fail. Only my own cases cover that check and the account check. |\n\nTwo recommended follow-ups:\n- **Tests:** add tests where the live preview has the wrong worker or the wrong account.\n- **Stale `candidate.json`:** it records hashes from the earlier metadata-only step. It still matches backend, bootstrap-env and cleanup. The current policy (`eb31\u2026`), test (`8856\u2026`) and frontend (`feed49\u2026`) files don't match or aren't listed, so freeze a new hash file for this candidate.\n\n## Parser verdict: approved\n\nThe parser only reads from the first line that begins with `{`. It then requires everything after that to be exactly one JSON object with only whitespace after it. Anything else it refuses, so it fails safe. Note that the saved log is stdout followed by stderr, so it parses only because stderr was empty in this run.\n\n## Reconciliation verdict: approved with changes\n\nYour proposed steps are the right ones. These three changes are required:\n1. **Wrangler's exit status was never recorded.** The earlier run threw an error before line 39 checked it. The reconciled receipt must record the exit status as unknown, not assume it was 0. The frontend-ready claim then rests on the provider read and the public bytes, not on the CLI.\n2. **Re-run `verifyCI(plan)` before moving to `frontend-ready`.** This confirms PR4 is still open with head `c666909` and green CI. Save `cloudflare` as owned first, whatever that result is, because cleanup needs the ownership record even if the head has moved.\n3. **Refuse unless** `phase` is `frontend-attempted`, `cloudflare` is null and `unresolvedCloudflare` is present. The reconcile step must not import or reach any code path that runs `wrangler preview`. The only allowed Wrangler calls are `--version` and `auth token`.\n\nRecommended:\n- Parse the run-directory log and check it against sha256 `4f3452\u2026`.\n- Keep `unresolvedCloudflare` and add a reconciliation block: the time, the log hash, the provider read result, and the hash of the public `version.json` bytes.\n- Also fetch the public `/release-manifest.json` and compare it to `1b50ae0d\u2026`. That would show the whole deployed bundle matches, not just the commit ID. I did not do this because I was limited to `version.json`.\n\n## Still open\nHosted sign-in, PR3 recovery, the full preview lifecycle, the I1 audit and a full I2 claim are all still open. Nothing here certifies any of them.\n\n## Model identity\nMy harness reports model ID `claude-opus-5-5` (Opus 5.5). I can't see the `modelUsage` telemetry from here; the calling script records it in the saved JSON. Because of the no-edits instruction, I didn't add an entry to the decisions log; the root session should add one.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1953,
+      "outputTokens": 20,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002053,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 18,
+      "outputTokens": 9936,
+      "cacheReadInputTokens": 245540,
+      "cacheCreationInputTokens": 38385,
+      "webSearchRequests": 0,
+      "costUSD": 0.55498,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 3514,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

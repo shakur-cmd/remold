@@ -1,0 +1,20 @@
+--- /tmp/remold-mime-opus-r2-r5xb/unit/mime.test.mjs	2026-09-25 00:55:07
++++ mime.test.mjs	2026-09-25 00:58:00
+@@ -27,7 +27,7 @@
+ });
+ test('volatile headers accept generated metadata only, never arbitrary unapproved text',()=>{
+  const p=payload();
+- for(const bad of [payload({date:'Visit https://other.invalid'}),payload({date:'Fri,\r\n '+'x'.repeat(2000)}),change(p,'Message-ID: <','Message-ID: <https://other.invalid/'),change(p,/Message-ID: [^\r]+/,'Message-ID: <>'),change(p,/Message-ID: [^\r]+/,'Message-ID: <'+'a'.repeat(32)+'@other.invalid>')])assert.throws(()=>inspectMime(bad),/proof MIME/);
++ for(const bad of [payload({date:'Visit https://other.invalid'}),payload({date:'Fri, 25 Sep 2026 01:00:00 +0000 (Visit https://other.invalid)'}),payload({date:'Fri,\r\n '+'x'.repeat(2000)}),change(p,'Message-ID: <','Message-ID: <https://other.invalid/'),change(p,/Message-ID: [^\r]+/,'Message-ID: <>'),change(p,/Message-ID: [^\r]+/,'Message-ID: <'+'a'.repeat(32)+'@other.invalid>')])assert.throws(()=>inspectMime(bad),/proof MIME/);
+ });
+ test('the serialized intent and exactly two MIME parts are required',()=>{
+  const p=payload();assert.throws(()=>inspectMime({...p,intent:'f'.repeat(64)}),/proof MIME/);
+--- /tmp/remold-mime-opus-r2-r5xb/unit/mime-oracle.test.mjs	2026-09-25 00:55:07
++++ mime-oracle.test.mjs	2026-09-25 00:58:00
+@@ -7,5 +7,5 @@
+ test('the independent MIME parser preserves the pixel query and rejects truncated approved HTML',()=>{
+  const html='<img src="http://localhost:3540/email/Tracking123.gif?ct=abc&amp;x=2"><!--\r\n--chosen--\r\n--><p>Required footer</p>'.replaceAll('=','=3D');
+  assert.equal(JSON.parse(oracle(payload({html}))).pixel,'http://localhost:3540/email/Tracking123.gif?ct=abc&x=2');
+- assert.throws(()=>oracle(payload({html,boundary:'chosen'})));
++ assert.throws(()=>oracle(payload({html,boundary:'chosen'})),error=>/outside MIME parts|changed the approved part body/.test(String(error.stderr)));
+ });

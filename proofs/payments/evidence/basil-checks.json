@@ -1,0 +1,56 @@
+{
+  "level": "SERVICE local Convex and loopback HTTP; no Stripe calls",
+  "checks": [
+    {
+      "command": "node proofs/payments/route-success-replay.mjs (before shared contract fix)",
+      "exit": 1,
+      "evidence": "basil-absent-red.txt"
+    },
+    {
+      "command": "node proofs/payments/route-success-replay.mjs (after fix)",
+      "exit": 0,
+      "evidence": "basil-absent-green.txt"
+    },
+    {
+      "command": "node proofs/payments/recovery-replay.mjs (before logical key correction)",
+      "exit": 1,
+      "evidence": "recovery-logical-key-red.txt"
+    },
+    {
+      "command": "node proofs/payments/recovery-replay.mjs (after correction)",
+      "exit": 0,
+      "groups": 7,
+      "evidence": "recovery-local.txt"
+    },
+    {
+      "command": "node proofs/payments/private/check-original-recovery.mjs",
+      "exit": 0,
+      "readOnly": true,
+      "stripeCalls": 0,
+      "recoveryLatchAbsent": true,
+      "evidence": "recovery-original-local-preflight.json"
+    },
+    {
+      "command": "pnpm --dir proofs/payments test",
+      "exit": 0,
+      "offlineTests": 42,
+      "evidence": "basil-full-test.txt"
+    },
+    {
+      "command": "pnpm --dir proofs/payments typecheck",
+      "exit": 0,
+      "evidence": "basil-typecheck.txt"
+    },
+    {
+      "command": "node --check (eight changed/new runtime and test entrypoints)",
+      "exit": 0,
+      "evidence": "basil-syntax.txt"
+    },
+    {
+      "command": "git diff --check -- proofs/payments",
+      "exit": 0
+    }
+  ],
+  "independentVerification": "Pending on this successor; historical acceptance not inherited",
+  "providerExecution": "No recovery execution; prior empty draft remains unchanged"
+}

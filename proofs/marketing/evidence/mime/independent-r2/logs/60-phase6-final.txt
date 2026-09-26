@@ -1,0 +1,9 @@
+$ pnpm --dir proofs/marketing typecheck
+$ tsc --noEmit
+exit=0
+$ node verify-runtime.mjs
+PASS exact H0 source, SDK version, pinned runtime images and isolated network.
+exit=0
+$ node verify-installed.mjs
+PASS 12 installed source hashes, PHP syntax and bounded credential placement.
+exit=0

@@ -1,0 +1,22 @@
+{"baseline":"Accepted one-off adapter cannot activate finite recurring commitment; intentional closed route, not an unsafe H0 defect","effects":0,"refusal":"general collection route refused"}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Recurring activation is not implemented in accepted baseline
+
+0 !== 1
+
+    at withRecurring.baseline (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/baseline.mjs:14:187)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:18:27)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/baseline.mjs:7:1 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

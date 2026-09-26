@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Independent C receipt witness</title><style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style><body><h1>Independent C receipt witness</h1><p class="meta">c0_verifier · 2026-09-25 UTC · LIVE, read-only</p><div class="decisions"><h2>Bounded PASS</h2><p>All three exact Q messages are in C's INBOX. The complete fixture verdict remains pending root's terminal nine-minute observation. No new sends or allowance are authorized by this check.</p></div><div class="status"><h2>Proven</h2><p>Three fresh Gmail metadata reads on the authorized C account match A→C, exact test subject and each actual sender Message-ID. Q2 and Q3 refer to Q1, and all three share C's mailbox thread. Each receipt matches one prior shared-ledger reservation and one accepted outcome, including exact recipient and content-hash reference. The ledger was unchanged by this read-only comparison.</p></div><h2>Before and after</h2><p>Before: root reported three delivered Q messages. After: c0 independently reread the exact three Gmail IDs and checked sender evidence and ledger linkage. No searches, message bodies, mutations or calendar calls were made. Metadata cannot independently verify the message body's content hash; the hash comparison here correlates the local reservation and sender receipt.</p><p><a href="C-receipts.json">Sanitized independent receipt evidence</a> · <a href="../../../proofs/communications/evidence/same-sender/root-C-receipts.json">Root witness</a> · <a href="review.html">Prior preparation review</a></p><h2>Limits</h2><p>This check proves these three receipts, not mailbox-wide uniqueness, delivery latency, P cutoff duration, production integration or whole-P5 completion. Sender and recipient Gmail IDs and thread IDs are mailbox-specific. The full fixture review awaits the terminal result; no rerun was performed.</p></body></html>

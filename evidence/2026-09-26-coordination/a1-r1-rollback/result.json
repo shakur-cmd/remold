@@ -1,0 +1,12 @@
+{
+  "convexVersion": "1.46.0",
+  "level": "SIM (scratch anonymous local backend, `convex dev --once`, ports 3700/3701; no cloud deployment)",
+  "pushWithoutTablesExit": 0,
+  "message": "✔ Convex functions ready! (129.43ms) -- no warning, prompt or error about the two dropped table definitions",
+  "rowsSurvived": true,
+  "rowCountsAfterPushB": {"objects": 1, "setupProposals": 1, "setupEvents": 1},
+  "rowCountsAfterRepushA": {"objects": 1, "setupProposals": 1, "setupEvents": 1},
+  "schemaValidationFalseTried": false,
+  "schemaValidationFalseReason": "Not needed: push B without the tables already succeeded with validation on.",
+  "conclusion": "Convex 1.46.0 accepts a schema that omits non-empty tables. Push exits 0, rows are not deleted, the tables stay visible as unschematized tables (convex data lists them with their rows), and re-pushing the A1 schema succeeds with the same rows. The rollback target does not need to keep the two table definitions. Not tested: cloud `convex deploy` (same push path assumed, unproven) and non-empty tables whose rows fail a re-added validator."
+}

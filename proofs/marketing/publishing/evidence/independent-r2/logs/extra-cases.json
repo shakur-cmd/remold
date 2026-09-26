@@ -1,0 +1,263 @@
+{
+ "at": "2026-09-25T06:36:30.761Z",
+ "rows": [
+  {
+   "tenant": "a",
+   "case": "chunked oversized (valid fields, firstname 20000 bytes, 10 chunks, no Content-Length)",
+   "expected": 413,
+   "status": 413,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 413 Payload Too Large",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "chunked oversized, cap crossed before any terminator (edge must answer without full body)",
+   "expected": 413,
+   "status": 413,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 413 Payload Too Large",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "duplicate key via percent-encoded name %65mail",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "duplicate key via percent-encoded name first%6eame",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "native field injected via encoded brackets mauticform%5Bemail%5D",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "plus-encoded key \"t+\" treated as different key",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "raw invalid UTF-8 byte 0xFF (not percent-encoded)",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "a",
+   "case": "Content-Length plus Transfer-Encoding (request smuggling shape)",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Connection: close"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "chunked oversized (valid fields, firstname 20000 bytes, 10 chunks, no Content-Length)",
+   "expected": 413,
+   "status": 413,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 413 Payload Too Large",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "chunked oversized, cap crossed before any terminator (edge must answer without full body)",
+   "expected": 413,
+   "status": 413,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 413 Payload Too Large",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "duplicate key via percent-encoded name %65mail",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "duplicate key via percent-encoded name first%6eame",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "native field injected via encoded brackets mauticform%5Bemail%5D",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "plus-encoded key \"t+\" treated as different key",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "socketError": null,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "raw invalid UTF-8 byte 0xFF (not percent-encoded)",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Content-Type: text/plain; charset=utf-8",
+    "Cache-Control: no-store",
+    "X-Content-Type-Options: nosniff",
+    "Content-Security-Policy: default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+    "Connection: close",
+    "Transfer-Encoding: chunked"
+   ]
+  },
+  {
+   "tenant": "b",
+   "case": "Content-Length plus Transfer-Encoding (request smuggling shape)",
+   "expected": 400,
+   "status": 400,
+   "pass": true,
+   "responseHead": [
+    "HTTP/1.1 400 Bad Request",
+    "Connection: close"
+   ]
+  }
+ ]
+}

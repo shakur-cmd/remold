@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P2 reliability repair: independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>P2 reliability repair: independent verification</h1><div class="meta">2026-09-24 · Independent verifier h0_builder · Author c0_verifier · Actual local Mautic/Doctrine/Convex services; synthetic hash receipt</div>
+<div class="decisions"><h2>Verdict</h2><p><strong>APPROVE the bounded reliability repair.</strong> Fresh replay passed the seven original groups, five reliability groups, typecheck and an additional strict restart case. Frozen 42-file aggregate <code>9b213e350938242517dccf85e5ee11d9129d2e42f65c0d1f50d10406b0d55625</code> matched before and after. P2/S4 and D0M remain open; Mautic is not selected.</p></div>
+<div class="status"><h2>Verified independently</h2><ul><li>Read the eight changed files, final handover and three retained actual failing baselines. No candidate source was edited.</li><li>Fresh original regression: unapproved0, approved1, revoked0, worker SIGKILL after consume0 with outcomeUnknown; open branch2 receipts; re-entry1 distinct receipt; ordinary API send refused.</li><li>Five fresh reliability cases passed. Installed plugin and bridge hashes matched the source, PHP syntax checks passed, and the network remained internal.</li><li>The additional restart test proves the receipt was unreconciled before the bridge restarted, then recovered once. The result remained unchanged after two extra workers.</li></ul></div>
+<h2>Before and after</h2><table><tr><th>Retained real failure</th><th>Fresh repaired behavior</th></tr>
+<tr><td>Late approval: an early worker made the bridge refused-or-unknown; approval left H0 approved but produced no delivery.</td><td>The target worker attempted before approval. Bridge stayed sealed. Later approval and retry produced one delivery and one confirmed H0 receipt.</td></tr>
+<tr><td>Sink refused: zero effects but one transport-accepted event.</td><td>Zero effects, zero accepted events and zero H0 receipts. The consumed operation remained outcomeUnknown. Its hold was not silently retried into a new effect.</td></tr>
+<tr><td>Lost response: one synthetic effect, but outcomeUnknown and zero H0 receipts remained after restart.</td><td>Actual socket-loss transport failure occurred. Receipt-only reconciliation reached confirmed with one effect and one H0 receipt. The strict additional case below puts restart before that reconciliation.</td></tr></table>
+<p>The three red records are preserved builder baselines, not rerun by this reviewer. The green runs are fresh independent fixtures. All four original safety scenarios used different native log IDs from the saved before run.</p>
+<h2>Strict restart ordering, separately proved</h2><p>The five-case runner allowed a retry within its first three-second worker, so its first snapshot already contained an acknowledgement. I added a separate evidence-only driver using one-message workers and required the exact target FailedMessageEvent before restart. No application code changed.</p>
+<table><tr><th>Checkpoint</th><th>Sink receipt</th><th>H0</th><th>H0 receipts / transport ACKs</th></tr>
+<tr><td>After lost socket, before restart</td><td>1</td><td>dispatching, unresolved</td><td>0 / 0</td></tr>
+<tr><td>After bridge restart, before retry</td><td>1</td><td>outcomeUnknown</td><td>0 / 0</td></tr>
+<tr><td>After retry</td><td>1</td><td>confirmed</td><td>1 / 1</td></tr>
+<tr><td>After two extra workers</td><td>1</td><td>confirmed</td><td>1 / 1</td></tr></table>
+<p>Fresh fixture: contact 70, campaign 70, native log 88. The target recorded one failed transport event. This establishes recovery from a committed synthetic receipt across an actual bridge restart. It does not establish SMTP receipt lookup, bytes delivered, or recovery when no receipt exists.</p>
+<h2>Concurrent workers and original kill regression</h2><p>Two real Doctrine workers handled an intentionally duplicated serialized queue message. Final result: two transport acknowledgements, one synthetic effect and one H0 receipt. One transport failure was also observed during this run; later retry completed without another effect. These are two queue acknowledgements, not two deliveries. One bridge process serialized requests; multiple bridge replicas are unproved.</p>
+<p>The original SIGKILL case still passed: the actual worker exited after consuming a permit, zero sink receipts appeared, and H0 became outcomeUnknown after extra cron/worker passes. The new receipt-only retry does not turn an empty consumed hold into permission to resend.</p>
+<h2>Commands and evidence</h2><pre>pnpm --dir proofs/marketing test
+pnpm --dir proofs/marketing typecheck
+pnpm --dir proofs/marketing proof:reliability
+node evidence/2026-09-24-unified-build/marketing-iv/r2/restart-replay.mjs
+node evidence/2026-09-24-unified-build/marketing-iv/r2/check.mjs</pre>
+<p>All exited 0. <a href="regression.log">Seven-group regression</a> · <a href="typecheck.log">Typecheck</a> · <a href="reliability.log">Five reliability groups</a> · <a href="after-reliability.json">Structured reliability result</a> · <a href="restart-result.json">Strict restart result</a> · <a href="restart-replay.mjs">Independent restart driver</a> · <a href="check.log">Final checks</a> · <a href="verdict.json">Verdict</a></p>
+<p>Before evidence: <a href="red-late-approval.json">late approval</a>, <a href="red-sink-refused.json">sink refused</a>, <a href="red-lost-response.json">lost response</a>, <a href="before-reliability.json">previous green</a>. <a href="after-safety.json">Fresh safety result</a> · <a href="before-source.json">Exact source map</a> · <a href="source-manifest.json">Frozen author manifest</a> · <a href="manifest.json">Independent evidence hashes</a>.</p>
+<h2>Limits retained</h2><p>No real mail was sent. The sink records an engine-reported hash, intent and recipient; it does not receive or compare MIME bytes. Open tracking URLs come from synthetic database metadata. Proposed intents only recover while queue retry remains available; dead-letter recovery and production campaign approval mapping remain open. Consumed operations without receipts remain held. Fault switches are proof-only. All broader S4 editing, audiences/frequency, click/reply, sync/consent, two-tenant, restore/upgrade, capacity/cost and live provider criteria remain required.</p>
+<p>Ports 3540/3542/3545/3546 were released to root after the checks; services remain running. Root independently reran the strict case, exit 0, on a separate fresh fixture: contact 71, campaign 71, log 89. Its <a href="root-restart-result.json">separate result</a> and <a href="root-restart.log">run log</a> show the same unresolved-before-restart → unknown-after-restart → one confirmed receipt/effect result. This is a second runtime run; my contact 70/log 88 evidence remains separate. Root review/selection remains separate. No I1 audit or financial proof was changed.</p></body></html>

@@ -1,0 +1,36 @@
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.539792ms)
+✔ concurrent callback replay only exchanges one code (0.2045ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.259584ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (0.934375ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.233125ms)
+✔ nonce and email verification are checked independently of a correct email address (0.289167ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.166625ms)
+✔ mailbox A refuses a partial grant missing send permission (0.125709ms)
+✖ profile failure retains a verified private candidate and read-only retry does not exchange again (0.485333ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.211208
+
+✖ failing tests:
+
+test at proofs/communications/oauth.test.mjs:55:1
+✖ profile failure retains a verified private candidate and read-only retry does not exchange again (0.485333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/communications/oauth.test.mjs:59:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

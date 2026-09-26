@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/lifecycle-replay.mjs:9:2
+    at async withPayments (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/local.mjs:22:10)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/lifecycle-replay.mjs:3:1 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: /readonly/,
+  operator: 'rejects',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

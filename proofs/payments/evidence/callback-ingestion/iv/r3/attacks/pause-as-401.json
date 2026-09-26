@@ -1,0 +1,1113 @@
+{
+ "level": "SERVICE/SIM independent verifier run; no Stripe calls, no sandbox writes",
+ "mutant": "pause-as-401",
+ "ports": {
+  "cloud": 3760,
+  "site": 3761,
+  "receiver": 3762,
+  "receiver2": 3763
+ },
+ "startedAt": "2026-09-26T13:21:53.724Z",
+ "attacks": [
+  {
+   "name": "same event id with a different body is refused after the first",
+   "pass": true,
+   "detail": {
+    "s1": 200,
+    "s2": 400,
+    "receipts": 1,
+    "keptFirstDigest": true
+   }
+  },
+  {
+   "name": "Stripe-Account header does not override payload account",
+   "pass": true,
+   "detail": {
+    "status": 200,
+    "underA": 1,
+    "underB": 0
+   }
+  },
+  {
+   "name": "replay after acknowledgement has no second effect",
+   "pass": true,
+   "detail": {
+    "status": 200,
+    "receipts": 1,
+    "done": true,
+    "secondDrain": [],
+    "observedDelta": 0,
+    "firstDrain": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivAcked",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "parallel duplicate deliveries store one receipt and one effect",
+   "pass": true,
+   "detail": {
+    "identical": {
+     "200": 25
+    },
+    "variants": [
+     200,
+     400,
+     400,
+     400,
+     400,
+     400,
+     400,
+     400,
+     400,
+     400
+    ],
+    "receiptsParallel": 1,
+    "receiptsRace": 1,
+    "observedDelta": 2,
+    "drain": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivParallel",
+      "result": "applied"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_ivRace",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ack loss after ledger write: financial state equals a clean drain; only audit rows differ",
+   "pass": true,
+   "detail": {
+    "docAfterAckLoss": {
+     "_id": "kd733rbzyb3vfrgthzxywhpw5x8f5wam",
+     "adjustmentsComplete": true,
+     "amountMinor": 100,
+     "binding": "j9744n617eczd9x2j5mcr2dssn8f5r1k",
+     "creditedMinor": 0,
+     "currency": "usd",
+     "customer": "m174fwbs19qnxp5d1pm32ddz0h8f46x9",
+     "customerName": "IV Ain_ivA",
+     "externalId": "in_ivA",
+     "kind": "invoice",
+     "org": "n973q5nf1qdsvdgwx5xvxm7wgn8f511c",
+     "paidMinor": 100,
+     "refundedMinor": 0,
+     "retentionUntil": 1821964917017,
+     "snapshotHash": "2609cdc114b0da5702357e75ddc3b37971e38259ea021acb1d10c7dea4aa2427",
+     "state": "paid"
+    },
+    "docAfterCleanUpdate": {
+     "_id": "kd733rbzyb3vfrgthzxywhpw5x8f5wam",
+     "adjustmentsComplete": true,
+     "amountMinor": 100,
+     "binding": "j9744n617eczd9x2j5mcr2dssn8f5r1k",
+     "creditedMinor": 0,
+     "currency": "usd",
+     "customer": "m174fwbs19qnxp5d1pm32ddz0h8f46x9",
+     "customerName": "IV Ain_ivA",
+     "externalId": "in_ivA",
+     "kind": "invoice",
+     "org": "n973q5nf1qdsvdgwx5xvxm7wgn8f511c",
+     "paidMinor": 100,
+     "refundedMinor": 0,
+     "retentionUntil": 1821964917017,
+     "snapshotHash": "2609cdc114b0da5702357e75ddc3b37971e38259ea021acb1d10c7dea4aa2427",
+     "state": "paid"
+    },
+    "epochs": [
+     7,
+     8
+    ],
+    "observedMidToAfter": 1,
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivPaid",
+      "result": "item_error",
+      "code": "retryable_error"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_ivPaid",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "A-signed event naming B invoice is refused and closed, B untouched, B account never read",
+   "pass": true,
+   "detail": {
+    "status": 200,
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivCross",
+      "result": "refused",
+      "code": "unbound_document"
+     }
+    ],
+    "refusedOnA": 1,
+    "newReads": []
+   }
+  },
+  {
+   "name": "oversized, malformed and type-confused bodies refused with no receipt",
+   "pass": true,
+   "detail": {
+    "statuses": {
+     "oversized": 400,
+     "notJson": 400,
+     "nullBody": 400,
+     "arrayBody": 400,
+     "numericObjectId": 400,
+     "missingId": 400,
+     "liveMode": 400,
+     "arrayAccount": 400,
+     "paddedAccount": 400,
+     "protoAccount": 400
+    },
+    "receiptDelta": 0
+   }
+  },
+  {
+   "name": "signature timestamp window is 300s both directions; header shape edges",
+   "pass": true,
+   "detail": {
+    "past295": 200,
+    "past305": 400,
+    "future295": 200,
+    "future305": 400,
+    "twoV1OneGood": 200,
+    "v0Only": 400,
+    "noHeader": 400,
+    "signedWithoutTimestampPrefix": 400
+   }
+  },
+  {
+   "name": "backend down: receiver returns non-2xx and stores nothing; redelivery after recovery stores once",
+   "pass": true,
+   "detail": {
+    "whileDown": 400,
+    "afterRecovery": 200,
+    "receiptsAfter": 1
+   }
+  },
+  {
+   "name": "transient provider failure is retried, not refused or acknowledged",
+   "pass": true,
+   "detail": {
+    "first": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivTransient",
+      "result": "retry",
+      "code": "retryable_error",
+      "attempts": 1
+     }
+    ],
+    "second": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivTransient",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "B adapter token cannot refuse or list A receipts",
+   "pass": true,
+   "detail": {
+    "refuseErr": "[Request ID: b50d03d3d7098db6] Server Error\nUncaught ConvexError: {\"code\":\"adapter_denied\"}\n    at fail (../convex/callb",
+    "readErr": "[Request ID: b8e29f0ada6a5183] Server Error\nUncaught ConvexError: {\"code\":\"adapter_denied\"}\n    at fail (../convex/callb",
+    "stillPending": true
+   }
+  },
+  {
+   "name": "tenant B financial export unchanged through attacks 1-11 (B had no own events yet)",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "name": "drain isolates a failing merchant from other merchants",
+   "pass": true,
+   "detail": {
+    "threw": null,
+    "bDone": true,
+    "outcomes": [
+     {
+      "merchant": "A",
+      "result": "merchant_error",
+      "code": "adapter_denied"
+     },
+     {
+      "merchant": "B",
+      "eventId": "evt_ivIsolated",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "liveness: provider-404 receipts are closed or skipped so later receipts still drain",
+   "pass": true,
+   "detail": {
+    "deliveries200": 100,
+    "firstDrain": {
+     "refused": 100
+    },
+    "laterReceiptDone": true,
+    "laterDrainTouchedIt": true,
+    "receiptsQueryUsable": true
+   }
+  },
+  {
+   "name": "R2-0 redaction mode as configured",
+   "pass": true,
+   "detail": {
+    "REDACT": true,
+    "msg": "[Request ID: redacted] Server Error"
+   }
+  },
+  {
+   "name": "R2-1 per-receipt isolation: failing ack on one receipt, next still applied, first applied later",
+   "pass": true,
+   "detail": {
+    "o1": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Item1",
+      "result": "item_error",
+      "code": "retryable_error"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Item2",
+      "result": "applied"
+     }
+    ],
+    "o2": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Item1",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R2-2 revoked merchant in the middle: merchant_error adapter_denied, later merchant drains",
+   "pass": true,
+   "detail": {
+    "threw": null,
+    "o": [
+     {
+      "merchant": "X",
+      "result": "merchant_error",
+      "code": "adapter_denied"
+     },
+     {
+      "merchant": "B",
+      "eventId": "evt_r2Mid",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R2-3 classify matches the stated rule for 400/402/404 final and 408/409/429/5xx/network/timeout/unknown retryable",
+   "pass": true,
+   "detail": {
+    "s400": {
+     "final": true,
+     "code": "provider_400_parameter_invalid_empty"
+    },
+    "s402": {
+     "final": true,
+     "code": "provider_402_card_declined"
+    },
+    "s404": {
+     "final": true,
+     "code": "provider_404_resource_missing"
+    },
+    "s408": {
+     "final": false,
+     "code": "provider_408"
+    },
+    "s409": {
+     "final": false,
+     "code": "provider_409"
+    },
+    "s429": {
+     "final": false,
+     "code": "provider_429"
+    },
+    "s500": {
+     "final": false,
+     "code": "provider_500"
+    },
+    "s502": {
+     "final": false,
+     "code": "provider_502"
+    },
+    "s503": {
+     "final": false,
+     "code": "provider_503"
+    },
+    "fetchTypeError": {
+     "final": false,
+     "code": "retryable_error"
+    },
+    "abortTimeout": {
+     "final": false,
+     "code": "retryable_error"
+    },
+    "outcomeUnknown": {
+     "final": false,
+     "code": "retryable_error"
+    },
+    "assertion": {
+     "final": true,
+     "code": "provider_response_refused"
+    },
+    "redactedPlain": {
+     "final": false,
+     "code": "retryable_error"
+    },
+    "convexCode": {
+     "final": false,
+     "code": "adapter_denied"
+    }
+   }
+  },
+  {
+   "name": "R2-3b platform credential/permission failures (401, 403) are not final for the event",
+   "pass": true,
+   "detail": {
+    "s401": {
+     "final": false,
+     "pause": "platform",
+     "code": "provider_401"
+    },
+    "s403": {
+     "final": false,
+     "pause": "platform",
+     "code": "provider_403_account_invalid"
+    }
+   }
+  },
+  {
+   "name": "R2-3c classify tolerates non-Error throws",
+   "pass": true,
+   "detail": {
+    "stringThrown": {
+     "final": false,
+     "code": "internal_error"
+    },
+    "numberThrown": {
+     "final": false,
+     "code": "internal_error"
+    },
+    "nullThrown": {
+     "final": false,
+     "code": "internal_error"
+    }
+   }
+  },
+  {
+   "name": "R2-4 (ruling) 401 pauses the pass; the 429 receipt stays open, is deferred once the key recovers, and applies after the rate limit clears",
+   "pass": true,
+   "detail": {
+    "o": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Auth",
+      "result": "paused",
+      "scope": "platform",
+      "code": "provider_401"
+     }
+    ],
+    "o2": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Auth",
+      "result": "refused",
+      "code": "provider_404_resource_missing"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Rate",
+      "result": "retry",
+      "code": "provider_429",
+      "attempts": 1
+     }
+    ],
+    "o3": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r2Rate",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R2-4b integrated 401 (expired or rotated platform key) does not permanently close the receipt",
+   "pass": true,
+   "detail": {
+    "done": false
+   }
+  },
+  {
+   "name": "R2-5 exponential backoff 30/60/120/240s, closed as failed at attempt 5 with one audit row, newer receipt not starved",
+   "pass": true,
+   "detail": {
+    "trace": [
+     {
+      "label": "first",
+      "dt": 0,
+      "result": "retry",
+      "attempts": 1
+     },
+     {
+      "label": "early",
+      "dt": 1000,
+      "result": "skipped"
+     },
+     {
+      "label": "just before 30s",
+      "dt": 29999,
+      "result": "skipped"
+     },
+     {
+      "label": "at 30s",
+      "dt": 30000,
+      "result": "retry",
+      "attempts": 2
+     },
+     {
+      "label": "just before +60s",
+      "dt": 89999,
+      "result": "skipped"
+     },
+     {
+      "label": "at +60s",
+      "dt": 90000,
+      "result": "retry",
+      "attempts": 3
+     },
+     {
+      "label": "at +120s",
+      "dt": 210000,
+      "result": "retry",
+      "attempts": 4
+     },
+     {
+      "label": "just before +240s",
+      "dt": 449999,
+      "result": "skipped"
+     },
+     {
+      "label": "at +240s",
+      "dt": 450000,
+      "result": "failed",
+      "attempts": 5
+     },
+     {
+      "label": "much later",
+      "dt": 5000000,
+      "result": "skipped"
+     }
+    ],
+    "done": true,
+    "failedAudit": 1,
+    "newerApplied": true,
+    "docAfterFailure": {
+     "state": "issued",
+     "adjustmentsComplete": false
+    }
+   }
+  },
+  {
+   "name": "R2-6 non-invoice types refused unsupported_event_type, invoice event naming a charge refused unbound_document, zero provider reads",
+   "pass": true,
+   "detail": {
+    "statuses": [
+     200,
+     200,
+     200,
+     200,
+     200,
+     200,
+     200
+    ],
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r2T_charge.refunded",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2T_charge.dispute.created",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2T_credit_note.created",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2T_customer.subscription.updated",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2T_invoice_payment.paid",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2T_invoiceitem.created",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r2ChargeAsInvoice",
+      "result": "refused",
+      "code": "unbound_document"
+     }
+    ],
+    "newReads": 0
+   }
+  },
+  {
+   "name": "R2-7 each new function refuses with the expected ConvexError code through redaction",
+   "pass": true,
+   "detail": {
+    "refuseBadCode": "invalid_code",
+    "deferBadCode": "invalid_code",
+    "prepareWrongTenant": "adapter_denied",
+    "deferWrongTenant": "adapter_denied",
+    "dueWrongTenant": "adapter_denied",
+    "parkNoIngress": "ingress_denied",
+    "parkBadAccount": "invalid_account",
+    "parkBoundAccount": "account_bound",
+    "parkedNoIngress": "ingress_denied"
+   }
+  },
+  {
+   "name": "R2-8 unbound account parked once with one alert; bound-in-DB account missing from receiver config gets 400; no financial effect",
+   "pass": true,
+   "detail": {
+    "statuses": [
+     200,
+     200,
+     200
+    ],
+    "rows": [
+     {
+      "account": "acct_r2Unbound",
+      "eventId": "evt_r2Park",
+      "type": "invoice.paid"
+     }
+    ],
+    "alert": {
+     "account": "acct_r2Unbound",
+     "active": true,
+     "count": 1,
+     "kind": "parked"
+    },
+    "boundElsewhereStatus": 400
+   }
+  },
+  {
+   "name": "R2-9 at 501 the event gets 200, is not stored, and raises a park_overflow alert; rows stay 500",
+   "pass": true,
+   "detail": {
+    "statuses": [
+     200,
+     200,
+     200
+    ],
+    "rows": 500,
+    "overflowAlert": {
+     "account": "acct_r2Over",
+     "active": true,
+     "count": 3,
+     "kind": "park_overflow"
+    },
+    "alertRowsShown": 8,
+    "dupAtCap": {
+     "duplicate": true,
+     "parked": false
+    }
+   }
+  },
+  {
+   "name": "R2-10 frozen schema deployed unchanged and callback tables are purely additive",
+   "pass": true,
+   "detail": {
+    "added": [
+     "callbackIngress",
+     "callbackParked",
+     "callbackAlerts",
+     "callbackRetries",
+     "callbackCursors"
+    ],
+    "overlap": []
+   }
+  },
+  {
+   "name": "R2 tenant B finance unchanged through parking, cap and schema attacks (R2-8 to R2-10)",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "name": "R3-1 403 on one merchant pauses only it, one probe per drain, no attempts, open receipts applied after recovery, alert resolved",
+   "pass": false,
+   "detail": {
+    "o1": [
+     {
+      "merchant": "B",
+      "eventId": "evt_r3B403",
+      "result": "paused",
+      "scope": "platform",
+      "code": "provider_403_account_invalid"
+     }
+    ],
+    "probesIn3Drains": 3,
+    "bItems": [
+     {
+      "attempts": 0,
+      "eventId": "evt_r3B403",
+      "externalId": "in_r3B403",
+      "id": "m57arvv8vv6ky88xy29ez10tns8f5687",
+      "type": "invoice.updated"
+     },
+     {
+      "attempts": 0,
+      "eventId": "evt_r3B403b",
+      "externalId": "in_r3B403",
+      "id": "m5743dwjdtbkfq14ep59f3wc758f5rar",
+      "type": "invoice.updated"
+     }
+    ],
+    "platform": {
+     "account": "platform",
+     "active": true,
+     "count": 2,
+     "kind": "provider_paused"
+    },
+    "o4": [
+     {
+      "merchant": "B",
+      "eventId": "evt_r3B403",
+      "result": "applied"
+     },
+     {
+      "merchant": "B",
+      "eventId": "evt_r3B403b",
+      "result": "applied"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_r3A1",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R3-2 401 pauses every merchant (B not read), then 403 on B only; alerts: platform resolved by A success, B episode counted and resolved",
+   "pass": false,
+   "detail": {
+    "o1": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r3Mix",
+      "result": "paused",
+      "scope": "platform",
+      "code": "provider_401"
+     }
+    ],
+    "readsB1": 0,
+    "platform1": {
+     "account": "platform",
+     "active": true,
+     "count": 3,
+     "kind": "provider_paused"
+    },
+    "o2": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r3Mix",
+      "result": "applied"
+     },
+     {
+      "merchant": "B",
+      "eventId": "evt_r3MixB",
+      "result": "paused",
+      "scope": "platform",
+      "code": "provider_403_account_invalid"
+     }
+    ],
+    "platform2": {
+     "account": "platform",
+     "active": true,
+     "count": 4,
+     "kind": "provider_paused"
+    },
+    "o3": [
+     {
+      "merchant": "B",
+      "eventId": "evt_r3MixB",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R3-3 flapping 401: one alert count per episode, alert resolved, all receipts applied once, none refused or failed",
+   "pass": true,
+   "detail": {
+    "drains": [
+     [
+      "paused:Flap0"
+     ],
+     [
+      "paused:Flap0"
+     ],
+     [
+      "applied:Flap0",
+      "applied:Flap1",
+      "applied:Flap2",
+      "applied:lapX0",
+      "applied:lapX1",
+      "applied:lapX2"
+     ],
+     [
+      "paused:lapX3"
+     ],
+     [
+      "applied:lapX3",
+      "applied:lapX4"
+     ],
+     [
+      "applied:lapX5"
+     ]
+    ],
+    "episodes": 2,
+    "alert": {
+     "account": "platform",
+     "active": false,
+     "count": 6,
+     "kind": "provider_paused"
+    }
+   }
+  },
+  {
+   "name": "R3-4 sweep reads only the swept merchant account, completes the flagged invoice; cross-tenant stale refused",
+   "pass": true,
+   "detail": {
+    "o": [
+     {
+      "merchant": "A",
+      "externalId": "in_ivGone",
+      "result": "still_incomplete",
+      "code": "provider_404_resource_missing"
+     },
+     {
+      "merchant": "A",
+      "externalId": "in_r2Auth",
+      "result": "completed"
+     },
+     {
+      "merchant": "A",
+      "externalId": "in_r2Flaky",
+      "result": "still_incomplete",
+      "code": "provider_404_resource_missing"
+     },
+     {
+      "merchant": "A",
+      "externalId": "in_r3A1",
+      "result": "completed"
+     }
+    ],
+    "bReads": 0,
+    "cross": "adapter_denied"
+   }
+  },
+  {
+   "name": "R3-5 rotating sweep cursor reaches a recoverable invoice behind permanently failing ones",
+   "pass": true,
+   "detail": {
+    "passes": 4,
+    "seen": [
+     [
+      "in_ivGone:still_incomplete",
+      "in_r2Flaky:still_incomplete"
+     ],
+     [
+      "S0:still_incomplete",
+      "S1:still_incomplete"
+     ],
+     [
+      "S2:still_incomplete",
+      "S3:still_incomplete"
+     ],
+     [
+      "S4:still_incomplete",
+      "SZ:completed"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "R3-6 sweep racing drain converges: invoice complete, all race receipts closed, none refused or failed",
+   "pass": true,
+   "detail": {
+    "rounds": [
+     {
+      "drain": [
+       "retry:retryable_error"
+      ],
+      "sweep": [
+       "completed:"
+      ]
+     },
+     {
+      "drain": [
+       "applied:"
+      ],
+      "sweep": [
+       "still_incomplete:retryable_error"
+      ]
+     },
+     {
+      "drain": [
+       "retry:retryable_error"
+      ],
+      "sweep": [
+       "completed:"
+      ]
+     },
+     {
+      "drain": [
+       "retry:retryable_error"
+      ],
+      "sweep": [
+       "completed:"
+      ]
+     },
+     {
+      "drain": [
+       "applied:"
+      ],
+      "sweep": [
+       "still_incomplete:retryable_error"
+      ]
+     }
+    ],
+    "doc": {
+     "state": "open",
+     "complete": true
+    }
+   }
+  },
+  {
+   "name": "R3-7 sweep honours pause scope: 401 stops all merchants, 403 on A still sweeps B; recovery completes both",
+   "pass": false,
+   "detail": {
+    "o1": [
+     {
+      "merchant": "A",
+      "externalId": "in_ivGone",
+      "result": "paused",
+      "scope": "platform",
+      "code": "provider_401"
+     }
+    ],
+    "b1": 0,
+    "o2": [
+     {
+      "merchant": "A",
+      "externalId": "in_ivGone",
+      "result": "paused",
+      "scope": "platform",
+      "code": "provider_403_account_invalid"
+     }
+    ],
+    "b2": 0,
+    "o3": [
+     {
+      "merchant": "A",
+      "externalId": "in_ivGone",
+      "result": "still_incomplete",
+      "code": "provider_404_resource_missing"
+     },
+     {
+      "merchant": "A",
+      "externalId": "in_r2Flaky",
+      "result": "still_incomplete",
+      "code": "provider_404_resource_missing"
+     },
+     {
+      "merchant": "A",
+      "externalId": "in_r3A1",
+      "result": "completed"
+     },
+     {
+      "merchant": "B",
+      "externalId": "in_r3B403",
+      "result": "completed"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R3-8 concurrent deliveries and drains strand no receipt behind the watermark; a new receipt drains next pass",
+   "pass": true,
+   "detail": {
+    "accepted": 300,
+    "afterBurst": {
+     "open": 198,
+     "scheduled": 198,
+     "codes": [
+      "admitted",
+      "retryable_error"
+     ],
+     "stranded": 0
+    },
+    "quiesceRounds": 2,
+    "afterQuiesce": {
+     "open": 0,
+     "scheduled": 0,
+     "codes": [],
+     "stranded": 0
+    },
+    "stillOpen": 0
+   }
+  },
+  {
+   "name": "R3-9 newer receipt behind 250 new receipts is reached in FIFO within 4 drains",
+   "pass": true,
+   "detail": {
+    "drainsUntilReached": 3
+   }
+  },
+  {
+   "name": "R3-10 backward clock jump keeps backoff; forward jumps can close a receipt within seconds, and the sweep then completes the invoice",
+   "pass": true,
+   "detail": {
+    "first": [
+     {
+      "merchant": "A",
+      "eventId": "evt_r3Clock",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 1
+     }
+    ],
+    "forwardJumps": [
+     [
+      "retry:2"
+     ],
+     [
+      "retry:3"
+     ],
+     [
+      "retry:4"
+     ],
+     [
+      "failed:5"
+     ],
+     []
+    ],
+    "wallMs": 74,
+    "sweep": [
+     {
+      "merchant": "A",
+      "externalId": "in_r3Clock",
+      "result": "completed"
+     }
+    ]
+   }
+  },
+  {
+   "name": "R3-11 a final refusal after a provider read leaves the invoice flagged and the sweep completes it after recovery",
+   "pass": true,
+   "detail": {
+    "refused": {
+     "merchant": "A",
+     "eventId": "evt_r3Assert",
+     "result": "refused",
+     "code": "provider_response_refused"
+    },
+    "flagged": false,
+    "sweep": [
+     {
+      "merchant": "A",
+      "externalId": "in_r3Assert",
+      "result": "completed"
+     }
+    ],
+    "after": true
+   }
+  }
+ ],
+ "observations": [
+  {
+   "name": "charge.refunded for bound account B (charge id, not invoice id)",
+   "status": 200,
+   "outcome": {
+    "merchant": "B",
+    "eventId": "evt_ivRefund",
+    "result": "refused",
+    "code": "unsupported_event_type"
+   },
+   "receiptClosed": true,
+   "observedDelta": 0
+  },
+  {
+   "name": "parked duplicate with a different body is accepted as duplicate (no digest comparison)",
+   "status": 200,
+   "keptType": "invoice.paid"
+  },
+  {
+   "name": "R3-12 event before attachProvider: refused unbound_document, not flagged, not swept",
+   "outcome": {
+    "merchant": "A",
+    "eventId": "evt_r3Early",
+    "result": "refused",
+    "code": "unbound_document"
+   },
+   "swept": false,
+   "docComplete": null
+  }
+ ],
+ "providerReads": {
+  "total": 10831,
+  "byAccount": {
+   "acct_ivA": 10803,
+   "acct_ivB": 28
+  }
+ },
+ "finishedAt": "2026-09-26T13:22:52.705Z"
+}

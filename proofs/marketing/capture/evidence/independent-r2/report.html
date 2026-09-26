@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Independent check r2: capture and callback recovery</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style></head><body>
+<h1>Independent check r2: capture and callback recovery</h1>
+<div class="meta">2026-09-25 · scope: bounded P2 capture/callback SERVICE slice, exact source ed85fc27…af1 · verdict: <b>PASS</b> (bounded slice) · checked by the same independent Opus 5.5 verifier as round 1, not the builder</div>
+
+<div class="decisions"><h2>Your calls</h2><ul>
+<li>None for this slice. The production limits below stay open for later P2 work.</li>
+</ul></div>
+
+<div class="status"><h2>Done and proven</h2><ul>
+<li>Only <code>receiver.test.mjs</code> and <code>callback-replay.mjs</code> changed from round 1. The archived r1 copies match the old hashes. Runtime receiver, importer and native code are byte-identical.</li>
+<li>Receiver tests pass 3/3 and the combined checks pass 20/20 (exit 0).</li>
+<li>I reran my 9 receiver mutants in a new scratch folder. 8 meaningful ones now fail the suite; in round 1 only 5 did. The duplicate-header-count mutant still passes the suite, but a raw request still gets 401 and stores nothing, because the signature regex refuses the joined header.</li>
+<li>Callback replay independent-r2 passed (exit 0). Each tenant got one signed whitespace variant with a foreign origin header, stored under its configured tenant (A 4→5, B 2→3). Every stored row carries its own tenant. Each receiver was SIGKILLed and restarted and kept its exact receipts, and a duplicate adds nothing.</li>
+<li>Native tenant A and B data did not change: counters, suppression, max IDs, domain digests, hooks and web config. The 16 candidate files and the prior 10/7/57 sets are identical before and after.</li>
+<li>No runtime bug found in the bounded slice.</li>
+</ul></div>
+
+<h2>Before and after</h2>
+<table><tr><th>Check</th><th>Before</th><th>After</th></tr>
+<tr><td>Source aggregate</td><td>r1 85863e6c…9e80</td><td>ed85fc277d0b41f23a4ae239d5001d15898388160795fd335be6a6f334a09af1 (2 test files changed)</td></tr>
+<tr><td>Receiver mutants caught</td><td>5 of 9 (round 1)</td><td>8 of 9. The ninth is the redundant header-count mutant.</td></tr>
+<tr><td>Receipts A / B</td><td>4 / 2</td><td>5 / 3, all rows tagged with their configured tenant</td></tr>
+<tr><td>Native A/B domain, counters, config</td><td colspan="2">Unchanged (<a href="native-before.json">before</a>, <a href="native-after.json">after</a>). Only the receivers' StartedAt changed.</td></tr>
+<tr><td>Earlier evidence (71 files)</td><td colspan="2">Unchanged, except root's builder <code>capture/evidence/report.html</code>, which changed during this run. I didn't write it. My round-1 files in <code>independent/</code> are unchanged.</td></tr>
+</table>
+
+<h2>Receiver mutants</h2>
+<table><tr><th>Mutant</th><th>Result</th></tr><tr><td>baseline</td><td>passes suite</td></tr><tr><td>no-hmac-compare</td><td>fails suite</td></tr><tr><td>insert-not-idempotent</td><td>fails suite</td></tr><tr><td>ack-despite-storage-failure</td><td>fails suite</td></tr><tr><td>no-size-cap</td><td>fails suite</td></tr><tr><td>no-content-type-check</td><td>fails suite</td></tr><tr><td>no-json-object-check</td><td>fails suite</td></tr><tr><td>no-duplicate-signature-header-check</td><td>passes suite</td></tr><tr><td>no-fatal-utf8</td><td>fails suite</td></tr><tr><td>tenant-from-origin-header</td><td>fails suite</td></tr></table>
+
+<h2>Exact commands</h2>
+<pre>cd proofs/marketing
+node --test capture/receiver.test.mjs                                   # exit 0, 3/3
+node --test capture/receiver.test.mjs mime.test.mjs mime-oracle.test.mjs \
+  mime-sink.test.mjs publishing/server.test.mjs                         # exit 0, 20/20
+python3 &lt;new scratch&gt;/rmut/run.py …                                     # 9 mutants
+node proofs/marketing/capture/callback-replay.mjs independent-r2        # exit 0</pre>
+<p>Files: <a href="receiver-test.txt">receiver tests</a>, <a href="combined-tests.txt">combined</a>, <a href="receiver-mutants.json">mutants</a>, <a href="duplicate-header-raw.txt">raw duplicate header</a>, <a href="callback-replay-console.txt">replay console</a>, <a href="../callback-replay-independent-r2.json">replay result</a>, <a href="receipt-tenants.json">receipt tenant labels</a>, <a href="hashes-before.json">hashes before</a> / <a href="hashes-after.json">after</a>.</p>
+
+<h2>Still open (not claimed)</h2>
+<ul>
+<li>The importer harness (28 Convex cases and 5 mutants) sits in <code>evidence/independent/importer-mutants</code>. I didn't rerun it this round. It's untracked in git right now and isn't wired to CI.</li>
+<li>Late-ID concurrency skip (analysis only). Stale consent reads can overwrite a suppression. The 100-capture cap wedges the instance. Non-ASCII keys are refused.</li>
+<li>No scheduler, callback consumer or CRM applyChange integration. Provider-history rollback, native identity overwrite, deletion and redelivery, production auth, rate limits and LIVE all remain open. I1 was not touched.</li>
+<li>I don't certify root's own native effects, resource declarations or the receipts root added before this run beyond what I observed here.</li>
+</ul>
+
+<h2>Who checked</h2>
+<p>This is the same independent Claude Opus 5.5 verifier session as round 1 (resumed). It never built this slice and delegated nothing. I made no source edits, sent no mail, ran no workers, touched no production, reset nothing and output no secrets. Levels: SIM identities and SERVICE receivers/native, nothing LIVE. Private scratch is kept in <code>$TMPDIR/remold-capture-iv-r2.*</code>.</p>
+
+<h2>Source hashes (16)</h2>
+<table><tr><th>File</th><th>SHA256</th></tr><tr><td><code>capture/allow-callbacks.mjs</code></td><td><code>d4207cd75936ace2985fa4f11ab54194d4f3963f9ab0953812bbf5b0ced8b98a</code></td></tr><tr><td><code>capture/callback-fixture.mjs</code></td><td><code>026d1aaf31148cc1816b344d28c4d00aa0eef8be53f08c35c3d4fd317520d59e</code></td></tr><tr><td><code>capture/callback-replay.mjs</code></td><td><code>8dd2afeeb3fac091498308f55213486d27482a77c01a284d1a80aaad210af4f9</code></td></tr><tr><td><code>capture/local/convex/importer.ts</code></td><td><code>44eb4313c601404f6bf207bbaebdc986a754b4101516313845aaaaf07ff7f1b5</code></td></tr><tr><td><code>capture/local/convex/schema.ts</code></td><td><code>c754a154e4b181bbe601b7ec50d32557bc43b373eff82fc4fcdc156b5c187121</code></td></tr><tr><td><code>capture/local/convex/tsconfig.json</code></td><td><code>3e974e3d8eb896290c6a1d6c71a003966cdd37adc8773e40007ce2455dc61e28</code></td></tr><tr><td><code>capture/local/convex.json</code></td><td><code>dd3ba7397bb34b37a2475660f4b1658b4a3836da713b71f82644f731af15aeea</code></td></tr><tr><td><code>capture/local/package.json</code></td><td><code>c7f9095c43ea9868d5120274a13ed8277caa2ab0acadbaf931f528d2129c2aa5</code></td></tr><tr><td><code>capture/native.mjs</code></td><td><code>0edb182cc483c64f507a7884a2221f5eb0962a314cc6af575b0e3d77acefa85a</code></td></tr><tr><td><code>capture/outage.mjs</code></td><td><code>59ad11350d831bb7919d75f4358eaffa1e49fca4ef58b12363051388d796ed08</code></td></tr><tr><td><code>capture/read-replay.mjs</code></td><td><code>daeb978ee2b60a76770f79df062b1840cc8e1259f0fa5fe66798f6d6531e25cb</code></td></tr><tr><td><code>capture/readback.mjs</code></td><td><code>e0b6a10c6e1c48e5f534e4a8daedfd6523dfee95068ab68efdd6dbc437c20cbc</code></td></tr><tr><td><code>capture/receiver.mjs</code></td><td><code>4157db7077602ef7cd336b44c7b853f6600bd41f79849498e5a04dde0c86c5b2</code></td></tr><tr><td><code>capture/receiver.test.mjs</code></td><td><code>d54ce4530acb65ce1d174cc20d3508e7378b5a0db98cd72e34170339b52f046a</code></td></tr><tr><td><code>capture/run.mjs</code></td><td><code>a21be47fdd253c4b071eaaa6d53efbc5d1835ffecc8a02df846fc11a3e9de1eb</code></td></tr><tr><td><code>capture/setup-receivers.mjs</code></td><td><code>3955f7f31634fb93af80e3c16fea8aa7239be8b0d86f8c9da086173438217352</code></td></tr></table>
+</body></html>

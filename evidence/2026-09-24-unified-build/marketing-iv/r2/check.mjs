@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {docker,directory,prefix} from '../../../../proofs/marketing/runtime.mjs';
+const read=path=>JSON.parse(readFileSync(new URL(path,import.meta.url)));
+const hash=value=>createHash('sha256').update(value).digest('hex');
+const before=read('./before-source.json');
+for(const [path,sha] of Object.entries(before.files))assert.equal(hash(readFileSync(directory+path)),sha,path);
+for(const [path,sha] of Object.entries(before.files).filter(([p])=>p.startsWith('plugin/'))){
+  const installed='/var/www/html/docroot/plugins/RemoldGuardBundle/'+path.slice(7);
+  assert.equal(hash(docker(['exec',prefix+'-web-a','cat',installed])),sha,path);
+  docker(['exec',prefix+'-web-a','php','-l',installed]);
+}
+assert.equal(hash(docker(['exec',prefix+'-bridge','cat','/bridge.mjs'])),before.files['bridge.mjs']);
+assert.equal(docker(['network','inspect','--format','{{.Internal}}',prefix]).trim(),'true');
+const safety=read('./after-safety.json').results;
+assert.deepEqual(safety.map(x=>[x.scenario,x.deliveries,x.operationState]),[['unapproved',0,'proposed'],['deliver',1,'confirmed'],['revoke',0,'paused'],['kill',0,'outcomeUnknown']]);
+assert.equal(safety.find(x=>x.scenario==='kill').workerKilled,true);
+const reliability=read('./after-reliability.json').results;
+assert.equal(reliability.length,5);assert(reliability.every(x=>x.status==='PASS'));
+const refused=reliability.find(x=>x.scenario==='sink-refused');
+assert.equal(refused.after.transportAccepted,0);assert.equal(refused.after.h0Receipts,0);assert.equal(refused.after.operation,'outcomeUnknown');
+assert.equal(reliability.find(x=>x.scenario==='late-approval').beforeApproval,'sealed');
+assert(reliability.find(x=>x.scenario==='lost-response').transportFailures>0);
+const concurrent=reliability.find(x=>x.scenario==='concurrent-workers');
+assert.equal(concurrent.workersSimultaneous,2);assert.equal(concurrent.duplicateQueueFault,true);
+assert.equal(concurrent.after.deliveries,1);assert.equal(concurrent.after.h0Receipts,1);
+const restart=read('./restart-result.json');assert.equal(restart.status,'PASS');
+assert.equal(restart.beforeRestart.h0Receipts,0);assert.equal(restart.beforeRestart.transportAccepted,0);
+assert.equal(restart.afterRestartBeforeRetry.h0Receipts,0);assert.equal(restart.afterRestartBeforeRetry.deliveries,1);
+assert.equal(restart.afterExtraWorkers.h0Receipts,1);assert.equal(restart.afterExtraWorkers.deliveries,1);
+const result={status:'APPROVE bounded SERVICE reliability repair',source:before.aggregate,files:42,installedPluginAndBridgeMatch:true,phpSyntaxPass:true,internalNetwork:true,originalRegressionGroups:7,reliabilityGroups:5,strictRestartGroup:1,typecheckExit:0,realMail:0,limits:['hash-reported synthetic sink, no MIME delivery','single bridge process','consumed/no-receipt holds remain unresolved','full P2 and D0M open']};
+writeFileSync(new URL('./verdict.json',import.meta.url),JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result,null,2));

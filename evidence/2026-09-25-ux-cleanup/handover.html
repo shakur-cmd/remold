@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold cleanup: UX, visuals and code</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 1100px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  td img { width: 100%; display: block; }
+  .phones img { width: 190px; margin-right: 8px; border: 1px solid #ddd; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Remold cleanup: UX, visuals and code</h1>
+<div class="meta">2026-09-25 · scope: web app (src/) only · branch <code>ux/cleanup-2026-09-25</code> · status: Fable pleased, awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Merge the draft PR into <code>build/unified-remold-2026-09-24</code>? It touches only the web app, not the backend.</li>
+  <li>Money shows in US dollars (only the standard Amount field). Fine for the US price test; it needs a setting before the first non-US customer.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li><b>Fable 5.1 said PLEASED</b> in round 3, after passing all 14 items on its own checklist in round 2 (<a href="fable-round-2.md">round 2</a>, <a href="fable-round-3.md">round 3</a>). Its round-2 "not yet" was about money formatting, which is now fixed.</li>
+  <li><b>New look:</b> warm paper background, dark ink, one teal accent used once per screen. Same layout on phones (see the phone shots below).</li>
+  <li><b>Board:</b> each stage shows a count and a money total, and deals untouched for 14+ days get an amber "20 days quiet" flag. Other numbers keep their name, e.g. "19.5 hours".</li>
+  <li><b>Record page:</b> suggestions and the next step now sit above the history. You can tick the task done right there (the database shows done = true afterwards).</li>
+  <li><b>Tables:</b> no more "·" placeholders, and empty columns are hidden. Dates read "Sep 22, 2026" and amounts read "$4,500". Ticking the Done box on Tasks completes the task (checked in the database).</li>
+  <li><b>New-record form:</b> shows 4 fields plus "Show 2 more". The company list opens only when you click into it. A person created this way was saved with the right company (checked in the database).</li>
+  <li><b>Search:</b> the first result is highlighted before you press anything. Arrow keys move the highlight and Enter opens the record (tested).</li>
+  <li><b>Suggestions:</b> Apply changed the record in the database (Denver to Boulder). Applied items shrink to one line each.</li>
+  <li><b>Settings:</b> fields are renamed inline instead of in a browser popup (tested both ways). Agent permissions are now a grid with column headers, and the new-key panel has copy buttons.</li>
+  <li><b>Bug fixed:</b> the sidebar "New object" link lit up on Settings. It's gone; objects are created in Settings.</li>
+  <li><b>Smaller code:</b> the web app is 221 lines smaller (886 added, 1,107 removed), plus 52 fewer lines of CSS. Removed: 5 unused packages, leftover Vite template images, unused UI parts, and a stale committed build folder.</li>
+  <li><b>Checks:</b> typecheck, 73 tests (8 new, for the date, money and key helpers) and the production build all pass.</li>
+</ul>
+</div>
+
+<h2>Before and after (same workspace, same 1853x801 window)</h2>
+<p>Left is before, right is after. Click any image to see it full size.</p>
+<table>
+<tr><th>Before</th><th>After</th></tr>
+<tr><td colspan="2"><b>Today</b></td></tr><tr><td><a href="shots/b-today.png"><img src="shots/b-today.png"></a></td><td><a href="shots/a-today.png"><img src="shots/a-today.png"></a></td></tr>
+<tr><td colspan="2"><b>People list</b></td></tr><tr><td><a href="shots/b-person.png"><img src="shots/b-person.png"></a></td><td><a href="shots/a-person.png"><img src="shots/a-person.png"></a></td></tr>
+<tr><td colspan="2"><b>Companies list</b></td></tr><tr><td><a href="shots/b-company.png"><img src="shots/b-company.png"></a></td><td><a href="shots/a-company.png"><img src="shots/a-company.png"></a></td></tr>
+<tr><td colspan="2"><b>Opportunities table</b></td></tr><tr><td><a href="shots/b-opportunity.png"><img src="shots/b-opportunity.png"></a></td><td><a href="shots/a-opportunity.png"><img src="shots/a-opportunity.png"></a></td></tr>
+<tr><td colspan="2"><b>Pipeline board</b></td></tr><tr><td><a href="shots/b-board.png"><img src="shots/b-board.png"></a></td><td><a href="shots/a-board.png"><img src="shots/a-board.png"></a></td></tr>
+<tr><td colspan="2"><b>Tasks list</b></td></tr><tr><td><a href="shots/b-task.png"><img src="shots/b-task.png"></a></td><td><a href="shots/a-task.png"><img src="shots/a-task.png"></a></td></tr>
+<tr><td colspan="2"><b>Opportunity record</b></td></tr><tr><td><a href="shots/b-record-opp.png"><img src="shots/b-record-opp.png"></a></td><td><a href="shots/a-record-opp.png"><img src="shots/a-record-opp.png"></a></td></tr>
+<tr><td colspan="2"><b>Company record</b></td></tr><tr><td><a href="shots/b-record-company.png"><img src="shots/b-record-company.png"></a></td><td><a href="shots/a-record-company.png"><img src="shots/a-record-company.png"></a></td></tr>
+<tr><td colspan="2"><b>Suggestions</b></td></tr><tr><td><a href="shots/b-suggestions.png"><img src="shots/b-suggestions.png"></a></td><td><a href="shots/a-suggestions.png"><img src="shots/a-suggestions.png"></a></td></tr>
+<tr><td colspan="2"><b>Settings</b></td></tr><tr><td><a href="shots/b-settings.png"><img src="shots/b-settings.png"></a></td><td><a href="shots/a-settings.png"><img src="shots/a-settings.png"></a></td></tr>
+<tr><td colspan="2"><b>New person dialog</b></td></tr><tr><td><a href="shots/b-newperson.png"><img src="shots/b-newperson.png"></a></td><td><a href="shots/a-newperson.png"><img src="shots/a-newperson.png"></a></td></tr>
+<tr><td colspan="2"><b>Search</b></td></tr><tr><td><a href="shots/b-search.png"><img src="shots/b-search.png"></a></td><td><a href="shots/a-search.png"><img src="shots/a-search.png"></a></td></tr>
+</table>
+
+<h2>Extra after shots</h2>
+<p><a href="shots/a-board-jobs.png">Jobs board (hours, not dollars)</a> · <a href="shots/a-jobs-table.png">Jobs table</a> · <a href="shots/a-record-opp-done.png">Record after ticking the next step</a> · <a href="shots/a-task-done.png">Task ticked in the table</a> · <a href="shots/a-suggestions-applied.png">Suggestion applied</a> · <a href="shots/a-newperson-filled.png">New person with company picked</a> · <a href="shots/a-menu.png">CSV menu</a></p>
+
+<h2>Phone (390px wide, after)</h2>
+<p class="phones"><img src="shots/m-today.png"><img src="shots/m-opportunity.png"><img src="shots/m-record.png"><img src="shots/m-menu.png"></p>
+
+<h2>Detail</h2>
+<ul>
+  <li><b>How it ran.</b> I worked in a separate copy (<code>../remold-ux</code>) so the unfinished backend work in the main checkout stayed untouched. The app ran against a throwaway local backend (<code>ops/identity/local.mjs</code>, staging sign-in), and I signed in as you through the dedicated Chrome profile. The workspace ("Northwind Studio") uses fictional data. Two deals were backdated 20 days in that local database, only so the stale flag would show.</li>
+  <li><b>Backend unchanged.</b> <code>convex/</code> is untouched on this branch because of the release gates. Everything uses existing queries.</li>
+  <li><b>Fable's process.</b> Fable wrote the direction and a 14-item checklist first (<a href="fable-round-1.md">round 1</a>), then judged the result twice. The prompts are saved next to the replies. It ran as <code>claude-fable-5-1</code> through the Claude CLI on your Max plan. The CLI's usage record also shows a small Haiku helper call each round, even though I pointed its helper model at Sonnet. That is the CLI's own side task, not the review.</li>
+  <li><b>Removed and why.</b>
+    <ul>
+      <li>Packages: <code>clsx</code> and <code>tailwind-merge</code> (the <code>cn</code> package replaces both); <code>@dnd-kit/sortable</code> and <code>@dnd-kit/utilities</code> (never imported); <code>next-themes</code> (no theme switcher, and the toaster now pins light).</li>
+      <li>Files: <code>src/assets/hero.png</code>, <code>src/assets/vite.svg</code> and <code>public/icons.svg</code> (Vite template leftovers, never referenced); <code>ui/separator.tsx</code> and <code>ui/tabs.tsx</code> (unused).</li>
+      <li>Unused exports in the dialog, dropdown, select, sheet, table and card primitives.</li>
+      <li>The <code>.dark</code> and chart color tokens, which nothing read.</li>
+      <li><code>dist/</code>: an old build, still committed and older than the WorkOS switch. It is now ignored; deploys build fresh.</li>
+    </ul>
+  </li>
+  <li><b>Known limits (Fable, non-blocking).</b>
+    <ul>
+      <li>Table columns are picked from the first page of rows.</li>
+      <li>"Next step" reads the two standard task links (Project, About). A third custom task link would still appear as its own panel.</li>
+      <li>Currency is USD only.</li>
+    </ul>
+  </li>
+  <li><b>Not verified.</b>
+    <ul>
+      <li>Dragging a card on the board. That code only changed its error handling.</li>
+      <li>The sign-in page after the change (I didn't sign out). Its before-shot was also overwritten by mistake, so there's no side-by-side.</li>
+      <li>CSV import.</li>
+      <li>A fresh-session check of the running app. Fable judged from screenshots and code; it did not use the app.</li>
+    </ul>
+  </li>
+  <li><b>Dev-only glitch seen.</b> Twice, a browser tab left open while I copied many files into the dev server froze. Fresh loads of every page worked, and targeted reloads didn't reproduce it, so it looks like a hot-reload glitch in the local setup, not the app.</li>
+</ul>
+</body>
+</html>

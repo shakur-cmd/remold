@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "level": "SIM sequence/provider responses; real temporary durable ledger, no provider calls",
+  "results": [
+    "Archived old route independently refuses A-to-C",
+    {
+      "mode": "wrong-sender",
+      "sent": [
+        "P1",
+        "Q1",
+        "reply-P"
+      ],
+      "cutoffs": [],
+      "suppressed": false,
+      "providerCalls": 0,
+      "counts": {
+        "A": 3,
+        "B": 5
+      }
+    },
+    {
+      "mode": "wrong-reference",
+      "sent": [
+        "P1",
+        "Q1",
+        "reply-P"
+      ],
+      "cutoffs": [],
+      "suppressed": false,
+      "providerCalls": 0,
+      "counts": {
+        "A": 3,
+        "B": 5
+      }
+    },
+    {
+      "mode": "q2-unknown",
+      "sent": [
+        "P1",
+        "Q1",
+        "reply-P",
+        "Q2"
+      ],
+      "cutoffs": [
+        "P2"
+      ],
+      "suppressed": true,
+      "providerCalls": 0,
+      "counts": {
+        "A": 4,
+        "B": 5
+      }
+    },
+    "Archived parser still fails closed after24h; successor parses shared history without reset"
+  ]
+}

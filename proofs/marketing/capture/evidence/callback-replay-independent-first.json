@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "level": "SERVICE actual saved native payloads and isolated receiver restarts",
+  "rows": [
+    {
+      "tenant": "a",
+      "receipts": 3,
+      "foreignKeyStatus": 401,
+      "duplicateStatus": 200,
+      "foreignOriginCannotRebind": true,
+      "actualSigkillRestartPreservedExactReceipts": true,
+      "duplicateAfterRestartAddsNothing": true
+    },
+    {
+      "tenant": "b",
+      "receipts": 1,
+      "foreignKeyStatus": 401,
+      "duplicateStatus": 200,
+      "foreignOriginCannotRebind": true,
+      "actualSigkillRestartPreservedExactReceipts": true,
+      "duplicateAfterRestartAddsNothing": true
+    }
+  ]
+}

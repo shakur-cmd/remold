@@ -1,0 +1,19 @@
+$ node ops/rehearsal/rate-limit.mjs
+{
+  "level": "SERVICE: local Convex backend; synthetic records only",
+  "command": "node ops/rehearsal/rate-limit.mjs",
+  "requests": 50,
+  "allowed": 12,
+  "limited": 38,
+  "elapsedMs": 1336,
+  "oracle": "10 remaining tokens plus 1 refill per 500ms",
+  "sameOrgOtherKeyUnaffected": true,
+  "readsUnaffected": true,
+  "bUnaffected": true,
+  "inboxWrites": 14,
+  "rootDeploymentConfigUnchanged": true,
+  "fixtureSha256": "b95fa924e3e6b453e185adb2f20786900d8aff483a39ee0bad567a408565cee6",
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-sCKw68",
+  "result": "PASS"
+}
+exit 0

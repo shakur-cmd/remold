@@ -1,0 +1,48 @@
+{
+  "level": "SANDBOX Stripe, SERVICE disposable local Convex, SIM identities/prices/jurisdiction",
+  "runId": "1f7dc2da-fd7a-4e8d-8c8c-9dfdae2d5b24",
+  "apiVersion": "2025-05-28.basil",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "results": [],
+  "objects": [],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_dVE0221O3vt5nl",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_vxfZo4DJ8o9T3E",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJIbNJLMDiXZR1g",
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_vSDtrViBnOvXsP",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "webhookReceipts": [],
+  "status": "FAILED or BLOCKED",
+  "failure": {
+    "message": "Hosted sandbox onboarding required: A\n\nfalse !== true\n",
+    "status": null,
+    "code": "ERR_ASSERTION",
+    "providerMessage": null
+  }
+}

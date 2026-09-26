@@ -1,0 +1,38 @@
+17d16
+<  if(config.admission?.policy!==TRACKING_POLICY||config.admission.formId!==config.form.id)throw Error('Form not admitted under the server tracking policy; refusing to serve');
+✔ only the exact host and published paths reach the native service (16.330292ms)
+✔ rendered form token binds tenant, form and published field labels (2.9395ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.228667ms)
+✔ native capture always gets the server tracking block, never the client cookie or tracking headers (1.528875ms)
+✔ native validation failure, redirect and oversized responses cannot report success (8.78525ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before native capture (2.17775ms)
+✖ an edge without an admitted form under the server tracking policy refuses to start (0.436542ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.371292
+
+✖ failing tests:
+
+test at publishing/server.test.mjs:58:1
+✖ an edge without an admitted form under the server tracking policy refuses to start (0.436542ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/server.test.mjs:60:125)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /not admitted/,
+    operator: 'throws',
+    diff: 'simple'
+  }

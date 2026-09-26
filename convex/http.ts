@@ -1,10 +1,16 @@
-import { httpRouter } from "convex/server";
+import { getFunctionName, httpRouter, makeFunctionReference } from "convex/server";
+import { argumentsConform } from "./lib/shape";
+import * as agentApi from "./agentApi";
+import * as commands from "./integrations/commands";
+import * as grants from "./authority/grants";
+import { route as integrationRoute } from "./integrations/http";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { recordResponse, validProbe } from "./telemetryHttp";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
-const statusFor: Record<string, number> = { UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400 };
+const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400 };
 const hash = async (key: string) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 const bad = (code: string, message: string, status = statusFor[code] ?? 400) => json({ error: { code, message } }, status);
 const number = (value: string | null) => { const n = value === null ? NaN : Number(value); return Number.isFinite(n) ? n : undefined; };
@@ -16,11 +22,31 @@ async function auth(request: Request) {
 }
 
 async function dispatch(ctx: any, request: Request) {
+  if(request.method === "GET" && new URL(request.url).pathname === "/api/v1/_probe") return await validProbe(request) ? json({ok:true}) : bad("UNAUTHENTICATED", "Invalid probe", 401);
   const keyHash = await auth(request), url = new URL(request.url), path = url.pathname.replace(/^\/api\/v1\/?/, "").split("/").filter(Boolean), q = url.searchParams;
+  const limit = request.method === "POST" ? await ctx.runMutation(internal.rateLimit.take, { keyHash }) : { allowed: true, retryAfter: 0 };
+  if (!limit.allowed) return new Response(JSON.stringify({ error: { code: "RATE_LIMITED", message: "Agent write limit reached. Retry after the indicated delay.", retryAfter: limit.retryAfter } }), { status: 429, headers: { "content-type": "application/json", "retry-after": String(limit.retryAfter) } });
   const body = request.method === "POST" ? request.headers.get("content-type")?.includes("application/json") ? await request.json().catch(() => { throw { data: { code: "VALIDATION", message: "Expected JSON body" } }; }) : {} : undefined;
   // keyHash goes last so nothing in a request body can replace the identity the header proved.
-  const query = (reference: any, args: any) => ctx.runQuery(reference, { ...args, keyHash });
-  const mutation = (reference: any, args: any) => ctx.runMutation(reference, { ...args, keyHash });
+  // Malformed bodies are refused before the call: Convex would log every argument, keyHash included.
+  const modules: Record<string, Record<string, unknown>> = { agentApi, "integrations/commands": commands, "authority/grants": grants };
+  const checked = async (reference: any, args: any) => {
+    const [module, name] = getFunctionName(reference).split(":"), ids = argumentsConform(modules[module!]?.[name!], args);
+    if (!ids || (ids.length && !await ctx.runQuery(makeFunctionReference<"query">("lib/shape:idsBelong"), { ids }))) throw { data: { code: "VALIDATION", message: "Invalid request body for this route" } };
+    return args;
+  };
+  const query = async (reference: any, args: any) => ctx.runQuery(reference, await checked(reference, { ...args, keyHash }));
+  const mutation = async (reference: any, args: any) => ctx.runMutation(reference, await checked(reference, { ...args, keyHash }));
+  if (path[0] === "operations") {
+    if (request.method === "GET" && path.length === 2) return json(await query(makeFunctionReference<'query'>("integrations/commands:getAgent"), { id: path[1] }));
+    if (request.method === "POST" && path.length === 1) return json(await mutation(makeFunctionReference<'mutation'>("integrations/commands:proposeAgent"), body), 201);
+    const commands: Record<string, string> = { edit: "editAgent", claim: "claimAgent", cancel: "cancelAgent" };
+    if (request.method === "POST" && path.length === 3 && commands[path[2]]) return json(await mutation(makeFunctionReference<'mutation'>("integrations/commands:" + commands[path[2]]), { ...body, id: path[1] }));
+  }
+  if (path[0] === "authority" && request.method === "POST" && path.length === 2) {
+    const commands: Record<string, string> = { grant: "grantAgent", revoke: "revokeAgent", fire: "fireAgent" };
+    if (commands[path[1]]) return json(await mutation(makeFunctionReference<'mutation'>("authority/grants:" + commands[path[1]]), body));
+  }
   if (request.method === "GET" && path[0] === "me" && path.length === 1) return json(await query(internal.agentApi.me, {}));
   if (request.method === "GET" && path[0] === "objects" && path.length === 1) return json(await query(internal.agentApi.objects, {}));
   if (request.method === "GET" && path[0] === "records" && path.length === 1) return json(await query(internal.agentApi.listRecords, { object: q.get("object") ?? "", cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), ...(q.get("sort") ? { sort: { field: q.get("sort"), direction: q.get("direction") ?? "asc" } } : {}), ...(q.get("filter") ? { filter: { field: q.get("filter"), value: q.get("value") } } : {}) }));
@@ -38,7 +64,7 @@ async function dispatch(ctx: any, request: Request) {
   return bad("NOT_FOUND", "Route not found", 404);
 }
 
-const route = httpAction(async (ctx, request) => {
+async function responseFor(ctx: any, request: Request) {
   try { return await dispatch(ctx, request); }
   catch (error) {
     const data = (error as any)?.data;
@@ -48,7 +74,14 @@ const route = httpAction(async (ctx, request) => {
     if (/ArgumentValidationError|Validator error/.test(message)) return bad("VALIDATION", message.split("\n").slice(0, 2).join(" ").trim());
     return bad("INTERNAL", "Something went wrong", 500);
   }
+}
+const route = httpAction(async (ctx,request) => {
+  const startedAt=Date.now();
+  const response=await responseFor(ctx,request);
+  await recordResponse(ctx,request,response,startedAt);
+  return response;
 });
 router.route({ pathPrefix: "/api/v1/", method: "GET", handler: route });
 router.route({ pathPrefix: "/api/v1/", method: "POST", handler: route });
+router.route({ pathPrefix: "/api/integrations/v1/", method: "POST", handler: integrationRoute });
 export default router;

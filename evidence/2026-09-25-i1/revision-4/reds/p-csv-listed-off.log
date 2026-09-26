@@ -1,0 +1,44 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 1 failed) 637ms
+   × csv.exportPage: hidden deals do not change the export pages 172ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:54:42
+   Duration  1.44s (tests 76%, transform 16%, import 7%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > csv.exportPage: hidden deals do not change the export pages
+AssertionError: expected [ { rows: 1, done: false }, …(1) ] to deeply equal [ { rows: 1, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "done": true,
++     "done": false,
+      "rows": 1,
++   },
++   {
++     "done": true,
++     "rows": 0,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:75:25
+     73|   const before = await pages();
+     74|   await w.hide(201);
+     75|   expect(await pages()).toEqual(before);
+       |                         ^
+     76| }, 30000);
+     77|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

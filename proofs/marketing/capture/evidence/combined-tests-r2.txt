@@ -1,0 +1,28 @@
+✔ verified receipt survives reopen, duplicate delivery adds no receipt, origin cannot change tenant (33.657083ms)
+✔ wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt (20.129125ms)
+✔ durable storage failure never receives a successful acknowledgement (1.527833ms)
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (101.745084ms)
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (28.928375ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (21.31975ms)
+✔ the receiver refuses a boundary that changes how a mail parser reads approved parts (3.974375ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (2.852667ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (1.17725ms)
+✔ the encoding and every extra header remain part of the approved hash (0.158417ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.115875ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.939375ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.498625ms)
+✔ the serialized intent and exactly two MIME parts are required (0.103666ms)
+✔ only the exact host and published paths reach the native service (17.532125ms)
+✔ rendered form token binds tenant, form and published field labels (5.148459ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (4.7605ms)
+✔ client tracking headers and native cookies or redirects are not forwarded (3.085958ms)
+✔ native validation failure, redirect and oversized responses cannot report success (13.714041ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before native capture (1.7835ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.707791

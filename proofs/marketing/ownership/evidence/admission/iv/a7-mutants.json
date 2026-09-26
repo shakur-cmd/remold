@@ -1,0 +1,240 @@
+{
+ "run": "1d24809a",
+ "capturedAt": "2026-09-26T11:50:10.840Z",
+ "results": [
+  {
+   "mutant": "M0 unmutated control",
+   "unitFail": 0,
+   "unitFailedTests": [],
+   "liveAdmitted": []
+  },
+  {
+   "mutant": "AM1 mapped-field check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "a form that maps any field to a contact is refused"
+   ],
+   "liveAdmitted": [
+    1,
+    35
+   ]
+  },
+  {
+   "mutant": "AM2 action check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "a form with any native action is refused, in list or keyed shape"
+   ],
+   "liveAdmitted": [
+    36
+   ]
+  },
+  {
+   "mutant": "AM3 campaign check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "a campaign-linked form or an unknown link count is refused"
+   ],
+   "liveAdmitted": [
+    37
+   ]
+  },
+  {
+   "mutant": "AM4 published check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "unpublished, non-standalone or differently shaped forms are refused"
+   ],
+   "liveAdmitted": []
+  },
+  {
+   "mutant": "AM5 standalone check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "unpublished, non-standalone or differently shaped forms are refused"
+   ],
+   "liveAdmitted": []
+  },
+  {
+   "mutant": "AM6 exact shape check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "unpublished, non-standalone or differently shaped forms are refused"
+   ],
+   "liveAdmitted": []
+  },
+  {
+   "mutant": "AM7 only mappedField checked",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "a form that maps any field to a contact is refused"
+   ],
+   "liveAdmitted": []
+  },
+  {
+   "mutant": "AM8 campaign links >1 only",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "a campaign-linked form or an unknown link count is refused"
+   ],
+   "liveAdmitted": [
+    37
+   ]
+  },
+  {
+   "mutant": "SM1 tracking cookie removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "native capture always gets the server tracking block, never the client cookie or tracking headers"
+   ],
+   "live": {
+    "statuses": [
+     200,
+     200,
+     200,
+     200
+    ],
+    "submissionLeads": [
+     "230",
+     "231",
+     "232",
+     "233"
+    ],
+    "anonymous": [
+     30,
+     34
+    ],
+    "contacts": [
+     224,
+     228
+    ],
+    "ownerUnchanged": true
+   }
+  },
+  {
+   "mutant": "SM2 tracking cookie value 0",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "native capture always gets the server tracking block, never the client cookie or tracking headers"
+   ],
+   "live": {
+    "statuses": [
+     200,
+     200,
+     200,
+     200
+    ],
+    "submissionLeads": [
+     "235",
+     "236",
+     "237",
+     "238"
+    ],
+    "anonymous": [
+     34,
+     38
+    ],
+    "contacts": [
+     229,
+     233
+    ],
+    "ownerUnchanged": true
+   }
+  },
+  {
+   "mutant": "SM3 privacy on GET only",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "native capture always gets the server tracking block, never the client cookie or tracking headers"
+   ],
+   "live": {
+    "statuses": [
+     200,
+     200,
+     200,
+     200
+    ],
+    "submissionLeads": [
+     "240",
+     "241",
+     "242",
+     "243"
+    ],
+    "anonymous": [
+     38,
+     42
+    ],
+    "contacts": [
+     234,
+     238
+    ],
+    "ownerUnchanged": true
+   }
+  },
+  {
+   "mutant": "SM4 start policy check removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "an edge without an admitted form under the server tracking policy refuses to start"
+   ]
+  },
+  {
+   "mutant": "SM5 policy check ignores formId",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "an edge without an admitted form under the server tracking policy refuses to start"
+   ]
+  },
+  {
+   "mutant": "SM6 serialization removed",
+   "unitFail": 1,
+   "unitFailedTests": [
+    "concurrent submissions reach native capture one at a time and all succeed"
+   ],
+   "live": {
+    "statuses": [
+     200,
+     502,
+     502,
+     502,
+     200,
+     502,
+     502,
+     200,
+     200,
+     502,
+     200,
+     200,
+     200,
+     502,
+     200,
+     502
+    ],
+    "submissionLeads": [
+     "null",
+     "null",
+     "null",
+     "null",
+     "null",
+     "null",
+     "null",
+     "null"
+    ],
+    "anonymous": [
+     42,
+     42
+    ],
+    "contacts": [
+     239,
+     239
+    ],
+    "ownerUnchanged": true
+   }
+  },
+  {
+   "mutant": "SM7 queue poisoned by a failure",
+   "unitFail": 0,
+   "unitFailedTests": []
+  }
+ ]
+}

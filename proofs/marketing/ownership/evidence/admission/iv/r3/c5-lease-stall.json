@@ -1,0 +1,41 @@
+{
+ "run": "eb4300f4",
+ "capturedAt": "2026-09-26T13:05:42.319Z",
+ "section": "stall",
+ "email": "iv-stall-eb4300f4@example.invalid",
+ "second": {
+  "exit": 0,
+  "err": "",
+  "afterMs": 17603,
+  "log": [
+   {
+    "capture": "j57c9cmds56yky1hbgbr86yefn8f5ab2",
+    "outcome": "created",
+    "contactId": 431,
+    "reason": null,
+    "result": "settled"
+   }
+  ]
+ },
+ "stalled": {
+  "exit": 1,
+  "err": "Error: Raw capture capture:settle refused: stale",
+  "out": ""
+ },
+ "contacts": [
+  {
+   "id": 431,
+   "firstname": "Stall suggestion"
+  }
+ ],
+ "capture": {
+  "status": "settled",
+  "outcome": "created",
+  "contactId": 431
+ },
+ "verdict": {
+  "oneContact": true,
+  "settledOnce": true,
+  "stalledFenced": true
+ }
+}

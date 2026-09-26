@@ -1,0 +1,28 @@
+✔ Absent Basil invoice fee stays unobserved; explicit null stays explicit (0.572833ms)
+✔ Explicit invoice fee 0 is refused (0.335125ms)
+✔ Explicit invoice fee 1 is refused (0.064208ms)
+✔ Explicit invoice fee 0 is refused (0.077042ms)
+✔ Explicit invoice fee [object Object] is refused (0.051208ms)
+✔ Explicit invoice fee undefined is refused (0.077208ms)
+✔ Unsupported invoice provenance {} is refused (0.205084ms)
+✔ Unsupported invoice provenance {"issuer":{"type":"account","account":"acct_other"}} is refused (0.092209ms)
+✔ Unsupported invoice provenance {} is refused (0.069833ms)
+✔ Unsupported invoice provenance {"application":"ca_other"} is refused (0.094833ms)
+✔ Unsupported invoice provenance {"transfer_data":{"destination":"acct_other"}} is refused (0.087416ms)
+✔ Unsupported invoice provenance {"on_behalf_of":"acct_other"} is refused (0.053541ms)
+✔ No-fee proof requires exact scoped PI and charge plus complete platform empty fee list (16.8885ms)
+✔ missing-pi is UNOBSERVED, never zero (5.036875ms)
+✔ missing-charge is UNOBSERVED, never zero (1.593917ms)
+✔ pi-fee cannot pass no-fee proof (0.9795ms)
+✔ charge-fee cannot pass no-fee proof (1.2765ms)
+✔ foreign-charge cannot pass no-fee proof (1.657042ms)
+✔ platform-fee cannot pass no-fee proof (3.290708ms)
+✔ incomplete cannot pass no-fee proof (2.826959ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.375125

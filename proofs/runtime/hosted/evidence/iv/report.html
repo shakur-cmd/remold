@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold P6 deterministic slice - independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+  .pass { color: #1a7a1a; font-weight: 600; }
+  .partial { color: #a86400; font-weight: 600; }
+  .fail { color: #a11; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Remold P6 deterministic slice - independent verification</h1>
+<div class="meta">2026-09-26 · scope: remold/P6/deterministic-iv · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Ship the slice as a proof, not as a safety certification.</b> The isolation, hard-cap and kill-switch machinery is real and reproduced independently, but two guards do not hold as a hostile tenant would need. Both must be closed before any real hosted executor runs untrusted tenant code.</li>
+  <li><b>Usage is not tamper-proof in this design.</b> The executor bills the number the guest reports for a finished run, not its own meter. A tenant that under-reports is billed less than it consumed. A real hosted executor must take usage from a trusted runtime meter, never from the tenant process. This needs root/Fable/Opus sign-off as an H0 shape decision, alongside the three gaps the builder already disclosed.</li>
+  <li><b>The org-kill reconcile-window race is real and I reproduced it 8 times out of 8.</b> Builder disclosed it; it is not theoretical. Decide whether the fix is an atomic apply-gate in the executor or a readonly check inside reconcile.</li>
+  <li><b>The same code shape exists in the certified I1 production path</b> (<code>convex/integrations/outcomes.ts:36</code>), but there it is an audit/accounting misclassification, not a write bypass, because I1 gates every domain write on <code>writable()</code> independently. Lower severity, but the same line should be fixed for consistency.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Reran the builder suite on my own ports (3910/3911) three times: 9/9 PASS each time. Evidence: <code>iv-suite-run1..3.json</code>.</li>
+  <li>Reran all 16 mutants on my ports: 16/16 KILLED, exit 0. Evidence: <code>iv-mutants.log</code>, <code>iv-mutants.json</code>.</li>
+  <li>Confirmed <code>convex/</code> is byte-identical to <code>proofs/contract/convex</code> (contract, harness, schema SHA256 all match <code>sha256.txt</code>).</li>
+  <li>Wrote and ran an independent adversarial suite with a hostile guest image and forged/late/oversized protocol messages: 8/8 PASS, and it reproduces the two defects deterministically. Evidence: <code>attack-results.json</code>, <code>attack-harness/</code>.</li>
+  <li>Read the certified I1 integration/authority code and located the same org-kill-not-late shape, with a reachability judgement.</li>
+</ul>
+</div>
+
+<h2>Target</h2>
+<p>Origin branch <code>p6/deterministic-2026-09-26</code>, commit <code>7023bb3afaee45030613ed6556d94b40a577c13c</code>, verified in worktree <code>../remold-p6-iv</code>. Stub model only: no inference, no API/subscription calls, no spend, nothing from the owner home or global connectors. Control plane is a local anonymous Convex backend running the verbatim H0 contract; model is a Docker sandbox on <code>colima-remold-proof</code>. My runs used ports 3910/3911 (suite) and 3940/3941 (attack), avoiding the reserved ranges.</p>
+
+<h2>Per-claim verdict</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Per-tenant sandbox: no network, read-only root, non-root (uid 65534), tenant-only volume, no env secrets</td><td class="pass">PASS</td><td>Hostile guest reported <code>interfaces:[lo]</code>, only its own <code>tenant-secret</code>, <code>hostPaths:[]</code>, all capability sets zero, writes to <code>/etc</code>, <code>/var/tmp</code>, <code>/proc</code> all <code>EROFS</code>, no probed IP reachable. Cross-tenant read and forged-id cross-billing both refused.</td></tr>
+<tr><td>Driven through the unchanged H0 contract (convex byte-identical to contract)</td><td class="pass">PASS</td><td>SHA256 of contract.ts/harness.ts/schema.ts identical to <code>proofs/contract/convex</code>; <code>run.mjs</code> refuses to run otherwise, and it ran green.</td></tr>
+<tr><td>Watcher kills within 1500 ms on cancel, org kill, global kill, token, duration</td><td class="pass">PASS</td><td>Measured this run: org kill 167 ms, cancel 101 ms, global 67/67 ms, token/duration kills 60-90 ms. All far under the stated 1500 ms bound.</td></tr>
+<tr><td>Watcher kills on revocation and lease expiry</td><td class="partial">PARTIAL</td><td>Lease expiry confirmed directly: any run exceeding the fixed 2 s lease is cancelled (I hit this repeatedly). Revocation is surfaced through <code>adapterStatus</code> -&gt; <code>checked()</code> throwing, but no dedicated test fires a mid-run revoke, so the revocation trigger is inferred, not exercised.</td></tr>
+<tr><td>Output applied only when not killed</td><td class="fail">FAIL (defect)</td><td>Org kill (readonly) set in the reconcile window is not treated as late, so output is applied after the org is killed. Reproduced 8/8. See defect 1.</td></tr>
+<tr><td>Usage reported</td><td class="partial">PARTIAL (defect)</td><td>For a finished run the executor bills the guest self-reported <code>done.usage</code>, not its own token meter. Under-report billed 1 of 4 consumed and was applied. See defect 2.</td></tr>
+<tr><td>No cancel/kill before reconcile; reconcile accepted</td><td class="pass">PASS</td><td>Suite and attack both confirm the recorded ordering and acceptance.</td></tr>
+<tr><td>Missing cap means zero</td><td class="pass">PASS</td><td>No executor cap refuses before any reservation; mutant flipping <code>?? 0</code> to <code>?? Infinity</code> is caught.</td></tr>
+<tr><td>Concurrent caps hold</td><td class="pass">PASS</td><td>Higher-pressure attack (20 runs): global spent 12 &lt;= cap 15, org peaks 1, global peak within maxConcurrent 3, 17 refused, no leaked reservation.</td></tr>
+<tr><td>Late results billed not applied</td><td class="pass">PASS</td><td>Result after cancel: <code>late:true</code>, not applied, still billed 4; replay at a bumped fence rejected as stale.</td></tr>
+<tr><td>Missing usage holds the tenant</td><td class="pass">PASS</td><td>Missing usage sets <code>missingUsage</code>, next run refused <code>usage unresolved</code>, other tenant unaffected.</td></tr>
+<tr><td>16 mutants caught</td><td class="pass">PASS</td><td>16/16 KILLED on my ports.</td></tr>
+</table>
+
+<h2>Defects with repro</h2>
+<h3>Defect 1 - org-kill reconcile-window race (builder-disclosed, confirmed reachable)</h3>
+<p><code>executor.mjs:110-116</code> computes <code>cancelled</code> from a final status read, then reconciles, then applies output when <code>!cancelled &amp;&amp; !late</code>. The H0 <code>reconcile</code> computes <code>late = revoked || cancelled(cancelRequestedAt) || absence || released || op.late</code> - an org set readonly is none of these, so <code>late</code> stays false. Setting readonly after the final check but before reconcile lets the output apply.</p>
+<p><b>Repro:</b> attack test "widened org-kill race", 8 iterations, hook sets <code>control{readonly:true}</code> in <code>beforeReconcile</code>. Result: applied 8/8, each with <code>late:false</code>, org spent 4 each. See <code>attack-results.json</code>.</p>
+
+<h3>Defect 2 - usage is self-reported by the tenant guest for finished runs</h3>
+<p><code>executor.mjs:107</code>: <code>const usage = box.killed ? box.tokens : box.done?.usage</code>. The executor keeps its own token meter (<code>box.tokens</code>) and uses it for killed runs, but for a finished run it trusts the number the guest wrote on stdout. A hostile guest can under-report (consume more than it pays for) or over-report.</p>
+<p><b>Repro:</b> attack "guest-controlled usage report". Under-report: streamed 4 tokens, reported usage 1, billed 1, <b>applied</b>. Over-report: reported 999, billed 999 past the org cap of 10, which trips the <code>usageOverrun</code> anomaly and is not applied (so over-reporting is self-limited, under-reporting is not). Forged-id run also billed its own org 999999 the same way. See <code>attack-results.json</code>.</p>
+<p><b>Why it matters:</b> the slice does not prove tamper-proof usage. In a real hosted executor, usage must come from the trusted model runtime, not the tenant process. As a stub this is acceptable to demonstrate the control plane, but the claim "usage reported" should be read as "the control plane books whatever usage the executor hands it", not "usage cannot be lied about".</p>
+
+<h3>Also confirmed from the builder's own disclosed gaps</h3>
+<ul>
+  <li><b>Non-renewable 2 s lease:</b> confirmed. Any run whose work exceeds ~2 s after claim is cancelled by lease expiry regardless of intent; my first hostile probe was killed this way until I made it finish inside the lease.</li>
+  <li><b>Spend overshoot before kill:</b> confirmed. Overshoot mode billed 9 units against a 4-unit reservation before the token kill landed; over-reporting bills past the cap before the anomaly hold engages.</li>
+  <li><b>Global kill per host only:</b> not contradicted, not independently testable on a single host. Accept as disclosed.</li>
+</ul>
+
+<h2>I1 production cross-check (read-only, no changes)</h2>
+<p>The certified I1 code merged at <code>328941c</code> has the <b>same org-kill-not-late shape</b> at <code>convex/integrations/outcomes.ts:36</code>: <code>const cancelled = op.cancelRequestedAt !== undefined, late = revoked || cancelled || !!op.absence || op.released || op.late;</code> - readonly is not a late trigger, identical to H0.</p>
+<p><b>Reachable as:</b> an accounting/audit misclassification. A permit already consumed before the org goes readonly will reconcile with <code>late:false</code> and emit a <code>confirmed</code> event rather than a <code>completedAfterCancellation</code>-style event, and it books the spend.</p>
+<p><b>Not reachable as:</b> a write bypass. Unlike the P6 executor, nothing in I1 applies provider output to domain records gated on the reconcile <code>late</code> flag (grep for consumers of <code>.late</code> and any apply-output path found none). Every domain write goes through <code>writable()</code> - <code>core.ts:70</code> inside <code>checked()</code>, and <code>commands.ts</code>/<code>bindings.ts</code>/<code>connections.ts</code> import it directly - which throws on readonly. The permit path (<code>dispatch.ts:8</code>) and the <code>status</code> query both call <code>checked()</code>, so a readonly org is denied new permits and its in-flight op is signalled to cancel. So the same line should be fixed for correctness of the audit trail, but it is materially less severe in I1 than in the P6 stub executor, where the executor itself is the thing that applies output on <code>!late</code>.</p>
+
+<h2>SHA and what I could not check</h2>
+<p>Target commit <code>7023bb3afaee45030613ed6556d94b40a577c13c</code>. I1 merge <code>328941c</code>. Contract hashes: contract.ts <code>242fcef...</code>, harness.ts <code>8b02331...</code>, schema.ts <code>61275c1...</code>.</p>
+<p><b>Could not check (out of scope or no access):</b> a real hosted executor and OS-level isolation on a real multi-tenant host (only local colima Docker here); real-model usage metering and stream cancellation; the subscription route; cross-host global kill (single host); the funding gate (default zero). Also the revocation-triggered kill is inferred from the shared <code>checked()</code> path, not exercised by a dedicated mid-run revoke test.</p>
+
+<h2>Detail - how to reproduce</h2>
+<p>Suite: copy <code>proofs/runtime/hosted</code>, repoint 3810/3811 to free ports, <code>node run.mjs</code>. Mutants: <code>node mutants.mjs</code>. Attack: <code>attack-harness/</code> here builds <code>hostile/</code> and drives the unchanged <code>executor.mjs</code> and H0 contract against a local Convex on 3940/3941; run <code>node attack.mjs</code> from a copy of <code>hosted</code> with the hostile harness dropped in. All results files are in this folder.</p>
+</body>
+</html>

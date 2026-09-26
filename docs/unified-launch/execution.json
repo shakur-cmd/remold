@@ -1,0 +1,608 @@
+{
+  "base": "96259e4cd0dd23be5934962b71098ec950c4b640",
+  "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+  "jobs": [
+    {
+      "id": "C0",
+      "state": "complete",
+      "builder": "root",
+      "independentVerifier": "/root/c0_verifier",
+      "costCap": 0,
+      "externalAllowance": "Read-only existing Convex inventory; no provider effects",
+      "depends": [],
+      "base": "96259e4cd0dd23be5934962b71098ec950c4b640",
+      "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+      "allowedPaths": [
+        "AGENTS.md",
+        "docs/unified-launch/build-status.html",
+        "docs/unified-launch/execution.json",
+        "docs/unified-launch/gate-register.json",
+        "evidence/2026-09-24-unified-build",
+        "messages-to-client"
+      ],
+      "environment": "mac-mini, documentation/local verification and read-only gallant-pika-581 inventory",
+      "selection": "not applicable",
+      "evidence": "evidence/2026-09-24-unified-build/c0-verdict.json"
+    },
+    {
+      "id": "H0",
+      "state": "complete",
+      "builder": "/root/h0_builder",
+      "independentVerifier": "/root/c0_verifier (scheduled replay); root/Fable/Opus shape review additionally required",
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "C0"
+      ],
+      "base": "bedff74949da7a36b711d4ab22b2238633f7a096",
+      "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+      "allowedPaths": [
+        "proofs/contract/**"
+      ],
+      "environment": "isolated local Convex backend, fake providers, no customer env",
+      "selection": "not applicable",
+      "scopeNote": "43 root groups and 43+36 independent groups PASS; exact root/Fable/Opus r4 approval. Prior blocked candidates preserved. No real providers/production certified.",
+      "frozenManifest": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "evidence": "evidence/2026-09-24-unified-build/h0-root-r4/verdict.json",
+      "independentEvidence": "evidence/2026-09-24-unified-build/h0-iv-r4/report.html"
+    },
+    {
+      "id": "P1",
+      "state": "dispatched",
+      "builder": "root",
+      "independentVerifier": "/root/c0_verifier scheduled",
+      "costCap": 0,
+      "externalAllowance": "source/containerdownloads only, stubexecutors no paidmodel or messages",
+      "depends": [
+        "H0"
+      ],
+      "base": "a5720711041cb67d56d0fdb15bee512100a07976",
+      "contract": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "allowedPaths": [
+        "proofs/agents/**"
+      ],
+      "environment": "isolated Docker contextcolima-remold-proof, nohosthome; optional local3500/3501 for nativebaseline",
+      "scopeNote": "Native candidate bounded SERVICE:10 root and independent groups + lifecycle probes PASS; no full engine selection, hosted executor, OS isolation, restore/upgrade or owned campaign/social completion. Additive4-file restore b0caac passed root3 and independent3 groups, archive/wrong-key/tamper checks; actual separate local Convex export/import/storage, stable snapshot and same-snapshot fake ledger only.",
+      "evidence": "proofs/agents/native/handover.html",
+      "independentEvidence": "evidence/2026-09-24-unified-build/native-iv/r2/review.html",
+      "restoreEvidence": "evidence/2026-09-24-unified-build/native-restore-root/report.html",
+      "restoreIndependentEvidence": "evidence/2026-09-24-unified-build/native-restore-iv/review.html"
+    },
+    {
+      "id": "P2",
+      "state": "dispatched",
+      "builder": "root MIME repair; earlier native/reliability builders preserved in prior reports",
+      "independentVerifier": "Fresh Opus 5.5 exact-source native replay, plus separate Opus code reviews",
+      "costCap": 0,
+      "externalAllowance": "Source/container downloads and isolated synthetic sink only; no paid services or real sends",
+      "depends": [
+        "H0"
+      ],
+      "allowedPaths": [
+        "proofs/marketing/**"
+      ],
+      "environment": "isolated source/container proofs; no live mail",
+      "scopeNote": "Bounded MIME SERVICE checkpoint independently passes 11 local tests, seven original native groups, six reliability cases, three native faults, six receiver mutations and duplicate refusal. Actual MIME/envelope binding, independent stored bytes and receipt-only recovery; separate Python parser. Boundary/header and H0 false-ACK reds repaired. No SMTP/inbox/LIVE evidence, full P2/D0M/S4 open; engine not selected.",
+      "evidence": "proofs/marketing/evidence/mime/report.html",
+      "independentEvidence": "proofs/marketing/evidence/mime/independent-r2/report.html",
+      "frozenManifest": "a0b59a92a768d86e10c2af8b922f0e713335cc938349c6fd8181bd7831702d26",
+      "previousIndependentEvidence": "evidence/2026-09-24-unified-build/marketing-iv/r2/report.html",
+      "previousFrozenManifest": "9b213e350938242517dccf85e5ee11d9129d2e42f65c0d1f50d10406b0d55625",
+      "tenantCheckpoint": {
+        "state": "bounded-independent-pass",
+        "evidence": "proofs/marketing/tenants/evidence/report.html",
+        "independentEvidence": "proofs/marketing/tenants/evidence/independent/report.html",
+        "frozenManifest": "3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727",
+        "limits": "No B dispatch; A legacy media remains; independent setup refusal blocked; migration resume/crash/rollback/new setup/full restore not certified; full P2 open"
+      },
+      "publicEdgeCheckpoint": {
+        "state": "bounded-independent-pass",
+        "evidence": "proofs/marketing/publishing/evidence/report.html",
+        "independentEvidence": "proofs/marketing/publishing/evidence/independent-r2/report.html",
+        "frozenManifest": "6d1275123b7875212d49b7ac31b24faa794a4431eff9a38ab729951ec2aa2755",
+        "limits": "No ports/DNS/TLS/browser/provider mail. Callback recovery, native field ownership, rate/abuse, dynamic publication and full P2 remain open. Pinned native privacy behavior must be reverified on upgrade."
+      },
+      "captureCheckpoint": {
+        "state": "bounded-independent-pass",
+        "evidence": "proofs/marketing/capture/evidence/report.html",
+        "independentEvidence": "proofs/marketing/capture/evidence/independent-r2/report.html",
+        "nativeIndependentEvidence": "proofs/marketing/capture/evidence/independent/report.html",
+        "frozenManifest": "ed85fc277d0b41f23a4ae239d5001d15898388160795fd335be6a6f334a09af1",
+        "limits": "No scheduler/callback consumer/CRM applyChange integration. Possible late-ID commit skip is reasoning-only; stale-read ordering, max100 blocked traversal, ASCII key restriction and provider restore/deletion remain open. Full P2 incomplete; no live delivery."
+      },
+      "ownershipCheckpoint": {
+        "state": "bounded-independent-pass",
+        "evidence": "proofs/marketing/ownership/evidence/report.html",
+        "independentEvidence": "proofs/marketing/ownership/evidence/independent/report.html",
+        "frozenManifest": "adc4d0352121693e8a65e4406d52055af8add59447693cf9dfce0ee1508c28e2",
+        "limits": "Raw capture-only forms independently pass concurrent intake without native identity writes. Existing public edge still uses unsafe mapped form1; no promotion. Fixed-cookie and unmapped/action-free/campaign-unlinked admission, raw importer and core reconciliation remain unbuilt. Full P2 open."
+      },
+      "verifiedSlices": [
+        "Public capture preserves identity and suppression, SERVICE: edge writes tenant-bound idempotent Convex raw captures, zero Mautic form POSTs; leased reconciler creates contacts only for unknown emails, never edits existing contacts or DNC. Builder 1d639b5, IV r4 9e10220 (proofs/marketing/ownership/evidence/admission/iv/r4/report.html). Carried: abuse gate required before any live form (rate limits, one pending per email, pending cap with alert, confirmation before contact creation); lease stall inside a Mautic create; persistent 5xx parking; capture backend memory ~347/512 MiB under load; tenant B not re-verified with the final reconciler."
+      ]
+    },
+    {
+      "id": "P3",
+      "state": "dispatched",
+      "builder": "/root/c0_verifier",
+      "independentVerifier": "root, bounded four-case runtime replay only",
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ],
+      "evidence": "proofs/social/handover.html",
+      "independentEvidence": "proofs/social/evidence/root-replay.json",
+      "frozenManifest": "c712d8a43699b2f5a2d781e46af5b926ebf3a2ac3bc17a7cdfdf4f045f5effef",
+      "scopeNote": "Exact-workflow Temporal SERVICE synthetic-provider crash2to1 and shared H0 boundary1to0 independently repeated. No full Postiz deployment, actual social.publish capability, OAuth/provider/media/metrics proof or D0S selection. Broader research independent review remains open."
+    },
+    {
+      "id": "P4",
+      "state": "dispatched",
+      "builder": "/root/i2_release",
+      "independentVerifier": "/root/c0_verifier, bounded supported payment adapter repair; root changed-behavior replay",
+      "costCap": 0,
+      "externalAllowance": "Test-mode API only, no live charges/emails/real customerdata; no paidproducts",
+      "depends": [
+        "H0"
+      ],
+      "base": "a5720711041cb67d56d0fdb15bee512100a07976",
+      "contract": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "allowedPaths": [
+        "proofs/payments/**"
+      ],
+      "environment": "Stripe test sandboxacct_1UJHeKJjT84hNemU, two synthetic merchants; optional loopback3490/3491",
+      "scopeNote": "Frozen54fc21064 passed root changed-behavior and independent checks. One-shot actual recovery retained existing deposit,12manualSANDBOX groupsPASS; requiredrecurringBLOCKED so exit1/INCOMPLETE. Independent exhaustive provider checkpoint:5invoices,10PIs(5charged/5uncharged),5charges10917USDminor,refund101,credit99,dispute805;Ecompleteempty. Opencredit900 remains payabletestobligation. Root exactID/arithmetic comparison passes. Hosted-payer default-payment/fee path, recurring/fullP4/I1/I7 remainopen; do not rerun spentrecovery. Additive recurring local14 successor passed root15 and independent15+11 altered observations/3restarts. Exact line cadence and retained receipt accounting repaired; actual recurring Stripe work still open.",
+      "evidence": "evidence/2026-09-24-unified-build/payments-root/r3/report.html",
+      "independentEvidence": "evidence/2026-09-24-unified-build/payments-iv/r3/review.html",
+      "frozenManifest": "fc21064f9f4197bd02872ad078f73cec61b91400804e9692c8bc89e68300398e",
+      "financialPredecessorManifest": "6a44ac5016ae2146491aa322055bf7eeddad09e6ee2abcb2148d0594135c4529",
+      "continuationEvidence": "evidence/2026-09-24-unified-build/payments-iv/continuation/review.html",
+      "providerCheckpoint": "evidence/2026-09-24-unified-build/payments-iv/recovery-provider/review.html",
+      "recoveryEvidence": "evidence/2026-09-24-unified-build/payments-root/basil/report.html",
+      "recoveryIndependentEvidence": "evidence/2026-09-24-unified-build/payments-iv/basil-recovery/review.html",
+      "providerExecutionEvidence": "evidence/2026-09-24-unified-build/payments-root/recovery-provider/report.html",
+      "recurringLocalEvidence": "evidence/2026-09-24-unified-build/payments-recurring-root/r2/report.html",
+      "recurringIndependentEvidence": "evidence/2026-09-24-unified-build/payments-recurring-iv/r2/review.html",
+      "recurringLocalManifest": "28735f6b846e88b0fecaeee2866a568cf5662cc3baacfa5b2d5aed728bf4a57d",
+      "recurringAdapterEvidence": "proofs/payments/evidence/recurring-sandbox-adapter/report.html",
+      "recurringAdapterScope": "Immutable clock and provider identity local successor: root18; independent18+21 challenges. Actual recurring sandbox driver under review; no new Stripe calls yet.",
+      "recurringDriverEvidence": "proofs/payments/evidence/recurring-sandbox-driver/report.html",
+      "recurringDriverScope": "Finite recurring SANDBOX rehearsal independently PASS: source670c6629, cumulative31logicalwrites,6invoices5paid1505+open301, nofees, F602hold. H1 response-loss recovered once/3dailycycles/exhaustion; H2freshagreement/onepayment/cancel/noextra. Root50GET and Opus78GET finalreadbacks agree. Alllatches spent. Futurestart/monthly/durablesignedingress/fullP4/I1/I7/livegates open.",
+      "recurringContinuationEvidence": "proofs/payments/evidence/recurring-sandbox-continuation-2/report.html",
+      "recurringDriverIndependentEvidence": "proofs/payments/evidence/recurring-sandbox-continuation-2/final-independent-review.json",
+      "verifiedSlices": [
+        "Durable callback ingestion SERVICE/SIM: signed receiver, per-merchant binding, park unbound accounts, typed refusals, per-merchant isolation, 401/403 pause, next-due schedule, incomplete-invoice sweep. Builder 13e0971, IV r3 PASS 2feb64f (proofs/payments/evidence/callback-ingestion/iv/r3/report.html). Open: real Stripe deliveries, hosted schedule (one drain at a time, real clock), sweep index on incomplete flag, refund/dispute/credit/subscription re-reads."
+      ]
+    },
+    {
+      "id": "P5",
+      "state": "dispatched",
+      "builder": "/root/c0_verifier",
+      "independentVerifier": "/root/h0_builder, bounded code/offline/evidence review and exact calendar GET",
+      "costCap": 0,
+      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests plus A→shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Both A5/B5 consumed at2026-09-25T00:34:39Z; no further capacity then. C recipient only. Calendar and same-sender one-shot proofs consumed; no replay.",
+      "depends": [
+        "H0"
+      ],
+      "allowedPaths": [
+        "proofs/communications/**"
+      ],
+      "environment": "isolated loopback3520/3521, OAuth callback3522, Google staging app only",
+      "scopeNote": "Earlier reciprocal A1/B4 and single no-guests calendar lifecycle passed. Actual same-sender fixture added A4/B1: P2/P3 denied after stripped reply before reservation, Q1/Q2/Q3 received by C with independent exact Gmail metadata witness. Root540007ms observation, >=120000ms Q gaps, preserved old ledger, A5/B5 cap; c0 terminal approval. Full P5 remains open: CRM integration, provider restart/watch/history and two-browser proof. Second Google mailbox is not required. Durable synthetic import602c2c root5groups/3restarts and IV5+alternate6groups/4restarts remain bounded local evidence.",
+      "evidence": "proofs/communications/handover.html",
+      "independentEvidence": "evidence/2026-09-24-unified-build/communications-iv/report.html",
+      "frozenManifest": "bdca8e23ecf927ed4e183ef0c2ae379f63009c99e4839c8a8ab9cc25dac9e069",
+      "scopeClarification": "evidence/2026-09-24-unified-build/opus-p5-mailbox-scope.json",
+      "durableImportManifest": "602c2c323fc2a6032d7ef0070ee013b19ad9c704eadca9d5f839e3db55eb0e56",
+      "durableImportEvidence": "evidence/2026-09-24-unified-build/communications-import-root/report.html",
+      "durableImportIndependentEvidence": "evidence/2026-09-24-unified-build/communications-import-iv/review.html",
+      "sameSenderManifest": "c29dfab5c14e841ce38d31d702a54bc6ecea5063a9b3284b892dd7ee45722fa9",
+      "sameSenderEvidence": "evidence/2026-09-24-unified-build/communications-same-sender-root/actual-report.html",
+      "sameSenderIndependentEvidence": "evidence/2026-09-24-unified-build/communications-same-sender-iv/live-review.html"
+    },
+    {
+      "id": "P6",
+      "state": "dispatched",
+      "builder": "/root/h0_builder",
+      "independentVerifier": "root no-inference replay/evidence review; Opus 5.5 desk review only",
+      "costCap": 0,
+      "externalAllowance": "Owner-local official subscription CLI feasibility only; no API billing. Two bounded turns consumed; no repeated inference under original allowance.",
+      "depends": [
+        "H0"
+      ],
+      "scopeNote": "Owner-local ChatGPT subscription completion and pre-output interruption recorded. Root repeated no-inference preflight/checker. No actual Remold MCP runtime integration, hosted adoption, per-call permit or active-stream/residual usage bound; full P6 open.",
+      "evidence": "proofs/runtime/report.html",
+      "frozenManifest": "c53f4bfd778d850e171b1e803fe33dc20e2cb7ad3ce6d2b71833782598473e1d",
+      "verifiedSlices": [
+        "Deterministic hosted-execution proofs, SERVICE/SIM, stub model, no spend: per-tenant Docker sandbox (no network, read-only root, non-root, tenant-only volume, no env secrets) through unchanged H0; kills under 170 ms vs 1500 ms bound; missing cap means zero; concurrent caps hold; atomic status-checked settle (org-kill race 0/50); billing max(meter, reported); missing usage holds tenant. Builder 89bf0a5, IV r2 PASS 077be60 (proofs/runtime/hosted/evidence/iv/r2/report.html). Open: real hosted executor and OS isolation on the real host, provider-authoritative usage metering, renewable lease and cross-host global kill (H0 amendment), provider-side token limits, subscription route, funding gate at zero."
+      ]
+    },
+    {
+      "id": "D0A",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P1",
+        "P6"
+      ]
+    },
+    {
+      "id": "D0M",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P2"
+      ]
+    },
+    {
+      "id": "D0S",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P3"
+      ]
+    },
+    {
+      "id": "D0P",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P4"
+      ]
+    },
+    {
+      "id": "D0C",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "P5"
+      ]
+    },
+    {
+      "id": "I1",
+      "state": "integrated",
+      "builder": "root builder session (wip/i1-authority)",
+      "independentVerifier": "Fresh Opus 5.5 verifier sessions r1-r5: r1 d2c8744 REVISE, r2 4cb4671 REVISE, r3 babeb42 REVISE, r4 87d4c10 certify-if-S-accepted, r5 bb8e3ed CERTIFY",
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "H0"
+      ],
+      "base": "a5720711041cb67d56d0fdb15bee512100a07976",
+      "contract": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+      "allowedPaths": [
+        "convex/** except telemetry/crons/release files",
+        "packages/contracts/**",
+        "ops/authority/**",
+        "src/** only necessary identity/authority consumers coordinated with root"
+      ],
+      "environment": "isolated anonymous local Convex3480/3481, synthetic migration fixtures only",
+      "scopeNote": "All 4 I1 checks certified by IV r5 at SERVICE (isolated local Convex, synthetic). Residual S fixed rather than accepted. Known limits: hidden lookup IDs visible (titles masked), floor cannot detect pre-I1 content restored inside an I1 descendant, record scope lists capped near 4080 IDs (fail closed), readonly one-send tail per H0, hosted Convex not checked. Behavior changes for restricted readers: search skips objects with unreadable titles, record-scoped ranking differs, daily list can be empty. Merge commit required; squash fails closed.",
+      "head": "bb8e3ed (certified code); 285f9fc raises the rollback floor pin to it; merged into build/unified-remold-2026-09-24 as 328941c with a merge commit",
+      "evidence": "evidence/2026-09-25-i1/builder-handover.html (revision-4)",
+      "independentEvidence": "shakur-cmd/remold@i1/iv-r5-2026-09-26 (2e99886) evidence/2026-09-25-i1/iv-r5/report.html"
+    },
+    {
+      "id": "I2",
+      "state": "dispatched",
+      "builder": "/root/i2_release",
+      "independentVerifier": "/root/c0_verifier (scheduled replay)",
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "C0"
+      ],
+      "base": "bedff74949da7a36b711d4ab22b2238633f7a096",
+      "contract": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+      "allowedPaths": [
+        "ops/release/**",
+        ".github/workflows/**",
+        "ops/previews/**"
+      ],
+      "environment": "local release checks; no cloud deploy",
+      "selection": "not applicable",
+      "scopeNote": "Account-independent portion only; other I2 rows remain required and open",
+      "verifiedSlices": [
+        "first-party per-key REST write rate limit, independent SERVICE fixture",
+        "exact-commit release verification, independent tests, clean checkout and GitHub CI run36038994018",
+        "local operator flags and audited changes, independent SERVICE adversarial check",
+        "local Workers /version JSON no-store routing, independent alternate-SHA replay",
+        "local migration component interrupted/resumed over1000records, compatible exact-source rollback; root replay1000 and independent1100",
+        "AuthKit source/SDK reviewed independently; root hostedGooglelogin refreshlogout deepinvite, actualJWTissuer/memberisolation; independentmembershippostcondition and currentChrome witness; commit3932963 CI36045807967",
+        "Bounded internal REST telemetry: root50 and independent73 concurrent receipts, actualdelay/error and schedulerejection, real3minute transportgap/recovery,63app tests/typecheck; no publicdashboard/alerts orreleasecomparison",
+        "Restored-snapshot release gate bound to operator-named backup file, real old-browser migration/rollback, PR3 hosting cleanup: PR 6 merged 4fbe55f; independent r2 PASS (i2/iv-2026-09-25 evidence/2026-09-25-i2/iv/report.html)",
+        "Alert row at SERVICE: minute cron raises separate scrubbed, deduped alerts plus resolve notices for failed scheduled functions, REST 500s and stalls; bounded watermark scan with coverage alert; outcomes timed by completion; strict webhook host rules, no redirects; per-notice claim. Builder d9c798e, IV r3 PASS 1ad589f (evidence/2026-09-26-i2-alerts/iv/r3/report.html). Rollback target 566abac (base + alert tables). Also repaired local-core, snapshot and rate-limit rehearsals broken since I1. Open: delivery to owner-selected channel, outside heartbeat for a dead check, DNS-to-private-IP, telemetry drain ~60/s locally."
+      ],
+      "evidence": "evidence/2026-09-24-unified-build/i2-slice-verdict.json",
+      "remaining": "Owner-gated: WorkOS PR3 callback/CORS/sign-out removal, staging email/password plus verification email and blocked-third-party-cookie check, scheduled backups (Convex Pro), alert channel selection and delivery (local alert behavior verified), automated per-PR previews with CI secrets, production first-party session (needs L0 and custom auth domain). Measurement UI belongs to I10. Not integrated.",
+      "additionalEvidence": "evidence/2026-09-24-unified-build/flags-version-verdict.json",
+      "migrationEvidence": "ops/migrations/evidence/independent.html",
+      "authEvidence": "evidence/2026-09-24-unified-build/authkit-iv/invite-report.html",
+      "telemetryEvidence": "evidence/2026-09-24-unified-build/telemetry-iv/report.html",
+      "previewOperatorEvidence": "evidence/2026-09-24-unified-build/previews-root/r2/report.html",
+      "previewIndependentEvidence": "evidence/2026-09-24-unified-build/previews-iv/r2/review.html",
+      "previewOperatorManifest": "d92702a0909fcbf7927b8bfa787be35f358bd3147b14bd896a9d2450217a5104",
+      "previewExternalAllowance": "Two named synthetic PR3/PR4 previews on existing free Cloudflare/Convex plans, exact staging AuthKit callbacks/origins and close-one owned cleanup. No production cutover or paid upgrade. Approved infrastructure allowance50USD/month.",
+      "previewReconciliationEvidence": "evidence/2026-09-24-unified-build/previews-reconciliation/r3/report.html",
+      "previewCurrentState": "PR3 closed 2026-09-25; its Cloudflare preview and Convex backend neat-squid-188 deleted by the reviewed cleanup operator, independently confirmed absent by GET. PR3 WorkOS callback, CORS and sign-out entries remain pending owner confirmation. PR4 head 31c8434, backend kindred-hyena-171 and frontend 567c0b1448364e4786f2bafb238b372d independently confirmed present by GET only; PR4 staying signed in after cleanup is builder-observed, not independently checked.",
+      "previewRehearsalEvidence": "evidence/2026-09-24-unified-build/previews-r5/report.html",
+      "previewRehearsalState": "Both hosted; source and actual staging browser behavior independently passed with exact build/fixture binding, reload/logout/deeplink Google reauthentication. Close-one cleanup and automatic lifecycle pending; no full I2 completion.",
+      "previewBrowserIndependentEvidence": "evidence/2026-09-25-preview-browser-iv/report.html",
+      "builderPendingVerification": {
+        "branch": "i2/finish-2026-09-25",
+        "pr": "https://github.com/shakur-cmd/remold/pull/6",
+        "slices": [
+          "restored-snapshot release gate: independent PARTIAL on f1ae237 (emptied/edited/random-hash snapshot receipts passed preflight); fixed by binding preflight to the operator-named backup file, re-verification pending",
+          "old headless Chromium ConvexClient through expand/partial migrate/rollback/resume with red control: independent PASS (SERVICE-local, synthetic)",
+          "PR3 close-one hosting cleanup: independent PASS for hosting by GET; WorkOS entries pending owner"
+        ],
+        "handover": "evidence/2026-09-25-i2/builder-handover.html",
+        "independentReport": "evidence/2026-09-25-i2/iv/report.html on i2/iv-2026-09-25 (dc954ec)",
+        "ownerDecision": "rollback target 3339517 vs bfb37cb"
+      }
+    },
+    {
+      "id": "I3",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2"
+      ]
+    },
+    {
+      "id": "I4",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0A"
+      ]
+    },
+    {
+      "id": "I5",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0M"
+      ]
+    },
+    {
+      "id": "I6",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0S"
+      ]
+    },
+    {
+      "id": "I7",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0P"
+      ]
+    },
+    {
+      "id": "I8",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2",
+        "D0C"
+      ]
+    },
+    {
+      "id": "I9",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I3",
+        "I4",
+        "I5",
+        "I8"
+      ]
+    },
+    {
+      "id": "I10",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I3",
+        "I5",
+        "I6",
+        "I7",
+        "I8"
+      ]
+    },
+    {
+      "id": "I11",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I1",
+        "I2"
+      ]
+    },
+    {
+      "id": "I12",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I3",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I11"
+      ]
+    },
+    {
+      "id": "I13",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I11"
+      ]
+    },
+    {
+      "id": "I14",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I2",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I13"
+      ]
+    },
+    {
+      "id": "V0",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "I9",
+        "I10",
+        "I12",
+        "I13",
+        "I14"
+      ]
+    },
+    {
+      "id": "L0",
+      "state": "specified",
+      "builder": null,
+      "independentVerifier": null,
+      "costCap": 0,
+      "externalAllowance": "none",
+      "depends": [
+        "V0"
+      ]
+    }
+  ],
+  "addenda": [
+    {
+      "id": "measurement-dashboard",
+      "source": "direct user request 2026-09-24",
+      "path": "docs/unified-launch/measurement-dashboard-addendum.html",
+      "state": "required, not implemented",
+      "jobs": [
+        "I2",
+        "I3",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I9",
+        "I10",
+        "I11",
+        "I12",
+        "I13",
+        "I14",
+        "V0"
+      ],
+      "independentScopeReview": "/root/c0_verifier approved content; linked from current build status; implementation verification pending"
+    },
+    {
+      "id": "accounts-and-subscriptions",
+      "source": "direct user steering 2026-09-24",
+      "path": "docs/unified-launch/accounts-and-subscriptions-addendum.html",
+      "state": "required; prior independent scope review and Opus conditional guidance; subsequent owner approved50/month infrastructure and reciprocal5/mailbox/day; implementation verification pending",
+      "jobs": [
+        "P3",
+        "P5",
+        "P6",
+        "D0A",
+        "I2",
+        "I4",
+        "I6",
+        "I8",
+        "I14",
+        "L0"
+      ]
+    }
+  ],
+  "followOns": [
+    {
+      "id": "impact-tracker",
+      "source": "direct user request 2026-09-24",
+      "path": "docs/unified-launch/impact-tracker-follow-on.html",
+      "startAfter": "completed build and verification",
+      "state": "queued after completed build; exact T3 PR #13179 reference verified; pre-release performance regression gates required",
+      "doesNotReplace": "measurement-dashboard addendum or original 29 jobs"
+    }
+  ]
+}

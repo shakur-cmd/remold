@@ -1,0 +1,22 @@
+13a14
+> import {renameSync} from 'node:fs';
+34a36
+> renameSync(cwd+'/convex/schema.ts',cwd+'/convex/payment_schema.ts');for(const n of ['schema.ts','callbackIngestion.ts'])cpSync(here+'callback/'+n,cwd+'/convex/'+n);
+39c41
+< const {createReceiver,drain}=await import(pathToFileURL(cwd+'/callback-ingestion.mjs'));
+---
+> const {createReceiver,drain,convexDeps}=await import(pathToFileURL(cwd+'/callback-ingestion.mjs'));
+56a59
+>  const ingressToken=randomUUID();run('callbackIngestion:configureIngress',{tokenHash:createHash('sha256').update(ingressToken).digest('hex')});const deps=convexDeps({client:()=>client,api,ingressToken});
+79c82
+<  const listen=async()=>{server=createServer(createReceiver({verify:verifyStripe,secret,merchants,ingest:ingestFor}));await new Promise((r,j)=>{server.once('error',j);server.listen(PORTS.receiver,'127.0.0.1',r);});};
+---
+>  const listen=async()=>{server=createServer(createReceiver({verify:verifyStripe,secret,merchants,ingest:ingestFor,park:deps.park}));await new Promise((r,j)=>{server.once('error',j);server.listen(PORTS.receiver,'127.0.0.1',r);});};
+83c86
+<  const ack=async(merchant,row)=>{if(ackFailNext){ackFailNext=false;throw Error('crash before acknowledgement');}await m('ackEvent',{token:merchant.token,id:row._id});};
+---
+>  const ack=async(merchant,row)=>{if(ackFailNext){ackFailNext=false;throw Error('crash before acknowledgement');}await m('ackEvent',{token:merchant.token,id:row.id??row._id});};
+86c89
+<  const drainAll=(list=merchants)=>drain({merchants:list,pending,reconcile,ack,refuse});
+---
+>  const drainAll=(list=merchants)=>drain({...deps,merchants:list,reconcile,ack,backoffMs:0});

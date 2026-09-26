@@ -1,0 +1,77 @@
+{
+  "level": "SERVICE local Convex; synthetic normalized provider records, no Stripe calls",
+  "results": [
+    {
+      "name": "Exact paid allocation after ack leaves capacity20, request20",
+      "status": "PASS"
+    },
+    {
+      "name": "Exact paid allocation after ack leaves capacity20, request21",
+      "status": "PASS"
+    },
+    {
+      "name": "Receipt before acknowledgement retains hold, then exact acknowledgement permits20",
+      "status": "PASS"
+    },
+    {
+      "name": "Same provider PI cannot acknowledge two local holds",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses duplicate",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses wrong-amount",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses wrong-command",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses missing",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses regressed",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses sum",
+      "status": "PASS"
+    },
+    {
+      "name": "Complete payment reconciliation refuses duplicate-pi",
+      "status": "PASS"
+    },
+    {
+      "name": "A known PI allocation cannot move to another invoice under a new receipt ID",
+      "status": "PASS"
+    },
+    {
+      "name": "Payment metadata from another document cannot release its hold",
+      "status": "PASS"
+    },
+    {
+      "name": "Credit in flight leaves70, request70",
+      "status": "PASS"
+    },
+    {
+      "name": "Credit in flight leaves70, request71",
+      "status": "PASS"
+    },
+    {
+      "name": "Credit receipt before ack leaves70, request70",
+      "status": "PASS"
+    },
+    {
+      "name": "Credit receipt before ack leaves70, request71",
+      "status": "PASS"
+    },
+    {
+      "name": "Refunds do not reopen gross paid collection capacity",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Paperclip independent P1 security check</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Paperclip independent P1 security check</h1>
+<div class="meta">2026-09-24 · Reviewer: /root/c0_verifier · SERVICE · Early P1 only</div>
+<div class="decisions"><h2>Review decision</h2><p><strong>Reject the tested default co-resident process executor and ordinary agent-key topology for Remold multi-tenant execution.</strong> Root and Opus concur. This is a candidate recommendation, not a completed P1 or D0A selection. No owner decision is needed for this bounded rejection.</p></div>
+<div class="status"><h2>Done and proven independently</h2><ul>
+<li>A fresh actual Paperclip heartbeat read the complete changed synthetic B sentinel and inherited the disposable server auth secret. The runner emitted only secret-presence booleans.</li>
+<li>A normal engineer agent key read another agent’s assigned issue and exact synthetic description within company A. It could also list A’s other agent and issue.</li>
+<li>A task-bridge key passed the bounded record-scope check: it read its own assigned issue, excluded A2 from its agent list, and denied A2 and B issue reads. This prevents a blanket claim that Paperclip cannot scope credentials.</li>
+<li>The same A credential was denied company B’s agent list with HTTP 403. Container host-home absence was observed.</li>
+<li>All three probe commands exited 0, meaning the probes completed. Default runtime and ordinary-key acceptance are false; the task-bridge scope acceptance is true. Source files and root probe were not changed.</li>
+</ul></div>
+<h2>Before and independent repeat</h2>
+<table><tr><th>Check</th><th>Builder baseline</th><th>Independent changed fixture</th></tr>
+<tr><td>Filesystem separation</td><td>B sentinel path existed from A executor</td><td>New random sentinel path and contents, directory 0700/file 0600; A read its full bytes and matched SHA-256. Failed separation.</td></tr>
+<tr><td>Server environment</td><td>BETTER_AUTH_SECRET presence true</td><td>Presence true in fresh real process heartbeat. Disposable fixture secret; no value emitted. Failed separation.</td></tr>
+<tr><td>Company API boundary</td><td>A → B agents 403</td><td>Fresh A agent keys → B agents 403 in both probes.</td></tr>
+<tr><td>Record scope within A</td><td>Not covered</td><td>Engineer A1, canCreateAgents=false: A2 visible, A2-assigned issue visible, exact issue description readable; all HTTP 200. Failed Remold scoped-view requirement.</td></tr>
+<tr><td>Task-bridge record scope</td><td>Not covered</td><td>Valid A1-assigned parentIssueId and allowedAssigneeAgentIds=[A1]: own issue 200 with exact description, A2 filtered from agents, company issue list 403, A2 issue 403, B issue 404 and B agents 403. Passed this bounded read check.</td></tr>
+<tr><td>Host protection</td><td>No host home</td><td>/Users/urkel absent; UID 1000. Read-only root, dropped capabilities and no-new-privileges confirmed by limited Docker inspection.</td></tr></table>
+<p>The B sentinel is verifier-created synthetic data in the common container filesystem. It proves the lack of process filesystem separation. It does <strong>not</strong> establish that Paperclip stores actual B application records at that path. The issue was assigned to A2 and intended only for A2 in this test; no Paperclip private-issue flag or guarantee was asserted. Assignment alone did not enforce Remold’s record boundary.</p>
+<h2>Why source matches the result</h2>
+<p>Exact source and service commit: <code>e006c18f2036d95d47ca8f7eb068670f3c54942d</code>. Base image digest: <code>sha256:52510c246809a1c0978e67e39a855bff6c9cfdfe2114f115791ab0add15d1411</code>. Root’s prepared image adds embedded Postgres runtime preparation; this report reviewed the source pin and service-reported commit, not binary reproducibility.</p>
+<ul>
+<li><a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/server/src/adapters/process/execute.ts#L65">Process adapter</a> invokes the shared child runner without a local process sandbox.</li>
+<li><a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/packages/adapter-utils/src/server-utils.ts#L3407">Environment sanitizer</a> removes PAPERCLIP variables except its explicit exceptions; it retains other server variables. The <a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/packages/adapter-utils/src/server-utils.ts#L4602">child runner</a> merges that environment and spawns the child. Read-only root does not provide per-tenant read isolation.</li>
+<li><a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/server/src/routes/issues.ts#L7895">Issue routes</a> contain special task-bridge restrictions, and agent routes contain scoped credential handling. The first scope probe used ordinary agent API keys. A subsequent real task_bridge credential passed the bounded read checks, with a successful own-issue read as a positive control. skill_test credentials and the full task-bridge mutation surface remain untested. Ordinary keys cannot be equated with every credential type.</li>
+</ul>
+<h2>Credential qualification</h2><p>The failed H3 ordinary-key result does not justify rejecting every Paperclip API topology. A narrower credential is operational at this pin. The default co-resident process executor remains rejected because key scope does not remove inherited server environment or separate the filesystem. Whether a separate executor using narrow credentials provides enough benefit for Remold requires the remaining candidate comparison; this report makes no selection.</p>
+<h2>Exact advisory is a separate question</h2>
+<p>The <a href="https://github.com/paperclipai/paperclip/security/advisories/GHSA-gqqj-85qm-8qhf">primary GHSA-gqqj-85qm-8qhf advisory</a>, published April 16, 2026, reports a codex_local runtime using inherited ChatGPT/OpenAI Gmail access to read and send mail. It names version 2026.403.0 and lists no patched version. This independent probe used the process adapter with no host login, Gmail connector, provider credential or model call. It therefore <strong>did not reproduce the exact advisory at the pinned commit</strong>.</p>
+<p>At the pin, <a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/server/src/routes/agents.ts#L2512">agent creation</a> leaves Codex credentials shared by default unless its API-key isolation condition applies. The <a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/packages/adapters/codex-local/src/index.ts#L14">default bypass flag remains true</a>, and <a href="https://github.com/paperclipai/paperclip/blob/e006c18f2036d95d47ca8f7eb068670f3c54942d/packages/adapters/codex-local/src/server/codex-args.ts#L61">argument construction</a> uses it with explicit overrides. These are source concerns, not proof that the current pin can invoke inherited Gmail. No claim of session forgery, database theft, external sending or account takeover follows from the secret-presence result.</p>
+<h2>Evidence and replay</h2>
+<p><a href="service.json">Independent runtime result</a> · <a href="scope-service.json">Independent H3 result</a> · <a href="task-bridge-service.json">Task-bridge positive and negative controls</a> · <a href="source-manifest.json">Source and proof SHA-256 manifest</a> · <a href="verdict.json">Machine-readable verdict</a> · <a href="../../../proofs/agents/evidence/api-baseline.json">Builder baseline</a></p>
+<pre>docker --context colima-remold-proof exec -i remold-paperclip-proof-prepared node --input-type=module &lt; evidence/2026-09-24-unified-build/paperclip-iv/probe.mjs
+docker --context colima-remold-proof exec -i remold-paperclip-proof-prepared node --input-type=module &lt; evidence/2026-09-24-unified-build/paperclip-iv/scope-probe.mjs
+docker --context colima-remold-proof exec -i remold-paperclip-proof-prepared node --input-type=module &lt; evidence/2026-09-24-unified-build/paperclip-iv/task-bridge-probe.mjs</pre>
+<p>Replay requires the existing disposable container and its private session fixture. Scripts read that fixture internally; credentials are never written to repository evidence. Setup creates new synthetic agents, assigned backlog issues and a sentinel; the runtime command performs reads only. Generated agents have automatic heartbeat disabled. The disposable database retains these evidence fixtures. No live product environment changed.</p>
+<h2>Later HTTP capability check</h2><p><a href="runtime-token-report.html">Independent HTTP runtime-token follow-up</a> confirms a real narrow body bearer: live A metadata search passes, B is excluded, tampered claims are denied and the ended-run token is denied. HTTP 202 with no work still yields succeeded. This proves transport/capability behavior, not executor OS isolation.</p>
+<h2>Open scope</h2>
+<p>HTTP executor OS isolation and full lifecycle integration, claude_local and codex_local sandbox behavior, skill_test scope and task-bridge writes, actual advisory reproduction, fire/reassign integration, restore/upgrade, native comparison, hosted execution and P6 remain unverified here. The HTTP SERVICE claim is limited to the linked capability/transport follow-up; no universal Paperclip rejection is made. P1 and D0A remain open. Root may restart the disposable container; independent runtime use has finished.</p>
+</body></html>

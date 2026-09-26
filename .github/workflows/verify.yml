@@ -1,0 +1,52 @@
+name: Verify release candidate
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: remold-verify-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RELEASE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      VITE_CONVEX_URL: https://release-fixture.invalid
+      VITE_WORKOS_CLIENT_ID: client_releasefixture
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - run: pnpm install --frozen-lockfile
+      - name: Verify marketing MIME, public and callback boundaries
+        run: node --test proofs/marketing/mime.test.mjs proofs/marketing/mime-sink.test.mjs proofs/marketing/mime-oracle.test.mjs proofs/marketing/publishing/server.test.mjs proofs/marketing/capture/receiver.test.mjs
+      - name: Run serialized checks and seal isolated frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          diff_base="$(node ops/release/release.mjs base "$RELEASE_SHA" "$BASE_SHA" "$GITHUB_EVENT_NAME")"
+          node ops/release/release.mjs build "$RUNNER_TEMP/remold-candidate" "$RELEASE_SHA" "$diff_base" ops/release/notes.json
+          sha256sum "$RUNNER_TEMP/remold-candidate/release-manifest.json" > "$RUNNER_TEMP/manifest.sha256"
+          pin="$(cut -d ' ' -f 1 "$RUNNER_TEMP/manifest.sha256")"
+          node ops/release/release.mjs verify "$RUNNER_TEMP/remold-candidate" "$RELEASE_SHA" "$pin"
+      - name: Keep only public build metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-metadata-${{ env.RELEASE_SHA }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/remold-candidate/release-manifest.json
+            ${{ runner.temp }}/remold-candidate/version.json
+            ${{ runner.temp }}/manifest.sha256

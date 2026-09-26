@@ -1,0 +1,27 @@
+2026-09-25T05:21:12Z
+remold-marketing-proof-mime-sink Up 53 seconds 0b7b0351980d
+remold-marketing-proof-web-a Up About an hour 0b7b0351980d
+remold-marketing-proof-bridge Up 53 seconds 0b7b0351980d
+remold-marketing-proof-web-a-before-guard Exited (137) 8 hours ago 0b7b0351980d
+remold-marketing-proof-authority Up About an hour b1f3b36e8714
+remold-marketing-proof-db-a Up About an hour 64a9d35fe6fe
+bridge 172.19.0.6 {"3542/tcp":[{"HostIp":"127.0.0.1","HostPort":"3542"}]} started=2026-09-25T05:20:19.139018639Z
+mime-sink 172.19.0.4 {} started=2026-09-25T05:20:19.001141139Z
+web-a 172.19.0.5 {"80/tcp":[{"HostIp":"127.0.0.1","HostPort":"3540"}]} started=2026-09-25T03:55:08.16073456Z
+authority 172.19.0.3 {"3210/tcp":[{"HostIp":"127.0.0.1","HostPort":"3545"}],"3211/tcp":[{"HostIp":"127.0.0.1","HostPort":"3546"}]} started=2026-09-25T03:55:05.111215695Z
+db-a 172.19.0.2 {} started=2026-09-25T03:55:03.786342685Z
+remold-agents-proof true
+remold-marketing-proof true
+remold-social-proof true
+remold-marketing-proof-bridge
+remold-marketing-proof-config-a
+remold-marketing-proof-convex
+remold-marketing-proof-db-a
+remold-marketing-proof-logs-a
+remold-marketing-proof-media-a
+remold-marketing-proof-mime-sink
+remold-paperclip-proof
+97e8d54f8a7255106f66cf1b213c4a4d7b558d21310b1c2bfedc3d0d526dddda  /data/guard.sqlite
+437c749b8b77ed6bf0dfa1e0cacecf8c1727e68d2313d6161352d86f0f975ca3  /data/guard.sqlite-wal
+mime-guard intents 66 deliveries 42
+sink deliveries 42 attempts [{"outcome":"accepted","n":42},{"outcome":"duplicate-refused","n":4},{"outcome":"refused","n":24}]

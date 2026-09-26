@@ -1,0 +1,55 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/read-boundaries.test.ts (3 tests | 1 failed) 206ms
+   × daily task membership cannot reveal due or done fields denied for that particular record 116ms
+ ❯ ops/authority/limits.test.ts (14 tests | 1 failed) 1044ms
+   × agent today: due tasks fill the list with readable tasks 320ms
+
+ Test Files  2 failed | 15 passed (17)
+      Tests  2 failed | 95 passed (97)
+   Start at  08:54:58
+   Duration  1.35s (tests 75%, transform 16%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > agent today: due tasks fill the list with readable tasks
+AssertionError: expected [] to deeply equal [ '0000000000000000000010448records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010448records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:40:99
+     38|   const w = await taskWorld(200), agent = await w.f.client.action(api.…
+     39|   await grant(w.f, agent.agentId, w.task.object._id, [w.mine], w.field…
+     40|   expect((await rest(w.f.t, agent.key)('GET', '/api/v1/today')).json.t…
+       |                                                                                                   ^
+     41| }, 60000);
+     42| it('member today: quiet deals fill the list with readable deals', asyn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record
+AssertionError: expected [ …(2) ] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+  [
+    "0000000000000000000010048records",
++   "0000000000000000000010050records",
+  ]
+
+ ❯ ops/authority/read-boundaries.test.ts:13:102
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

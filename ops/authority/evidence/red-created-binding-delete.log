@@ -1,0 +1,52 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/connections.test.ts (4 tests | 1 failed) 112ms
+   × deletion after an acknowledged create disconnects its binding and cannot be reversed by replayed acknowledgements 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/connections.test.ts > deletion after an acknowledged create disconnects its binding and cannot be reversed by replayed acknowledgements
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ ops/authority/connections.test.ts:48:74
+     46|   const f = await fixture(), { bindingId } = await f.bind('created', '…
+     47|   await f.provision('created', 'recipient-A', true);
+     48|   expect.soft((await f.t.run(ctx => ctx.db.get(bindingId!)))?.connecte…
+       |                                                                          ^
+     49|   const intentId = await f.provision('created', 'recipient-A');
+     50|   expect(await f.t.mutation(bindings.bind, { credentialHash: f.credent…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/connections.test.ts > deletion after an acknowledged create disconnects its binding and cannot be reversed by replayed acknowledgements
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ ops/authority/connections.test.ts:51:74
+     49|   const intentId = await f.provision('created', 'recipient-A');
+     50|   expect(await f.t.mutation(bindings.bind, { credentialHash: f.credent…
+     51|   expect.soft((await f.t.run(ctx => ctx.db.get(bindingId!)))?.connecte…
+       |                                                                          ^
+     52| });
+     53|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  17:01:50
+   Duration  283ms (tests 52%, transform 31%, import 16%, worker 1%)
+

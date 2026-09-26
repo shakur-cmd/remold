@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {join,dirname} from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {prepare} from '../../../ops/previews/prepare.mjs';
+import {load,save,hash,verifyCI} from '../../../ops/previews/state.mjs';
+import {scope,previewPlan,reconcileBackend,assertFrontendReplacement} from '../../../ops/previews/policy.mjs';
+import {api} from '../../../ops/previews/backend.mjs';
+import {cloudflareAuth,cfPreview} from '../../../ops/previews/frontend.mjs';
+
+const read=path=>JSON.parse(readFileSync(path,'utf8'));
+const upgrade=read(new URL('./source-upgrade.json',import.meta.url));
+const predecessors=read(new URL('../../../ops/previews/evidence/prepared-plans.json',import.meta.url));
+const key=readFileSync(new URL('../../../ops/previews/.private/convex-preview-key',import.meta.url),'utf8').trim();
+const wrangler='/Users/urkel/Library/Caches/pnpm/dlx/45494dc81285f32230fc00ada277ebca/mufuukce-vds/node_modules/.pnpm/wrangler@4.138.0/node_modules/wrangler/bin/wrangler.js';
+const results=[];
+for(const row of upgrade.previews){
+ const previous=predecessors.find(p=>p.pr===row.pr),oldBytes=readFileSync(join(previous.output,'receipt.json')),old=JSON.parse(oldBytes);
+ const archived=readFileSync(new URL(`./pr${row.pr}-before-source-upgrade-receipt.json`,import.meta.url));
+ assert.equal(hash(oldBytes),hash(archived),'Original receipt changed after review');
+ assert.equal(old.plan.sha,row.oldSha);assert.equal(old.backendAbsentBefore,true);
+ assert.equal(execFileSync('git',['diff','--name-only',row.oldSha,row.sha,'--','convex'],{cwd:row.checkout,encoding:'utf8'}),'','Backend source changed');
+ const plan=previewPlan(row.pr,row.sha),ci=verifyCI(plan);
+ const backend=reconcileBackend(plan,await api(`/deployments/${old.backend.name}`,key),await api(`/projects/${scope.projectId}/list_deployments`,key));
+ for(const field of ['id','name','createTime','reference','deploymentUrl'])assert.equal(backend[field],old.backend[field]);
+ const frontend=await cfPreview(plan,cloudflareAuth(wrangler,previous.output));
+ if(old.cloudflare)assertFrontendReplacement(plan,old,frontend,old.cloudflare.id);
+ else assert.equal(frontend,null,'Unowned frontend exists');
+ const output=join(dirname(row.checkout),`prepared-pr${row.pr}`);
+ prepare(row.checkout,row.pr,output);
+ const {dir,receipt}=load(output);
+ for(const field of ['backend','backendAbsentBefore','clientIdVerified','cloudflare','cloudflareAbsentBefore','workosOwned','workosBefore','workosAfter'])if(field in old)receipt[field]=old[field];
+ delete receipt.hostedEffects;
+ receipt.ci=ci;
+ receipt.sourceUpgrade={previous:previous.output,previousReceiptSha256:hash(oldBytes),previousSha:row.oldSha,backendSourceUnchanged:true,providerWrites:0};
+ receipt.phase='backend-ready';save(dir,receipt);
+ results.push({pr:row.pr,output,sha:row.sha,backendId:backend.id,frontendId:frontend?.id??null,ci,sourceUpgrade:receipt.sourceUpgrade});
+}
+writeFileSync(new URL('./successors.json',import.meta.url),JSON.stringify(results,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify(results,null,2));

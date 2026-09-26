@@ -1,0 +1,25 @@
+$ node verify-runtime.mjs && node install-plugin.mjs && node safety-replay.mjs && node branch-replay.mjs && node reentry-replay.mjs && node api-boundary-replay.mjs
+PASS exact H0 source, SDK version, pinned runtime images and isolated network.
+
+ // Clearing the cache for the prod environment with debug false                
+
+ [OK] Cache for the "prod" environment (debug=false) was successfully cleared.  
+
+
+0 new plugins were installed and 0 updated.
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: 'ECONNRESET',
+    syscall: 'read'
+  }
+}
+
+Node.js v24.18.0
+[ELIFECYCLE] Test failed. See above for more details.

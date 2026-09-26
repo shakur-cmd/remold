@@ -1,0 +1,989 @@
+{
+ "run": "ba5cf31c",
+ "capturedAt": "2026-09-26T12:21:05.761Z",
+ "tenants": {
+  "a": {
+   "formId": 34,
+   "ownerId": 262,
+   "d1Edit": {
+    "mapped": [
+     "email",
+     "firstname"
+    ],
+    "actions": [
+     "lead.remove_do_not_contact"
+    ]
+   },
+   "d1Revert": {
+    "mapped": 0,
+    "actions": 0
+   },
+   "rows": [
+    {
+     "kind": "duplicate Cookie headers",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "lowercase cookie, DNT 0, Sec-GPC 0",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "obs-fold continuation",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "X-Forwarded-Host",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mauticform key in body",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "CRLF in firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "missing nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "upper-case nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "31-hex nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "33-hex nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "duplicate nonce key",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "forged client nonce (all zero)",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "fresh nonce, first post",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same body replayed",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, first post for conflict",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, changed firstname",
+     "expected": "409",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, changed email",
+     "expected": "409",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "nonce shared with the other tenant",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant token",
+     "expected": "403",
+     "statuses": [
+      403
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "missing token",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant Host",
+     "expected": "421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "oversized Content-Length",
+     "expected": "413",
+     "statuses": [
+      413
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "chunked oversized",
+     "expected": "413",
+     "statuses": [
+      413
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "invalid UTF-8",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "bad percent encoding",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "multipart",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "urlencoded with charset",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "JSON body",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "255-char email",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "101-char firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email without dot",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake/",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake?x=1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path //form/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/%69ntake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /FORM/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake/../intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path http://tenant-a.marketing-proof.invalid/form/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/34",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/submit?formId=34&ajax=1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "PUT on form path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    }
+   ],
+   "addedCaptures": [
+    {
+     "idempotencyKey": "7560586f51c63092de9947194fafce13",
+     "firstname": "dup",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "c43f9c3111fda2ed8f145872ba475371",
+     "firstname": "lower",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "00000000000000000000000000000000",
+     "firstname": "zero-ba5cf31c",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "b4e0f01f513a538d9a3eee19df733d67",
+     "firstname": "replay",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "1cc407ccf92c361e7421d24b55f3a4c5",
+     "firstname": "orig",
+     "tenant": "a"
+    },
+    {
+     "idempotencyKey": "b271c7a0967b9856f9665fe27a06074f",
+     "firstname": "shared",
+     "tenant": "a"
+    }
+   ],
+   "mauticBefore": {
+    "formSubmissions": 184,
+    "submissionCountSum": 184,
+    "contacts": 257,
+    "anonymousContacts": 42,
+    "maxLeadId": 262,
+    "dnc": 46,
+    "campaignLeads": 137,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "mauticAfter": {
+    "formSubmissions": 184,
+    "submissionCountSum": 184,
+    "contacts": 257,
+    "anonymousContacts": 42,
+    "maxLeadId": 262,
+    "dnc": 46,
+    "campaignLeads": 137,
+    "queuedEmails": 0,
+    "emailStats": 170
+   },
+   "ownerBefore": {
+    "id": 262,
+    "firstname": "IV owner r2edge",
+    "lastname": "Stable r2edge",
+    "email": "iv-own-ba5cf31c-r2edge@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "ownerAfter": {
+    "id": 262,
+    "firstname": "IV owner r2edge",
+    "lastname": "Stable r2edge",
+    "email": "iv-own-ba5cf31c-r2edge@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "verdict": {
+    "allAsExpected": true,
+    "addedEqualsExpected": true,
+    "allOwnTenant": true,
+    "conflictKeptOriginal": true,
+    "mauticUnchanged": true,
+    "ownerUnchanged": true
+   }
+  },
+  "b": {
+   "formId": 29,
+   "ownerId": 81,
+   "d1Edit": {
+    "mapped": [
+     "email",
+     "firstname"
+    ],
+    "actions": [
+     "lead.remove_do_not_contact"
+    ]
+   },
+   "d1Revert": {
+    "mapped": 0,
+    "actions": 0
+   },
+   "rows": [
+    {
+     "kind": "duplicate Cookie headers",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "lowercase cookie, DNT 0, Sec-GPC 0",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "obs-fold continuation",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "X-Forwarded-Host",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "mauticform key in body",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "CRLF in firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "missing nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "upper-case nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "31-hex nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "33-hex nonce",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "duplicate nonce key",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "forged client nonce (all zero)",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "fresh nonce, first post",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same body replayed",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, first post for conflict",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, changed firstname",
+     "expected": "409",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "same nonce, changed email",
+     "expected": "409",
+     "statuses": [
+      409
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "nonce shared with the other tenant",
+     "expected": "200",
+     "statuses": [
+      200
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant token",
+     "expected": "403",
+     "statuses": [
+      403
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "missing token",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "other tenant Host",
+     "expected": "421",
+     "statuses": [
+      421
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "oversized Content-Length",
+     "expected": "413",
+     "statuses": [
+      413
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "chunked oversized",
+     "expected": "413",
+     "statuses": [
+      413
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "invalid UTF-8",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "bad percent encoding",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "multipart",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "urlencoded with charset",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "JSON body",
+     "expected": "415",
+     "statuses": [
+      415
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "255-char email",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "101-char firstname",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "email without dot",
+     "expected": "400",
+     "statuses": [
+      400
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake/",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake?x=1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path //form/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/%69ntake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /FORM/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/intake/../intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path http://tenant-b.marketing-proof.invalid/form/intake",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/29",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "path /form/submit?formId=29&ajax=1",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    },
+    {
+     "kind": "PUT on form path",
+     "expected": "404",
+     "statuses": [
+      404
+     ],
+     "error": null,
+     "match": true
+    }
+   ],
+   "addedCaptures": [
+    {
+     "idempotencyKey": "c7d7ff8833c2bf65f97a6dee6a649107",
+     "firstname": "dup",
+     "tenant": "b"
+    },
+    {
+     "idempotencyKey": "5721f13ae165c21a52d2a81045d2d0dc",
+     "firstname": "lower",
+     "tenant": "b"
+    },
+    {
+     "idempotencyKey": "00000000000000000000000000000000",
+     "firstname": "zero-ba5cf31c",
+     "tenant": "b"
+    },
+    {
+     "idempotencyKey": "3cf16332f5f4dd0b14bcc17b03cfe355",
+     "firstname": "replay",
+     "tenant": "b"
+    },
+    {
+     "idempotencyKey": "02071cda1b5a25caca8d89dff4e178e0",
+     "firstname": "orig",
+     "tenant": "b"
+    },
+    {
+     "idempotencyKey": "b271c7a0967b9856f9665fe27a06074f",
+     "firstname": "shared",
+     "tenant": "b"
+    }
+   ],
+   "mauticBefore": {
+    "formSubmissions": 92,
+    "submissionCountSum": 92,
+    "contacts": 74,
+    "anonymousContacts": 24,
+    "maxLeadId": 81,
+    "dnc": 29,
+    "campaignLeads": 1,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "mauticAfter": {
+    "formSubmissions": 92,
+    "submissionCountSum": 92,
+    "contacts": 74,
+    "anonymousContacts": 24,
+    "maxLeadId": 81,
+    "dnc": 29,
+    "campaignLeads": 1,
+    "queuedEmails": 4,
+    "emailStats": 4
+   },
+   "ownerBefore": {
+    "id": 81,
+    "firstname": "IV owner r2edge",
+    "lastname": "Stable r2edge",
+    "email": "iv-own-ba5cf31c-r2edge@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "ownerAfter": {
+    "id": 81,
+    "firstname": "IV owner r2edge",
+    "lastname": "Stable r2edge",
+    "email": "iv-own-ba5cf31c-r2edge@example.invalid",
+    "points": 0,
+    "tags": [],
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   },
+   "verdict": {
+    "allAsExpected": true,
+    "addedEqualsExpected": true,
+    "allOwnTenant": true,
+    "conflictKeptOriginal": true,
+    "mauticUnchanged": true,
+    "ownerUnchanged": true
+   }
+  }
+ },
+ "crossTenant": {
+  "sharedNonce": "b271c7a0967b9856f9665fe27a06074f",
+  "a": [
+   "shared"
+  ],
+  "b": [
+   "shared"
+  ]
+ }
+}

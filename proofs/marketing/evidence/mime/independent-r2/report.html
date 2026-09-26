@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P2 MIME r2: independent native verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>P2 MIME r2: independent native verification</h1>
+<div class="meta">2026-09-25 · scope: bounded P2 marketing MIME repair, local synthetic fixture (SERVICE) · verifier: fresh Opus 5.5 session, not root · result: <b>BOUNDED PASS</b></div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>None needed for this bounded proof. Full P2, D0M, S4 and SMTP/inbox adoption stay OPEN no matter what this says.</li>
+  <li>Optional: add Date freshness and calendar checks at the bridge if you want tighter bounds. They were never claimed.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li><b>Exact source:</b> 57 of 57 files and the aggregate <code>a0b59a92…d26</code> match before, after the native runs, and after the local mutants.</li>
+  <li><b>Runtime is the code-approved version:</b> it is byte-identical to <code>b2cb8add…</code>. Only 3 test files differ, and each is a strict strengthening that catches a mutant the old test missed.</li>
+  <li><b>T0:</b> 1 queued message plus 2 real worker attempts, 3 distinct raw hashes and 3 distinct boundaries. All normalize to the same sealed hash in both the JS and Python checks. Nothing was delivered, claimed or received.</li>
+  <li><b><code>proof:mime</code> exit 0:</b> 11/11 unit tests, 3 native faults including the H0 collision, 6 receiver mutations plus a refused duplicate, the boundary collision refused (Python sees 1 part plus an epilogue) and the native control delivered once.</li>
+  <li><b><code>test</code> exit 0:</b> all 7 original groups pass. The branch opens the actual stored pixel URL, including its <code>ct</code> query.</li>
+  <li><b><code>proof:reliability</code> exit 0:</b> 6 of 6 cases. Every delivered case has exactly 1 receiver POST and a matching Python hash.</li>
+  <li><b>Typecheck, verify-runtime and verify-installed:</b> exit 0 at the start and the end.</li>
+</ul>
+</div>
+
+<h2>Direct readbacks (not just exit codes)</h2>
+<table>
+<tr><th>Case</th><th>Bridge</th><th>H0</th><th>Receiver</th><th>Transport</th></tr>
+<tr><td>Normal delivery <code>8890a8cc…</code></td><td>delivered</td><td>confirmed, receipt <code>local-mime-sink:2fd391b4…</code></td><td>BLOB SHA = stored = receipt; Python hash = approved; POSTs: 1 accepted, 6 refused, 1 duplicate refused</td><td>1 accepted</td></tr>
+<tr><td>Boundary native control <code>da1138fe…</code></td><td>delivered</td><td>confirmed, 1 receipt matching the BLOB</td><td>BLOB = a <b>worker transport attempt</b>, not the queued bytes; hidden <code>--chosen--</code> present; 1 POST</td><td>1 accepted</td></tr>
+<tr><td>Lost response <code>63efe6d1…</code></td><td>delivered</td><td>confirmed, 1 receipt matching the BLOB</td><td>1 POST</td><td>1 unconfirmed, then bridge restart, then 1 accepted</td></tr>
+<tr><td>Receiver commit then drop <code>c885f509…</code></td><td>delivered (was sink-unknown)</td><td>confirmed, 1 receipt matching the BLOB</td><td>1 POST</td><td>1 unconfirmed, then receiver and bridge restart, then 1 accepted</td></tr>
+<tr><td>Concurrent workers <code>707a21e0…</code></td><td>delivered</td><td>confirmed, 1 receipt</td><td>1 POST</td><td>2 accepted (the second queue copy was injected); the second was receipt-only</td></tr>
+<tr><td>H0 collision <code>977fcaf1…</code></td><td>delivered</td><td>only the injected <code>synthetic-conflicting-receipt</code></td><td>BLOB = host-posted queued bytes, 1 POST</td><td>4 unconfirmed, 0 accepted. <b>Not counted as a delivery.</b></td></tr>
+<tr><td>Body after consume <code>f548701a…</code></td><td>consumed (held)</td><td>outcomeUnknown, 0 receipts</td><td>0 POSTs</td><td>4 unconfirmed</td></tr>
+<tr><td>Subject before consume <code>4d99d1e8…</code></td><td>sealed</td><td>approved, 0 receipts</td><td>0 POSTs</td><td>4 unconfirmed</td></tr>
+</table>
+
+<h2>Fixture accounting</h2>
+<p>The <code>mime-guard.sqlite</code> intent count went from 47 to 66, still under the 128 cap, which was not cleared or raised. Bridge and receiver deliveries both went from 30 to 42 in lockstep. Receiver refusals rose by exactly the 6 mutations, and duplicate refusals rose by 1. The old <code>guard.sqlite</code> main file and WAL hashes are unchanged. No containers, networks or volumes were created. IPs are unchanged, and the receiver has no published port.</p>
+
+<h2>Limitations</h2>
+<ul>
+  <li>This is SERVICE level only: no SMTP, no mailbox, no provider.</li>
+  <li>Date freshness and calendar validity are not checked. A shape-valid but impossible Date, or any 32-hex Message-ID, can vary without changing the hash, but neither can carry free text.</li>
+  <li>The boundary-collision variant is a host-side substitution into real queued bytes. Only the positive control is worker-produced.</li>
+  <li>The boundary replay's <code>inspectMime(changed)</code> throw has no message match. This doesn't block, because the replay also asserts the bridge 409, the sealed state and 0 receiver POSTs.</li>
+  <li>Receipt-only retry still uploads the bytes to the bridge for content validation. <code>/ack</code> only does accounting.</li>
+  <li>My one read-only count on the old <code>guard.sqlite</code> updated its <code>-shm</code> index file. No data changed.</li>
+  <li>The runners overwrote the top-level evidence files. Pre-run copies are in <code>pre-run-top-level/</code> and my copies are in <code>runs/</code>. Root restores the historical files.</li>
+  <li>No required checks were skipped or blocked. I added no extra native fixture. I did not run the launcher script in the task because it would start another agent.</li>
+</ul>
+
+<h2>Files</h2>
+<p><code>verdict.json</code>, <code>progress.txt</code>, <code>logs/</code> (commands with exits, hashes before/after, delta diff, mutants, runtime before/after) and <code>runs/</code> (copied runner outputs, independent probe check, direct readbacks). Private stderr stays in a 0700 temp directory outside the repo.</p>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "sha": "63d7d92a5ec9f38af69112be6483d83aa6638d06",
+  "command": "node ops/release/release.mjs build <new-output> <head> bedff74949da7a36b711d4ab22b2238633f7a096 ops/release/notes.json",
+  "exit": 0,
+  "manifestSha256": "e1bbe50b1fb3650b2837c3683fbadd7740218bb60934657cc7b2b3e21c5402af",
+  "checks": {
+    "appTests": 51,
+    "releaseTests": 14,
+    "mcpTests": 2,
+    "typecheck": 0,
+    "mcpBuild": 0,
+    "frontendBuild": 0
+  },
+  "deploymentAuthorized": false,
+  "fixturePublicConfigOnly": true,
+  "beforeIssue": "Symlinked node_modules was untracked; fresh pnpm frozen-lockfile install resolved without modifying source."
+}

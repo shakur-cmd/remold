@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pre-release performance impact tracker</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>Pre-release performance impact tracker</h1><div class="meta">2026-09-24 · follow-on after the completed build · implementation pending</div>
+<div class="decisions"><h2>Confirmed direction</h2><p>Shakur wants internal tests that detect meaningful performance regressions before shipping. Build this after completing and verifying the current Remold build. His concrete reference is T3 Code’s “Thread transfer impact” report on PR #13179. This clarifies and replaces the earlier open-reference note.</p></div>
+<div class="status"><h2>Done and proven</h2><p>Root located the exact PR report and inspected its pinned integration test, fixture, budget evaluator, CI and report workflow. This establishes the reference mechanism. No Remold performance tracker, thresholds or results are claimed yet.</p></div>
+<h2>What the reference actually does</h2><p><a href="https://github.com/pingdotgg/t3code/pull/13179#issuecomment-5787418315">The real PR comment</a> presents baseline, candidate, difference and enforced ceiling for two provider fixtures. Its five enforced metrics are total thread wire bytes, initial thread snapshot wire bytes, live-turn WebSocket wire bytes, decoded bytes and message count. This particular gate measures transfer volume; it does not establish an all-purpose timing or user-productivity benchmark.</p>
+<p>The server integration test exercises HTTP and WebSocket paths with synthetic historical turns and retained tool results, produces structured evidence and fails when the budget evaluator reports a violation. CI uploads the result even when a test fails. A separate trusted workflow validates artifacts and compares the PR with a main-branch baseline before updating the comment. The reporting workflow does not execute PR artifacts.</p>
+<h2>Remold follow-on acceptance</h2><ul><li>Use repeatable, representative workflows on synthetic data: opening a record list, filtering/searching, opening a large activity timeline, receiving an agent result and reconnecting a live view. Retain correctness checks alongside performance measurements.</li><li>Report baseline and candidate commit, fixture version, environment, measured values and differences. Include transfer volume, update/message counts, backend work and relevant user-visible timing. Label unmeasured values rather than invent them.</li><li>Derive Remold’s ceilings from measured baselines and explicit product expectations. Keep deterministic size/work-count gates distinct from noisy elapsed-time measurements; use repeated controlled timing samples before declaring a meaningful slowdown.</li><li>A deliberate regression must fail the check. Missing or incompatible evidence cannot silently pass. Changing a ceiling requires a visible rationale and review, not an automatic baseline reset.</li><li>Publish an HTML evidence report and a concise PR comparison. Exceeding an enforced ceiling blocks the release path. Connect release versions and accepted improvements to the measurement dashboard.</li></ul>
+<h2>Pinned primary sources</h2><ul><li><a href="https://github.com/pingdotgg/t3code/blob/f0cd4a7c92438420f3290b7d18391bededa1f8de/apps/server/src/server.test.ts">apps/server/src/server.test.ts</a></li><li><a href="https://github.com/pingdotgg/t3code/blob/f0cd4a7c92438420f3290b7d18391bededa1f8de/apps/server/integration/TransferBudgetScenario.integration.ts">apps/server/integration/TransferBudgetScenario.integration.ts</a></li><li><a href="https://github.com/pingdotgg/t3code/blob/f0cd4a7c92438420f3290b7d18391bededa1f8de/apps/server/integration/TransferBudgetReport.integration.ts">apps/server/integration/TransferBudgetReport.integration.ts</a></li><li><a href="https://github.com/pingdotgg/t3code/blob/f0cd4a7c92438420f3290b7d18391bededa1f8de/.github/workflows/ci.yml">.github/workflows/ci.yml</a></li><li><a href="https://github.com/pingdotgg/t3code/blob/f0cd4a7c92438420f3290b7d18391bededa1f8de/.github/workflows/thread-transfer-report.yml">.github/workflows/thread-transfer-report.yml</a></li><li><a href="https://github.com/pingdotgg/t3code/blob/f0cd4a7c92438420f3290b7d18391bededa1f8de/.github/scripts/thread-transfer-report.cjs">.github/scripts/thread-transfer-report.cjs</a></li></ul><p>Research checked by root and independently reviewed by c0_verifier. <a href="../../evidence/2026-09-24-unified-build/impact-tracker-iv/review.html">Independent DESK review</a> approved the captured scope and source claims; all implementation verification remains pending. The existing 29 jobs and measurement-dashboard addendum remain required.</p></body></html>

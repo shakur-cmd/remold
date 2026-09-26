@@ -1,0 +1,34 @@
+PASS Two accepted refund receipts cannot reuse one aggregate observation to restore capacity
+PASS Credit is counted once with callback-first
+PASS Credit is counted once with receipt-first
+PASS Pre-existing refunds, unknown holds and distinct receipts all retain their capacity
+PASS Concurrent credits cannot share a receipt or lose accepted value to an older aggregate
+PASS Outside refund racing a local receipt has distinct identity and blocks excess capacity
+PASS Partial reconciliation blocks permits and retains unknown reservations
+PASS A real HTTP read failure closes adapter reconciliation before the request
+PASS General collection adapter cannot dispatch refunds or cancellation under any capability
+PASS Receipt identities are account scoped, immutable and cannot move between documents
+PASS Newer target generation refuses an older issued snapshot after a credit void
+FAIL A refund callback during a pull invalidates its older completion
+FAIL A credit callback during a pull invalidates its older completion
+PASS Outside pending refunds stay held until an authoritative terminal refetch
+PASS Binding a pending receipt replaces its exact local hold and rejects unrelated metadata
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: [{"name":"A refund callback during a pull invalidates its older completion","status":"FAIL","error":"Missing expected rejection."},{"name":"A credit callback during a pull invalidates its older completion","status":"FAIL","error":"Missing expected rejection."}]
+
+2 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/accounting-replay.mjs:144:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

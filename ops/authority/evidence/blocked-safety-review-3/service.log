@@ -1,0 +1,47 @@
+PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+PASS Production dispatch records cancelled late acceptance exactly once
+PASS SERVICE transaction races reserve organization budget and concurrency once
+PASS SERVICE cross-tenant collision leaves the losing account and organization unchanged
+PASS Payload edits invalidate immutable approval; destination and schedule are enforced
+PASS One-use expiring permit and server scheduled crash recovery retain consumed uncertainty
+PASS Readonly between claim and permit stops sends but permits truthful receipt settlement
+PASS Missing usage pauses cheaper work until authoritative usage settles exactly once
+PASS Actual overrun records the full cost and blocks continuation and new spending
+PASS Final absence targets only the current unresolved logical step, then late truth is held as anomaly
+PASS Provisional absence permits only same-key retry and old-fence truthful settlement
+PASS Receipt collisions persist a durable anomaly instead of rolling it back with an exception
+PASS Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)
+PASS Human safety rejects expired JWT and same-transaction membership epoch changes (SIM provider)
+PASS Client recurring cancel is a distinct zero-amount command with no new collection authority (SIM provider)
+PASS Two exact refund receipts exhaust the paid amount; one receipt cannot settle two operations
+PASS Outside pending refunds hold headroom; an authoritative failed receipt releases only that receipt
+PASS Matched pending receipt replaces its local hold; late acknowledgement cannot overwrite fetched failure
+PASS Incomplete reconciliation blocks new safety consume and preserves unknown local holds
+PASS General refund and recurring-cancel dispatch refuse the safety-ledger bypass
+PASS Only capability-specific finality with a complete post-consume lookup releases an unknown refund
+PASS Propose-mode external authority still requires human approval; currency and binding scopes cannot widen
+PASS Every approval material field invalidates the reviewed version
+PASS Actual human approver role downgrade invalidates already-approved dispatch
+PASS Final permit rechecks missing usage discovered after a different operation was claimed
+PASS Human adoption creates a new attributed command while preserving the fired agent original
+PASS Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose
+PASS Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient
+PASS Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal
+PASS External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail
+PASS Delegation revocation changes actual REST read projection while independent human grants survive
+MEASURE subscription mask propagation ms 16.84
+PASS Existing human subscription loses masked field within the 2-second target on real backend
+PASS Concurrent duplicate logical proposals and claims yield one operation and reservation
+PASS Global spend, concurrency and per-run ceilings serialize across distinct tenants
+PASS Continuation reduces per-call exposure and old fence cannot consume the next step
+PASS Final permit refuses expired approval without relying on asynchronous sweeps
+PASS Unresolved prior consumed attempt survives failure and releases only after final current-step absence
+PASS Unresolved prior consumed attempt survives expiry and releases only after final current-step absence
+PASS Unresolved prior consumed attempt survives sweep and releases only after final current-step absence
+PASS Durable cancellation survives rejection and absence false
+PASS Durable cancellation survives rejection and absence true
+PASS Unconsumed unknown does not manufacture provider uncertainty; expiry recovers false
+PASS Unconsumed unknown does not manufacture provider uncertainty; expiry recovers true
+PASS Single-step overrun remains confirmed and retained missing usage cannot be cancelled away false
+PASS Single-step overrun remains confirmed and retained missing usage cannot be cancelled away true
+PASS Invalid secret references and disabled account health fail closed without exposing opaque handles

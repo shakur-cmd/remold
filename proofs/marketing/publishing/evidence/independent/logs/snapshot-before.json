@@ -1,0 +1,84 @@
+{
+ "at": "2026-09-25T06:23:49.755Z",
+ "tenants": {
+  "a": {
+   "formId": 1,
+   "submissionTotal": 2,
+   "submissions": [
+    {
+     "id": 1,
+     "contactId": 150,
+     "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+     "firstname": "Route A",
+     "dateSubmitted": "2026-09-25T06:18:22+00:00"
+    },
+    {
+     "id": 2,
+     "contactId": 155,
+     "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+     "firstname": "Route A",
+     "dateSubmitted": "2026-09-25T06:20:30+00:00"
+    }
+   ],
+   "contactTotal": 155,
+   "contact1Status": 200,
+   "contact1Sha256": "1692e36d18d51b7db470f1e54369f5bc1b543db7bd852f90c8fb538c5b550640",
+   "contact1Email": "synthetic-a6feaa4f@example.invalid"
+  },
+  "b": {
+   "formId": 1,
+   "submissionTotal": 2,
+   "submissions": [
+    {
+     "id": 1,
+     "contactId": 11,
+     "email": "edge-69299c91-25c7-47af-b626-e1a719cafbb0@example.invalid",
+     "firstname": "Route B",
+     "dateSubmitted": "2026-09-25T06:18:25+00:00"
+    },
+    {
+     "id": 2,
+     "contactId": 16,
+     "email": "edge-234632e2-3887-441e-b810-db7c4489f7eb@example.invalid",
+     "firstname": "Route B",
+     "dateSubmitted": "2026-09-25T06:20:33+00:00"
+    }
+   ],
+   "contactTotal": 16,
+   "contact1Status": 200,
+   "contact1Sha256": "fe5e3005128950e4a39b9547c870f96a011d975c4275aea654697d76a7465c7c",
+   "contact1Email": "synthetic-a6feaa4f@example.invalid"
+  }
+ },
+ "rootEvidence": {
+  "content-type-red.txt": "cc8498aa6606c99ed38d4d5edd1cd2565578a4216809d22a9a1bceb85ed8f5e5",
+  "duplicate-host.json": "5a9a7382a4814dcb44109dad01689728401a64654b27660f59cc6a6aac0ef4ab",
+  "fixtures-first.txt": "636c4f2cc827b62577da6d7e7f1d797d02d1c58560b7b5c49aef109bc30c7cec",
+  "fixtures-reentry.txt": "636c4f2cc827b62577da6d7e7f1d797d02d1c58560b7b5c49aef109bc30c7cec",
+  "fixtures.json": "93eab3a4d60fa6bb2d60f6d01c9f4f60c7434205ac143b06c444be50603220fd",
+  "host-baseline.json": "08c6eb71c41333928b9533178d00bc05605bdc16b343cff45eee0ba1be27edee",
+  "host-baseline.txt": "96eaadead910e2da9d315b1a2f80c4bac318bfe095999c11da89b8f6657f4981",
+  "ip-tracking.json": "9bce347af66deddad719e650be284e9a29845468dd6d814ca952acba882c4bff",
+  "mutation-checks.json": "62afdfc47b43608e96d8698740a56db9a2a0688799d9d1fd166e103604b964b9",
+  "mutation-host-check-removed.txt": "bbd4fa9f524398f39a89688d27cd6cf304a83597d1491d119bef92da095f9244",
+  "mutation-response-cap-removed.txt": "3b24294fa0016d79baa31e3b9b5bd8964c0b11a640cca55045f92215685d0c54",
+  "native-api-sources.json": "e6c8080a35692e3729f38fddacd32d8f604a62e3ef04a54ddea17cf0246f7e2b",
+  "native-inventory-before.json": "b388fd5b6fa7a1d2a28e0c9140ea987b88cace0748267c3f58ae2a3e86e137f5",
+  "native-plain-page-a.html": "035b98f9168cf1bba376bee46bcc2fd8965f3f45f4bf5aa77d182e766e94d4b3",
+  "native-plain-page-b.html": "0c7fb2be0f43ac2d658b042dfc2723461ce4590aa2c5d152d4f2ca6b80620871",
+  "opus-routing-consult.json": "4a280e5649a8332674a370f568c939f8eb252f2fdfd9e8a79dbf2929083d7450",
+  "plain-page-setup.txt": "636c4f2cc827b62577da6d7e7f1d797d02d1c58560b7b5c49aef109bc30c7cec",
+  "replay-final.txt": "73ad59141da9597adc9927a27f0fc804c1d57aba6ead083c43e03214118f22a5",
+  "replay-first.txt": "427b83dd3d3cea1f6d707e21cc5a21b7768d8f9dfe66e7296b29209a148ec050",
+  "replay-second.txt": "73ad59141da9597adc9927a27f0fc804c1d57aba6ead083c43e03214118f22a5",
+  "replay.json": "e9806033cb965a11a13d986b64cde4e1511fab100d39555c2cfe21db3c6671dc",
+  "report.html": "d764381e37209d4a720d7ec5d0890ad4d1e5a36b7d504f41d9c7b2ea3af6ef92",
+  "setup-final.txt": "4cff80e8036564f0c79dd1506f877f8fc0b937f886b16b771d81070aea4d0bdd",
+  "setup-first.txt": "b21761fa16ada5dfe8b06a4ee6d8043df19df515d28182d0b273a86ffbff6be3",
+  "setup-second.txt": "4cff80e8036564f0c79dd1506f877f8fc0b937f886b16b771d81070aea4d0bdd",
+  "setup.json": "53a68e15351d94e848effde5f4cad96375eadc62777ce1f6a343b495bf6188a3",
+  "source-manifest.json": "3262727d7f15308c163ee6c8f8ac666b9343375c02c272db1c52db480e1fda19",
+  "unit-final.txt": "0dfa051237340cd18da15f88621ea725107f7c8dcf3b7c23736b38b138be9b87",
+  "unit-first.txt": "037b2079252c881e652e038f334dd2ed7cecbc45ef20899a3898f76073db4df2"
+ }
+}

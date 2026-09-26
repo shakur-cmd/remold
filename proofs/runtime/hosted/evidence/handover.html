@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P6 deterministic slice: hosted sandbox isolation, hard caps, kill switch</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>P6 deterministic slice: hosted sandbox isolation, hard caps, kill switch</h1>
+<div class="meta">2026-09-26 · revision 2 (fixes for the independent verification of 7023bb3) · level: SERVICE control plane (local Convex, verbatim H0) / SIM model (stub) / local Docker sandbox · builder-run, awaiting re-verification</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>None for this slice. It used no model, no API, no subscription and no money.</li>
+  <li>For root, Fable and Opus (not you): the H0 amendments listed below. They are recorded here, not fixed.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (builder-run only)</h2>
+<ul>
+  <li><strong>IV defect 1 fixed: an org kill landing just before the result is applied.</strong> Before, 8 of 8 attempts were applied. Now 0 of 8, both in my suite and in the verifier's own attack harness. Applying output is now one Convex transaction: <code>convex/settle.ts</code> reads H0 status, reconciles usage and writes the output record together. So a cancel, org kill or revocation commits entirely before the apply or entirely after it. A global kill landing in the same spot is also refused, because the executor checks its hosted flag and sends the apply in one synchronous step.</li>
+  <li><strong>IV defect 2 fixed: a guest under-reporting its usage.</strong> Before, a run that streamed 4 tokens and reported 1 was billed 1 and applied. Now every finished run is billed the larger of the executor's own meter and the guest's report. A report below the meter flags a <code>usageUnderreport</code> anomaly, which holds the tenant, and the output is not applied. An honest run on the other tenant still applies.</li>
+  <li><strong>IV gap 3 closed: a dedicated mid-run revocation check.</strong> Revoking the agent's grant mid-run stopped the sandbox in 80 ms. The run was marked late, nothing was applied, and only the residual 2 tokens were billed.</li>
+  <li><strong>New: a replayed result never applies or bills twice.</strong> Replaying the settle for a finished run was refused, leaving exactly one output record and a bill of 4.</li>
+  <li><strong>Still holding from revision 1:</strong>
+    <ul>
+      <li><strong>Isolation:</strong> no network, only the tenant's own volume, read-only root, non-root user, no environment secrets.</li>
+      <li><strong>Missing cap:</strong> treated as zero.</li>
+      <li><strong>Concurrent caps:</strong> A 8, B 4 against 10 each; 12 against the shared 15; no leaked reservation.</li>
+      <li><strong>Kill timings:</strong> org kill 147 ms, cancel 95 ms, global 61 and 59 ms, all against the stated 1,500 ms bound.</li>
+      <li><strong>Missing usage:</strong> fails closed.</li>
+      <li><strong>Limits:</strong> token and duration limits stop the sandbox.</li>
+    </ul>
+  </li>
+  <li><strong>Results:</strong> 13 of 13 checks pass on the final run and in three repeat runs. All 19 mutants (one per guard) make their named check fail. The verifier's attack harness now passes all 6 of its normal checks. Its 2 "defect probe" checks, which pass only while a defect exists, now fail, which is the intended outcome.</li>
+</ul>
+</div>
+
+<h2>Before and after</h2>
+<table>
+<tr><th>Check</th><th>Before (7023bb3 code, <code>evidence/before-iv-fixes.log</code>)</th><th>After (<code>evidence/green.log</code>)</th></tr>
+<tr><td>Org kill just before apply, 8 tries</td><td>FAIL: applied 8 of 8, <code>late: false</code></td><td>PASS: 0 of 8 applied, 0 output records, each still billed 4</td></tr>
+<tr><td>Global kill just before apply</td><td>FAIL: applied</td><td>PASS: not applied, still billed 4</td></tr>
+<tr><td>Under-reporting guest (4 streamed, reports 1)</td><td>FAIL: billed 1, applied</td><td>PASS: billed 4, anomaly <code>usageUnderreport</code>, not applied</td></tr>
+<tr><td>Mid-run grant revocation</td><td>PASS (behaviour existed but was untested)</td><td>PASS: killed in 80 ms, late, not applied</td></tr>
+<tr><td>Verifier attack harness, <code>evidence/iv-fix/attack-after.log</code></td><td>Both defect probes reproduced the defects</td><td>Both defect probes fail (org race applied 0 times; under-report billed 4 of 4). The other 6 attacks pass.</td></tr>
+</table>
+<p>To run the verifier's harness against the new code I made two small changes to a throwaway copy, saved as <code>evidence/iv-fix/attack-harness-patch.diff</code>:</p>
+<ul>
+  <li>Route <code>call('settle')</code> to the new module.</li>
+  <li>Write the runner's done-file.</li>
+</ul>
+<p>Ports moved to 3950/3951 because the verifier's backend still held 3940. I did not stop it.</p>
+
+<h2>Mutants (19 of 19 caught, <code>evidence/mutants.json</code>)</h2>
+<p>The 16 from revision 1 still apply, except two. The old "late result gate" and "status checked before reconcile" mutants targeted code that no longer exists. They are replaced by these:</p>
+<table>
+<tr><th>Guard</th><th>Mutant</th><th>Check that fails</th></tr>
+<tr><td>Status re-checked inside the apply transaction</td><td>Drop <code>!cancelled</code> in <code>settle.ts</code></td><td>Org kill race (applied 8 of 8), cancel, replay</td></tr>
+<tr><td>Global kill checked when the apply is sent</td><td>Ignore the hosted flag</td><td>Global kill race</td></tr>
+<tr><td>H0 status treats lost authority as cancel (throwaway copy)</td><td>Swallow the <code>checked()</code> failure</td><td>Mid-run revocation</td></tr>
+<tr><td>Bill at least the executor meter</td><td>Bill the guest's report</td><td>Under-report</td></tr>
+<tr><td>Under-report flagged and not applied</td><td>Never flag</td><td>Under-report</td></tr>
+<tr><td>Missing usage stays missing</td><td>Fall back to the meter</td><td>Missing usage</td></tr>
+</table>
+<p>One mutant I tried survived, so I removed the guard instead of keeping a check that cannot fail: a "first receipt only" guard in <code>settle.ts</code>. A replay is already refused because the operation's status is terminal. The replay check still runs, and the status mutant above makes it fail.</p>
+
+<h2>How it works now</h2>
+<p>The executor runs the sandbox and meters every streamed token itself. It then sends one <code>settle</code> call with these fields:</p>
+<ul>
+  <li><code>meter</code>: the executor's own token count.</li>
+  <li><code>reported</code>: the usage the guest reported.</li>
+  <li><code>killed</code>: true if the run was killed, or if the global flag is off at send time.</li>
+  <li><code>output</code>: only if the run was not killed and the output is at most 64 KB.</li>
+</ul>
+<p>Inside one transaction, <code>settle</code> does four things in order:</p>
+<ol>
+  <li>Reads H0 <code>adapterStatus</code>, which covers cancel, org kill, revocation and lease.</li>
+  <li>Calls H0 <code>reconcile</code> to bill the usage.</li>
+  <li>Flags an under-report if the guest reported less than the meter.</li>
+  <li>Inserts the output as a <code>records</code> row only if nothing stopped it.</li>
+</ol>
+<p><code>settle.ts</code> is proof-owned. <code>contract.ts</code>, <code>harness.ts</code> and <code>schema.ts</code> are still byte-identical to <code>proofs/contract/convex</code> (<code>evidence/sha256.txt</code>), and <code>run.mjs</code> refuses to run otherwise. <code>disable()</code> returns only after any apply already sent has settled, so after it resolves nothing applies.</p>
+
+<h2>Needs an H0 amendment (recorded, not fixed)</h2>
+<ul>
+  <li><strong>Non-renewable 2 s lease.</strong> Any hosted run longer than about 2 s after claim is cancelled. Real agent turns need a fenced lease renewal.</li>
+  <li><strong>The global kill is per host.</strong> It is a flag in the executor process. A kill across several hosts needs a control-plane field. H0 has only the per-org <code>readonly</code>.</li>
+  <li><strong>The org kill is not "late" in H0 reconcile.</strong> P6 no longer depends on this, because of the atomic settle. The verifier found the same shape in I1 at <code>convex/integrations/outcomes.ts:36</code>, where it is an audit misclassification rather than a write bypass.</li>
+  <li><strong>Spend can overshoot before the kill lands.</strong> A model that ignores its limit billed 9 units against a reservation of 4. H0 then flags an overrun and holds the tenant. Real providers need their own token limit enforced; the executor kill alone is not a hard cap.</li>
+  <li><strong>Usage trust.</strong> The meter is now the floor, but it counts the stub's stdout lines. A real executor must meter at the trusted model runtime, not inside the tenant process.</li>
+</ul>
+
+<h2>What stays open in P6</h2>
+<ul>
+  <li>A real hosted executor. This is a local proof harness on <code>colima-remold-proof</code>.</li>
+  <li>OS-level isolation on the real host. Docker on a shared kernel here, with no gVisor or Firecracker and no escape testing.</li>
+  <li>A real-model smoke test with provider-origin usage, active stream cancellation, and step or tool limits.</li>
+  <li>The subscription route, which is still owner-local only in <code>proofs/runtime/report.html</code>.</li>
+  <li>The funding gate: default zero, and it needs a live funding method, provider terms and a numeric cap.</li>
+</ul>
+
+<h2>Replay</h2>
+<pre>pnpm install
+cd proofs/runtime/hosted
+node run.mjs        # ~25 s, local Convex on 3810/3811, docker context colima-remold-proof
+node mutants.mjs    # ~8 min, 19 mutants, each must fail its named check</pre>
+<p>Evidence is in <code>evidence/</code>:</p>
+<ul>
+  <li><code>green.log</code> and <code>results.json</code>: the final run.</li>
+  <li><code>before-iv-fixes.log</code>: the new checks run against the 7023bb3 code.</li>
+  <li><code>mutants.json</code> and <code>mutants.log</code>.</li>
+  <li><code>iv-fix/</code>: the verifier harness rerun and its patch.</li>
+  <li><code>sha256.txt</code>.</li>
+  <li><code>iv/</code>: the verifier's report, unchanged.</li>
+</ul>
+<p>Who checked: the builder only. Revision 1 was verified by the independent verifier (<code>evidence/iv/report.html</code>). These fixes still need re-verification before they count.</p>
+</body>
+</html>

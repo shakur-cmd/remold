@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 1 failed) 1145ms
+   × agent suggestion list fills its limit with readable suggestions 12ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:36
+   Duration  1.65s (tests 72%, transform 18%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > agent suggestion list fills its limit with readable suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:93:103
+     91|   const w = await suggestionWorld(100), agent = await w.f.client.actio…
+     92|   await grant(w.f, agent.agentId, w.company.object._id, [w.mine], Obje…
+     93|   expect(((await rest(w.f.t, agent.key)('GET', '/api/v1/suggestions'))…
+       |                                                                                                       ^
+     94| }, 30000);
+     95|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

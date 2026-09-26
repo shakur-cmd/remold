@@ -1,0 +1,45 @@
+PASS invoice-pay
+PASS subscription-create
+PASS unsafe-invoice-0
+PASS unsafe-invoice-1
+PASS unsafe-invoice-2
+PASS unsafe-invoice-3
+PASS unsafe-invoice-4
+PASS unsafe-invoice-5
+PASS unsafe-invoice-6
+PASS under-item
+PASS price-item
+PASS unbound-item
+PASS second-item
+PASS auto-finalize
+PASS wrong-total-finalize
+PASS unreserved-attachment
+PASS inactive-card
+PASS requirements-due
+PASS automatic-collection
+PASS subscription-invoice
+FAIL shape-drift
+FAIL last-read-shape-drift
+FAIL remaining-drift
+PASS platform-fee
+PASS off-session
+PASS transfer
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+3 !== 0
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/route-policy-replay.mjs:31:194
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 3,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

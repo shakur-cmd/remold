@@ -1,0 +1,39 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-rMpCQt[39m
+
+ [31m❯[39m ops/authority/migration.test.ts [2m([22m[2m7 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 189[2mms[22m[39m
+   [32m✓[39m freeze/create/migrate is idempotent and excludes later objects before and after migration[32m 140[2mms[22m[39m
+   [32m✓[39m an unfrozen legacy agent fails closed while migrated agents continue[32m 6[2mms[22m[39m
+   [32m✓[39m dangling legacy grants are dropped and cannot attach to a later key[32m 5[2mms[22m[39m
+   [32m✓[39m admin legacy role adds no authority, and object key reuse never transfers object-ID grants[32m 13[2mms[22m[39m
+   [32m✓[39m future required fields on existing objects preserve legacy authorized writes[32m 8[2mms[22m[39m
+   [32m✓[39m a human explicitly adopts a fired suggestion as a new attributable action[32m 9[2mms[22m[39m
+[31m   [31m×[31m an explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7)[39m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 11:10:48
+[2m   Duration [22m 308ms[2m (tests 73%, transform 20%, import 7%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/migration.test.ts[2m > [22man explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7)
+[31m[1mAssertionError[22m: expected 200 to be 403 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 403[39m
+[31m+ 200[39m
+
+[36m [2m❯[22m ops/authority/migration.test.ts:[2m88:35[22m[39m
+    [90m 86|[39m   await f.t.run(ctx => ctx.db.patch(campaign.object._id, { key: 'vendo…
+    [90m 87|[39m   const update = () => f.call('POST', '/api/v1/changes', { action: 'up…
+    [90m 88|[39m   expect((await update()).status).toBe(403);
+    [90m   |[39m                                   [31m^[39m
+    [90m 89|[39m   const migrated = await f.t.mutation(migration.migrateAgent, { agentI…
+    [90m 90|[39m   expect(migrated.dropped).toEqual(['update:vendor']);
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+

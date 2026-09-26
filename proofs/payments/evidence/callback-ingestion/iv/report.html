@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P4 callback ingestion: independent verification</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>P4 callback ingestion: independent verification</h1>
+<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion-iv · target: 0f55484 on p4/callback-ingestion-2026-09-26 · evidence level: SERVICE/SIM · verifier: Opus 5.5 (independent, not the builder) · verdict: PARTIAL</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Unbound connected account: refuse (400) or accept and park?</b> My recommendation is accept and park with no effect. The drain always re-reads the provider, so the event body carries nothing we need later, and binding a merchant should start its own full pull anyway. A 400 turns one unbound account into a failing endpoint on the provider dashboard, which (by my understanding of Stripe's policy, not checked in this session) can lead to warning emails and endpoint disabling that would hit every merchant. Keep 400 for bad signatures only.</li>
+  <li><b>Should the three drain defects below be fixed before this slice counts as integrated?</b> I recommend yes. They are about the drain getting stuck, not about money going wrong, but defect 3 means substitution refusals would never close on a production Convex deployment.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Builder suite rerun on my ports 3710/3711/3712: <code>--all</code> exit 0, same result as the builder. Baseline fails substitution, after passes 6/6, all 3 builder mutants fail a case (<code>logs/rerun.log</code>, <code>rerun/summary.json</code>).</li>
+  <li>My own 13 attacks on ports 3730/3731/3732: 11 pass, 2 fail (defects 1 and 2). Plus one observation run (<code>attacks/none.json</code>, <code>logs/attacks-none.log</code>).</li>
+  <li>My own 6 mutants of the new code and of the dedupe it relies on: each one makes at least one attack fail that passes without it (<code>attacks/&lt;mutant&gt;.json</code>).</li>
+  <li>Frozen files: commit 0f55484 only adds 15 files and changes none. All 392 files under <code>proofs/payments</code> at the base 4fbe55f hash the same at 0f55484 (<code>frozen-hash-base.txt</code>, <code>frozen-hash-head.txt</code>). That covers the builder's 54-file set.</li>
+  <li>Typecheck <code>tsc --noEmit -p tsconfig.json</code> exit 0. Builder source hashes match the handover.</li>
+  <li>No provider activity: all provider reads went to an in-process stub (406 stub GETs, 402 on A, 4 on B). No Stripe key was present or loaded. I checked this by reading the code, not by watching the network.</li>
+</ul>
+</div>
+
+<h2>Verdict per claim</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Why</th></tr>
+<tr><td>Receiver reuses verifyStripe, binds to one merchant by the claimed account, and stores the receipt durably before sending 200</td><td>PASS</td><td>If the backend is down it returns 400 and stores nothing. After recovery, redelivery stores exactly one receipt. The <code>ack-before-store</code> mutant breaks 8 attacks. The Stripe-Account header is ignored and only the payload account binds.</td></tr>
+<tr><td>Unknown account or no account gets 400</td><td>PASS</td><td>Reproduced in the rerun. A padded account, an array account and <code>__proto__</code> also get 400.</td></tr>
+<tr><td>Drain does an account-scoped fresh read, then acknowledges</td><td>PARTIAL</td><td>Correct for bound invoices, including transient failures (they retry, then apply once). It fails defects 1 and 2 below, and defect 3 applies to production.</td></tr>
+<tr><td>Crash, exact replay, out-of-order, bad signature and substitution each give one durable effect or a refusal</td><td>PASS (local SERVICE)</td><td>Reproduced. My extra checks also held: same id with a different body, replay after acknowledgement, 25 parallel identical POSTs, 10 parallel same-id variants, and an A event naming B's invoice. Substitution refusal depends on the error text reaching the drain, which production Convex hides (defect 3).</td></tr>
+<tr><td>Tenant B unchanged</td><td>PASS</td><td>B's finance export was byte-identical through attacks 1 to 11. B's account was never read for the cross-tenant event.</td></tr>
+<tr><td>Dedupe, signature and account-binding mutants each fail a check</td><td>PASS</td><td>Reproduced. My 6 extra mutants are also caught.</td></tr>
+<tr><td>54 frozen payment source files unchanged</td><td>PASS</td><td>Stronger than claimed: the commit only adds files, and every base file is byte-identical.</td></tr>
+<tr><td>No provider activity</td><td>PASS (by inspection)</td><td>Stub only. I had no network monitor running.</td></tr>
+</table>
+
+<h2>Defects</h2>
+<p><b>1. One failing merchant stops the drain for every merchant after it.</b> In <code>callback-ingestion.mjs</code> <code>drain()</code>, <code>await pending(merchant)</code> sits outside the try block, and so does <code>refuse()</code> inside the catch. If a merchant's adapter access is denied (disconnected, revoked or restricted), the whole drain throws. Repro is attack 12: merchants <code>[A with a revoked token, B]</code>, with a valid pending receipt on B. The drain throws "adapter account denied" and B's receipt stays pending. Fix: a try block around each merchant.</p>
+<p><b>2. A receipt that keeps failing with a non-matching error is retried forever, and 100 of them starve the binding.</b> <code>FINAL</code> matches <code>No such object</code>, but that text only comes from the replay stub. The real client (<code>stripe.mjs</code> StripeFailure) says <code>Stripe sandbox request failed: 404 invalid_request_error resource_missing id</code>. <code>Non-sandbox</code> does not match the real client's <code>Live response refused</code> either. <code>pendingEvents</code> takes 100 per binding in creation order, so 100 stuck rows hide every newer receipt. Repro is attack 13: a bound document whose provider object returns a StripeFailure 404, then 100 events for it (all "retry"), then one valid event for another invoice. That valid event is never picked up across two further drains. Also, <code>callbackIngestion.receipts</code> throws "receipt bound reached" once a binding has more than 100 receipts in total, so the measurement query stops working.</p>
+<p><b>3. Classifying refusals by matching error text will not work on a production Convex deployment (not reproduced here).</b> Convex docs (docs.convex.dev/functions/error-handling) say that in production, server errors that are not ConvexError are cut down to the function name and a generic "Server Error". So <code>unbound provider document</code> would never reach the drain. Substituted and foreign-invoice receipts would retry forever and feed defect 2. Local dev deployments show the full message, which is why the builder's run passes. Fix: throw ConvexError with a code, or have <code>observe</code> return a typed refusal.</p>
+
+<h2>Observations (not defects in the claims)</h2>
+<ul>
+  <li><b>The duplicate audit row after an ack loss is harmless.</b> After a crash between the ledger write and the ack, the document is field-for-field equal to a clean drain, apart from the <code>adjustmentEpoch</code> counter (7 vs 8, which moves on every read). The extra <code>payment.observed</code> row records a real second provider read. Nothing in the repo counts <code>payment.observed</code> except the replay fixture.</li>
+  <li><b>Refund and dispute notifications are accepted and then closed.</b> A <code>charge.refunded</code> event for bound B (charge id, not invoice id) got a 200, and the drain then refused it as "unbound provider document" and closed it with 0 observations. So those notifications do not trigger a re-read of their invoice. <code>webhooks.mjs</code> subscribes to charge.refunded, charge.dispute.created, credit_note.created and customer.subscription.*. The builder disclosed that only one-time invoice events are covered. This is bigger than renewals alone.</li>
+  <li><b>Signature window is 300 seconds each way.</b> t-295 and t+295 are accepted. t-305 and t+305 are refused. A header with one wrong v1 and one right v1 is accepted, which matches Stripe's multi-signature scheme. v0 only, an empty header, and an HMAC without the timestamp prefix are all refused.</li>
+  <li>verifyStripe refuses <code>livemode:true</code>, so this receiver is sandbox-only as frozen. A live route needs a separate, reviewed change.</li>
+</ul>
+
+<h2>Attacks and mutants</h2>
+<table>
+<tr><th>#</th><th>Attack</th><th>Unmutated</th><th>Mutants that break it</th></tr>
+<tr><td>1</td><td>Same event id, different body</td><td>PASS (200 then 400, first digest kept)</td><td>ack-before-store, digest-compare</td></tr>
+<tr><td>2</td><td>Stripe-Account header B, payload A</td><td>PASS</td><td>ack-before-store, header-binding</td></tr>
+<tr><td>3</td><td>Replay after ack, re-signed</td><td>PASS</td><td>ack-before-store</td></tr>
+<tr><td>4</td><td>25 parallel identical POSTs plus 10 parallel same-id variants</td><td>PASS (25 x 200; variants 1 x 200, 9 x 400; one receipt each)</td><td>ack-before-store, digest-compare</td></tr>
+<tr><td>5</td><td>Ack lost after ledger write, restart</td><td>PASS (equal to a clean drain)</td><td>ack-before-store, ack-on-error, final-everything</td></tr>
+<tr><td>6</td><td>A-signed event naming B's invoice</td><td>PASS (refused on A, B untouched, B never read)</td><td>ack-before-store</td></tr>
+<tr><td>7</td><td>&gt;1 MB, bad JSON, null, array, numeric object id, missing id, livemode true, type-confused accounts</td><td>PASS (all 400, no receipt)</td><td>none (guarded by frozen verifyStripe and Convex validators)</td></tr>
+<tr><td>8</td><td>Timestamp edges and header shapes</td><td>PASS</td><td>none built</td></tr>
+<tr><td>9</td><td>Backend down during delivery</td><td>PASS</td><td>ack-before-store</td></tr>
+<tr><td>10</td><td>Transient provider failure</td><td>PASS</td><td>ack-before-store, ack-on-error, final-everything</td></tr>
+<tr><td>11</td><td>B token refuses or lists A receipts</td><td>PASS</td><td>refuse-scope</td></tr>
+<tr><td>12</td><td>Failing merchant isolation</td><td>FAIL (defect 1)</td><td>n/a</td></tr>
+<tr><td>13</td><td>Liveness with 100 provider-404 receipts</td><td>FAIL (defect 2)</td><td>n/a</td></tr>
+</table>
+<p>Mutant definitions and anchors are in <code>iv-attacks.mjs</code> (SHA256 a889cad2bf6ee923e3141b6e85e46508acdd550df707a39c1cd16d1568b451d6). The mutant runs used this script before the observation block (#14) was added. Attacks 1 to 13 are unchanged. To rerun, copy the script into <code>proofs/payments/</code> and run <code>node iv-attacks.mjs --mutant=none|ack-before-store|ack-on-error|final-everything|header-binding|refuse-scope|digest-compare</code>. Ports 3730 to 3732 must be free.</p>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>Production Convex error redaction against this code (defect 3). It is based on the docs only.</li>
+  <li>Real Stripe deliveries, Connect event shapes, retry timing and endpoint-disable policy. No provider calls were made, by design.</li>
+  <li>Network-level proof of zero provider traffic. That claim rests on reading the code.</li>
+  <li>Process-level crash of the receiver itself. Like the builder, I restarted the Convex backend. The receiver holds no state, so I judge this low risk.</li>
+</ul>
+
+<h2>Files</h2>
+<p>All under <code>proofs/payments/evidence/callback-ingestion/iv/</code>: <code>report.html</code>, <code>iv-attacks.mjs</code>, <code>attacks/*.json</code>, <code>rerun/*.json</code>, <code>logs/*.log</code>, <code>frozen-hash-base.txt</code>, <code>frozen-hash-head.txt</code>. The builder's evidence files were not modified.</p>
+</body>
+</html>

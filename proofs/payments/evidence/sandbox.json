@@ -1,0 +1,152 @@
+{
+  "level": "SANDBOX Stripe, SERVICE disposable local Convex, SIM identities/prices/jurisdiction",
+  "runId": "3f7c6229-f345-4b59-8b6a-971208c4efe7",
+  "apiVersion": "2025-05-28.basil",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "merchantFixtures": {
+    "A": {
+      "fixture": "D",
+      "account": "acct_1UJIndJL8hhTtG1o"
+    },
+    "B": {
+      "fixture": "E",
+      "account": "acct_1UJL2DR59Pk6MTFE"
+    }
+  },
+  "results": [],
+  "objects": [
+    {
+      "kind": "customer",
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "id": "cus_VJzrZTORGay5Lp"
+    },
+    {
+      "kind": "customer",
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "id": "cus_VJzr8q1ZtrR81v"
+    }
+  ],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_fg4tWWCfqLdHER",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_HRIoeLImXUh48a",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJIndJL8hhTtG1o",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_ILmiXNt54yKBUS",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_gttZnTmAn4DVW5",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJL2DR59Pk6MTFE",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_JmeEbY18N3hdCU",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_jYa6N7YqbDx0Se",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/customers",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": "382eff027d618e0430ca7e2a9f4e6ecdacd7e860d427eb4fee56d861d266ece5",
+      "httpStatus": 200,
+      "requestId": "req_U1fkKKfk2RmTxT",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/customers",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": "f825788033a6866ccb4551f85005d14c621780d849f5e0e535ba1001ada06363",
+      "httpStatus": 200,
+      "requestId": "req_ielZHMMZv8mql1",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_bF13oDuhXNESBp",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/accounts/acct_1UJIndJL8hhTtG1o",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_mOeaN08YxNB7cN",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/invoices",
+      "responseLossInjected": true,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": "2a15e34b32c8642b04c99ff5fc4053cb661c213c7f19fbbfae33377ec05d061e",
+      "httpStatus": 400,
+      "requestId": "req_Ap2nachRbN4brP",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "webhookReceipts": [],
+  "status": "FAILED or BLOCKED",
+  "failure": {
+    "message": "Stripe sandbox request failed: 400 invalid_request_error no-code no-param",
+    "status": 400,
+    "code": null,
+    "providerMessage": "Missing email. In order to create invoices that are sent to the customer, the customer must have a valid email."
+  }
+}

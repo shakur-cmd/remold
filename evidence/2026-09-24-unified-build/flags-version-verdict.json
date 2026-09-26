@@ -1,0 +1,55 @@
+{
+  "verdict": "APPROVE bounded I2 flags, local-helper and version-route slices only",
+  "reviewer": "/root/c0_verifier",
+  "builder": "/root",
+  "ts": "2026-09-24T18:20:59.521269+00:00",
+  "base": "63d7d92a5ec9f38af69112be6483d83aa6638d06",
+  "source_sha256": {
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/ops.test.ts": "58780c3541cc6b3330bc51b9a327064fd479e2c3b549be522a503bebad1cb619",
+    "convex/schema.ts": "7d0212667d8d032d178bae0014078812709f28db0797d32741f85b8e26f86435",
+    "convex/_generated/api.d.ts": "46390f27a79aa9d9370b6e282027fddc29392073a4158053da02d3f222b45af1",
+    "ops/rehearsal/local-core.mjs": "7fccc6fc6688a77e81508dc85772a44c5683c9ca909a0975420ac0362a89aa75",
+    "ops/rehearsal/flags.mjs": "45b5fcb38cb5cefded63b9f460479ddba8a5d5f5301e6d4255595212d165ead9",
+    "ops/rehearsal/rate-fixture.ts": "678b04d8946f351785c333dc42c2cdf378dfa2b0a09219df87e0d322b6fa1760",
+    "ops/rehearsal/rate-limit.mjs": "18e2d38aa646cde66191da0a69932876c65fe82e9fcb378aa782ca77e5c8d057",
+    "public/_redirects": "3738936006ee3f1f690507ffabb941d1ad629e42d3a349b3928d1a035b4d3455",
+    "public/_headers": "1c3b56ff9f3cf85efa1543c93890630c025b5c41aeaf7e14cd50d6b7d28654c0",
+    "ops/release/version-service.mjs": "0211b20fbfbfbe82004c07ede275927e7b3d5a790dfc6218f54a640e9e041ab2"
+  },
+  "independent_checks": [
+    {
+      "command": "pnpm test",
+      "exit": 0,
+      "files": 21,
+      "tests": 55
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "check": "Flags SERVICE with changed flag and additional invalid/isolation probes",
+      "exit": 0,
+      "evidence": "flags-service-iv.json"
+    },
+    {
+      "check": "Refactored rate SERVICE replay",
+      "exit": 0,
+      "evidence": "rate-limit-helper-service-iv.json"
+    },
+    {
+      "check": "Version SERVICE with b repeated40 synthetic SHA",
+      "exit": 0,
+      "evidence": "version-service-iv.txt"
+    }
+  ],
+  "limitations": [
+    "Local Convex SERVICE uses CLI-impersonated identities, labeled SIM; not real Clerk/AuthKit authentication.",
+    "Operator attribution remains internal-admin, not a named authenticated operator.",
+    "No timed browser subscription proof or production feature consumption of flags.",
+    "Version route uses local Workers runtime with synthetic artifact; no hosted deployment or real release SHA served.",
+    "Actual cross-origin CORS authorization was not tested; cors/navigate are request-mode header probes.",
+    "No managed backups, restore/rollback, real alerts, cloud change or full I2 completion."
+  ]
+}

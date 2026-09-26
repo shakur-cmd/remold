@@ -1,0 +1,92 @@
+AssertionError [ERR_ASSERTION]: Only exact bound terminal identities and complete known-ID inventories may settle
++ actual - expected
+... Skipped lines
+
+  [
+    {
++     accepted: false,
++     complete: false,
++     held: 602,
+-     accepted: true,
+-     complete: true,
+-     held: 0,
+      kind: 'terminal-null'
+    },
+    {
+      accepted: false,
+      complete: false,
+...
+    {
++     accepted: true,
++     complete: true,
++     held: 0,
+-     accepted: false,
+-     complete: false,
+-     held: 602,
+      kind: 'terminal-released'
+    },
+    {
++     accepted: true,
++     complete: true,
++     held: 0,
+-     accepted: false,
+-     complete: false,
+-     held: 602,
+      kind: 'changed-schedule-clock'
+    },
+    {
++     accepted: true,
++     complete: true,
++     held: 0,
+-     accepted: false,
+-     complete: false,
+-     held: 602,
+      kind: 'changed-subscription-clock'
+    },
+    {
++     accepted: true,
++     complete: true,
++     held: 0,
+-     accepted: false,
+-     complete: false,
+-     held: 602,
+      kind: 'changed-customer-clock'
+    },
+    {
++     accepted: true,
++     complete: true,
++     held: 0,
+-     accepted: false,
+-     complete: false,
+-     held: 602,
+      kind: 'missing-schedule'
+    },
+    {
++     accepted: true,
++     complete: true,
++     held: 0,
+-     accepted: false,
+-     complete: false,
+-     held: 602,
+      kind: 'missing-subscription'
+    },
+    {
++     accepted: true,
+-     accepted: false,
+      complete: false,
+      held: 602,
+      kind: 'missing-invoice'
+    },
+    {
++     accepted: true,
+-     accepted: false,
+      complete: false,
+      held: 602,
+      kind: 'missing-invoice-payment'
+    }
+  ]
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:815:20
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withRecurring (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/local.mjs:84:16)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/payments/recurring/replay.mjs:13:5

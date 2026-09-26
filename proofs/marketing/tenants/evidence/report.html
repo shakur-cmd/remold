@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TITLE</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Two marketing tenants and retained media</h1>
+<div class="meta">2026-09-25 · SERVICE · Bounded independent PASS; full P2 remains open</div>
+<div class="decisions"><h2>Current boundary</h2><p>No owner decision needed for this local slice. Keep P2 and engine selection open. B has no delivery worker proof; A still has the inherited anonymous media layout. No real mail was sent.</p></div>
+<div class="status"><h2>Done and checked by root and fresh Opus 5.5</h2><ul>
+<li>Two pinned Mautic/MySQL instances on separate internal networks, with separate credentials, storage and queues. Neither B service publishes a host port.</li>
+<li>Same contact ID and email retain different fields. Foreign and empty credentials each return 401. B cannot reach A's private web address. B queue survives database/web restart; A data and container mounts stay unchanged.</li>
+<li>Actual failure captured: a replacement using only the declared parent media mount loses the original synthetic file. Explicit named child volumes retain it.</li>
+<li>B migration preserves file contents, paths, numeric ownership and modes including root directories. Original B container and source volumes retained; original stopped and disconnected. Queue, admin row, contact, database container and A container/mount snapshot matched.</li>
+</ul></div>
+<h2>Before and after</h2><table><tr><th>Check</th><th>Before</th><th>After</th></tr>
+<tr><td>Container replacement file read</td><td>Actual probe exit 1; original marker exists in B but absent in replacement</td><td>Probe exit 0; SHA256 a7e5029dd6497222bd448c7bc163f9e13dd329896679aeb9f84ebd834f53004c matches original</td></tr>
+<tr><td>Media mount layout</td><td>Named parent hides anonymous files/images children</td><td>Explicit named files-b and images-b; volume-nocopy prevents image fill during migration</td></tr>
+<tr><td>Rollback material</td><td>Original B web container ad899859…</td><td>Retained as web-b-before-media, stopped and disconnected; replacement 4135bacb…</td></tr>
+<tr><td>Tenant isolation</td><td>Two real instances passed prior to migration</td><td>Same API/queue/restart checks pass after replacement, A unchanged</td></tr></table>
+<h2>Evidence and exact scope</h2><p><a href="media-before.json">Failing replacement probe</a> · <a href="media-before.txt">Red assertion</a> · <a href="media-after.json">Passing replacement probe</a> · <a href="media-migration.json">Migration manifests</a> · <a href="isolation.json">Post-migration isolation</a> · <a href="opus-media-consult.json">Opus 5.5 design consultation</a> · <a href="source-manifest.json">Frozen source manifest</a>.</p>
+<p>Candidate aggregate: <code>3a63d24a88f4ee841dc496b5065262adef612029b52a26f35ac41415a049e727</code>. The 57-file independently certified MIME implementation remains byte-for-byte unchanged. Migration executed before two added resume guards and the completed-journal no-op path; no-op executed on final source. The copy operation has not been replayed from scratch on the final source. It preserved original sources and compared actual results; do not call this crash-injection or full migration automation certification.</p>
+<h2>Independent verification</h2><p><a href="independent/report.html">Fresh Opus 5.5 report</a> and <a href="independent/verdict.json">verdict</a>: final seven-file aggregate unchanged; expected red exit 1 and repaired probe exit 0, tenant replay exit 0 with B queue 3 to 4, actual source/destination comparisons before and after restart, and www-data writes to both named media volumes pass. A unchanged; original B stays stopped and disconnected. Seven altered byte/metadata/link cases are detected in an independent tmpfs copy check, also repeated by root. The actual original media fixture had no symlinks; link preservation is proven only in that tmpfs check.</p><p>Independent setup-refusal replay is BLOCKED on the current migrated fixture because running setup would rewrite local configuration/cache and root evidence. Its guard is source-reviewed, not independently exercised. Prepared/fenced/copied resume guards, new setup, crash recovery, rollback and whole migration automation remain unverified. This bounded PASS does not include those checks. New independent write markers are retained, so destinations intentionally diverge from original source manifests after the writeability check.</p><h2>Failures preserved</h2><p>The first isolation driver wrongly expected HTTP 200 for creation. Actual HTTP 201 created contact 1; it was verified and bound without a second create request. A later driver compared Docker's unordered mount list; sorting retained all identity checks. Both failures and recovery are retained. Initial setup evidence's aResourcesChanged:false was an unmeasured claim by that script; use the later actual before/after comparisons. Setup now describes requested mutations and refuses legacy media mounts, unfinished migration and reinstall of a previously initialized empty database.</p>
+<h2>Recovery</h2><p>No original container or data volume was deleted. Private journal binds exact original and replacement IDs, image, environment, sources and phases. If rollback is needed, first stop and preserve the replacement under a new name; reconnect the journaled original using its recorded network aliases, rename it to web-b and start it. Do not run both. Any writes made after migration must be reconciled before rollback. No rollback or deprovision is claimed tested.</p>
+<h2>Still open</h2><p>This is a filesystem marker proof, not native asset export/restore. ACLs, extended attributes and timestamps were not compared. A needs its own separately reviewed preservation step before replacement. B has queued synthetic messages and null transport; no B worker ran. Tenant-bound public forms/pages/media/callbacks, path traversal, sync/consent cases, both tenants' upgrades/restores, native slice comparison, editing controls, measured load/fleet costs and LIVE delivery gates remain open. P2 is not complete and Mautic is not selected.</p>
+</body></html>

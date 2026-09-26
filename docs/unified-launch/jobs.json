@@ -1,0 +1,571 @@
+{
+  "status": "planning-approved-not-dispatched",
+  "contract_core_sha256": "a8c8cd26427a542a98d1060ef1c667149ef4bc46120aa839058163025d49a5fe",
+  "baseline_head": "1f793099bdba42611c7f48f063a610c7df5630d5",
+  "job_state_rules": "Dependencies may integrate after predecessor non-live criteria + IV; required LIVE gates propagate and block completion. Read full HTML contract.",
+  "jobs": [
+    {
+      "id": "C0",
+      "title": "Baseline, scope and instruction reconciliation",
+      "depends": [],
+      "owner": "Integrator; docs and baseline evidence only",
+      "build": "Inventory actual HEAD, clean/dirty state, every existing agent role/grant (including wildcard semantics), and existing test commands; reconcile AGENTS.md and plan precedence with accepted user decisions, retaining pnpm, AGPL, metadata, audit and IV. Freeze S1\u2013S10 plus the channel/account gate register. Identify runtime/access gaps without exposing secrets. Preserve old plans by reference and hashes. Record that optional Jev/Microsoft and real EspoCRM cutover cannot be asserted completed without their inputs.",
+      "checks": [
+        "A fresh reviewer reads only this pack and reconciled instructions and identifies the same architecture, scope and forbidden live actions.",
+        "Inventory explicitly maps all original r3 Steps 6\u201313 and r7 Steps 1\u20137 to job IDs or a stated supersession; no dropped requirement.",
+        "Run existing repository verification on the unchanged baseline where possible; record failures/access limits before changes. No production modifications."
+      ],
+      "evidence": "HTML before/after instruction matrix, full baseline SHA, scope/gate data, the JSON job-data companion and baseline outputs.",
+      "recovery": "Revert documentation commit; preserve evidence. No deployments to undo.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "H0",
+      "title": "Disposable shared-contract harness",
+      "depends": [
+        "C0"
+      ],
+      "owner": "Proof integrator; proofs/contract and fixture definitions",
+      "build": "Implement the smallest executable C1\u2013C5 contract in an isolated Convex test deployment with fake provider adapters, not a production integration framework. A/B workspaces share a database, distinct accounts; include same external ID in two provider instances. Add operation claim/fencing, epoch changes, approved-payload version, budget reservations and fake inbound/outbound boundary holds. Freeze a typed schema/API contract and examples after root, Fable and Opus approve the exact shapes/hash; I1 cannot start before that review.",
+      "checks": [
+        "A proposes; direct action denied; owner grants bounded authority; same action succeeds. B cannot read/approve/execute A operation even with known IDs. A manager delegates then is fired/downgraded: descendant next and queued claims/model calls refuse; descendant cannot fire/regrant its ancestor. Independent human grants remain scoped and valid.",
+        "Before-permit hold \u2192 fire \u2192 release refuses; after-permit hold \u2192 fire \u2192 release reports the bounded in-flight or late result and never blindly retries it; response-loss after provider acceptance reconciles without duplicate. Revocation/downgrade invalidates old claims/approvals.",
+        "Duplicated calls and callbacks, stale leases, worker crash before/after acceptance, out-of-order events, provisioning-create/delete race and partial inbox traversal leave one intended effect or visible outcomeUnknown.",
+        "Two concurrent budget reservations cannot exceed fixture caps; missing usage retains reservation. Approval/content/audience tamper and delegated privilege escalation fail.",
+        "Restricted fields cannot leak through record/history/suggestion/export/report/MCP read; cancellation and truthful inbound reconciliation still work in readonly."
+      ],
+      "evidence": "pnpm proof:contract replay entrypoint, red/green behavior outputs, fixture exports and contract checksum. IV injects a new tenant binding collision and repeats race probes.",
+      "recovery": "Delete only the disposable fixture deployment after export; retain harness for repeatability. Failed contract blocks affected proofs.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "P1",
+      "title": "Agent orchestration: Paperclip versus minimal native runner",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Agent proof builder; proofs/agents",
+      "build": "Pin candidate source/version/license. Connect two workspace mappings, stub executors and one external MCP client through the contract. Compare Paperclip with one narrow Convex scheduled-job implementation covering the same assignment/retry/delegation flow. Do not build two complete orchestration products. Paperclip must remain private to trusted adapters; scoped agent views must not expose broad company work via its own API.",
+      "checks": [
+        "Hire/report/delegate; execute one task, recurring task and dependent task; status/artifact return to Remold-shaped surface with correct attribution.",
+        "From inside A execution attempt B files, queue, env, credentials, work objects and forged callbacks. Refuse; no host home, personal subscription, global connectors or provider admin credentials are mounted.",
+        "One active/two queued jobs plus owned campaign/post: fire stops access/new work and triggers contract cancellation; reassign explicitly resumes approved work under new owner.",
+        "Kill orchestration DB/process; retry resumes logical work without duplicate provider action. Export/restore execution state with files/key material; upgrade pin in scratch and rerun.",
+        "Paperclip current-version credential-inheritance regression probe passes; cited advisory is not treated as proof latest is vulnerable."
+      ],
+      "evidence": "SERVICE + SIM logs, exact API/permission mapping, source license/features, native baseline missing-capability list, operations comparison and IV replay.",
+      "recovery": "If isolation, API-only user flow or safe execution requires excessive changes, reject Paperclip; specify native runner completion job retaining S3. No automatic scope reduction.",
+      "gate": "P6 live-runtime gate applies to model execution; this proof otherwise uses stubs."
+    },
+    {
+      "id": "P2",
+      "title": "Marketing engine: isolated Mautic versus narrow native slice",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Marketing proof builder; proofs/marketing",
+      "build": "Test one Mautic instance/database/queue/credential/storage namespace per org, private administration, tenant-bound public form/page/asset host routing. Compare one equivalent capture \u2192 segment \u2192 two-step email slice with a Convex + mail-transport implementation. Native slice is not claimed as Mautic feature parity. Demonstrate native Remold-shaped editing/preview/publish controls for a form, page, email and branched campaign, via API or a bounded extension.",
+      "checks": [
+        "A credentials fail on B endpoint; same-email contacts and numeric IDs in A/B never merge. Form host substitution, media path traversal and callback binding attacks fail.",
+        "Run r3 sync cases: create/adopt ownership, duplicate-email ambiguity skip, PATCH field ownership, unsubscribe, zero-diff idle, remote create crash/recovery, delayed create+delete in both orders, partial batch failure, remote-delete no silent recreation, segment membership on unedited Person.",
+        "Disable webhook delivery with partial traversal and consent flips; poll recovers every submission once and ends with authoritative suppression.",
+        "Prove per-send dispatch-permit authorization and bounded in-flight outcomes, pause/fire mid-sequence, queued bounce/complaint/unsubscribe and no unauthorized future sends. If Mautic native cron bypasses these controls it fails adoption.",
+        "Upgrade and restore two isolated tenants; exported contacts/assets/config agree; B unchanged during A deprovision. Capture measured resource footprint and sourced fleet cost assumptions.",
+        "LIVE residue: authenticated domain, headers, inbox receipt and unsubscribe/complaint test path. Local sink proves behavior, not reputation or inbox placement."
+      ],
+      "evidence": "SERVICE fixtures, API/UI coverage matrix including A/B variants and reporting, transport interception design, restore comparison, maintenance comparison, IV race/outage reruns.",
+      "recovery": "Reject shared-instance role partition as a fallback for this pack. If isolated Mautic fails, D0 defines native completion of every S4 feature and re-reviews cost/scope; marketing remains required.",
+      "gate": "Approved mail account, sending-domain DNS, approved test recipients and cap before real delivery. Each customer has its own verified sending identity; no assumption shared reputation is harmless."
+    },
+    {
+      "id": "P3",
+      "title": "Social publishing candidates and per-channel access",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Social proof builder; proofs/social",
+      "build": "Inspect Post for Me hosted/source and self-hosted Postiz. Narrow to viable candidate(s) using actual API, license, deployment, tenant credentials and channel access; compare an equivalent schedule/publish/cancel path to a direct-provider baseline. Produce platform matrix for Facebook Pages, Instagram, LinkedIn, YouTube, TikTok, X, Threads, Pinterest and Bluesky as candidates, not promises. Record account types, media limits, OAuth review, costs and available metrics.",
+      "checks": [
+        "In a Remold-shaped composer connect an account, draft, version/approve, schedule with timezone/DST handling, cancel/reassign, publish and show confirmed provider ID or honest failure.",
+        "B cannot use A account or OAuth state; replay/expired authorization state and account switching during callback fail. Tokens stay private; disconnect/expiry triggers reconnect and refuses new dispatch.",
+        "Network loss after acceptance cannot duplicate publication; fired/downgraded owner cannot dispatch queued post; confirm provider-held schedules cancelled or reject that scheduling mode.",
+        "For each selected channel, actual provider account test demonstrates supported text/image/video subset, scheduling, cancellation and actual metrics. No one-channel test certifies all channels.",
+        "Self-host candidate upgrade/restore works; hosted candidate outage/export/replacement behavior documented. Fake posts remain SIM, never LIVE."
+      ],
+      "evidence": "Candidate decision table, per-channel proof receipts/URLs (redacted as needed), callback and tenancy attacks, deployment/credential responsibilities, sourced costs, IV second account replay.",
+      "recovery": "If providers fail, retain S5 blocked and revise adapter approach. Do not mark full product complete with social deferred.",
+      "gate": "Owner selects required launch channels from evidence; platform approvals, account consent, exact test content/visibility and any provider spend approved before real posting. Comments/DMs/ad buying are not implied by posting."
+    },
+    {
+      "id": "P4",
+      "title": "Customer merchant payments proof",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Payments proof builder; proofs/payments",
+      "build": "Use a real provider sandbox for two connected merchant accounts. Compare available Stripe Connect account configurations against single-product onboarding/account management and actual liability terms. Default technical route is connected-account direct charges, separate from Remold subscriptions; no application fee. Document versioned quotes, public acceptance, invoice/deposit allocation and recurring client service.",
+      "checks": [
+        "Accept quote version once; create deposit once; allocate deposit once against balance invoice; recurring charge appears on merchant A, never platform subscription account. Integer minor-unit arithmetic and currency mismatch refusal pass.",
+        "B forged connected-account/document/customer IDs fail. Invalid/replayed callbacks, stale old subscription events and timeout-after-create resolve from authoritative account-scoped state without duplicate invoice/charge.",
+        "Customer acceptance/payment token tamper, expiry, duplicate clicks and browser paid redirect forgery fail. Restricted merchant and disconnect stop new issuance; history remains.",
+        "Sandbox refund/credit/void/partial payment/failed renewal/card update/dispute event and merchant requirements are visible with correct amounts/status.",
+        "Readonly continuation, issued-document immutability, deletion/retention and merchant ownership are documented and tested against the proposed policy, labeled pending commercial confirmation."
+      ],
+      "evidence": "SANDBOX provider object IDs and account-scoped reconciliation, arithmetic oracle, exact account model/terms source record, connected-vs-platform separation, IV forged-ID/retry replay.",
+      "recovery": "Suspend adapter and prevent new charges; reconcile existing provider commitments. Changing merchant model requires new proof, not silent substitution.",
+      "gate": "Stripe sandbox access required; jurisdiction/merchant model/collection-during-readonly/retention approval blocks live mode. Sandbox cannot certify invoice email delivery."
+    },
+    {
+      "id": "P5",
+      "title": "Mailbox/calendar and stop-on-reply boundary",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Communications proof builder; proofs/communications",
+      "build": "Verify Google OAuth scopes/access/verification path and a tenant/member-bound adapter. Use two test mailboxes and a calendar; map threads only by verified addresses/conversation context. Decide the reply source used by marketing versus personal sales sequences so neither sends twice. Microsoft remains a separate capability row pending account access.",
+      "checks": [
+        "Send from Person record, receive reply, create and reschedule meeting: record timelines on both browsers update; unknown address goes to an unmatched inbox without inventing a match.",
+        "Pause sync/revoke credential; reconnect resumes cursor without duplicates or cross-org attachment. Account switch/replay callback/forged watch notification refused.",
+        "Two recipients in three-step two-minute-delay fixture: P replies in stripped plain text after step 1 and receives only step 1; Q receives all three within nine-minute fixture window. Test false-positive thread/contact matching.",
+        "Reply and unsubscribe race with next send: suppression/current authority checked at the final dispatch-permit boundary. A queued future send is refused; an already-permitted send remains visibly in-flight until provider outcome is reconciled."
+      ],
+      "evidence": "LIVE controlled-mailbox timestamps and thread IDs plus SIM faults; exact scopes/provider review requirements; IV uses new contacts.",
+      "recovery": "Keep sequence sending off if reliable reply matching/access unavailable; S8 stays blocked. Native Mautic reply parser is not assumed sufficient.",
+      "gate": "Verified test mailbox/calendar authorization and recipient allowance. Gmail/Calendar access is separate from sign-in. Microsoft account needed only for its labeled optional row."
+    },
+    {
+      "id": "P6",
+      "title": "Hosted execution isolation, funding and hard limits",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Runtime proof builder; proofs/runtime",
+      "build": "Test a sandboxed hosted executor and its model adapter separately from orchestration. Start with deterministic stub model. Use isolated filesystem/process/network policy; no host-home inheritance or arbitrary provider secrets. API-funded provider credentials or workspace BYO credential model must have verified permitted use; no assumption consumer subscriptions can serve customers.",
+      "checks": [
+        "Attempt cross-tenant filesystem/env/network/admin endpoint access; refuse. External tool requests must use current Remold capability and cannot bypass through a mounted connector.",
+        "Concurrent jobs reserve fixture budget atomically; timeout/cancel/double usage report, missing report and overshoot attempt cannot create new spend beyond configured enforceable envelope.",
+        "Global/per-org kill switch stops queued runs and revokes active tools/model calls including delegated descendants; active stream cancellation and bounded residual billing are reconciled. Duration/steps/token/tool-call/concurrency limits fail visibly.",
+        "One authorized real-model smoke verifies invocation, actual usage reconciliation, cancellation and output; if unavailable, report runtime SERVICE/SIM only and block hosted-production adoption."
+      ],
+      "evidence": "Isolation configuration, attack logs, measured usage with provider origin, bound derivation, cost/funding choices and IV replay.",
+      "recovery": "Disable hosted flag/cancel leases; preserve outputs. Unsupported hard limit means reject adapter or lower allowed mode, not advertise protection.",
+      "gate": "Live funding method, provider account/terms and numeric spend cap required. Default zero. BYO is an option, not silently accepted pricing."
+    },
+    {
+      "id": "D0A",
+      "title": "Select: Agent orchestration and hosted runtime",
+      "depends": [
+        "P1",
+        "P6"
+      ],
+      "owner": "Root integrator with Fable and Opus; selected adapter/contract record",
+      "build": "Compare equivalent useful slice, missing full-scope work, operations/upgrade/restore effort and sourced cost scenarios. Record rejected, blocked, approved-for-implementation with named live residue, or adopted-for-live. Pin versions/API/schema, environment-specific passing evidence, open findings and exact C1\u2013C5 contract hash. DESK/SIM alone cannot select an external engine; require actual SERVICE/SANDBOX or controlled LIVE where no sandbox exists. Root, Fable and Opus review the same record. Other selection records proceed independently.",
+      "checks": [
+        "No required S-row removed because a candidate fails. A native fallback receives a concrete feature-completion breakdown and reviewed acceptance mapping before its domain dispatch; do not equate a thin native comparator with full feature parity.",
+        "Implementation selection cites IV-replayed actual engine/provider non-live evidence and propagates every remaining LIVE gate to its dependent jobs. Adopted-for-live requires every required LIVE/IV row; conditional approval is never reported as adoption.",
+        "Record source licenses, modifications/attributions, source-availability and upgrade/exit obligations for the selected component. Remold stays AGPL with no copied Twenty code.",
+        "Changing any shared contract shape invalidates affected selection records and I1 cases; identify impacted consumers and repeat their review/replay. One integrator publishes the compatible contract revision."
+      ],
+      "evidence": "Versioned selection record, source evidence, complete proof manifest and three same-hash planning verdicts. The five D0 records collectively close only when all required branches qualify.",
+      "recovery": "Invalidate affected downstream branch on provider/contract change; keep dependent live activation off and rerun relevant proof. Failed required provider does not remove product scope.",
+      "gate": "Only relevant account/channel/funding/merchant gate blocks this slot. No purchase or production rollout implied."
+    },
+    {
+      "id": "D0M",
+      "title": "Select: Marketing engine",
+      "depends": [
+        "P2"
+      ],
+      "owner": "Root integrator with Fable and Opus; selected adapter/contract record",
+      "build": "Compare equivalent useful slice, missing full-scope work, operations/upgrade/restore effort and sourced cost scenarios. Record rejected, blocked, approved-for-implementation with named live residue, or adopted-for-live. Pin versions/API/schema, environment-specific passing evidence, open findings and exact C1\u2013C5 contract hash. DESK/SIM alone cannot select an external engine; require actual SERVICE/SANDBOX or controlled LIVE where no sandbox exists. Root, Fable and Opus review the same record. Other selection records proceed independently.",
+      "checks": [
+        "No required S-row removed because a candidate fails. A native fallback receives a concrete feature-completion breakdown and reviewed acceptance mapping before its domain dispatch; do not equate a thin native comparator with full feature parity.",
+        "Implementation selection cites IV-replayed actual engine/provider non-live evidence and propagates every remaining LIVE gate to its dependent jobs. Adopted-for-live requires every required LIVE/IV row; conditional approval is never reported as adoption.",
+        "Record source licenses, modifications/attributions, source-availability and upgrade/exit obligations for the selected component. Remold stays AGPL with no copied Twenty code.",
+        "Changing any shared contract shape invalidates affected selection records and I1 cases; identify impacted consumers and repeat their review/replay. One integrator publishes the compatible contract revision."
+      ],
+      "evidence": "Versioned selection record, source evidence, complete proof manifest and three same-hash planning verdicts. The five D0 records collectively close only when all required branches qualify.",
+      "recovery": "Invalidate affected downstream branch on provider/contract change; keep dependent live activation off and rerun relevant proof. Failed required provider does not remove product scope.",
+      "gate": "Only relevant account/channel/funding/merchant gate blocks this slot. No purchase or production rollout implied."
+    },
+    {
+      "id": "D0S",
+      "title": "Select: Social publishing",
+      "depends": [
+        "P3"
+      ],
+      "owner": "Root integrator with Fable and Opus; selected adapter/contract record",
+      "build": "Compare equivalent useful slice, missing full-scope work, operations/upgrade/restore effort and sourced cost scenarios. Record rejected, blocked, approved-for-implementation with named live residue, or adopted-for-live. Pin versions/API/schema, environment-specific passing evidence, open findings and exact C1\u2013C5 contract hash. DESK/SIM alone cannot select an external engine; require actual SERVICE/SANDBOX or controlled LIVE where no sandbox exists. Root, Fable and Opus review the same record. Other selection records proceed independently.",
+      "checks": [
+        "No required S-row removed because a candidate fails. A native fallback receives a concrete feature-completion breakdown and reviewed acceptance mapping before its domain dispatch; do not equate a thin native comparator with full feature parity.",
+        "Implementation selection cites IV-replayed actual engine/provider non-live evidence and propagates every remaining LIVE gate to its dependent jobs. Adopted-for-live requires every required LIVE/IV row; conditional approval is never reported as adoption.",
+        "Record source licenses, modifications/attributions, source-availability and upgrade/exit obligations for the selected component. Remold stays AGPL with no copied Twenty code.",
+        "Changing any shared contract shape invalidates affected selection records and I1 cases; identify impacted consumers and repeat their review/replay. One integrator publishes the compatible contract revision."
+      ],
+      "evidence": "Versioned selection record, source evidence, complete proof manifest and three same-hash planning verdicts. The five D0 records collectively close only when all required branches qualify.",
+      "recovery": "Invalidate affected downstream branch on provider/contract change; keep dependent live activation off and rerun relevant proof. Failed required provider does not remove product scope.",
+      "gate": "Only relevant account/channel/funding/merchant gate blocks this slot. No purchase or production rollout implied."
+    },
+    {
+      "id": "D0P",
+      "title": "Select: Connected merchant payments",
+      "depends": [
+        "P4"
+      ],
+      "owner": "Root integrator with Fable and Opus; selected adapter/contract record",
+      "build": "Compare equivalent useful slice, missing full-scope work, operations/upgrade/restore effort and sourced cost scenarios. Record rejected, blocked, approved-for-implementation with named live residue, or adopted-for-live. Pin versions/API/schema, environment-specific passing evidence, open findings and exact C1\u2013C5 contract hash. DESK/SIM alone cannot select an external engine; require actual SERVICE/SANDBOX or controlled LIVE where no sandbox exists. Root, Fable and Opus review the same record. Other selection records proceed independently.",
+      "checks": [
+        "No required S-row removed because a candidate fails. A native fallback receives a concrete feature-completion breakdown and reviewed acceptance mapping before its domain dispatch; do not equate a thin native comparator with full feature parity.",
+        "Implementation selection cites IV-replayed actual engine/provider non-live evidence and propagates every remaining LIVE gate to its dependent jobs. Adopted-for-live requires every required LIVE/IV row; conditional approval is never reported as adoption.",
+        "Record source licenses, modifications/attributions, source-availability and upgrade/exit obligations for the selected component. Remold stays AGPL with no copied Twenty code.",
+        "Changing any shared contract shape invalidates affected selection records and I1 cases; identify impacted consumers and repeat their review/replay. One integrator publishes the compatible contract revision."
+      ],
+      "evidence": "Versioned selection record, source evidence, complete proof manifest and three same-hash planning verdicts. The five D0 records collectively close only when all required branches qualify.",
+      "recovery": "Invalidate affected downstream branch on provider/contract change; keep dependent live activation off and rerun relevant proof. Failed required provider does not remove product scope.",
+      "gate": "Only relevant account/channel/funding/merchant gate blocks this slot. No purchase or production rollout implied."
+    },
+    {
+      "id": "D0C",
+      "title": "Select: Mailbox/calendar and reply source",
+      "depends": [
+        "P5"
+      ],
+      "owner": "Root integrator with Fable and Opus; selected adapter/contract record",
+      "build": "Compare equivalent useful slice, missing full-scope work, operations/upgrade/restore effort and sourced cost scenarios. Record rejected, blocked, approved-for-implementation with named live residue, or adopted-for-live. Pin versions/API/schema, environment-specific passing evidence, open findings and exact C1\u2013C5 contract hash. DESK/SIM alone cannot select an external engine; require actual SERVICE/SANDBOX or controlled LIVE where no sandbox exists. Root, Fable and Opus review the same record. Other selection records proceed independently.",
+      "checks": [
+        "No required S-row removed because a candidate fails. A native fallback receives a concrete feature-completion breakdown and reviewed acceptance mapping before its domain dispatch; do not equate a thin native comparator with full feature parity.",
+        "Implementation selection cites IV-replayed actual engine/provider non-live evidence and propagates every remaining LIVE gate to its dependent jobs. Adopted-for-live requires every required LIVE/IV row; conditional approval is never reported as adoption.",
+        "Record source licenses, modifications/attributions, source-availability and upgrade/exit obligations for the selected component. Remold stays AGPL with no copied Twenty code.",
+        "Changing any shared contract shape invalidates affected selection records and I1 cases; identify impacted consumers and repeat their review/replay. One integrator publishes the compatible contract revision."
+      ],
+      "evidence": "Versioned selection record, source evidence, complete proof manifest and three same-hash planning verdicts. The five D0 records collectively close only when all required branches qualify.",
+      "recovery": "Invalidate affected downstream branch on provider/contract change; keep dependent live activation off and rerun relevant proof. Failed required provider does not remove product scope.",
+      "gate": "Only relevant account/channel/funding/merchant gate blocks this slot. No purchase or production rollout implied."
+    },
+    {
+      "id": "I1",
+      "title": "Production authority and integration core",
+      "depends": [
+        "H0"
+      ],
+      "owner": "Core integrator; central files, convex/integrations and packages/contracts",
+      "build": "Start only after root, Fable and Opus approve the H0 contract hash. Promote proven contract behavior into production-quality narrow domain mutations, adapter API, binding lifecycle, durable operations/callback inbox, epoch capabilities/read masks, secret references, reservations and audit. Reuse existing applyChange for record writes. D0-selected adapter implementations are separate domain jobs; core may proceed after reviewed H0 shapes, tracking subsequent contract changes explicitly.",
+      "checks": [
+        "All H0 adversarial cases pass on production implementation, including stale worker/approval/role downgrade and same-ID different-provider-instance.",
+        "Old published MCP/REST clients retain exactly their current authorized record operations. Expand each existing wildcard into concrete pre-migration object IDs; future objects and control-plane/financial domains require explicit grants. Existing roles map to inventoried read/mask behavior with no new writes, agent.manage, delegation or external effects. IV proves an old wildcard agent cannot write a newly added object. Migration and rollback cannot reintroduce wildcard widening.",
+        "Human/agent/internal/scheduler paths cannot bypass readonly, field masks or external-action authorization; current hidden field disappears from open subscription within two seconds (target).",
+        "Invalid provider/secret reference fails closed; callback and ops logs reveal no secrets."
+      ],
+      "evidence": "Expand migration evidence, compatibility replay, endpoint/mutation inventory and independent mask/authority attack.",
+      "recovery": "Rollback to compatible expanded schema/code; pause external dispatch first; retain operations for reconciliation.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "I2",
+      "title": "Identity, production rehearsal and release/operations rails",
+      "depends": [
+        "C0"
+      ],
+      "owner": "Release integrator; identity provider, CI, infra and ops",
+      "build": "Carry r7 Steps 1\u20132 into service-aware production: AuthKit email/Google behind identity module; fresh production only if re-inventory still proves no real data needs migration. Separate prod Worker/temporary hostname and written go-live boundary. CI exact-commit serialized deploy, version endpoint, contract checks, isolated signed-in previews, expand/migrate discipline, backed-up data rehearsals, valid rollback target, per-org operator flags, API rate limits, reporting with delivered alerts. Preserve existing live state until explicit cutover.",
+      "checks": [
+        "Failing tests/release metadata block deploy; UI-only changes skip snapshot rehearsal while persisted changes validate restored snapshot.",
+        "Two simultaneous signed-in PR previews have fixture seed, callback auth and data isolation; closing PR cleans preview resources.",
+        "Migrate >=1000 fixture records while old browser/MCP write; rollback to expand target preserves new writes and clients, invalid earlier rollback refused.",
+        "Injected background error, caught REST 500 and stalled operation each deliver a separate alert to operator; logs have no customer content.",
+        "Restore backend/identity and services deployed at this stage in scratch, compare canonical data (combined-service restore belongs to I13); rate-limit burst gives clear 429 without partial effects."
+      ],
+      "evidence": "CI links, exact SHA, preview isolation, restore/rollback transcript, delivered alerts, measured retention; IV reruns failure/rollback/preview drills.",
+      "recovery": "Before written live-data boundary route back to old stack; afterward rollback code on same production identity/data, never abandon new records. Do not delete Clerk identities as an automatic side effect.",
+      "gate": "AuthKit/admin account, hosting and backup/alert provider costs explicitly enabled. Product go-live waits L0; no new empty-prod assumption from stale 16-record inventory."
+    },
+    {
+      "id": "I3",
+      "title": "CRM, delivery records, import and duplicate merge",
+      "depends": [
+        "I1",
+        "I2"
+      ],
+      "owner": "CRM builder; convex/crm, src/features/crm and isolated core proposals",
+      "build": "Preserve metadata-first standard/custom objects and references; simple creation, board and saved table views, next owner/action, activity timeline, reminders and project/task handoff. Complete mapped resumable imports, rules-first duplicates and relationship/history-preserving merge. Existing basic features are retained where checks pass, not rewritten for volume.",
+      "checks": [
+        "Public 20000-row linked fixture: fail after batch 3, resume; independent source-ID/field/relation oracle shows exactly once and zero extras. Three malformed rows reported for correction.",
+        "Five planted duplicate pairs plus decoy: review/merge preserves both histories, tasks/opportunities/community links; unrelated records unchanged.",
+        "Board move, owner/next action, reminder, project blockers and custom Job object work in two browsers and via authorized agent API.",
+        "Today fixture ranks overdue unblocked, due today, blocked, future without model key; optional Jev remains off until its independent evidence gate."
+      ],
+      "evidence": "Import/merge oracle exports, before/after UI behavior and independent custom-object replay. Real EspoCRM import/freeze/delta is a separate private-data gate if still required.",
+      "recovery": "Snapshot/import source preserved; resume via batch markers; do not delete real source CRM until Shakur confirms reconciled cutover.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "I4",
+      "title": "Agent organization and hosted/external work",
+      "depends": [
+        "I1",
+        "I2",
+        "D0A"
+      ],
+      "owner": "Agents builder; convex/orchestration, src/features/agents and selected adapter",
+      "build": "Implement hires, authority editor, reporting/delegation, task assignment/dependencies/recurring work, hosted and connected agents, artifact review, usage and common approval queue. Use selected engine only for assigned execution. Expose human-readable work and cost states in Remold; external client setup needs no checkout.",
+      "checks": [
+        "One hosted and one external agent collaborate on a customer task, producing attributable artifact/proposal with no duplicate work.",
+        "Hiring permissions and delegation ceilings govern manager-created jobs; every cap and scope survives reassignment and role reduction.",
+        "Fire running agent with queued jobs/owned social/email work; demonstrate refusal/cancellation/late-result/reassignment semantics from H0 on selected runtime.",
+        "Repeated run/restart does not duplicate completed actions; users can inspect evidence and costs; sandbox attack regression from P1/P6 passes."
+      ],
+      "evidence": "Runtime receipts, hosted actual usage, external MCP transcript and independent fire drill.",
+      "recovery": "Disable hosted/orchestrator dispatch; external record-only access follows explicit grants; retain operations/artifacts.",
+      "gate": "Relevant D0 agent and runtime selections plus live funding/caps. A stub-hosted agent never certifies hosted completion."
+    },
+    {
+      "id": "I5",
+      "title": "Marketing studio and campaign management",
+      "depends": [
+        "I1",
+        "I2",
+        "D0M"
+      ],
+      "owner": "Marketing builder; convex/marketing, src/features/marketing and selected engine adapter",
+      "build": "Build Remold-native audience, form/page/email editors and previews, publish/version/pause controls, template/personalization/A-B email variants, ordered steps/conditions/delays, consent/scoring/tracking and campaign results. Provision/connect tenant engine from workspace settings with understandable status. Add cross-channel campaign goals/assets/tasks/source tags/budget and manually tracked event/referral/ad campaigns. Use ordinary fields/shared saved filters where possible; no generic canvas required to satisfy a flow.",
+      "checks": [
+        "A stranger creates a page/form and email sequence, captures a person, changes audience, approves/publishes and inspects results without engine dashboard. All standard and custom supported fields resolve.",
+        "Personalization missing-value fallback, variant assignment stability, audience-version edits, timezones and unsubscribe/bounce/complaint cases behave under current grants.",
+        "P2 isolation, sync races and transport authorization rerun; cross-channel links do not conflate campaign purpose with sales stage.",
+        "Paused/reassigned/fired owner cannot resume sends using stale version; campaign editor shows what happens next to one contact."
+      ],
+      "evidence": "Controlled live capture/email journey, native editor recordings, consent/audit export and IV independent campaign.",
+      "recovery": "Pause dispatch and engine schedules; reconcile accepted outcomes before rollback; preserve content/versions and suppression.",
+      "gate": "Relevant marketing D0, sender identity/access and send quota; production ramp and abuse policy approved before customer sends."
+    },
+    {
+      "id": "I6",
+      "title": "Social studio and calendar",
+      "depends": [
+        "I1",
+        "I2",
+        "D0S"
+      ],
+      "owner": "Social builder; convex/social, src/features/social and selected publishing adapter",
+      "build": "Implement account connection, draft/media preview, channel-specific validation, calendar/timezone schedule, common approval, current-authority dispatch, cancel/reassign/reconnect, per-account rate limits and confirmed results/metrics. Keep unsupported actions clearly disabled with reason; never fake equivalent media support across networks.",
+      "checks": [
+        "Entire S5 flow works for every selected launch channel, with actual provider receipt and same A/B boundary tests as P3.",
+        "DST ambiguous/nonexistent time requires a clear choice; edits invalidate approval; network timeout cannot double post.",
+        "Revocation, account disconnect, token expiry, partial multi-channel publish and per-channel retry preserve honest status for each destination."
+      ],
+      "evidence": "Per-channel acceptance matrix and independent second-account replay; SIM and LIVE kept separate.",
+      "recovery": "Stop future dispatch; preserve already published IDs/history; deletion of public posts is a separately authorized action.",
+      "gate": "Required channel set and each real account/API approval. If any required channel blocked, S5 remains incomplete."
+    },
+    {
+      "id": "I7",
+      "title": "Client quotes, invoices, deposits and recurring services",
+      "depends": [
+        "I1",
+        "I2",
+        "D0P"
+      ],
+      "owner": "Finance builder; convex/payments, src/features/payments and selected merchant adapter",
+      "build": "Implement immutable quote versions, secure client acceptance, deposit/balance allocation, invoice/PDF issuance, recurring services/dunning/payment-method updates, partial payment, credits/refunds/voids, disputes and merchant account health. Ordinary management lives in Remold; provider identity verification/secure payment entry are explicit permitted surfaces. Prevent generic CRM edits/deletes corrupting financial history.",
+      "checks": [
+        "P4 complete journey and wrong-account/refund/callback cases pass; independent integer arithmetic oracle covers rounding, deposit twice, currencies and partial refunds.",
+        "Issued totals immutable; accepted quote version cannot be swapped; simultaneous acceptance yields one obligation.",
+        "Merchant restricted/disconnected, client cancellation and Remold subscription readonly follow approved policy; financial reconciliation continues without allowing unrelated new writes.",
+        "Public document links prevent enumeration/cross-tenant access and expire/revoke as specified; sender email actually delivered only in separately authorized live probe."
+      ],
+      "evidence": "Sandbox lifecycle, client document/PDF check, provider account identity evidence and independent race/amount/retention review.",
+      "recovery": "Suspend new issuance/charges while continuing reconciliation; never \u201crollback\u201d by deleting settled provider transactions.",
+      "gate": "Relevant D0 payments selection and G-pay policy; controlled non-production live proof requires a specific account/charge/refund/recipient allowance before V0; L0 repeats only after production allowance."
+    },
+    {
+      "id": "I8",
+      "title": "Communications and reply-aware follow-up",
+      "depends": [
+        "I1",
+        "I2",
+        "D0C"
+      ],
+      "owner": "Communications builder; convex/communications and src/features/communications",
+      "build": "Complete member-scoped Google email/calendar adapter, sync cursors, send/reply/history, unmatched inbox and reliable personal sales sequences. One stop-on-reply source is wired into applicable marketing follow-up, without mixing marketing suppression with transactional mail. Optional Microsoft adapter has identical contract and a separate acceptance row.",
+      "checks": [
+        "P5 live mailbox/calendar sequence proof repeats; replies/events reach two browsers within 60 seconds (target), moved events reflect new time.",
+        "Revoked OAuth appears disconnected within five minutes (target), no new outbound send; read-only reconciliation policy explicit.",
+        "Wrong-contact threading, duplicate cursor page, unknown sender, reconnect and stale token races cannot leak across member/org."
+      ],
+      "evidence": "Live timestamps, provider cursors/IDs, false-match fixture and IV alternate contacts.",
+      "recovery": "Stop new sequences, retain cursors/thread history, reconcile received mail; do not blindly replay sends.",
+      "gate": "Relevant D0 communications, mailbox/provider scopes and verification. Microsoft pending access stays unverified separately."
+    },
+    {
+      "id": "I9",
+      "title": "Bounded automations, formulas and delivery handoff",
+      "depends": [
+        "I3",
+        "I4",
+        "I5",
+        "I8"
+      ],
+      "owner": "Automation builder; convex/automation and src/features/automation",
+      "build": "Outcome recipes plus readable editable triggers/conditions/actions over records, schedules, notifications, allowed webhooks and agent jobs. Formula expressions run with deterministic step/time budgets, no eval. Route external effects through I1; recursion depth max 5 and per-action logical identity allow partial retry. Won deal creates delivery project and task dependencies.",
+      "checks": [
+        "On Won create one project and three tasks; inject failure after second action, retry yields exactly one project/three tasks. Repeat a different trigger on custom Job.",
+        "Two cyclic rules stop at depth 5 visibly; over-budget expression rejected; runtime error does not roll back unrelated user write.",
+        "Formula recomputes live after dependency edit; permission masks apply to inputs/outputs; outbound URL targets cannot reach private metadata/admin networks.",
+        "Expired authority/consent blocks queued rule continuation; no automation can bypass human/agent grants."
+      ],
+      "evidence": "Independent fixture oracle, chain/error logs and IV-created custom automation.",
+      "recovery": "Disable rule/version, cancel pending operations and retain emitted records/events for explicit repair.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "I10",
+      "title": "Reports, source-to-outcome visibility and honest metrics",
+      "depends": [
+        "I3",
+        "I5",
+        "I6",
+        "I7",
+        "I8"
+      ],
+      "owner": "Reporting builder; convex/reports and src/features/reports",
+      "build": "Starts from integrated domain dependencies, with all inherited LIVE gates tracked; reports over SIM fixtures are labeled. Object-independent group/count/sum/time buckets using bounded indexed rollups, pipeline forecast and campaign results linked to customer outcomes. Fixed journey overview source \u2192 capture \u2192 qualified \u2192 won \u2192 paid/delivery. Store source/UTM and attribution rules with known/unknown distinction; never imply person-level social attribution from aggregate views. Counts and money remain typed by currency, never meaningless sums of percentages.",
+      "checks": [
+        "Independent export-based oracle on 5000 Opportunities + 5000 Jobs verifies all six stage/month/forecast reports including New York month boundary and cents; target under two seconds, actual measured.",
+        "100k data either rollups or explicit refusal, never hidden timeout. Masked amount cannot leak through aggregate/filter/count inference from denied rows.",
+        "Marketing/social/provider lag visible; unknown source not invented; identical event replays do not inflate metrics; mixed-currency totals separated."
+      ],
+      "evidence": "Report screenshots beside independent calculation output and source lineage; IV changes fixture values and reruns.",
+      "recovery": "Rebuild derived rollups from recorded sources; never mutate canonical payment/contact truth to match a chart.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "I11",
+      "title": "Remold subscription billing and entitlement",
+      "depends": [
+        "I1",
+        "I2"
+      ],
+      "owner": "Platform billing builder; convex/platformBilling and src/features/platformBilling",
+      "build": "Carry r7 flat-workspace, cardless 14-day trial proposal into an isolated platform billing account. Price/no-free-tier and live commercial policy remain owner gates. Atomic purchase reservation + stable provider idempotency, serialized reconciliation rather than replay, daily sweep and fixed delinquency episode deadline. Checkout/portal derive org/customer server-side; old canceled subscription cannot overwrite newly purchased subscription. Extend readonly to all new command creation/claim with C5 safety exceptions.",
+      "checks": [
+        "Test-clock trial expiry, failed renewal through day 8 without grace extension, payment recovery, period-end and immediate/terminal cancellation, canceled-customer new checkout and delayed old subscription webhook.",
+        "Two concurrent purchases and crash after session creation produce one live subscription; missing-day webhooks reconcile. incomplete/incomplete_expired derive from trial clock.",
+        "Every UI/CSV/suggestion/agent/automation/external-command write path refused in readonly; B unaffected; security changes, exports and allowlisted inbound/financial safety actions continue.",
+        "Forged/replayed webhook and non-admin billing access fail; source of entitlement cannot be client-written."
+      ],
+      "evidence": "Complete r7 cases 1\u201312 with expanded paths, provider object IDs and IV day-8/purchase/isolation/cancel-return replay.",
+      "recovery": "Pause new checkout on outage; authoritative reconciliation repairs derived state; never delete customer data on lapse.",
+      "gate": "Platform Stripe sandbox; live price/terms/refund/tax and confirmed readonly finance policy before activation."
+    },
+    {
+      "id": "I12",
+      "title": "Unified experience and simple start",
+      "depends": [
+        "I3",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I11"
+      ],
+      "owner": "Experience integrator; src/features/onboarding and shared navigation changes",
+      "build": "One workspace navigation, common customer timeline, campaign/task/finance links, approval queue, next action and readable agent activity. Keep creation short and advanced settings discoverable. Onboarding seeds standard objects, invite deep link survives hosted auth, connects external agent via published versioned MCP package and offers hosted hire with clear funding status. Responsive keyboard-accessible flows; errors identify recovery in plain language.",
+      "checks": [
+        "Fresh stranger uses only screen: sign up, name workspace, first client within five minutes; invite + external agent proposal/apply within fifteen (targets). Second verifier uses other supported client.",
+        "Extended journey: hire agent, draft form/page/campaign/post/quote, approve according to grants, inspect client results and paused work entirely in Remold except identity/OAuth/KYC/secure payment screens.",
+        "Mobile and desktop keyboard navigation, validation/retry/empty/loading/restricted states work; no engine credentials or technical configuration leak into ordinary tasks.",
+        "Published MCP works on machine without repo; revoked key first-call error names recovery; both client setup snippets verified using supported package runner."
+      ],
+      "evidence": "Timed recordings by fresh users, accessibility/behavior probes, public package version and Shakur simplicity review; screenshots alone insufficient.",
+      "recovery": "Revert UI release without changing stored authority or external commitments; preserve invite links/deep routes.",
+      "gate": "Publishing package requires authorized registry access; use pnpm in repo, no npm/yarn execution; approved setup snippets may use supported pnpm dlx or bunx equivalent."
+    },
+    {
+      "id": "I13",
+      "title": "Whole-product export, exit, restore and incident operations",
+      "depends": [
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I11"
+      ],
+      "owner": "Operations/data builder; ops, export/deletion modules and runbooks",
+      "build": "Extend full archive and operator-authenticated workspace/person exit across adopted services. Define exact table/resource inventory and retention exemptions, cancel/stop/drain before deletion, preserve audit appropriately, revoke integrations/keys/sessions and remove service copies. Build backup manifests including external IDs, revocation/suppression checkpoint and restore ordering. Alerts cover expired OAuth, stuck effects, budgets, bounce/complaint quarantine and reconciliation drift.",
+      "checks": [
+        "Readonly archive round-trip restores definitions, links, history and domain artifacts to scratch; credentials absent and external sends disabled.",
+        "Delete A while B canonical export unchanged; injected failure in second service resumes deletion without orphan or send. Person in A/B removed/anonymized per policy without corrupting financial attribution.",
+        "Restore older core and newer engine snapshot: no duplicate send/charge, current revocations/suppression reapplied before egress, outcomeUnknown reconciles.",
+        "Injected service outage and stuck cancellation notify named operator; runbook resolves; secret key backup loss clearly fails restore rather than reporting success."
+      ],
+      "evidence": "Canonical before/after comparisons, complete inventory, retention sources/owner policy, backup/restore transcript and IV partial-deletion drill.",
+      "recovery": "Keep affected workspace disabled until reconciliation resolves; never restore egress automatically. Immutable obligations handled per published policy.",
+      "gate": "Commercial retention/deletion decisions and customer commitment instructions before destructive real-data exit; tests use fixtures."
+    },
+    {
+      "id": "I14",
+      "title": "Cloud/self-host installation and maintenance handover",
+      "depends": [
+        "I2",
+        "I4",
+        "I5",
+        "I6",
+        "I7",
+        "I8",
+        "I13"
+      ],
+      "owner": "Packaging builder; deployment examples, docs and source notices",
+      "build": "Publish honest cloud and self-host setup for Remold plus selected supporting engines. Document what paid/cloud-only providers still require; do not promise offline Stripe/social/AI. Include pinned versions, configuration names, backups, upgrades, source/license notices and one-command sandbox seed; no secrets in examples.",
+      "checks": [
+        "Fresh verifier with README only reaches seeded CRM in cloud and scratch self-host environment; records actual setup time against inherited 45-minute target and reports any gap.",
+        "Self-host probes exercise full-text search, cron heartbeat, scheduled reminder, file upload/download hash, vector search if retained dependency; each unsupported capability explicitly fails its row.",
+        "A whole connected fixture journey works with the deployment\u2019s configured test providers; separately record real-provider access gaps. Upgrade and rollback preserve data and secrets."
+      ],
+      "evidence": "Clean-machine transcripts, per-capability probes, source distribution/attribution and independent operator handover.",
+      "recovery": "Pin prior compatible deployment and restore scratch backups; no production host changes during verifier install.",
+      "gate": "Scratch host/resources approved; missing external credentials block their rows, not mislabeled as self-host parity."
+    },
+    {
+      "id": "V0",
+      "title": "Independent whole-product acceptance",
+      "depends": [
+        "I9",
+        "I10",
+        "I12",
+        "I13",
+        "I14"
+      ],
+      "owner": "Fresh verifier, never the feature builder",
+      "build": "Run S1\u2013S10 from a clean workspace with second tenant and separate hosted/external agents. Demonstrate one complete journey: source-tagged post \u2192 form \u2192 person \u2192 approved email follow-up \u2192 reply/qualification \u2192 quote/deposit \u2192 won delivery project \u2192 recurring service and report. Test both expected flow and authority reduction/firing, revoked connection, readonly, retry, outage and restore.",
+      "checks": [
+        "All required scope rows and selected channel rows have passing correct-environment evidence; no required deferred feature can count as full completion.",
+        "Tenant B and restricted actor probes pass across every UI/API/MCP/export/history/report/artifact/provider callback surface.",
+        "No builder certifies own result; verifier changes at least one fixture to expose hardcoded passing output; recorded before/after shows actual behavior.",
+        "Shakur judges the unified experience from recording; any dashboard hopping for ordinary work is a failure."
+      ],
+      "evidence": "Single-file acceptance report, exact release manifest/contract hash, receipts/oracles and independently signed pass/fail per row.",
+      "recovery": "Block release, create bounded fix jobs, repeat only affected tests plus connected regression; do not relax criteria to meet schedule.",
+      "gate": "None beyond dependencies; sandbox/test fixtures only until live access is explicitly authorized."
+    },
+    {
+      "id": "L0",
+      "title": "Commercial gates, controlled live proof and go-live",
+      "depends": [
+        "V0"
+      ],
+      "owner": "Release integrator with Shakur account/financial decisions",
+      "build": "Close access/price/funding/channel/merchant/retention/tax gates using primary sources and actual accounts. Publish terms/pricing/refund/privacy/support/acceptable-use data policy with accurate service/subprocessor/retention facts. Authorize a named controlled live smoke with exact recipients/accounts/content/payment/refund limits. Run before allowing non-Shakur customers to send or charge. Write go-live declaration; thereafter recovery preserves production data/identities.",
+      "checks": [
+        "Own Remold subscription real payment/invoice/cancel/refund and own connected-merchant deposit/payment/refund complete under approved allowance; records match provider. Invoice email live receipt separately verified.",
+        "Own authenticated email and required social channels publish only approved test content; opt-out and firing checked; provider approval/account health verified.",
+        "Hosted real job uses approved funding/cap; production alerts received; pre-live route-back rehearsal and post-live version rollback preserve a just-created record and agent key.",
+        "Commercial truth matches behavior: grace/readonly collections, tax/fees, retention/exit and support; no open required gate masked as done."
+      ],
+      "evidence": "Live provider receipts, delivered notifications, signed declaration, source-backed commercial decisions and fresh verifier repeat of permitted controls.",
+      "recovery": "Before boundary route back; after boundary pause effects and roll compatible code on same data; refund/cancel only with granted authority, never delete records to undo money.",
+      "gate": "Explicit live action/account/spend allowance and Shakur commercial sign-off. This planning task does not execute any of them."
+    }
+  ]
+}

@@ -1,0 +1,312 @@
+{
+  "at": "2026-09-25T03:32:28.154Z",
+  "scope": "Second stop: exact existing SANDBOX resources, GET only",
+  "clocks": [
+    {
+      "id": "clock_1UJPLfJL8hhTtG1ovv5p5G1t",
+      "label": "F",
+      "status": "ready",
+      "frozenTime": 1790477988,
+      "deletesAfter": 1792897135
+    },
+    {
+      "id": "clock_1UJPLjJL8hhTtG1oH7Ws1cC6",
+      "label": "H",
+      "status": "ready",
+      "frozenTime": 1790305129,
+      "deletesAfter": 1792897139
+    }
+  ],
+  "inventories": [
+    {
+      "path": "/v1/subscription_schedules",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "ids": [
+        "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk"
+      ],
+      "statuses": [
+        "canceled"
+      ]
+    },
+    {
+      "path": "/v1/subscriptions",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "ids": [
+        "sub_1UJPLpJL8hhTtG1oEzA0BOfV"
+      ],
+      "statuses": [
+        "canceled"
+      ]
+    },
+    {
+      "path": "/v1/invoices",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "ids": [
+        "in_1UJPpnJL8hhTtG1oCfWk7Ewf",
+        "in_1UJPLpJL8hhTtG1owAaKsAZx"
+      ],
+      "statuses": [
+        "open",
+        "paid"
+      ]
+    },
+    {
+      "path": "/v1/subscription_schedules",
+      "customer": "cus_VK3SpTgZuF0j1W",
+      "ids": [],
+      "statuses": []
+    },
+    {
+      "path": "/v1/subscriptions",
+      "customer": "cus_VK3SpTgZuF0j1W",
+      "ids": [],
+      "statuses": []
+    },
+    {
+      "path": "/v1/invoices",
+      "customer": "cus_VK3SpTgZuF0j1W",
+      "ids": [],
+      "statuses": []
+    }
+  ],
+  "invoices": [
+    {
+      "id": "in_1UJPpnJL8hhTtG1oCfWk7Ewf",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "status": "open",
+      "amountDue": 301,
+      "amountPaid": 0,
+      "amountRemaining": 301,
+      "autoAdvance": false,
+      "nextPaymentAttempt": null,
+      "attemptCount": 1,
+      "financialStable": true,
+      "financialSha256": "f5b0fcb9e6ff5e3e7bae046557b5b0347f67b5766139e771dff7083620ad4cc1",
+      "payments": [
+        {
+          "id": "inpay_1UJPprJL8hhTtG1oEe4JSyag",
+          "status": "open",
+          "amountPaid": null,
+          "payment": {
+            "payment_intent": "pi_3UJPpqJL8hhTtG1o0brTQ5zJ",
+            "type": "payment_intent"
+          }
+        }
+      ]
+    },
+    {
+      "id": "in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "customer": "cus_VK3Sk08ekk8Hiy",
+      "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "status": "paid",
+      "amountDue": 301,
+      "amountPaid": 301,
+      "amountRemaining": 0,
+      "autoAdvance": false,
+      "nextPaymentAttempt": null,
+      "attemptCount": 1,
+      "financialStable": true,
+      "financialSha256": "e21ae2caf21416f8bb574a7ae200a8ddb6945218bd8c4289a8b94ad4d6e3deae",
+      "payments": [
+        {
+          "id": "inpay_1UJPLuJL8hhTtG1oTzVC63hS",
+          "status": "paid",
+          "amountPaid": 301,
+          "payment": {
+            "payment_intent": "pi_3UJPLuJL8hhTtG1o1ijPgsYT",
+            "type": "payment_intent"
+          }
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks/clock_1UJPLfJL8hhTtG1ovv5p5G1t",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_U8majBo1pyXvu2",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks/clock_1UJPLjJL8hhTtG1oH7Ws1cC6",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_OkiCE9sqjdWDJz",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscription_schedules",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_VWcU2QCF0Q4Dnq",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_athttlAyvnNGY5",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_2NetXDEJWq9TT6",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscription_schedules",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_4ZooQLWcWtnFae",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_gdU5t6Udh9vAhk",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_fMWQYfFmhqmzDP",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscription_schedules/sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_HhWhuYn2gCOybO",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions/sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_GctuKMtbvWbarE",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJPpnJL8hhTtG1oCfWk7Ewf",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_jcOzkc7j00lwwd",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJPpnJL8hhTtG1oCfWk7Ewf",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_7uDbCyTbXt8w4n",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_P7rvC2M1T8SYBY",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_YQmQh8EcMML63m",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJPLpJL8hhTtG1owAaKsAZx",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_cRgiz240K31UEV",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoice_payments",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_InBvH43hVqIi9x",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/test_helpers/test_clocks",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_6UygNIArI2HXHZ",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "schedule": {
+    "id": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+    "status": "canceled",
+    "subscription": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+    "releasedSubscription": null,
+    "customer": "cus_VK3Sk08ekk8Hiy",
+    "testClock": "clock_1UJPLfJL8hhTtG1ovv5p5G1t"
+  },
+  "subscription": {
+    "id": "sub_1UJPLpJL8hhTtG1oEzA0BOfV",
+    "status": "canceled",
+    "schedule": "sub_sched_1UJPLoJL8hhTtG1ot7l6GRlk",
+    "customer": "cus_VK3Sk08ekk8Hiy",
+    "testClock": "clock_1UJPLfJL8hhTtG1ovv5p5G1t"
+  },
+  "eClockIds": []
+}

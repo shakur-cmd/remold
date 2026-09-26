@@ -1,0 +1,158 @@
+{
+ "run": "326b7154",
+ "capturedAt": "2026-09-26T11:46:11.721Z",
+ "tenant": "a",
+ "formId": 38,
+ "formBefore": {
+  "fields": [
+   {
+    "id": 112,
+    "alias": "email",
+    "type": "email",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 113,
+    "alias": "firstname",
+    "type": "text",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 114,
+    "alias": "submit",
+    "type": "button",
+    "mappedObject": null,
+    "mappedField": null
+   }
+  ],
+  "actions": []
+ },
+ "admissionBefore": "admitted",
+ "edit": {
+  "status": 200,
+  "error": null
+ },
+ "formEdited": {
+  "fields": [
+   {
+    "id": 112,
+    "alias": "email",
+    "type": "email",
+    "mappedObject": "contact",
+    "mappedField": "email"
+   },
+   {
+    "id": 113,
+    "alias": "firstname",
+    "type": "text",
+    "mappedObject": "contact",
+    "mappedField": "firstname"
+   },
+   {
+    "id": 114,
+    "alias": "submit",
+    "type": "button",
+    "mappedObject": null,
+    "mappedField": null
+   }
+  ],
+  "actions": [
+   {
+    "id": 9,
+    "type": "lead.remove_do_not_contact"
+   }
+  ]
+ },
+ "admissionAfterEdit": "Form 38 on tenant a refused: has native actions; mapped field email; mapped field firstname",
+ "responses": [
+  [],
+  [],
+  [],
+  []
+ ],
+ "submissions": "101\t222\n102\t222\n103\t223\n104\t223",
+ "newEmailContacts": "223\tEdited new 2",
+ "ownerId": 222,
+ "ownerBefore": {
+  "id": 222,
+  "firstname": "IV owner postedit",
+  "lastname": "Stable postedit",
+  "email": "iv-own-326b7154-postedit@example.invalid",
+  "points": 0,
+  "tags": [],
+  "doNotContact": [
+   {
+    "channel": "email",
+    "reason": 3
+   }
+  ]
+ },
+ "ownerAfter": {
+  "id": 222,
+  "firstname": "Edited existing 2",
+  "lastname": "Stable postedit",
+  "email": "iv-own-326b7154-postedit@example.invalid",
+  "points": 0,
+  "tags": [],
+  "doNotContact": []
+ },
+ "countersBefore": {
+  "contacts": 217,
+  "anonymousContacts": 30,
+  "maxLeadId": 222,
+  "dnc": 30,
+  "submissions": 96,
+  "campaignLeads": 137,
+  "campaignEventLog": 169,
+  "pointActionLog": 2,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "countersAfter": {
+  "contacts": 218,
+  "anonymousContacts": 30,
+  "maxLeadId": 223,
+  "dnc": 29,
+  "submissions": 100,
+  "campaignLeads": 137,
+  "campaignEventLog": 169,
+  "pointActionLog": 2,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "edgeStartedAtUnchanged": true,
+ "revert": {
+  "actions": 200,
+  "fields": 200
+ },
+ "formReverted": {
+  "fields": [
+   {
+    "id": 112,
+    "alias": "email",
+    "type": "email",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 113,
+    "alias": "firstname",
+    "type": "text",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 114,
+    "alias": "submit",
+    "type": "button",
+    "mappedObject": null,
+    "mappedField": null
+   }
+  ],
+  "actions": []
+ },
+ "admissionAfterRevert": "admitted",
+ "note": "responses [] is a client artifact: the IV raw client half-closed the socket (sock.end) and the edge closed before answering; the four posts still reached Mautic (see submissions). lib.mjs was then changed to sock.write."
+}

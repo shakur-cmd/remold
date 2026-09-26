@@ -1,0 +1,165 @@
+{
+  "status": "PASS exact read-only first-run checkpoint",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-24T23:18:02.308Z",
+  "level": "SANDBOX actual Stripe GET responses",
+  "runId": "3f7c6229-f345-4b59-8b6a-971208c4efe7",
+  "originalEvidenceSha256": "4d95a7a51b1517fd11f123aefbae5715812cf0860e6651bd4765569df95b4d6a",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "rows": [
+    {
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "customer": "cus_VJzrZTORGay5Lp",
+      "testMode": true,
+      "originalFixtureMatches": true,
+      "emailAbsent": true,
+      "lists": {
+        "invoices": {
+          "count": 0,
+          "complete": true,
+          "customerFilter": "cus_VJzrZTORGay5Lp"
+        },
+        "payment_intents": {
+          "count": 0,
+          "complete": true,
+          "customerFilter": "cus_VJzrZTORGay5Lp"
+        },
+        "charges": {
+          "count": 0,
+          "complete": true,
+          "customerFilter": "cus_VJzrZTORGay5Lp"
+        }
+      }
+    },
+    {
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "customer": "cus_VJzr8q1ZtrR81v",
+      "testMode": true,
+      "originalFixtureMatches": true,
+      "emailAbsent": true,
+      "lists": {
+        "invoices": {
+          "count": 0,
+          "complete": true,
+          "customerFilter": "cus_VJzr8q1ZtrR81v"
+        },
+        "payment_intents": {
+          "count": 0,
+          "complete": true,
+          "customerFilter": "cus_VJzr8q1ZtrR81v"
+        },
+        "charges": {
+          "count": 0,
+          "complete": true,
+          "customerFilter": "cus_VJzr8q1ZtrR81v"
+        }
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_b5ZxQ0Lpbk8vwo",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_UyTLhWU24mobSR",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzrZTORGay5Lp",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_9XTkJ3GbNad3mw",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_N2PCwV5vEomAPG",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_53T3NfmBTMI94K",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_eIvcvEZTX0DMUt",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzr8q1ZtrR81v",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_h0ikAWunJw63NE",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_VtKW8vdaf4vdFW",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_iKxAs8itbU5C3f",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_20Iku0LxrtAv76",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "limits": "Only these two exact customer scopes checked. No writes, no resumed lifecycle, no local backend; whole P4 remains incomplete."
+}

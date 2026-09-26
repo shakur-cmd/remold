@@ -1,0 +1,59 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 2 failed) 1107ms
+   × agent today: quiet deals fill the list with readable deals 248ms
+   × quiet deals ignore any number of hidden deals untouched for longer 69ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  2 failed | 95 passed (97)
+   Start at  08:55:00
+   Duration  1.37s (tests 80%, transform 12%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > agent today: quiet deals fill the list with readable deals
+AssertionError: expected [] to deeply equal [ '0000000000000000000010448records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010448records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:49:99
+     47|   const w = await dealWorld(200), agent = await w.f.client.action(api.…
+     48|   await grant(w.f, agent.agentId, w.deal.object._id, [w.mine], w.field…
+     49|   expect((await rest(w.f.t, agent.key)('GET', '/api/v1/today')).json.q…
+       |                                                                                                   ^
+     50| }, 60000);
+     51|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer
+AssertionError: expected [] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010048records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:155:97
+    153|   const agent = await f.client.action(api.agents.createScoped, { orgId…
+    154|   await grant(f, agent.agentId, deal.object._id, [mine], Object.values…
+    155|   expect((await rest(f.t, agent.key)('GET', '/api/v1/today')).json.qui…
+       |                                                                                                 ^
+    156| }, 60000);
+    157|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

@@ -1,0 +1,40 @@
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.959541ms)
+✖ changed, missing and injected artifact bytes are refused (1.352834ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.006333ms)
+✔ version metadata must name the artifact commit (0.684416ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.7925ms)
+✔ failed real process halts checks before a later process can run (25.919791ms)
+✔ successful real processes run in order (50.66225ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.256ms)
+✔ missing metadata and destructive contraction are refused (0.082208ms)
+✔ a rollback to a schema without the expanded fields is refused (0.148625ms)
+✔ persisted changes remain blocked even when a caller supplies a synthetic passing restore claim (0.059334ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.364792ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 11
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.963583
+
+✖ failing tests:
+
+test at ../../../../../../private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-mutation-oc1sp5ls/release.test.mjs:30:1
+✖ changed, missing and injected artifact bytes are refused (1.352834ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-release-mutation-oc1sp5ls/release.test.mjs:33:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /inventory/,
+    operator: 'throws',
+    diff: 'simple'
+  }

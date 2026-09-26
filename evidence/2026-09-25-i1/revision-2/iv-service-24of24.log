@@ -1,0 +1,27 @@
+PASS C1-A1 Human approver downgraded admin->member between claim and permit: permit refused
+PASS C1-A2 Approver removed and re-invited as admin between claim and permit: permit refused
+PASS C1-A3 Approver downgraded then restored (admin->member->admin) mid-flight: permit refused (epoch moved)
+PASS C1-A4 Grantor owner downgraded to admin while agent holds a claim: direct grant dies, permit refused
+PASS C1-A5 Human proposer downgraded admin->member after approval and claim: permit refused
+PASS C1-B1 Approval expires between claim and permit: permit refused
+PASS C1-B2 Payload edited after approval: claim and permit refused
+PASS C1-B3 Spent or expired permit cannot be consumed; old fence after reclaim cannot consume
+PASS C1-D1 Same external ID across accounts, environments, provider names and orgs: every foreign adapter key is refused on 11 endpoints, no data change
+PASS C1-D2 Suppression callback on one binding changes only that binding recipient, not the same recipient/external ID elsewhere
+PASS C2-K1 Read/record grants bound to an object do not follow its key to a recreated object; legacy explicit grant does not either
+PASS C3-R1 Readonly set after permit, before consume: observe whether the in-flight send can still be consumed (bounded tail)
+PASS C3-R2 Readonly: queued/approved work is not dispatched by scheduler; claim, permit and new proposals refused; no send scheduled
+PASS C3-R3 Readonly: operator-internal functions behave as inventory labels them (labels are declared, not swept)
+PASS C3-M1 Agent cannot filter or sort by a hidden field (no inference of hidden value by presence)
+PASS C3-M2 Member with hidden field cannot filter, sort, search, export, or read events/suggestions to recover it
+PASS C3-M3 Hidden TITLE field: search, byRef, lookup titles, export and capture duplicate check do not reveal it
+PASS C3-M4 Record-scoped member: CSV import duplicate check does not reveal titles of records outside scope
+PASS C3-M5 Record-scoped member: browser capture duplicate check does not reveal titles of records outside scope
+PASS C3-M6 Record-scoped agent: lookup-by-title in a proposal does not reveal titles of records outside its read scope
+PASS C3-M7 Open subscription of a non-owner member: records.list loses a newly hidden field, and a newly out-of-scope record, within 2 s
+PASS C4-S1 Secret reference environment or provider changed after connect: claim fails closed
+PASS C4-S2 Secret canaries never appear in adapter/REST validation errors, backend logs or exports
+PASS INV-1 Function inventory regenerated with `convex function-spec` from the deployed backend matches inventory.json
+
+IV SUMMARY 24 PASS / 0 FAIL
+exit 0

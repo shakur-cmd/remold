@@ -1,0 +1,146 @@
+{
+ "label": "r3b",
+ "at": "2026-09-26T13:33:19.547Z",
+ "results": [
+  {
+   "mutant": "C4 settled capture can be re-settled",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 27/28",
+    "  a settled capture cannot be re-settled differently, even by the lease holder"
+   ]
+  },
+  {
+   "mutant": "C5 store input validation removed",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 9/28",
+    "  store refuses email \"iv%pct@example.invalid\"",
+    "  store refuses email \"%@%.%\"",
+    "  store refuses email \"a*b@example.invalid\"",
+    "  store refuses email \"a b@example.invalid\"",
+    "  store refuses email \"a@b\""
+   ]
+  },
+  {
+   "mutant": "L1 acquire ignores a live lease",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 24/28",
+    "  second reconciler is refused while the lease is live",
+    "  a foreign token cannot renew",
+    "  a settled capture cannot be re-settled differently, even by the lease holder",
+    "  settle with a stale lease token is refused"
+   ]
+  },
+  {
+   "mutant": "L2 settle not fenced by the lease",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 26/28",
+    "  settle with a stale lease token is refused",
+    "  settle with an expired lease is refused"
+   ]
+  },
+  {
+   "mutant": "R1 Mautic refusal throws instead of rejected",
+   "check": "faults",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 1/5",
+    "  a create Mautic refuses (400) settles as rejected with the reason",
+    "  a refused name update is recorded and the contact kept unnamed",
+    "  captures after both refusals are still created",
+    "  once Mautic answers normally the pending capture is created"
+   ]
+  },
+  {
+   "mutant": "R2 LIKE search instead of exact lookup",
+   "check": "poison",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 0/4",
+    "  reconciler completes despite poison",
+    "  underscore email resolved by exact match, one contact",
+    "  capture behind the poison is created with its suggested name",
+    "  nothing left pending on A"
+   ]
+  },
+  {
+   "mutant": "R3 a 200 upsert is treated as our new contact and named",
+   "check": "window",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 4/6",
+    "  admin contact first name not overwritten by the public suggestion",
+    "  capture settled as existing on the admin contact"
+   ]
+  },
+  {
+   "mutant": "M5 any non-2xx create settles as rejected",
+   "check": "faults",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 3/5",
+    "  a 500 on create stops the run and leaves the capture pending, never rejected",
+    "  once Mautic answers normally the pending capture is created"
+   ]
+  },
+  {
+   "mutant": "M6 no renew right before create",
+   "check": "stall",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 1/3",
+    "  no Mautic contact written under a lapsed lease; capture still pending",
+    "  the next reconciler creates it exactly once"
+   ]
+  },
+  {
+   "mutant": "D1 byte comparison drops collation-equal matches",
+   "check": "collation",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 3/4",
+    "  owner email bytes not rewritten by a collation-equal capture"
+   ]
+  },
+  {
+   "mutant": "D2 refused name update stops the run",
+   "check": "faults",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 3/5",
+    "  a refused name update is recorded and the contact kept unnamed",
+    "  captures after both refusals are still created"
+   ]
+  },
+  {
+   "mutant": "D3 store caps back to 254 email and 100 name",
+   "check": "probe",
+   "exit": 1,
+   "killed": true,
+   "summary": [
+    "FAIL 25/28",
+    "  store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+    "  store refuses 65-char first name",
+    "  no refused input was stored"
+   ]
+  }
+ ]
+}

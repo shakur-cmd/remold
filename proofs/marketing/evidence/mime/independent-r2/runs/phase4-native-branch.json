@@ -1,0 +1,41 @@
+{
+  "level": "SERVICE real Mautic open pixel and native branch; synthetic recipient/local HTTP sink, no mailbox delivery",
+  "checks": {
+    "firstDelivered": 1,
+    "readBefore": 0,
+    "readAfter": 1,
+    "secondNativeSendQueued": true,
+    "openPixelReadFromStoredMime": true,
+    "pythonOracleHash": "2d97637a0cbf55376116ecfed011bc3e0ba3a1dfb17e51ed1f4b50653d957267",
+    "storedRawSha256": "6c44bf5ba732f1e153b613ff5479970386fd557a84ad89d63ffa11d9793fcbd8",
+    "finalDeliveries": 2,
+    "extraCronPasses": 3,
+    "payloadRecipientIntentAndInstanceSubstitutionsRefused": true,
+    "wrongBridgeCredentialRefused": true
+  },
+  "occurrences": [
+    {
+      "event": 269,
+      "lead": 130,
+      "rotation": 1,
+      "log": 159,
+      "state": "delivered"
+    },
+    {
+      "event": 271,
+      "lead": 130,
+      "rotation": 1,
+      "log": 161,
+      "state": "delivered"
+    }
+  ],
+  "authorityStates": [
+    "confirmed",
+    "confirmed"
+  ],
+  "limits": [
+    "Only native open branch proved; click/reply branches remain open",
+    "Fixture email_type is transactional; marketing frequency and dedup behavior remain open",
+    "Every exact queued intent approved explicitly by the test driver; automated campaign approval mapping remains open"
+  ]
+}

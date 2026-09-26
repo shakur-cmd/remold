@@ -1,0 +1,56 @@
+== control (unmutated copies)
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (84.212833ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.879041ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (0.742ms)
+✔ the encoding and every extra header remain part of the approved hash (0.127708ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.104ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.407417ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.209583ms)
+✔ the serialized intent and exactly two MIME parts are required (0.08675ms)
+ℹ pass 8
+ℹ fail 0
+== M1 Date shape regex removed (Date.parse kept)
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (66.263125ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.459375ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (3.340791ms)
+✔ the encoding and every extra header remain part of the approved hash (0.151708ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.174208ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.250792ms)
+✖ volatile headers accept generated metadata only, never arbitrary unapproved text (0.358959ms)
+✔ the serialized intent and exactly two MIME parts are required (0.086792ms)
+ℹ pass 7
+ℹ fail 1
+✖ failing tests:
+✖ volatile headers accept generated metadata only, never arbitrary unapproved text (0.358959ms)
+== M2 oracle epilogue + body-comparison checks both removed
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (56.623791ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.703958ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (0.745584ms)
+✔ the encoding and every extra header remain part of the approved hash (0.148875ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.125625ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.237958ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.264583ms)
+✔ the serialized intent and exactly two MIME parts are required (0.113833ms)
+ℹ pass 7
+ℹ fail 1
+✖ failing tests:
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (56.623791ms)
+== M3 oracle still refuses but for an unattributed reason (messages blanked)
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (64.366208ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (1.787416ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (0.787083ms)
+✔ the encoding and every extra header remain part of the approved hash (0.162334ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.121959ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.232167ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.225209ms)
+✔ the serialized intent and exactly two MIME parts are required (0.096958ms)
+ℹ pass 7
+ℹ fail 1
+✖ failing tests:
+✖ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (64.366208ms)
+== M3 control against pre-delta oracle test (no message match)
+ℹ pass 1
+ℹ fail 0
+== M1 control against pre-delta mime.test (gap reproduced)
+ℹ pass 7
+ℹ fail 0

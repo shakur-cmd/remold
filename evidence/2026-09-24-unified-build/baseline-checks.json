@@ -1,0 +1,20 @@
+{
+  "pnpm test": {
+    "exit": 0,
+    "tests": 49
+  },
+  "pnpm typecheck": {
+    "exit": 0
+  },
+  "pnpm build": {
+    "exit": 0,
+    "warning": "JS bundle exceeds 500 kB"
+  },
+  "pnpm --dir packages/mcp test": {
+    "exit": 0,
+    "tests": 2
+  },
+  "pnpm --dir packages/mcp build": {
+    "exit": 0
+  }
+}

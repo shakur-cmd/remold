@@ -1,0 +1,14 @@
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 15:10:59 Convex functions ready! (863.01ms)
+STALE_FINALITY {"denied":false,"state":"refused","step":2,"reserved":0,"active":0,"absence":{"at":1790277060241,"by":"adapter","finality":"final"}}
+FAIL Settled step1 final absence cannot release unresolved step2 AssertionError [ERR_ASSERTION]: A final-absence response for settled step1 must not release unknown step2 exposure
+
+0 !== 4
+
+Command `node stale-finality.mjs` exited with code 1

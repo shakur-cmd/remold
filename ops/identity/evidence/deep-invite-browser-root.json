@@ -1,0 +1,23 @@
+{
+  "at": "2026-09-24T19:01:58.235793+00:00",
+  "observer": "root actual Chrome",
+  "journey": [
+    "Sign out returned local sign-in screen",
+    "Loaded private synthetic B invite URL signed out",
+    "Hosted Google login with authorized business account",
+    "Callback preserved invite path and showed Synthetic Workspace B member invitation",
+    "Accepted synthetic invite"
+  ],
+  "postcondition": {
+    "ok": true,
+    "result": {
+      "value": {
+        "expectedWorkspace": true,
+        "inviteGone": true,
+        "origin": "http://localhost:5173",
+        "path": "/o/kn7f4521dttjyqkrfvbf56nvws8f06xk/today",
+        "signedIn": true
+      }
+    }
+  }
+}

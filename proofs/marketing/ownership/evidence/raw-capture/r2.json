@@ -1,0 +1,102 @@
+{
+ "label": "r2",
+ "fixture": "b3efb623",
+ "startedAt": "2026-09-26T12:12:22.590Z",
+ "level": "SERVICE isolated local containers; synthetic data; no mail, DNS, TLS, provider or host port beyond the loopback forward",
+ "checks": [
+  {
+   "ok": true,
+   "name": "deployed edges run the repository server.mjs"
+  },
+  {
+   "ok": false,
+   "name": "concurrent posts threw",
+   "detail": "fetch failed"
+  }
+ ],
+ "mauticStart": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 251,
+   "anonymousContacts": 42,
+   "dnc": 42,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "b": {
+   "formSubmissions": 92,
+   "contacts": 67,
+   "anonymousContacts": 24,
+   "dnc": 25,
+   "campaignLeads": 1,
+   "queuedEmails": 4,
+   "emailStats": 4
+  }
+ },
+ "edges": {
+  "a": {
+   "serverSha256": "3a46cf7701daa2e94b40b24e98698787c378467c64dc17464cd19ac53f1f6225"
+  },
+  "b": {
+   "serverSha256": "3a46cf7701daa2e94b40b24e98698787c378467c64dc17464cd19ac53f1f6225"
+  }
+ },
+ "localServerSha256": "3a46cf7701daa2e94b40b24e98698787c378467c64dc17464cd19ac53f1f6225",
+ "d1Edit": {
+  "a": {
+   "formId": 34,
+   "mapped": [
+    "email",
+    "firstname"
+   ],
+   "actions": [
+    "lead.remove_do_not_contact"
+   ]
+  },
+  "b": {
+   "formId": 29,
+   "mapped": [
+    "email",
+    "firstname"
+   ],
+   "actions": [
+    "lead.remove_do_not_contact"
+   ]
+  }
+ },
+ "mauticAfterSeed": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 252,
+   "anonymousContacts": 42,
+   "dnc": 43,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "b": {
+   "formSubmissions": 92,
+   "contacts": 68,
+   "anonymousContacts": 24,
+   "dnc": 26,
+   "campaignLeads": 1,
+   "queuedEmails": 4,
+   "emailStats": 4
+  }
+ },
+ "error": "TypeError: fetch failed",
+ "revert-a": {
+  "mapped": 0,
+  "actions": 0
+ },
+ "revert-b": {
+  "mapped": 0,
+  "actions": 0
+ },
+ "finishedAt": "2026-09-26T12:12:35.172Z",
+ "failed": [
+  "concurrent posts threw"
+ ],
+ "status": "FAIL"
+}

@@ -1,0 +1,169 @@
+{
+ "section": "faults",
+ "label": "r3b-m5",
+ "at": "2026-09-26T13:32:47.703Z",
+ "status": "FAIL",
+ "failed": [
+  "a 500 on create stops the run and leaves the capture pending, never rejected",
+  "once Mautic answers normally the pending capture is created"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "a create Mautic refuses (400) settles as rejected with the reason",
+   "detail": {
+    "contactId": null,
+    "email": "f400-b2156511@example.invalid",
+    "firstname": "Refused",
+    "id": "j571epc3yh1ng0jkfkm665brh98f5nm3",
+    "idempotencyKey": "d93605be1444422676bc1997f48a816e",
+    "outcome": "rejected",
+    "reason": "Mautic refused create (400): fault: refused",
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": true,
+   "name": "a refused name update is recorded and the contact kept unnamed",
+   "detail": {
+    "contactId": 798,
+    "email": "fname-b2156511@example.invalid",
+    "firstname": "Name refused",
+    "id": "j578zv9yqke07tn2q2ffd7mk318f55vw",
+    "idempotencyKey": "75ead01e4f4bb9b8c8a9b7ff783c30fb",
+    "outcome": "created",
+    "reason": "name not set: Mautic refused name update (400): fault: name refused",
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": true,
+   "name": "captures after both refusals are still created",
+   "detail": [
+    {
+     "id": 799,
+     "firstname": "Good"
+    }
+   ]
+  },
+  {
+   "ok": false,
+   "name": "a 500 on create stops the run and leaves the capture pending, never rejected",
+   "detail": {
+    "exit": 0,
+    "row": {
+     "contactId": null,
+     "email": "f500-b2156511@example.invalid",
+     "firstname": "Outage",
+     "id": "j57akjka6xm5t82ntgfmraf1wd8f56t6",
+     "idempotencyKey": "537728a14eb872941965867b03e75c10",
+     "outcome": "rejected",
+     "reason": "Mautic refused create (500): no message",
+     "status": "settled",
+     "tenant": "a"
+    }
+   }
+  },
+  {
+   "ok": false,
+   "name": "once Mautic answers normally the pending capture is created",
+   "detail": {
+    "exit": 0,
+    "err": "",
+    "e500": {
+     "contactId": null,
+     "email": "f500-b2156511@example.invalid",
+     "firstname": "Outage",
+     "id": "j57akjka6xm5t82ntgfmraf1wd8f56t6",
+     "idempotencyKey": "537728a14eb872941965867b03e75c10",
+     "outcome": "rejected",
+     "reason": "Mautic refused create (500): no message",
+     "status": "settled",
+     "tenant": "a"
+    }
+   }
+  }
+ ],
+ "out": {
+  "faultyRun": {
+   "exit": 0,
+   "err": ""
+  },
+  "e400": {
+   "contactId": null,
+   "email": "f400-b2156511@example.invalid",
+   "firstname": "Refused",
+   "id": "j571epc3yh1ng0jkfkm665brh98f5nm3",
+   "idempotencyKey": "d93605be1444422676bc1997f48a816e",
+   "outcome": "rejected",
+   "reason": "Mautic refused create (400): fault: refused",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "en": {
+   "contactId": 798,
+   "email": "fname-b2156511@example.invalid",
+   "firstname": "Name refused",
+   "id": "j578zv9yqke07tn2q2ffd7mk318f55vw",
+   "idempotencyKey": "75ead01e4f4bb9b8c8a9b7ff783c30fb",
+   "outcome": "created",
+   "reason": "name not set: Mautic refused name update (400): fault: name refused",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": 799,
+   "email": "fgood-b2156511@example.invalid",
+   "firstname": "Good",
+   "id": "j576rcs6sjzr4ja7qktgfjpwpn8f55j0",
+   "idempotencyKey": "375a7e07efa177bf5bdfaf8240e86beb",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  },
+  "e500": {
+   "contactId": null,
+   "email": "f500-b2156511@example.invalid",
+   "firstname": "Outage",
+   "id": "j57akjka6xm5t82ntgfmraf1wd8f56t6",
+   "idempotencyKey": "537728a14eb872941965867b03e75c10",
+   "outcome": "rejected",
+   "reason": "Mautic refused create (500): no message",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "contacts": {
+   "e400": [],
+   "en": [
+    {
+     "id": 798
+    }
+   ],
+   "good": [
+    {
+     "id": 799,
+     "firstname": "Good"
+    }
+   ],
+   "e500": []
+  },
+  "realRun": {
+   "exit": 0,
+   "err": "",
+   "e500": {
+    "contactId": null,
+    "email": "f500-b2156511@example.invalid",
+    "firstname": "Outage",
+    "id": "j57akjka6xm5t82ntgfmraf1wd8f56t6",
+    "idempotencyKey": "537728a14eb872941965867b03e75c10",
+    "outcome": "rejected",
+    "reason": "Mautic refused create (500): no message",
+    "status": "settled",
+    "tenant": "a"
+   }
+  }
+ }
+}

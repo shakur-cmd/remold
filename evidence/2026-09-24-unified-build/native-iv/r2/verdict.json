@@ -1,0 +1,23 @@
+{
+  "verdict": "APPROVE bounded native P1 SERVICE slice",
+  "reviewer": "c0_verifier independent",
+  "sourceManifestSha256": "c21333bb964d08887be45525c43d11b6b41288844bef391e08d9666de5e142ac",
+  "builderGroupsIndependentlyReplayed": 10,
+  "typecheckExit": 0,
+  "sourceChangedDuringReview": [],
+  "additionalChecks": [
+    "Fresh hired/delegated recurring task loses accepted response, manager fired, owner recovers artifact while paused",
+    "One late receipt, one provider effect, usage1 and orgspent0to1",
+    "Three repeated recover requests remain idempotent",
+    "Dependent remains paused attempts0; recurrence remains occurrence1 of3",
+    "Reassignment cannot repeat settled effect",
+    "Staged actual lookupContext before fire then reconcile/recovered after fire retains same invariants"
+  ],
+  "limits": [
+    "Synthetic provider, tenant/member/session fixtures and local real Convex only",
+    "Staged interleaving is not a forced actual scheduler ordering test",
+    "No whole P1, executorOS isolation, hosted runtime or I1 certification",
+    "Human accept/close disposition for confirmed paused results and blocked dependents remains future product work"
+  ],
+  "supersedes": "native-iv/verdict.json REVISE only for the repaired lifecycle defect; prior red preserved"
+}

@@ -1,0 +1,29 @@
+{
+  "level": "SERVICE Convex; SIM identities/mail provider/reply",
+  "contractManifest": "df5d09cb8fc69833f05495dc658844278024773d4eb3a96ff014395d09d0533a",
+  "results": [
+    {
+      "name": "Stripped reply suppresses P final permit; Q retains three sends",
+      "pass": true,
+      "simSendReceipts": [
+        "P1",
+        "Q1",
+        "Q2",
+        "Q3"
+      ],
+      "nineMinuteLiveFixture": false
+    },
+    {
+      "name": "Already-permitted tail stays visible; later action refused after unsubscribe",
+      "pass": true
+    },
+    {
+      "name": "Foreign mailbox adapter cannot attach callback to A binding",
+      "pass": true
+    }
+  ],
+  "rootEnvironmentUnchanged": true,
+  "actualMailSent": 0,
+  "calendarCalls": 0,
+  "oauthCovered": false
+}

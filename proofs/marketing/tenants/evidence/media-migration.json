@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "level": "SERVICE B-only media preservation; not full restore",
+  "capturedAt": "2026-09-25T05:54:43.256Z",
+  "oldId": "ad8998590b3ca12f945626a725ad9a5b5a85c92e4b255469d236545af1ec9423",
+  "replacementId": "4135bacb51b927221cf3d0c1910edf30db2be50247007d3747f7e95d9af0d5ac",
+  "legacy": "remold-marketing-proof-web-b-before-media",
+  "legacyStopped": true,
+  "legacyDisconnected": true,
+  "databaseAndQueueUnchanged": true,
+  "contactUnchanged": true,
+  "aContainersAndMountsUnchanged": true,
+  "envHash": "635db574b829d2850a281863c5ff408376cef7021b68e3f44399c42602472746",
+  "configAndRuntimeCompared": true,
+  "copies": {
+    "files": {
+      "source": "a6b409427bf27cfd35154c01a787414efb63c0239d11d6225d1ad4dd07d56271",
+      "target": "remold-marketing-proof-files-b",
+      "manifest": [
+        {
+          "path": ".",
+          "mode": 493,
+          "uid": 33,
+          "gid": 33,
+          "type": "directory"
+        },
+        {
+          "path": ".htaccess",
+          "mode": 420,
+          "uid": 33,
+          "gid": 33,
+          "type": "file",
+          "sha256": "63d687eb50a82f2c475f5b4f6103506f5a4b80c86bc9ce04d8ba65d0e4de0f8d"
+        },
+        {
+          "path": "remold-retention-7b6db36a-8d8e-400b-9ce8-aceeb63e1780.txt",
+          "mode": 420,
+          "uid": 33,
+          "gid": 33,
+          "type": "file",
+          "sha256": "a7e5029dd6497222bd448c7bc163f9e13dd329896679aeb9f84ebd834f53004c"
+        }
+      ],
+      "sha256": "16f8b90cf367b984e70e4ba3e28d4f92811dfdcc1f5922142ccce636ffea33a7"
+    },
+    "images": {
+      "source": "db159a4c57cdf4c5057fd5854ad9e0b0c15f3a5bd59860bb222e8ab2bc8ebe29",
+      "target": "remold-marketing-proof-images-b",
+      "manifest": [
+        {
+          "path": ".",
+          "mode": 493,
+          "uid": 33,
+          "gid": 33,
+          "type": "directory"
+        },
+        {
+          "path": ".htaccess",
+          "mode": 420,
+          "uid": 33,
+          "gid": 33,
+          "type": "file",
+          "sha256": "e97fa527229c227da39e90d7b9f0ea8a6700eb29e1efd6c1b25f540fc369b6e2"
+        }
+      ],
+      "sha256": "1cccf6de9734f87de4b35db9a02215414435ac4a0ab0609e917271669ff40549"
+    }
+  },
+  "limits": [
+    "A remains on legacy anonymous media volumes",
+    "No native asset API or database restore tested",
+    "ACLs, xattrs and timestamps not compared",
+    "Do not start retained legacy container alongside replacement"
+  ]
+}

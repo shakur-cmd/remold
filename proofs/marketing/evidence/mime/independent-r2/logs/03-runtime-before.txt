@@ -1,0 +1,38 @@
+2026-09-25T05:08:16Z
+remold-marketing-proof-mime-sink Up 3 minutes 0b7b0351980d
+remold-marketing-proof-web-a Up About an hour 0b7b0351980d
+remold-marketing-proof-bridge Up 3 minutes 0b7b0351980d
+remold-marketing-proof-web-a-before-guard Exited (137) 8 hours ago 0b7b0351980d
+remold-marketing-proof-authority Up About an hour b1f3b36e8714
+remold-marketing-proof-db-a Up About an hour 64a9d35fe6fe
+bridge 172.19.0.6 {"3542/tcp":[{"HostIp":"127.0.0.1","HostPort":"3542"}]}
+mime-sink 172.19.0.4 {}
+web-a 172.19.0.5 {"80/tcp":[{"HostIp":"127.0.0.1","HostPort":"3540"}]}
+authority 172.19.0.3 {"3210/tcp":[{"HostIp":"127.0.0.1","HostPort":"3545"}],"3211/tcp":[{"HostIp":"127.0.0.1","HostPort":"3546"}]}
+db-a 172.19.0.2 {}
+remold-agents-proof true
+remold-marketing-proof true
+remold-social-proof true
+remold-marketing-proof-bridge
+remold-marketing-proof-config-a
+remold-marketing-proof-convex
+remold-marketing-proof-db-a
+remold-marketing-proof-logs-a
+remold-marketing-proof-media-a
+remold-marketing-proof-mime-sink
+remold-paperclip-proof
+/data/mime-guard.sqlite intents 47 deliveries 30
+/data/guard.sqlite intents 88 deliveries 55
+total 4560
+drwxr-xr-x 2 root root    4096 Sep 25 04:21 .
+drwxr-xr-x 1 root root    4096 Sep 25 05:04 ..
+-rw-r--r-- 1 root root    4096 Sep 24 21:33 guard.sqlite
+-rw-r--r-- 1 root root   32768 Sep 25 05:08 guard.sqlite-shm
+-rw-r--r-- 1 root root 2884032 Sep 25 04:07 guard.sqlite-wal
+-rw-r--r-- 1 root root    4096 Sep 25 04:21 mime-guard.sqlite
+-rw-r--r-- 1 root root   32768 Sep 25 05:04 mime-guard.sqlite-shm
+-rw-r--r-- 1 root root 1689232 Sep 25 05:04 mime-guard.sqlite-wal
+97e8d54f8a7255106f66cf1b213c4a4d7b558d21310b1c2bfedc3d0d526dddda  /data/guard.sqlite
+0f5cf3426715fcaff4929c24246334059a53189c9b1456dc1a71e02b7f9d29d5  /data/guard.sqlite-shm
+437c749b8b77ed6bf0dfa1e0cacecf8c1727e68d2313d6161352d86f0f975ca3  /data/guard.sqlite-wal
+sink deliveries 30 attempts [{"outcome":"accepted","n":30},{"outcome":"duplicate-refused","n":3},{"outcome":"refused","n":18}]

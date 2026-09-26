@@ -1,0 +1,74 @@
+🌀 Building list of assets...
+✨ Read 15 files from the assets directory /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-previews-session-124k6nlp/prepared-pr3/artifact
+🌀 Starting asset upload...
+🌀 Found 4 new or modified static assets to upload. Proceeding with upload...
++ /version.json
++ /assets/index-QmPypY2h.js
++ /index.html
++ /release-manifest.json
+Uploaded 1 of 4 assets
+Uploaded 2 of 4 assets
+Uploaded 4 of 4 assets
+✨ Success! Uploaded 4 files (8 already uploaded) (1.24 sec)
+
+{
+  "preview": {
+    "id": "b5c9aa6921914138b030d25c83b426f8",
+    "slug": "pr-3",
+    "name": "pr-3",
+    "tags": [],
+    "observability": {
+      "enabled": false,
+      "head_sampling_rate": 1,
+      "redact_query_string": false,
+      "logs": {
+        "enabled": false,
+        "head_sampling_rate": 1,
+        "invocation_logs": true,
+        "persist": true,
+        "destinations": []
+      },
+      "traces": {
+        "enabled": false,
+        "head_sampling_rate": 1,
+        "persist": true,
+        "destinations": []
+      }
+    },
+    "logpush": false,
+    "tail_consumers": [],
+    "urls": [
+      "https://pr-3-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "created_on": "2026-09-25T02:23:18.507403Z",
+    "updated_on": "2026-09-25T02:23:18.507403Z",
+    "deployed_on": null
+  },
+  "deployment": {
+    "id": "f37e49f5-8d51-40b9-af50-1ee62c08cb17",
+    "number": 1,
+    "startup_time_ms": 1,
+    "compatibility_date": "2026-09-21",
+    "main_module": "no-op-worker.js",
+    "annotations": {
+      "workers/message": "I2 PR3 954bdfb792fcfcd8c857482cc174828f616d03eb",
+      "workers/triggered_by": "create_preview_deployment_api"
+    },
+    "usage_model": "standard",
+    "urls": [
+      "https://f37e49f5-remold-i2-preview.shakur-949.workers.dev"
+    ],
+    "source": "wrangler",
+    "created_on": "2026-09-25T02:23:21.071624Z",
+    "assets": {
+      "config": {
+        "html_handling": "auto-trailing-slash",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": false,
+        "base_path": "/"
+      }
+    },
+    "author_id": "212533b88ae1c9e8bed9ca79b71ddc56",
+    "author_email": "shakur@codemyvibe.com"
+  }
+}

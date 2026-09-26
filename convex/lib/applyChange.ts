@@ -1,7 +1,9 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import type { Principal } from "../identity";
+import { currentPrincipal, recordGranted, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
+import { writable } from "../authority/readonly";
+import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 
@@ -52,19 +54,41 @@ async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId:
         : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === deleted._id);
       for (const record of referrers) {
         if (record._id === deleted._id) continue;
-        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: `Linked ${deleted.title || "record"} was deleted` }, { clearingReference: true });
+        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true });
       }
     }
   }
 }
 
-export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions"> } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+  membership = await currentPrincipal(ctx, membership);
+  await writable(ctx, change.orgId);
+  if (membership.org._id !== change.orgId) fail("FORBIDDEN", "Workspace mismatch");
   let record: Doc<"records"> | null = null;
   let object: Doc<"objects"> | null;
   if (change.action === "create") object = await ctx.db.get(change.objectId);
   else { record = await ctx.db.get(change.recordId); object = record ? await ctx.db.get(record.objectId) : null; }
   if (!object || object.orgId !== change.orgId || (record && record.orgId !== change.orgId)) fail("NOT_FOUND", "Record or object not found");
   const fields = await fieldsFor(ctx, change.orgId, object._id);
+  if (!options.clearingReference) {
+    const touched = change.action === "delete" ? Object.keys(record!.values) : Object.keys(change.values);
+    const checkScope = (principal: Principal) => {
+      requireObjectRead(principal, object!);
+      if (record) requireRecordRead(principal, object!, record);
+      const createScopes = scopes(principal, object!).filter(scope => scope.records === "all");
+      if (change.action === "create" && !createScopes.length) fail("FORBIDDEN", "Record scope does not authorize new records");
+      for (const id of touched) {
+        const field = fields.find(f => f._id === id);
+        if (field && (!canReadField(principal, object!, field, record?._id) || (change.action === "create" && !createScopes.some(scope => scope.fields === "all" || scope.fields.includes(field._id))))) fail("NOT_FOUND", "Field not found");
+      }
+    };
+    checkScope(membership);
+    if (options.approvedBy) {
+      const approver = await currentPrincipal(ctx, options.approvedBy);
+      if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
+      checkScope(approver);
+    } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
+  }
   if (change.action === "delete") {
     // Records that link to this one drop it from their links value through an
     // attributed update, which also removes the rows; then this record's own rows go.
@@ -73,7 +97,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (row.fromRecordId === record!._id) continue;
       const source = await ctx.db.get(row.fromRecordId);
       const current = (source?.values[row.fieldId] as string[] | undefined) ?? [];
-      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: `Linked ${record!.title || "record"} was deleted` }, { clearingReference: true });
+      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true });
     }
     const rows = await ctx.db.query("links").withIndex("by_record_any", (q) => q.eq("orgId", change.orgId).eq("fromRecordId", record!._id)).collect();
     for (const row of rows) await ctx.db.delete(row._id);

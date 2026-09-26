@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AuthKit invite independent postcondition</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>AuthKit invite: independent postcondition verified</h1><div class="meta">2026-09-24 · reviewer /root/c0_verifier · real staging identity, isolated local app and synthetic workspace data</div>
+<div class="decisions"><h2>Decision</h2><p>Approve the bounded invite membership transition and current signed-in browser postcondition. Root performed and recorded logout, hosted Google login, deep invite return and acceptance. This verifier independently checked the resulting database and current screen, without navigation or writes.</p></div>
+<div class="status"><h2>Done and proven</h2><p>The same user who owns synthetic workspace A now has exactly one member-role membership in B. A ownership remains present. Exactly one invite accepted by this user exists; it belongs to B, grants member, was issued by B’s original owner and was accepted before expiry. There are two users, two workspaces and three memberships in the local fixture.</p><p>A read-only canonical CDP evaluation independently found the expected B workspace route, visible Synthetic Workspace B, a Sign out button and no invite acceptance UI, query string or hash.</p></div>
+<h2>Before and after</h2><table><tr><th>Saved before</th><th>Independent after</th></tr><tr><td>B organization and one owner membership, snapshot SHA256 4aecba927475802a10217c7f310da70215330103a639f0f32199e74dfdd721bb.</td><td>Snapshot hash verified. B organization and original owner membership exactly unchanged. One new member membership exists, linked to A’s owner.</td></tr><tr><td>Root’s valid-token negative check refused this user’s B read/write.</td><td>Accepted B invite and B membership now recorded. Current browser shows signed-in B. Existing A owner membership remains.</td></tr></table>
+<h2>How this was checked</h2><p>Inspected the existing scratch-only identityProofFixture functions first. Used Convex’s sandboxed inline readonly query on explicitly validated anonymous loopback http://127.0.0.1:3450. The query returns only org/membership fields and selected invite metadata. Invite bearer tokens, JWTs and real user profile fields were not returned or persisted. No source deployment, database mutation, browser navigation or action was performed.</p><p>The browser check used the <a href="/Users/urkel/.codex/skills/web-automate/SKILL.md">web-automate skill</a> and canonical owned CDP driver, restricted to the one local tab and localhost origin. It returned booleans rather than page bodies or personal content.</p>
+<h2>Limits</h2><p>This is an independent postcondition witness, not an independent replay of the full hosted journey. Root’s earlier journey evidence remains separately attributed. The saved before snapshot covers B’s organization and memberships only. A’s current ownership and exact current membership set are checked, but no whole-database before export exists, so no-other-data-changes across every table is not established.</p><p>The separate real JWT source/evidence review confirms root used one SDK token against the correct backend and a wrong-issuer backend with the same JWKS/client. Its observed 401 NoAuthProvider is issuer rejection, not an audience-only proof. Full I2, hosted simultaneous previews, production identity migration and remaining signup/error/session scenarios are not certified.</p>
+<h2>Evidence</h2><p><a href="membership-verification.json">Independent database verdict</a> · <a href="membership-after-sanitized.json">Sanitized current state</a> · <a href="membership-query.js">Read-only projection</a> · <a href="read-membership.mjs">Verifier and before/after assertions</a> · <a href="browser-policy.json">Read-only browser scope</a> · <a href="browser-witness.json">Independent current screen witness</a> · <a href="invite-evidence-hashes.json">Evidence hashes</a>.</p><p>Root journey record: ops/identity/evidence/deep-invite-browser-root.json. Existing source/unit/SDK review: <a href="report.html">AuthKit bounded source approval</a>.</p></body></html>

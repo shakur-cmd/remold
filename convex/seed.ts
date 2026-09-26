@@ -8,6 +8,7 @@ import { seedStandard, standard } from "./lib/standard";
 import { releaseSlot } from "./lib/slots";
 import { uniqueRef } from "./lib/ref";
 import { fail } from "./errors";
+import { writable } from "./authority/readonly";
 
 async function objectAndFields(ctx: MutationCtx, orgId: Id<"orgs">, key: string) {
   const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", key)).unique();
@@ -64,13 +65,15 @@ export const demoAs = internalMutation({
 // Adds any standard object this org predates (`convex run seed:ensureStandard`).
 export const ensureStandard = internalMutation({
   args: { orgId: v.id("orgs") },
-  handler: (ctx, args) => seedStandard(ctx, args.orgId),
+  // Operator maintenance still respects a workspace hold.
+  handler: async (ctx, args) => { await writable(ctx, args.orgId); return seedStandard(ctx, args.orgId); },
 });
 
 // Gives a code to records created before codes existed (`convex run seed:backfillRefs`).
 export const backfillRefs = internalMutation({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
+    await writable(ctx, args.orgId);
     const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect();
     let count = 0;
     for (const object of objects) {
@@ -86,6 +89,7 @@ export const backfillRefs = internalMutation({
 export const releaseStandardSlots = internalMutation({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
+    await writable(ctx, args.orgId);
     const released: string[] = [];
     for (const definition of standard) {
       const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", args.orgId).eq("key", definition.key)).unique();

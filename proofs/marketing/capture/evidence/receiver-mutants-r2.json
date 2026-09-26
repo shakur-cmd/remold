@@ -1,0 +1,58 @@
+{
+  "baseline": {
+    "exit": 0,
+    "failed": []
+  },
+  "no-hmac-compare": {
+    "exit": 1,
+    "failed": [
+      "wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt"
+    ]
+  },
+  "insert-not-idempotent": {
+    "exit": 1,
+    "failed": [
+      "verified receipt survives reopen, duplicate delivery adds no receipt, origin cannot change tenant"
+    ]
+  },
+  "ack-despite-storage-failure": {
+    "exit": 1,
+    "failed": [
+      "durable storage failure never receives a successful acknowledgement"
+    ]
+  },
+  "no-size-cap": {
+    "exit": 1,
+    "failed": [
+      "wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt"
+    ]
+  },
+  "no-content-type-check": {
+    "exit": 1,
+    "failed": [
+      "wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt"
+    ]
+  },
+  "no-json-object-check": {
+    "exit": 1,
+    "failed": [
+      "wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt"
+    ]
+  },
+  "no-duplicate-signature-header-check": {
+    "exit": 0,
+    "failed": []
+  },
+  "no-fatal-utf8": {
+    "exit": 1,
+    "failed": [
+      "wrong tenant key, altered bytes, malformed JSON and oversized payload leave no receipt"
+    ]
+  },
+  "tenant-from-origin-header": {
+    "exit": 1,
+    "failed": [
+      "verified receipt survives reopen, duplicate delivery adds no receipt, origin cannot change tenant"
+    ]
+  }
+}

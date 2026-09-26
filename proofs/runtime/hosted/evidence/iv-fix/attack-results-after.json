@@ -1,0 +1,211 @@
+{
+  "runId": "atk5159bd",
+  "image": "remold-p6-hostile:13fa5a57103f",
+  "at": "2026-09-26T14:49:21.938Z",
+  "results": [
+    {
+      "name": "hostile guest cannot escape sandbox, cross-read the other tenant, or reach the host/control plane",
+      "status": "PASS",
+      "ms": 1579,
+      "evidence": {
+        "probes": {
+          "A": {
+            "uid": 65534,
+            "gid": 65534,
+            "interfaces": [
+              "lo"
+            ],
+            "secretsFound": [
+              {
+                "path": "/work/tenant-secret-A.txt",
+                "text": "SECRET-A-atk5159bd"
+              }
+            ],
+            "hostPaths": [],
+            "writes": {
+              "rootEtc": "ERR:EROFS",
+              "varTmp": "ERR:EROFS",
+              "work": "WROTE",
+              "tmp": "WROTE",
+              "proc": "ERR:EROFS"
+            },
+            "caps": [
+              "CapInh:\t0000000000000000",
+              "CapPrm:\t0000000000000000",
+              "CapEff:\t0000000000000000",
+              "CapBnd:\t0000000000000000",
+              "CapAmb:\t0000000000000000"
+            ],
+            "mounts": [
+              "overlay / overlay ro,relatime,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/14329/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7614/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/194/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/193/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/192/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/191/fs,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/14330/fs,workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/14330/work,nouserxattr 0 0",
+              "/dev/vdb1 /work ext4 rw,relatime 0 0",
+              "/dev/vdb1 /etc/hostname ext4 ro,relatime 0 0",
+              "/dev/vdb1 /etc/hosts ext4 ro,relatime 0 0"
+            ],
+            "envLeak": [],
+            "net": {
+              "172.17.0.2:8080": "ERR:ENETUNREACH",
+              "172.17.0.1:3940": "ERR:ENETUNREACH",
+              "1.1.1.1:443": "ERR:ENETUNREACH",
+              "169.254.169.254:80": "ERR:ENETUNREACH",
+              "127.0.0.1:3940": "ERR:ECONNREFUSED",
+              "::1:3940": "ERR:ECONNREFUSED"
+            }
+          },
+          "B": {
+            "uid": 65534,
+            "gid": 65534,
+            "interfaces": [
+              "lo"
+            ],
+            "secretsFound": [
+              {
+                "path": "/work/tenant-secret-B.txt",
+                "text": "SECRET-B-atk5159bd"
+              }
+            ],
+            "hostPaths": [],
+            "writes": {
+              "rootEtc": "ERR:EROFS",
+              "varTmp": "ERR:EROFS",
+              "work": "WROTE",
+              "tmp": "WROTE",
+              "proc": "ERR:EROFS"
+            },
+            "caps": [
+              "CapInh:\t0000000000000000",
+              "CapPrm:\t0000000000000000",
+              "CapEff:\t0000000000000000",
+              "CapBnd:\t0000000000000000",
+              "CapAmb:\t0000000000000000"
+            ],
+            "mounts": [
+              "overlay / overlay ro,relatime,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/14331/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7614/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/194/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/193/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/192/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/191/fs,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/14332/fs,workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/14332/work,nouserxattr 0 0",
+              "/dev/vdb1 /work ext4 rw,relatime 0 0",
+              "/dev/vdb1 /etc/hostname ext4 ro,relatime 0 0",
+              "/dev/vdb1 /etc/hosts ext4 ro,relatime 0 0"
+            ],
+            "envLeak": [],
+            "net": {
+              "172.17.0.2:8080": "ERR:ENETUNREACH",
+              "172.17.0.1:3940": "ERR:ENETUNREACH",
+              "1.1.1.1:443": "ERR:ENETUNREACH",
+              "169.254.169.254:80": "ERR:ENETUNREACH",
+              "127.0.0.1:3940": "ERR:ECONNREFUSED",
+              "::1:3940": "ERR:ECONNREFUSED"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "forged tenant ids on stdout never cross-bill another tenant",
+      "status": "PASS",
+      "ms": 1571,
+      "evidence": {
+        "rec": {
+          "tokens": 4,
+          "usage": 999999,
+          "applied": false,
+          "overrun": true
+        },
+        "aSpent": 0,
+        "bSpent": 999999
+      }
+    },
+    {
+      "name": "DEFECT PROBE: guest-controlled usage report is billed verbatim for finished runs (under- and over-reporting)",
+      "status": "FAIL",
+      "ms": 2450,
+      "error": "under-report expected billed<streamed, got {\"tokensStreamed\":4,\"usageBilled\":4,\"orgSpent\":4,\"applied\":false}"
+    },
+    {
+      "name": "oversized output does not crash the executor; the next run still works",
+      "status": "PASS",
+      "ms": 1724,
+      "evidence": {
+        "rec": {
+          "tokens": 0,
+          "applied": false
+        },
+        "aSpent": 0,
+        "aReserved": 4
+      }
+    },
+    {
+      "name": "DEFECT PROBE: widened org-kill race applies output after the org is killed",
+      "status": "FAIL",
+      "ms": 10317,
+      "error": "expected the race to apply output at least once"
+    },
+    {
+      "name": "a finished run using less than its reservation returns reserved to zero (no leak)",
+      "status": "PASS",
+      "ms": 1290,
+      "evidence": {
+        "reservation": 4,
+        "billed": 4,
+        "reservedAfter": 0,
+        "applied": false
+      }
+    },
+    {
+      "name": "late result after cancel is billed but never applied even with a rushed reconcile",
+      "status": "PASS",
+      "ms": 1222,
+      "evidence": {
+        "rec": {
+          "tenant": "A",
+          "id": "jh770vhseqmrr1dv1bp8wbsr998f46gz",
+          "mode": "normal",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434158134,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-atk5159bd-A-1",
+          "usage": 4,
+          "accepted": true,
+          "late": true,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": true
+        },
+        "oSpent": 4
+      }
+    },
+    {
+      "name": "concurrent higher-pressure load never exceeds org or global hard caps",
+      "status": "PASS",
+      "ms": 2918,
+      "evidence": {
+        "orgs": [
+          {
+            "cap": 10,
+            "spent": 4,
+            "reserved": 0
+          },
+          {
+            "cap": 10,
+            "spent": 4,
+            "reserved": 0
+          }
+        ],
+        "global": {
+          "cap": 15,
+          "spent": 8,
+          "reserved": 0,
+          "maxConcurrent": 3
+        },
+        "peaks": {
+          "global": 2,
+          "A": 1,
+          "B": 1
+        },
+        "refused": 18
+      }
+    }
+  ]
+}

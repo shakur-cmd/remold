@@ -1,0 +1,70 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (5 tests | 3 failed) 200ms
+   × every frozen H0 replay group maps to production tests that exercise its operations 16ms
+   × the guard reports a row whose own check no mapped test performs 13ms
+   × no single production test can stand in for more than five groups 151ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Exhausted successful continuation settles and releases its slot: /assert\\.equal/ appears in 43 tests, too generic to identify this group",
++ ]
+
+ ❯ ops/authority/h0-parity.test.ts:82:27
+     80|   expect(parity).toHaveLength(43);
+     81|   expect(new Set(parity.map(row => row.h0)).size).toBe(43);
+     82|   expect(gapsFor(parity)).toEqual([]);
+       |                           ^
+     83| });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    "A/B known-ID isolation, server-derived actors and full binding tuple collision: no mapped test does its own check /NO_TEST_DOES_THIS_zq/",
++   "Exhausted successful continuation settles and releases its slot: /assert\\.equal/ appears in 43 tests, too generic to identify this group",
+  ]
+
+ ❯ ops/authority/h0-parity.test.ts:88:25
+     86| test('the guard reports a row whose own check no mapped test performs'…
+     87|   const rows = parity.map((row, i) => i === 0 ? { ...row, exercises: '…
+     88|   expect(gapsFor(rows)).toEqual([`${parity[0]!.h0}: no mapped test doe…
+       |                         ^
+     89| });
+     90| test('the guard reports an own check that seven production tests share…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > no single production test can stand in for more than five groups
+AssertionError: expected 6 to be less than or equal to 5
+ ❯ ops/authority/h0-parity.test.ts:103:18
+    101|   const widest = Math.max(...allBodies.map(b => parity.filter(row => a…
+    102|   expect(allBodies.length).toBeGreaterThan(100);
+    103|   expect(widest).toBeLessThanOrEqual(5);
+       |                  ^
+    104| });
+    105|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  08:23:56
+   Duration  303ms (tests 83%, import 11%, transform 6%, worker 1%)
+

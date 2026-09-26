@@ -1,0 +1,85 @@
+{
+ "section": "poison",
+ "label": "iv-r4",
+ "at": "2026-09-26T13:36:43.475Z",
+ "status": "PASS",
+ "failed": [],
+ "checks": [
+  {
+   "ok": true,
+   "name": "reconciler completes despite poison",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "underscore email resolved by exact match, one contact",
+   "detail": {
+    "contactId": 812,
+    "email": "_867bc455@example.invalid",
+    "firstname": "Underscore",
+    "id": "j57833sc784z90y7b4g4af3hhx8f5p55",
+    "idempotencyKey": "0b8528ff94f03149326ce7cbfb275f4b",
+    "outcome": "created",
+    "reason": null,
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": true,
+   "name": "capture behind the poison is created with its suggested name",
+   "detail": [
+    {
+     "id": 813,
+     "firstname": "Good after poison"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "nothing left pending on A"
+  }
+ ],
+ "out": {
+  "reconciler": {
+   "exit": 0,
+   "err": ""
+  },
+  "underscore": {
+   "contactId": 812,
+   "email": "_867bc455@example.invalid",
+   "firstname": "Underscore",
+   "id": "j57833sc784z90y7b4g4af3hhx8f5p55",
+   "idempotencyKey": "0b8528ff94f03149326ce7cbfb275f4b",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": 813,
+   "email": "good-867bc455@example.invalid",
+   "firstname": "Good after poison",
+   "id": "j57fspm0rqy4kxmq40b45jey5x8f4q3f",
+   "idempotencyKey": "c179a98c3ccd4edb22ebab6466231585",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  },
+  "contacts": {
+   "underscore": [
+    {
+     "id": 812,
+     "firstname": "Underscore"
+    }
+   ],
+   "good": [
+    {
+     "id": 813,
+     "firstname": "Good after poison"
+    }
+   ]
+  }
+ }
+}

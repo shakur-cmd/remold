@@ -1,0 +1,12 @@
+$ node ops/rehearsal/rate-limit.mjs
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-base/ops/rehearsal/local-core.mjs:34
+      if (backend.exitCode !== null || Date.now() > deadline) throw new Error(`Local backend failed to become ready. Log retained at ${scratch}/backend.log`);
+                                                                    ^
+
+Error: Local backend failed to become ready. Log retained at /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-dlsMcp/backend.log
+    at withLocalCore (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-base/ops/rehearsal/local-core.mjs:34:69)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-base/ops/rehearsal/rate-limit.mjs:6:17
+
+Node.js v24.18.0
+[ELIFECYCLE] Command failed with exit code 1.
+exit 1

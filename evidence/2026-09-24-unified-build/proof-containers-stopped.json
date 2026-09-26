@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-24T22:41:01.110016+00:00",
+  "reason": "Bounded Paperclip/marketing verification complete; release local resources",
+  "action": "docker stop only, no removal/prune",
+  "rows": [
+    {
+      "container": "remold-marketing-proof-web-a",
+      "state": "exited"
+    },
+    {
+      "container": "remold-marketing-proof-bridge",
+      "state": "exited"
+    },
+    {
+      "container": "remold-marketing-proof-authority",
+      "state": "exited"
+    },
+    {
+      "container": "remold-marketing-proof-db-a",
+      "state": "exited"
+    },
+    {
+      "container": "remold-paperclip-proof-http",
+      "state": "exited"
+    }
+  ],
+  "data": "Existing containers and volumes retained for replay"
+}

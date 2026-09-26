@@ -1,0 +1,151 @@
+{
+  "at": "2026-09-24T23:32:21.284Z",
+  "account": "acct_1UJIndJL8hhTtG1o",
+  "fields": {
+    "id": {
+      "present": true,
+      "value": "in_1UJM6fJL8hhTtG1oZ5396711"
+    },
+    "status": {
+      "present": true,
+      "value": "draft"
+    },
+    "livemode": {
+      "present": true,
+      "value": false
+    },
+    "customer": {
+      "present": true,
+      "value": "cus_VJzrZTORGay5Lp"
+    },
+    "collection_method": {
+      "present": true,
+      "value": "send_invoice"
+    },
+    "auto_advance": {
+      "present": true,
+      "value": false
+    },
+    "currency": {
+      "present": true,
+      "value": "usd"
+    },
+    "total": {
+      "present": true,
+      "value": 0
+    },
+    "amount_due": {
+      "present": true,
+      "value": 0
+    },
+    "amount_paid": {
+      "present": true,
+      "value": 0
+    },
+    "amount_remaining": {
+      "present": true,
+      "value": 0
+    },
+    "starting_balance": {
+      "present": true,
+      "value": 0
+    },
+    "amount_overpaid": {
+      "present": true,
+      "value": 0
+    },
+    "application_fee_amount": {
+      "present": false,
+      "value": null
+    },
+    "application": {
+      "present": true,
+      "value": "ca_VJwFj4FcjohaD0wjZKB5vJcllH0TPDnD"
+    },
+    "on_behalf_of": {
+      "present": true,
+      "value": null
+    },
+    "transfer_data": {
+      "present": false,
+      "value": null
+    },
+    "issuer": {
+      "present": true,
+      "value": {
+        "type": "self"
+      }
+    },
+    "parent": {
+      "present": true,
+      "value": null
+    },
+    "subscription": {
+      "present": false,
+      "value": null
+    }
+  },
+  "lineCount": 0,
+  "linesComplete": true,
+  "metadataKeys": [
+    "remold_command",
+    "remold_fixture"
+  ],
+  "feeNamedKeys": [
+    "application"
+  ],
+  "paymentIntents": 0,
+  "charges": 0,
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_GsnqKbJFbgTmsT",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_nZyxlFWTGHisCf",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJM6fJL8hhTtG1oZ5396711",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_hMRaIiVN91EIwb",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_rvVIKjc4m1xA7F",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_ZM9VckvQyeLqMV",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ]
+}

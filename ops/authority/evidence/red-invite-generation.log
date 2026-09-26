@@ -1,0 +1,30 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/metadata.test.ts (5 tests | 1 failed) 107ms
+   × removing and rejoining an invitation issuer never revives the old invitation 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/metadata.test.ts > removing and rejoining an invitation issuer never revives the old invitation
+AssertionError: promise resolved "'0000000000000000000000010001orgs'" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+"0000000000000000000000010001orgs"
+
+ ❯ ops/authority/metadata.test.ts:43:76
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  17:13:06
+   Duration  250ms (tests 57%, transform 30%, import 12%, worker 1%)
+

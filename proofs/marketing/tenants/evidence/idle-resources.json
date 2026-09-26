@@ -1,0 +1,84 @@
+{
+  "capturedAt": "2026-09-25T05:59:17.313227+00:00",
+  "command": "docker --context colima-remold-proof stats --no-stream --format {{json .}}",
+  "scope": "One idle snapshot during independent checks; not load/peak/fleet measurement",
+  "containers": [
+    {
+      "BlockIO": "0B / 4.1kB",
+      "CPUPerc": "0.02%",
+      "Container": "4135bacb51b927221cf3d0c1910edf30db2be50247007d3747f7e95d9af0d5ac",
+      "ID": "4135bacb51b9",
+      "MemPerc": "10.37%",
+      "MemUsage": "79.65MiB / 768MiB",
+      "Name": "remold-marketing-proof-web-b",
+      "NetIO": "93.5kB / 31.5kB",
+      "PIDs": "8"
+    },
+    {
+      "BlockIO": "37.2MB / 16.6MB",
+      "CPUPerc": "0.68%",
+      "Container": "97133d3746e197b9328b589d24dbdba70051ca27b6752b5793cb8e73c4b068ac",
+      "ID": "97133d3746e1",
+      "MemPerc": "86.54%",
+      "MemUsage": "443.1MiB / 512MiB",
+      "Name": "remold-marketing-proof-db-b",
+      "NetIO": "32.1kB / 93kB",
+      "PIDs": "37"
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "a543a5af8c63a99f77730b48d429f57e2f7499b74fd2c90d73822fafb5230cdc",
+      "ID": "a543a5af8c63",
+      "MemPerc": "12.98%",
+      "MemUsage": "16.61MiB / 128MiB",
+      "Name": "remold-marketing-proof-mime-sink",
+      "NetIO": "4.34kB / 932B",
+      "PIDs": "7"
+    },
+    {
+      "BlockIO": "5.34MB / 728MB",
+      "CPUPerc": "0.00%",
+      "Container": "c19fa778f41d9015917e56b09f50575afa1cc8058ef900128f897e37006082a7",
+      "ID": "c19fa778f41d",
+      "MemPerc": "49.68%",
+      "MemUsage": "381.5MiB / 768MiB",
+      "Name": "remold-marketing-proof-web-a",
+      "NetIO": "30.2MB / 16.9MB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "0B / 49.2kB",
+      "CPUPerc": "0.00%",
+      "Container": "599c38fff773de0e6b29b6a78712c71bd04ea2c510fd4332733acbe9d097cdf9",
+      "ID": "599c38fff773",
+      "MemPerc": "25.11%",
+      "MemUsage": "32.14MiB / 128MiB",
+      "Name": "remold-marketing-proof-bridge",
+      "NetIO": "24.4kB / 299kB",
+      "PIDs": "11"
+    },
+    {
+      "BlockIO": "1.06MB / 209MB",
+      "CPUPerc": "0.06%",
+      "Container": "25f95845e51a7801344964d99db12bc6126e99971e1be6dcb76a7ebf61e4ff10",
+      "ID": "25f95845e51a",
+      "MemPerc": "7.97%",
+      "MemUsage": "61.2MiB / 768MiB",
+      "Name": "remold-marketing-proof-authority",
+      "NetIO": "5.83MB / 31.2MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "53MB / 601MB",
+      "CPUPerc": "0.65%",
+      "Container": "32106e7ddd24ef6761f9726c71c38b2c8528c3ebf9d7107be99686adeb0ad1ca",
+      "ID": "32106e7ddd24",
+      "MemPerc": "47.09%",
+      "MemUsage": "241.1MiB / 512MiB",
+      "Name": "remold-marketing-proof-db-a",
+      "NetIO": "14.7MB / 29.6MB",
+      "PIDs": "36"
+    }
+  ]
+}

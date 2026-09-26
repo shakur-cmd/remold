@@ -1,0 +1,34 @@
+$ node --test stripe.test.mjs && node domain-replay.mjs && node public-payment-replay.mjs && node safety-replay.mjs && node lifecycle-replay.mjs && node collection-replay.mjs
+✔ provider refuses live or malformed credentials without revealing them (1.105083ms)
+✔ Stripe raw-payload verifier rejects modified bytes, expired signatures and live events (0.404333ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51.743375
+PASS Human creates integer-minor quote in own workspace
+PASS Cross-tenant customer/account IDs and actor injection cannot create obligations
+PASS Acceptance is bound to immutable version and secret, with duplicate clicks atomic
+PASS Expired public acceptance is refused
+PASS Deposit intent is created once; currency and amount changes are refused
+PASS Browser paid forgery and wrong-account adapter cannot settle an invoice
+PASS Authenticated replay settles once and changed callback bytes are refused
+PASS Deposit allocation is once-only and exact integer arithmetic preserves total
+PASS Concurrent financial commands emit one attributed event per obligation
+PASS Readonly refuses new issuance but incoming reconciliation and export continue
+PASS Removing customer preserves issued snapshot and retained financial attribution
+PASS Restricted/disconnected merchant refuses new issuance while history remains
+PASS Tenant B canonical finance export stays unchanged
+{"passed":13}
+PASS public payment capability
+PASS Current role is checked again at final permit
+PASS Readonly permits one bounded human refund and records its actor
+PASS In-flight reservations prevent concurrent over-refunds
+PASS Tenant, account, binding and agent authority cannot enter the safety path
+PASS Incoming truth settles a late refund after removal without granting new authority
+PASS Cancellation is a zero-value client lifecycle operation; disconnected bindings fail
+{"passed":3}
+{"passed":2}

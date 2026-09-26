@@ -1,0 +1,47 @@
+{
+  "verdict": "APPROVE bounded I2 REST telemetry foundation",
+  "reviewer": "Independent /root/c0_verifier, not telemetry author",
+  "sourceManifest": "source-manifest.json",
+  "sourceHashesUnchangedBeforeAfter": true,
+  "validation": {
+    "repositoryTests": 63,
+    "telemetryTestsIncludedInRepository": 5,
+    "additionalIndependentTests": 2,
+    "typecheckExitCode": 0,
+    "serviceReplayExitCode": 0,
+    "serviceDelayMs": 432,
+    "serviceAfterMs": 0,
+    "concurrentRequests": 73,
+    "concurrentReceipts": 73,
+    "realThreeMinuteGapRecognized": true,
+    "transportRestored": true,
+    "publicInternalFunctionCallsRefused": true,
+    "schedulerFailurePreservedResponse": true,
+    "privacyAndExpiryProbesPassed": true
+  },
+  "environment": "SERVICE anonymous local Convex; synthetic fault/data. Unit tests are SIM.",
+  "portsReleased": [
+    3460,
+    3461
+  ],
+  "rootEnvironmentUnchanged": true,
+  "rootSourceOrGeneratedFilesWrittenByVerifier": false,
+  "limits": [
+    "Backend release is unknown until exact artifact pinning, so no release comparison proof.",
+    "No production overhead/cost guarantee; samples are noisy local observations.",
+    "A canary does not prove all request delivery; partial loss and pre-response crashes remain unmeasured.",
+    "Operator read path is internal-admin only. Tenant dashboard and metric masks remain I10 work.",
+    "No delivered alerts, managed backups, production deployment or full I2 certification."
+  ],
+  "evidenceHashes": {
+    "source-manifest.json": "695095803a1085313fc531ecbd1d1c79c6b4394843061650a8ff5a6f9540845c",
+    "app-tests.txt": "e8a25f445222e81238515d920c7b6f3a35e7c0c63f5a056c4565221cdf9701dd",
+    "unit.txt": "5de053e250e2ae3e4ca31451a7ace6adc19ec93175d8c5cfddd71614aee57e39",
+    "typecheck.txt": "c62ca2b306bef73dbf808bf5895b070028cfc29eeddef7ac86fed5c0c591e7d0",
+    "independent.test.ts": "cb4a0bbb3ae720c2fe3d0499c69800ddaa961db874a0797496b46d122725e400",
+    "independent-tests.txt": "59a7b0304d4bfc08d8af190cb92040069aae3cf92e4d5bbbd500a0a9ac1051e4",
+    "replay.mjs": "c7b842f4711b91276df5566f0fab356df9cc8bb00538a94670f7cc079c5f525f",
+    "service.json": "4500bf02fa10b1de2a8f37d30a406172b9e323c30db38b8e25ef84800a5a9126",
+    "service-replay.log": "6fc96df33854f8964b431e1b56ff0814d189bf168b48b4ac194a386bb8c33f3f"
+  }
+}

@@ -1,0 +1,28 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (5 tests | 1 failed) 290ms
+   × the guard reports an own check that seven production tests share 32ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:46
+   Duration  981ms (tests 78%, transform 13%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > the guard reports an own check that seven production tests share
+AssertionError: expected [ Array(1) ] to include 'A/B known-ID isolation, server-derive…'
+ ❯ ops/authority/h0-parity.test.ts:96:25
+     94|   expect(seven).toBeDefined();
+     95|   const rows = parity.map((row, i) => i === 0 ? { ...row, exercises: `…
+     96|   expect(gapsFor(rows)).toContain(`${parity[0]!.h0}: /\\b${seven}\\b/ …
+       |                         ^
+     97| });
+     98|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

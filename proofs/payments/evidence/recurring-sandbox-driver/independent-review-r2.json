@@ -1,0 +1,31 @@
+{
+  "result": "**APPROVE** for this exact source and a one-shot SANDBOX run within the prior scope: 31 writes, 2709 reserved, at most 1806 collected, all synthetic. This approves source only. It is not service evidence.\n\n## Integrity\n- All 68 file hashes match. The aggregate recomputes to `848233a2\u20269baf`, and the method matches the one that reproduced `d227f914`.\n- `before-r2/` holds the predecessor `recurring.ts`, `sandbox-fixture.mjs`, `sandbox-policy.mjs`, `contract.json` and `source.json`. The first four still match the old manifest hashes, so the predecessor is preserved.\n- The manifest delta is exactly `recurring.ts` and `sandbox-fixture.mjs` changed, plus `sandbox-gate.test.mjs` added. Nothing was removed. The policy file and `contract.json` are byte-identical to before.\n- There's still no `approval.json`. I didn't create it and didn't run `sandbox-fixture.mjs`. My original review is untouched.\n\n## B1 is fixed\n- `sandbox-fixture.mjs:17` now recomputes `sha256(JSON.stringify(sorted files map))` and asserts it equals `manifest.aggregate`. This happens after the per-file checks and before `approval.json` is read.\n- **Test:** `sandbox-gate.test.mjs` pulls the driver's own gate text out of the file and runs it in a sandboxed context with a fake `readFileSync`. It has five controls:\n  - clean source passes\n  - changed bytes are refused\n  - changed bytes with an updated per-file hash but the old aggregate are refused (this is B1)\n  - a dropped file is refused\n  - a mismatched approval is refused\n- `gate-red.txt` shows the B1 control failing against the predecessor. That means the test can actually fail.\n- Nit: the `assert.throws` calls don't check which error was thrown. The red run covers the important case, so this doesn't block.\n\n## First-invoice delta is sound\n- After activation, including the H1 response-loss reconcile, and before any financial clock advance, the driver:\n  1. lists invoices filtered by customer and subscription,\n  2. requires exactly one,\n  3. fetches it directly and checks ID, test mode, customer and `parent.subscription_details.subscription`, the Basil location for that link,\n  4. records its actual status instead of assuming draft.\n- Every `observe` then requires that ID in the filtered list before the adapter runs, and in the resulting cycle history after.\n- It's all GETs, so the write count stays at 31. If the invoice is missing, the run stops with effects preserved and nothing is retried.\n\n## Cleanup\n- The `recurring.ts` change is one trailing space removed (line 85, confirmed by diff). The after-hash `dcd7ee25\u2026` matches both the manifest and `format-successor.json`.\n- Small wording mismatch: `contract.json` didn't change (`b7e5449d` before and after), so \"refresh matching contract text\" means no bytes changed.\n\n## Tests I ran\n- `node --check sandbox-fixture.mjs` passes.\n- `node --test sandbox-gate.test.mjs sandbox-policy.test.mjs` gives **8 tests, 8 pass, 0 fail**, matching `checks-r2-final.txt`.\n\n## Minor items still open\nFrom my first review: the `Stripe-Version` header isn't asserted, the journal labels a 5xx as `http-error` when the effect may have committed, and the policy would allow `loseResponse` on any activation.\n\n## Provider unknowns (the real run may stop here)\n- whether test clocks can be created and advanced on a connected account\n- whether the first schedule invoice exists synchronously right after creation (if not, the new check stops the run)\n- first-invoice finalization landing within +65 minutes\n- clock readiness within 120 seconds\n- whether smart retries happen within 6-hour steps\n- whether cancelling stops collection on the open invoice\n- test-clock limits on customers and subscriptions\n- webhook delivery through the Stripe CLI\n\nDurable recurring ingress, independent provider readback before the clocks' `deletes_after` expiry, and the I1/I7 and live gates are all still open. Any stop needs a separately reviewed continuation.\n\nI didn't write `independent-review-r2.json`. Your wrapper script saves this result there.",
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2690,
+      "outputTokens": 16,
+      "thinkingTokens": 0,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 38,
+      "outputTokens": 20410,
+      "thinkingTokens": 11167,
+      "cacheReadInputTokens": 979579,
+      "cacheCreationInputTokens": 73423,
+      "webSearchRequests": 0,
+      "costUSD": 1.1916518,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

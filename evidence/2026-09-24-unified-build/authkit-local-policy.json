@@ -1,0 +1,15 @@
+{
+  "task": "remold-authkit-local-rehearsal",
+  "outcome": "Sign into local isolated Remold fixture backend using WorkOS Staging and verify membership/data + invite navigation",
+  "allowedOrigins": [
+    "http://localhost:5173",
+    "https://api.workos.com",
+    "https://accounts.google.com",
+    "https://detailed-neutron-08-staging.authkit.app"
+  ],
+  "accountLabel": "Shakur signed-in Google account for Remold Staging",
+  "risk": "test identity and synthetic appdata; no realemails or customerwrites",
+  "target": "FB1A94B2236B29D8CD9C67B617BBF155",
+  "maxIrreversibleCommitPerRun": 1,
+  "originEvidence": "AuthKit SDK authorization navigation for approved Remold Staging client landed on this exact hosted WorkOS origin"
+}

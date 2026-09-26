@@ -1,0 +1,37 @@
+$ vitest run --config ops/authority/vitest.config.ts
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/oracles.test.ts (7 tests | 1 failed) 323ms
+   × a record ID the member cannot read gets the same answer as a deleted record 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record
+AssertionError: expected { ok: true, value: [] } to deeply equal { ok: false, error: { …(2) } }
+
+- Expected
++ Received
+
+  {
+-   "error": {
+-     "code": "NOT_FOUND",
+-     "message": "Record not found",
+-   },
+-   "ok": false,
++   "ok": true,
++   "value": [],
+  }
+
+ ❯ ops/authority/oracles.test.ts:94:32
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  1 failed | 69 passed (70)
+   Start at  07:39:51
+   Duration  715ms (tests 72%, transform 18%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.

@@ -1,0 +1,22 @@
+$ node --test *.test.mjs
+✔ a stripped plain-text reply matches verified account, recipient and conversation without body quoting (0.35125ms)
+✔ a foreign mailbox, unknown address or wrong conversation never invents a match (0.085209ms)
+✔ ambiguous ownership between personal and marketing sequences fails closed (0.0615ms)
+✔ zero send allowance and absent calendar authorization cannot be bypassed by a token or recipient (0.271458ms)
+✔ forged or account-switched notifications cannot invoke the authenticated pull (0.187458ms)
+✔ interrupted traversal never advances cursor; replay deduplicates; expired history does not trigger broad import (0.146541ms)
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (2.360583ms)
+✔ concurrent callback replay only exchanges one code (0.334625ms)
+✔ expired state and denied consent cannot exchange an authorization code (0.321542ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (1.626833ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.383208ms)
+✔ nonce and email verification are checked independently of a correct email address (0.220292ms)
+✔ authorization URL requests read-only mail with PKCE and no send/calendar permission (0.219083ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 48.743459

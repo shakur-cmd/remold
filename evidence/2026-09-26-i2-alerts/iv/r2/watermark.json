@@ -1,0 +1,239 @@
+{
+  "level": "SERVICE disposable local Convex, synthetic",
+  "phases": {
+    "tie": {
+      "times": {
+        "distinct": 1599,
+        "first": 1790440163944.2493,
+        "last": 1790440164207.8435,
+        "lastRow": 1790440164207.844,
+        "n": 1599
+      },
+      "checks": [
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 152,
+          "scanned": 1600,
+          "watchAdded": 0,
+          "watchChecked": 0
+        }
+      ],
+      "alerts": {
+        "functions": [
+          {
+            "_creationTime": 1790440178808.3232,
+            "_id": "n1749wgw1xvsh319ac6fng5bg58f58g5",
+            "failures": 0,
+            "fn": "ivWm:noop",
+            "lastAt": 1790440164207,
+            "lastFailed": false
+          },
+          {
+            "_creationTime": 1790440178808.3235,
+            "_id": "n177dv3rnwr22w8qf4gczcmrcd8f5bx0",
+            "failures": 1,
+            "fn": "ivWm:failTie",
+            "lastAt": 1790440164207,
+            "lastFailed": true
+          }
+        ],
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failTie"
+          }
+        ],
+        "watch": 0
+      }
+    },
+    "big": {
+      "checks": [
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 126,
+          "scanned": 1010,
+          "watchAdded": 0,
+          "watchChecked": 0
+        }
+      ],
+      "alerts": {
+        "functions": [
+          {
+            "_creationTime": 1790440178808.3232,
+            "_id": "n1749wgw1xvsh319ac6fng5bg58f58g5",
+            "failures": 0,
+            "fn": "ivWm:noop",
+            "lastAt": 1790440195519,
+            "lastFailed": false
+          },
+          {
+            "_creationTime": 1790440178808.3235,
+            "_id": "n177dv3rnwr22w8qf4gczcmrcd8f5bx0",
+            "failures": 1,
+            "fn": "ivWm:failTie",
+            "lastAt": 1790440164207,
+            "lastFailed": true
+          },
+          {
+            "_creationTime": 1790440208433.686,
+            "_id": "n177s2j0fqth0fx09cdvbxdw8h8f5vts",
+            "failures": 10,
+            "fn": "ivWm:failBig",
+            "lastAt": 1790440195519,
+            "lastFailed": true
+          }
+        ],
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failTie"
+          },
+          {
+            "count": 10,
+            "key": "background-error:ivWm:failBig"
+          }
+        ],
+        "watch": 0
+      }
+    },
+    "past": {
+      "checks": [
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 4,
+          "scanned": 1,
+          "watchAdded": 0,
+          "watchChecked": 0
+        }
+      ],
+      "alerts": {
+        "functions": [
+          {
+            "_creationTime": 1790440178808.3232,
+            "_id": "n1749wgw1xvsh319ac6fng5bg58f58g5",
+            "failures": 0,
+            "fn": "ivWm:noop",
+            "lastAt": 1790440195519,
+            "lastFailed": false
+          },
+          {
+            "_creationTime": 1790440178808.3235,
+            "_id": "n177dv3rnwr22w8qf4gczcmrcd8f5bx0",
+            "failures": 1,
+            "fn": "ivWm:failTie",
+            "lastAt": 1790440164207,
+            "lastFailed": true
+          },
+          {
+            "_creationTime": 1790440208433.686,
+            "_id": "n177s2j0fqth0fx09cdvbxdw8h8f5vts",
+            "failures": 10,
+            "fn": "ivWm:failBig",
+            "lastAt": 1790440195519,
+            "lastFailed": true
+          },
+          {
+            "_creationTime": 1790440220105.897,
+            "_id": "n17bd81npav2sgjzee3f6c14398f5mjs",
+            "failures": 1,
+            "fn": "ivWm:failPast",
+            "lastAt": 1790433008839,
+            "lastFailed": true
+          }
+        ],
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failTie"
+          },
+          {
+            "count": 10,
+            "key": "background-error:ivWm:failBig"
+          }
+        ],
+        "watch": 0
+      }
+    },
+    "slowCreation": {
+      "callStart": 1790440220324,
+      "mutationStarted": 1790440220492,
+      "callEnd": 1790440220537,
+      "job": {
+        "creationTime": 1790440220492.9272,
+        "scheduledTime": 1790440220492,
+        "state": "failed"
+      }
+    },
+    "future": {
+      "checks": [
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 1383,
+          "scanned": 3000,
+          "watchAdded": 2999,
+          "watchChecked": 0
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 309,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 0
+        },
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 96,
+          "scanned": 995,
+          "watchAdded": 995,
+          "watchChecked": 0
+        }
+      ],
+      "watchRows": 4000
+    },
+    "status": {
+      "channel": "unconfigured",
+      "open": [
+        {
+          "count": 1,
+          "key": "background-error:ivWm:failTie",
+          "kind": "background-error",
+          "openedAt": 1790440178808
+        },
+        {
+          "count": 10,
+          "key": "background-error:ivWm:failBig",
+          "kind": "background-error",
+          "openedAt": 1790440208433
+        },
+        {
+          "count": 1,
+          "key": "background-error:ivWm:failLong",
+          "kind": "background-error",
+          "openedAt": 1790440235343
+        }
+      ],
+      "scannedThrough": 1790440248482,
+      "undelivered": 5
+    }
+  },
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-QprZpM"
+}

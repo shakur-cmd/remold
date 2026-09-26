@@ -1,0 +1,34 @@
+{
+  "verdict": "APPROVE bounded local restore rehearsal",
+  "aggregateSha256": "b0caacbc0da80aef7af7fe250000b0fdf97aa530d9caa9cf10aa167c13eaeda4",
+  "additiveFiles": 4,
+  "baselineFiles": 16,
+  "allHashesUnchanged": true,
+  "commands": [
+    {
+      "command": "node proofs/agents/native/restore-replay.mjs independent-b0caac",
+      "exit": 0,
+      "groups": 3
+    },
+    {
+      "command": "pnpm --dir proofs/agents/native typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/native-restore-iv/archive-check.mjs",
+      "exit": 0
+    }
+  ],
+  "ignoreBefore": false,
+  "ignoreAfter": true,
+  "privateTracked": false,
+  "providerCalls": 0,
+  "modelCalls": 0,
+  "limitations": [
+    "DB-backed provider evidence restored in same snapshot",
+    "No effects accepted after backup reconciled",
+    "No managed key vault or backup service",
+    "No scheduler in-flight recovery or upgrade/OS/hosted isolation proof",
+    "No full P1 or I1 authorization certification"
+  ]
+}

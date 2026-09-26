@@ -1,0 +1,1033 @@
+{
+ "level": "SERVICE/SIM builder run: local Convex backend, loopback HTTP receiver, synthetic signing secret, in-process provider-state stub, production-style error redaction on the client. No Stripe API calls, no sandbox writes.",
+ "mode": "after",
+ "mutant": "sweep",
+ "ports": {
+  "cloud": 3770,
+  "site": 3771,
+  "receiver": 3772
+ },
+ "startedAt": "2026-09-26T13:05:35.529Z",
+ "deliveries": [
+  {
+   "label": "wrong secret",
+   "status": 400
+  },
+  {
+   "label": "tampered body",
+   "status": 400
+  },
+  {
+   "label": "stale timestamp",
+   "status": 400
+  },
+  {
+   "label": "first delivery, crash after receipt",
+   "status": "no-response"
+  },
+  {
+   "label": "provider redelivery after restart",
+   "status": 200
+  },
+  {
+   "label": "exact replay",
+   "status": 200
+  },
+  {
+   "label": "newer paid event",
+   "status": 200
+  },
+  {
+   "label": "older update event, late",
+   "status": 200
+  },
+  {
+   "label": "unbound account",
+   "status": 200
+  },
+  {
+   "label": "unbound account redelivered",
+   "status": 200
+  },
+  {
+   "label": "no connected account",
+   "status": 400
+  },
+  {
+   "label": "claims merchant B for A object",
+   "status": 200
+  },
+  {
+   "label": "charge.refunded",
+   "status": 200
+  },
+  {
+   "label": "charge.dispute.created",
+   "status": 200
+  },
+  {
+   "label": "credit_note.created",
+   "status": 200
+  },
+  {
+   "label": "customer.subscription.updated",
+   "status": 200
+  },
+  {
+   "label": "A event behind revoked merchant",
+   "status": 200
+  },
+  {
+   "label": "bound invoice missing at provider",
+   "status": 200
+  },
+  {
+   "label": "100 flaky deliveries",
+   "status": {
+    "200": 100
+   }
+  },
+  {
+   "label": "valid receipt behind 100 stuck",
+   "status": 200
+  },
+  {
+   "label": "A1",
+   "status": 200
+  },
+  {
+   "label": "A2",
+   "status": 200
+  },
+  {
+   "label": "B behind platform pause",
+   "status": 200
+  },
+  {
+   "label": "A access revoked",
+   "status": 200
+  },
+  {
+   "label": "provider client throws a string",
+   "status": 200
+  },
+  {
+   "label": "provider rate limit",
+   "status": 200
+  },
+  {
+   "label": "update event",
+   "status": 200
+  }
+ ],
+ "drains": [
+  {
+   "label": "after bad signatures",
+   "outcomes": []
+  },
+  {
+   "label": "after restart",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simFinalized",
+     "result": "applied"
+    }
+   ]
+  },
+  {
+   "label": "after replay",
+   "outcomes": []
+  },
+  {
+   "label": "after newer event",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simPaid",
+     "result": "applied"
+    }
+   ]
+  },
+  {
+   "label": "after older event",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simUpdatedEarlier",
+     "result": "applied"
+    }
+   ]
+  },
+  {
+   "label": "after substitution",
+   "outcomes": [
+    {
+     "merchant": "B",
+     "eventId": "evt_simSubstituted",
+     "result": "refused",
+     "code": "unbound_document"
+    }
+   ]
+  },
+  {
+   "label": "after non-invoice types",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simType0",
+     "result": "refused",
+     "code": "unsupported_event_type"
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simType1",
+     "result": "refused",
+     "code": "unsupported_event_type"
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simType2",
+     "result": "refused",
+     "code": "unsupported_event_type"
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simType3",
+     "result": "refused",
+     "code": "unsupported_event_type"
+    }
+   ]
+  },
+  {
+   "label": "revoked merchant first",
+   "outcomes": [
+    {
+     "merchant": "B",
+     "result": "merchant_error",
+     "code": "adapter_denied"
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simIsolated",
+     "result": "applied"
+    }
+   ]
+  },
+  {
+   "label": "after provider 404",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simGone",
+     "result": "refused",
+     "code": "provider_404_resource_missing"
+    }
+   ]
+  },
+  {
+   "label": "flaky first attempt",
+   "outcomes": {
+    "count": 100,
+    "byResult": {
+     "retry:provider_503": 100
+    },
+    "sample": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky97",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 1
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky98",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 1
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky99",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 1
+     }
+    ]
+   }
+  },
+  {
+   "label": "same clock: stuck receipts not due",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simAfterFlaky",
+     "result": "applied"
+    }
+   ]
+  },
+  {
+   "label": "clock advanced 1",
+   "outcomes": {
+    "count": 100,
+    "byResult": {
+     "retry:provider_503": 100
+    },
+    "sample": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky97",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 2
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky98",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 2
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky99",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 2
+     }
+    ]
+   }
+  },
+  {
+   "label": "clock advanced 2",
+   "outcomes": {
+    "count": 100,
+    "byResult": {
+     "retry:provider_503": 100
+    },
+    "sample": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky97",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 3
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky98",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 3
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky99",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 3
+     }
+    ]
+   }
+  },
+  {
+   "label": "clock advanced 3",
+   "outcomes": {
+    "count": 100,
+    "byResult": {
+     "retry:provider_503": 100
+    },
+    "sample": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky97",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 4
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky98",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 4
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky99",
+      "result": "retry",
+      "code": "provider_503",
+      "attempts": 4
+     }
+    ]
+   }
+  },
+  {
+   "label": "clock advanced 4",
+   "outcomes": {
+    "count": 100,
+    "byResult": {
+     "failed:provider_503": 100
+    },
+    "sample": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky97",
+      "result": "failed",
+      "code": "provider_503",
+      "attempts": 5
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky98",
+      "result": "failed",
+      "code": "provider_503",
+      "attempts": 5
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simFlaky99",
+      "result": "failed",
+      "code": "provider_503",
+      "attempts": 5
+     }
+    ]
+   }
+  },
+  {
+   "label": "clock advanced 5",
+   "outcomes": []
+  },
+  {
+   "label": "clock advanced 6",
+   "outcomes": []
+  },
+  {
+   "label": "platform key expired",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simAuth1",
+     "result": "paused",
+     "scope": "platform",
+     "code": "provider_401"
+    }
+   ]
+  },
+  {
+   "label": "platform key still expired",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simAuth1",
+     "result": "paused",
+     "scope": "platform",
+     "code": "provider_401"
+    }
+   ]
+  },
+  {
+   "label": "platform key restored",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simAuth1",
+     "result": "applied"
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simAuth2",
+     "result": "applied"
+    },
+    {
+     "merchant": "B",
+     "eventId": "evt_simAuthB",
+     "result": "refused",
+     "code": "unsupported_event_type"
+    }
+   ]
+  },
+  {
+   "label": "merchant access revoked",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simPerm",
+     "result": "paused",
+     "scope": "merchant",
+     "code": "provider_403_account_invalid"
+    }
+   ]
+  },
+  {
+   "label": "merchant access restored",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simPerm",
+     "result": "applied"
+    }
+   ]
+  },
+  {
+   "label": "string thrown, rate limited",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simOdd",
+     "result": "retry",
+     "code": "internal_error",
+     "attempts": 1
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simRate",
+     "result": "retry",
+     "code": "provider_429",
+     "attempts": 1
+    }
+   ]
+  },
+  {
+   "label": "string thrown again",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simOdd",
+     "result": "retry",
+     "code": "internal_error",
+     "attempts": 2
+    },
+    {
+     "merchant": "A",
+     "eventId": "evt_simRate",
+     "result": "retry",
+     "code": "provider_429",
+     "attempts": 2
+    }
+   ]
+  },
+  {
+   "label": "ack lost",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simUpdatedLate",
+     "result": "item_error",
+     "code": "retryable_error"
+    }
+   ]
+  },
+  {
+   "label": "after restart",
+   "outcomes": [
+    {
+     "merchant": "A",
+     "eventId": "evt_simUpdatedLate",
+     "result": "applied"
+    }
+   ]
+  }
+ ],
+ "cases": [
+  {
+   "name": "bad signature refused with no durable effect",
+   "pass": true,
+   "detail": {
+    "statuses": [
+     400,
+     400,
+     400
+    ],
+    "receiptsA": 0,
+    "receiptsB": 0
+   }
+  },
+  {
+   "name": "crash between durable receipt and reconciliation, then restart",
+   "pass": true,
+   "detail": {
+    "firstDelivery": "no-response",
+    "receiptsAfterRestart": 1,
+    "redelivery": 200,
+    "receipts": 1,
+    "observations": 1,
+    "doc": {
+     "state": "open",
+     "paidMinor": 0,
+     "adjustmentsComplete": true
+    },
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simFinalized",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "exact replay produces no second effect",
+   "pass": true,
+   "detail": {
+    "status": 200,
+    "receipts": 1,
+    "observations": 0,
+    "outcomes": []
+   }
+  },
+  {
+   "name": "out-of-order events converge to provider state without regression",
+   "pass": true,
+   "detail": {
+    "statuses": [
+     200,
+     200
+    ],
+    "docAfterNewer": {
+     "state": "paid",
+     "paidMinor": 100,
+     "adjustmentsComplete": true
+    },
+    "docAfterOlder": {
+     "state": "paid",
+     "paidMinor": 100,
+     "adjustmentsComplete": true
+    },
+    "observations": 2,
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simPaid",
+      "result": "applied"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simUpdatedEarlier",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "unbound account parked, no account refused, substituted account refused on the claimed merchant with a typed code",
+   "pass": true,
+   "detail": {
+    "statuses": {
+     "unbound": 200,
+     "unboundRedelivered": 200,
+     "noAccount": 400,
+     "claimsB": 200
+    },
+    "parkedC": 1,
+    "alertC": {
+     "account": "acct_simCallbackC",
+     "active": true,
+     "count": 1,
+     "kind": "parked"
+    },
+    "receiptsUnderB": [
+     {
+      "digest": "4ab24d5b9a2660b63e65222dc7697da1c51a94012a5182ab5661a30b67b3b80a",
+      "done": true,
+      "eventId": "evt_simSubstituted",
+      "externalId": "in_simCallbackA",
+      "type": "invoice.voided"
+     }
+    ],
+    "refusedOnB": [
+     "payment.callback.refused:unbound_document"
+    ],
+    "docA": {
+     "state": "paid",
+     "paidMinor": 100,
+     "adjustmentsComplete": true
+    },
+    "outcomes": [
+     {
+      "merchant": "B",
+      "eventId": "evt_simSubstituted",
+      "result": "refused",
+      "code": "unbound_document"
+     }
+    ]
+   }
+  },
+  {
+   "name": "refund, dispute, credit note and subscription events refused with reason unsupported_event_type",
+   "pass": true,
+   "detail": {
+    "statuses": [
+     200,
+     200,
+     200,
+     200
+    ],
+    "refused": [
+     "payment.callback.refused:unsupported_event_type",
+     "payment.callback.refused:unsupported_event_type",
+     "payment.callback.refused:unsupported_event_type",
+     "payment.callback.refused:unsupported_event_type"
+    ],
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simType0",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simType1",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simType2",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simType3",
+      "result": "refused",
+      "code": "unsupported_event_type"
+     }
+    ]
+   }
+  },
+  {
+   "name": "failing merchant is isolated; later merchants still drain",
+   "pass": true,
+   "detail": {
+    "status": 200,
+    "threw": null,
+    "outcomes": [
+     {
+      "merchant": "B",
+      "result": "merchant_error",
+      "code": "adapter_denied"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_simIsolated",
+      "result": "applied"
+     }
+    ],
+    "receiptDone": true
+   }
+  },
+  {
+   "name": "provider 404 closes the receipt as refused, decided by error type",
+   "pass": true,
+   "detail": {
+    "refused": [
+     "payment.callback.refused:provider_404_resource_missing"
+    ],
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_simGone",
+      "result": "refused",
+      "code": "provider_404_resource_missing"
+     }
+    ],
+    "receiptDone": true
+   }
+  },
+  {
+   "name": "stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts",
+   "pass": true,
+   "detail": {
+    "firstDrain": {
+     "retry": 100
+    },
+    "validReceiptDone": true,
+    "flakyTouchedAtSameClock": 0,
+    "receiptsQueryAbove100": true,
+    "laterDrains": [
+     {
+      "retry": 100
+     },
+     {
+      "retry": 100
+     },
+     {
+      "retry": 100
+     },
+     {
+      "failed": 100
+     },
+     {},
+     {}
+    ],
+    "failedAuditRows": 100,
+    "stillOpen": 0
+   }
+  },
+  {
+   "name": "401 pauses all merchants and 403 pauses one; receipts stay open, one alert row, resume when a read succeeds",
+   "pass": true,
+   "detail": {
+    "platform": {
+     "drain1": [
+      {
+       "merchant": "A",
+       "eventId": "evt_simAuth1",
+       "result": "paused",
+       "scope": "platform",
+       "code": "provider_401"
+      }
+     ],
+     "drain2": [
+      {
+       "merchant": "A",
+       "eventId": "evt_simAuth1",
+       "result": "paused",
+       "scope": "platform",
+       "code": "provider_401"
+      }
+     ],
+     "readsWhilePaused": 2,
+     "openWhilePaused": [
+      false,
+      false,
+      false
+     ],
+     "alert": {
+      "account": "platform",
+      "active": true,
+      "count": 1,
+      "kind": "provider_paused"
+     },
+     "afterRestore": [
+      {
+       "merchant": "A",
+       "eventId": "evt_simAuth1",
+       "result": "applied"
+      },
+      {
+       "merchant": "A",
+       "eventId": "evt_simAuth2",
+       "result": "applied"
+      },
+      {
+       "merchant": "B",
+       "eventId": "evt_simAuthB",
+       "result": "refused",
+       "code": "unsupported_event_type"
+      }
+     ],
+     "alertAfter": {
+      "account": "platform",
+      "active": false,
+      "count": 1,
+      "kind": "provider_paused"
+     }
+    },
+    "merchant": {
+     "drain": [
+      {
+       "merchant": "A",
+       "eventId": "evt_simPerm",
+       "result": "paused",
+       "scope": "merchant",
+       "code": "provider_403_account_invalid"
+      }
+     ],
+     "openWhilePaused": false,
+     "alert": {
+      "account": "acct_simCallbackA",
+      "active": true,
+      "count": 1,
+      "kind": "provider_paused"
+     },
+     "afterRestore": [
+      {
+       "merchant": "A",
+       "eventId": "evt_simPerm",
+       "result": "applied"
+      }
+     ],
+     "alertAfter": {
+      "account": "acct_simCallbackA",
+      "active": false,
+      "count": 1,
+      "kind": "provider_paused"
+     }
+    }
+   }
+  },
+  {
+   "name": "a thrown string is retried as internal_error and counts attempts; a 429 is deferred",
+   "pass": true,
+   "detail": {
+    "first": {
+     "merchant": "A",
+     "eventId": "evt_simOdd",
+     "result": "retry",
+     "code": "internal_error",
+     "attempts": 1
+    },
+    "second": {
+     "merchant": "A",
+     "eventId": "evt_simOdd",
+     "result": "retry",
+     "code": "internal_error",
+     "attempts": 2
+    },
+    "rateLimited": {
+     "merchant": "A",
+     "eventId": "evt_simRate",
+     "result": "retry",
+     "code": "provider_429",
+     "attempts": 1
+    }
+   }
+  },
+  {
+   "name": "sweep re-reads incomplete invoices in bounded batches and completes one whose trigger was lost",
+   "pass": false,
+   "detail": {
+    "before": {
+     "adjustmentsComplete": false
+    },
+    "after": {
+     "state": "issued",
+     "adjustmentsComplete": false
+    },
+    "passes": [
+     [
+      {
+       "merchant": "A",
+       "externalId": "in_simCallbackA",
+       "result": "completed"
+      }
+     ],
+     [
+      {
+       "merchant": "A",
+       "externalId": "in_simCallbackA",
+       "result": "completed"
+      }
+     ],
+     [
+      {
+       "merchant": "A",
+       "externalId": "in_simCallbackA",
+       "result": "completed"
+      }
+     ]
+    ]
+   }
+  },
+  {
+   "name": "tenant B financial state unchanged throughout",
+   "pass": true,
+   "detail": {
+    "checkpoints": [
+     {
+      "at": "bad signature",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "crash",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "replay",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "out of order",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "substitution",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "non-invoice types",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "isolation",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "provider 404",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "liveness",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "credential pause",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "sweep",
+      "financeUnchanged": true,
+      "observed": 0
+     },
+     {
+      "at": "ack-loss probe",
+      "financeUnchanged": true,
+      "observed": 0
+     }
+    ]
+   }
+  }
+ ],
+ "probe": {
+  "name": "crash after ledger write, before acknowledgement",
+  "status": 200,
+  "receipts": 1,
+  "done": true,
+  "observationsWritten": 2,
+  "docBefore": {
+   "state": "paid",
+   "paidMinor": 100,
+   "adjustmentsComplete": true
+  },
+  "docAfter": {
+   "state": "paid",
+   "paidMinor": 100,
+   "adjustmentsComplete": true
+  },
+  "outcomes": [
+   {
+    "merchant": "A",
+    "eventId": "evt_simUpdatedLate",
+    "result": "item_error",
+    "code": "retryable_error"
+   },
+   {
+    "merchant": "A",
+    "eventId": "evt_simUpdatedLate",
+    "result": "applied"
+   }
+  ]
+ },
+ "providerReads": {
+  "total": 620,
+  "byAccount": {
+   "acct_simCallbackA": 620,
+   "acct_simCallbackB": 0
+  }
+ },
+ "finishedAt": "2026-09-26T13:06:05.800Z"
+}

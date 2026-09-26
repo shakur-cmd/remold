@@ -1,0 +1,48 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ convex/rateLimit.test.ts (2 tests | 2 failed) 109ms
+   × limits a workspace across agent keys and rejects a write without changing customer data 90ms
+   × refills the workspace allowance over time and still rejects a revoked key 19ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/rateLimit.test.ts > limits a workspace across agent keys and rejects a write without changing customer data
+AssertionError: expected 201 to be 429 // Object.is equality
+
+- Expected
++ Received
+
+- 429
++ 201
+
+ ❯ convex/rateLimit.test.ts:15:25
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  convex/rateLimit.test.ts > refills the workspace allowance over time and still rejects a revoked key
+AssertionError: expected 200 to be 429 // Object.is equality
+
+- Expected
++ Received
+
+- 429
++ 200
+
+ ❯ convex/rateLimit.test.ts:32:52
+     30|   const call = rest(t, agent.key);
+     31|   for (let i = 0; i < 120; i++) await call("GET", "/api/v1/me");
+     32|   expect((await call("GET", "/api/v1/me")).status).toBe(429);
+       |                                                    ^
+     33|   clock.mockReturnValue(1_800_000_000_500);
+     34|   expect((await call("POST", "/api/v1/inbox", { text: "one token refil…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  13:53:54
+   Duration  216ms (tests 68%, transform 19%, import 12%, worker 1%)
+

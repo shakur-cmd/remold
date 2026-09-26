@@ -1,0 +1,89 @@
+{
+ "baseSha256": "865ac77926edb1b64351682d4596a57e5eb95b5593d7070773584fc0bb5c78e4",
+ "rows": [
+  {
+   "mutation": "host-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (11.149459ms)"
+   ],
+   "mutantSha256": "24bcfcc0ae99f3c3b8cdbf3b52991af630833b451d233b25aab38729dad75721"
+  },
+  {
+   "mutation": "response-cap-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (4.872125ms)"
+   ],
+   "mutantSha256": "ee9cf86a965096df207fa0477136be531934228f2e1cd3f843be20885e9c2da8"
+  },
+  {
+   "mutation": "content-type-prefix",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ native validation failure, redirect and oversized responses cannot report success (3.348542ms)"
+   ],
+   "mutantSha256": "8cc4d6363494d327ccec24af160a948eb5b137d840b1c40c065254c0513ec42e"
+  },
+  {
+   "mutation": "duplicate-key-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ malformed, duplicate and extra form inputs never reach native capture (1.201084ms)"
+   ],
+   "mutantSha256": "d64dcc8aa9bb3832b3315b734945d905b4f41bb9f97876c496271e78666702c0"
+  },
+  {
+   "mutation": "utf8-fatal-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "a9a268c330f30324e2aeaf1a7b9d7966ac6afb0cc3cf7e1ff683284b1372ab14"
+  },
+  {
+   "mutation": "token-compare-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ rendered form token binds tenant, form and published field labels (1.872084ms)"
+   ],
+   "mutantSha256": "c0d20293db4d134b889dc608ed635d8859202e6d7c4ab2f6736c42aaf28840d8"
+  },
+  {
+   "mutation": "success-flag-check-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "2bb83acabeee68b6b10e13619a1640372e8d9aadacfa29da4afafc90669684c4"
+  },
+  {
+   "mutation": "request-cap-in-stream-removed",
+   "exit": 0,
+   "killed": false,
+   "failingTests": [],
+   "mutantSha256": "58e2b3b4fc5ce1d76b710d3e03955fee4c9b14fd3f04abf0aacecd02cbb4fff4"
+  },
+  {
+   "mutation": "routing-header-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ only the exact host and published paths reach the native service (15.098792ms)"
+   ],
+   "mutantSha256": "8d772b3f0d76a3d5bef94f38e2685396b6cb0394dbd49f5c5ea0ffbcc006e029"
+  },
+  {
+   "mutation": "origin-check-removed",
+   "exit": 1,
+   "killed": true,
+   "failingTests": [
+    "✖ malformed, duplicate and extra form inputs never reach native capture (3.115208ms)"
+   ],
+   "mutantSha256": "c05df206acb12e1fa1bbfbee8d51550f13b25de0ea2360397f168a35fa5a19ac"
+  }
+ ]
+}

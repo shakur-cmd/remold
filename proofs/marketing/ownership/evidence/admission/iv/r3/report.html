@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Independent check round 3: P2 raw capture reconciler (d81feef)</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>Independent check round 3: P2 raw capture reconciler</h1>
+<div class="meta">2026-09-26 · scope: proofs/marketing at d81feef (p2/admission-2026-09-26) · level: SERVICE, isolated local containers, synthetic data, tenant A only (B read-only) · checker: independent verifier session (Claude Opus 5.5), not the builder · supersedes the round-2 reconciler findings (../r2/report.html) · verdict: public path CLOSED; reconciler has two small defects left, so the slice is not closed yet</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Close the slice now, or after two small fixes? I recommend after.</b> Suppression held in every case I tried: no DNC was ever lost. But the reconciler can still change an existing owner's email, and a single long first name stops a whole run. Both fixes are about one line each (see D-R3-1 and D-R3-2), and a re-check would take about 20 minutes. If you close now, write down that the public write path is closed at SERVICE level and the reconciler is open with these two defects.</li>
+  <li><b>Abuse (N-1) needs a policy before any live form.</b> One edge took 113 posts per second with no limit. The reconciler turns each fresh email into a real Mautic contact at about 1.9 s each, roughly 1,850 an hour per tenant. So an attacker fills Mautic with junk contacts and the backlog grows about 200 times faster than it drains. I recommend four things. First, rate-limit per client and per email at the edge. Second, keep one pending capture per email per tenant in Convex. Third, cap pending captures per tenant and alert past it. Fourth, create a Mautic contact only after confirmation (double opt-in) or a Remold-side review, not straight from an anonymous form. A signed nonce does not help much here, and I agree with the builder on that.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by me, on tenant A)</h2>
+<ul>
+  <li>Builder suite reproduced: unit tests 10/10. <code>races.mjs</code> probe 27/27 (and 27/27 again after all mutant redeploys), window 6/6, poison 5/5. <code>mutants.mjs</code> 7/7 killed, with the repo restored afterwards. Outputs are in <code>builder-races/</code>. Deployed edges run server.mjs f6f3713e644f16d0, the same as the repo. I did not run <code>replay.mjs</code> because it writes to tenant B.</li>
+  <li>My round-2 edge checks rerun on A with the D1 edit live: 65 raw-socket cases, 64 as expected. The one miss is expected: the all-zero nonce I claimed in round 2 now gets 409, which shows a chosen nonce stays claimed for good. 23 new email-rule cases all behaved as expected. Mautic did not move and the owner was unchanged (<code>c1-edge-attacks-a.json</code>).</li>
+  <li>Concurrency, 32 posts plus same-nonce races: all verdicts true. SIGKILL of the edge and of the capture backend mid-burst of 48: no acknowledged post lost, and exactly one capture per nonce after retry (<code>c2</code>, <code>c3</code>).</li>
+  <li>Mautic form submissions stayed at A 184 and B 92 throughout. The last write to B's database was at 12:48:33Z, before d81feef was committed (12:50:09Z), so round 3 made no writes to B.</li>
+</ul>
+</div>
+
+<h2>Per-claim verdict</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Strict email rule at edge and Convex</td><td>PASS, with a gap</td><td>These were all refused: unicode local part, unicode IDN domain, punycode TLD, Cyrillic homoglyph, fullwidth, zero-width space, apostrophe, IP literal, numeric TLD, trailing dot, leading-hyphen label, underscore domain, %, quoted local part, and local part or total length over the limit. A punycode domain, plus-addressing and case variants are accepted as ordinary addresses. Mutants M1 and M2 were killed. Gap: the rule allows up to 254 characters, but Mautic caps email at 64. A 64-character local part or a long domain is acknowledged with 200, then settled as <code>rejected</code>. It stays in Convex and never reaches Mautic.</td></tr>
+<tr><td>Exact-match lookup</td><td>FAIL on one case (D-R3-1)</td><td>The LIKE wildcard poison is gone. But <code>leads.email</code> is utf8mb4_unicode_ci, so the database's exact match treats josé = jose, straße = strasse, fullwidth = ASCII, and pads trailing spaces. The reconciler then drops that row with a byte-level JS comparison and calls create. Mautic upserts onto the owner and <b>rewrites the owner's email</b>: josé→jose, straße→strasse, ｊｏ→jo, trailing space trimmed. The name and DNC were kept (<code>c6-collation-sql.json</code>). Precondition: Mautic's API strips non-ASCII from emails (<code>c6-collation.json</code>), so such an owner only exists through import, direct DB access or an older version. Mutant M7, which drops the JS filter and trusts the database rows, removes the rewrite and still passes the builder suite (<code>c6-collation-sql-m10.json</code>).</td></tr>
+<tr><td>Mautic 400/422 settles as rejected and the run continues</td><td>PASS, but see D-R3-2</td><td>Poison 5/5, and 60 rejections on A over my runs. But a first name of 65 to 100 characters is accepted by the edge, and Mautic refuses the name PATCH (400). The reconciler throws "name update failed" and the run stops. The contact stays unnamed. The next run finds it as existing and moves on. So each such capture costs one whole run (<code>c9-long-name.json</code>: 3 runs for 2 long names).</td></tr>
+<tr><td>Per-tenant lease, renewed before each Mautic write, fenced settle</td><td>PASS, disclosed limit confirmed</td><td>A storm of 20 concurrent acquires produced 1 winner. Newcomer, loser renew, stale, foreign, other-tenant and expired tokens were all refused. A foreign release did nothing. The edge key was refused. ttl 0, -1, 1.5, 60001 and 1e15 were refused and 60000 was accepted. A client clock one hour ahead could not take a live lease (it waited 25 s, then got "leased"). Real stall: I SIGSTOPped the real reconciler after its renew, before create, for 20 s. A second reconciler took over at 17.6 s and created one contact. The stalled one resumed, got Mautic's 200 upsert, and its settle was refused as <code>stale</code>. Forced overlap: two reconcilers reached create at the same instant after the lease lapsed (a barrier changes timing only). Mautic made duplicates 429 and 430, both runs crashed on the name PATCH (422), and the capture later settled as ambiguous. That is the disclosed limit, now with its harm measured.</td></tr>
+<tr><td>Create with email only; name only on 201 for an unseen id</td><td>PASS</td><td>Builder window 6/6: the admin's name and DNC were kept. I could not provoke a 201 for a merged contact. Mautic answered 200 for every existing match, including case and collation variants, and 201 only for genuinely new rows. That includes the 201+201 duplicates from concurrent creates. Note: Mautic's 200 upsert rewrites the stored email to the submitted form (contact 407 went from upper case to lower case). That is why D-R3-1 matters.</td></tr>
+<tr><td>Convex-only probe 27/27</td><td>PASS</td><td>Reproduced twice, including after the 7 builder mutants and my 4 Convex mutants were deployed and restored.</td></tr>
+<tr><td>Persistent 5xx still stops the run (disclosed)</td><td>Confirmed, not attacker-reachable in what I tried</td><td>15 email shapes and 9 first names produced no 5xx from Mautic. The only failures were 400s (long email, long name) (<code>c7-5xx-probe.json</code>). A trigger to force a real 500 needs SUPER, which the tenant DB user lacks. So I made one copy of the reconciler answer 500 for one email. Every run halted, and the capture behind it stayed pending for 3 runs; it recovered once the 500 stopped. Mutant M5 (every non-2xx becomes rejected) passes the builder suite, and during an outage it would silently drop captures. Keep the throw, add a test for it, and add an attempt counter that parks a capture after N tries so it cannot block everything behind it.</td></tr>
+</table>
+
+<h2>Defects, with repro (tenant A)</h2>
+<table>
+<tr><th>#</th><th>Severity</th><th>What</th><th>Fix</th></tr>
+<tr><td>D-R3-1</td><td>Medium (identity)</td><td>A collation-equal email makes the reconciler create, and Mautic's upsert rewrites an existing suppressed owner's email. Repro: <code>node c6-collation.mjs</code>.</td><td>If the exact lookup returns any rows but none match byte for byte, settle as <code>ambiguous</code> and never create. M7 shows that just dropping the JS filter also works.</td></tr>
+<tr><td>D-R3-2</td><td>Medium (availability)</td><td>A first name of 65 to 100 characters stops the run once per capture and leaves an unnamed contact. An attacker who interleaves these slows reconciliation to one capture per run. Repro: <code>node c9-long-name.mjs</code>.</td><td>Cap first name at 64 at the edge and in Convex, and treat a refused name PATCH as non-fatal (settle created, record the reason).</td></tr>
+<tr><td>D-R3-3</td><td>Low</td><td>The email rule allows 254 characters, but Mautic caps at 64, so the visitor sees "Submission received" for a capture that is always rejected.</td><td>Cap total email at 64.</td></tr>
+<tr><td>D-R3-4</td><td>Low (disclosed)</td><td>A stall longer than 15 s at the moment of a second reconciler's create gives duplicate contacts, and the email is then permanently ambiguous. Repro: <code>node c5-lease.mjs barrier</code>.</td><td>Accept, or set the lease above the Mautic call timeout plus exec overhead and add a pre-create re-lookup under a fresh renew.</td></tr>
+<tr><td>T-1</td><td>Test gap</td><td>M5 (5xx settles as rejected) and M6 (no renew right before create) both survive the builder suite.</td><td>Add a 5xx case to <code>races.mjs</code> poison, and a pause longer than the lease in window.</td></tr>
+</table>
+
+<h2>My mutants (beyond the builder's 7, which all reproduced as killed)</h2>
+<table>
+<tr><th>Mutant</th><th>Builder suite</th><th>What it shows</th></tr>
+<tr><td>M1 edge email rule back to the loose r2 rule</td><td>killed (unit)</td><td>guard covered</td></tr>
+<tr><td>M2 store email rule back to the loose rule</td><td>killed (probe)</td><td>guard covered</td></tr>
+<tr><td>M3 lease expiry not checked on renew/settle</td><td>killed (probe 26/27)</td><td>guard covered</td></tr>
+<tr><td>M4 an expired lease held by another cannot be taken</td><td>killed (probe 26/27)</td><td>guard covered</td></tr>
+<tr><td>M5 any non-2xx create settles as rejected</td><td><b>survives</b></td><td>With it, my 5xx harness settles the capture as rejected on the first run: silent loss</td></tr>
+<tr><td>M6 no renew right before create</td><td><b>survives</b></td><td>The window test pauses only 5 s, less than the lease</td></tr>
+<tr><td>M7 drop the JS equality filter after exact lookup</td><td>survives (improvement)</td><td>Removes D-R3-1: owner emails are not rewritten</td></tr>
+</table>
+
+<h2>Abuse numbers (N-1)</h2>
+<table>
+<tr><th>Measure</th><th>Value</th><th>Source</th></tr>
+<tr><td>Edge ingest, one tenant, batches of 50, no rate limit</td><td>300 posts in 2.65 s = 113 per second, all 200</td><td>c11-abuse-ingest.json</td></tr>
+<tr><td>Store growth</td><td>about 1.3 KB per capture on disk. Capture backend memory went from 121 MiB to 347 MiB and did not fall back (limit 512 MiB; it OOM-killed at 256 MiB before)</td><td>c11, docker stats</td></tr>
+<tr><td>Reconciler, all new emails</td><td>300 creates in 580 s = 1.9 s each, about 1,850 contacts per hour per tenant</td><td>c4-drain-abuse.json</td></tr>
+<tr><td>Reconciler, mostly existing</td><td>141 in 114 s = 0.8 s each</td><td>c4-drain-1.json</td></tr>
+<tr><td>Proof inventory bound</td><td>2,000 captures per tenant, then <code>inventory</code> refuses. A is at 939, so the proof tooling breaks after about 1,000 more</td><td>capture.ts</td></tr>
+</table>
+<p>So ingest is about 200 times faster than reconcile, every fresh address becomes a Mautic contact, and nothing bounds the backlog. The recommendation is in Your calls.</p>
+
+<h2>Can this slice's P2 gap be marked closed at SERVICE level?</h2>
+<p>The public write path, yes. Across three rounds, nothing a public client sends reaches Mautic's form path. Form submissions never moved, and identity and suppression were never changed by a post, with the D1 edit live, under 32-way concurrency and through kills. The reconciler, which feeds public data into Mautic, not yet. Suppression holds everywhere, but D-R3-1 can change an existing contact's email (an identity field), and D-R3-2 can starve it. I recommend closing after those two fixes and a short re-check. If you close now, record it as "closed for the public path, reconciler open (D-R3-1, D-R3-2)".</p>
+
+<h2>What I changed (all synthetic, tenant A only)</h2>
+<ul>
+  <li><b>Mautic A:</b> contacts went from 340 (end of round 2) to 753. This includes 300 from the abuse run, IV owners with DNC, probe contacts, and duplicate pair 429/430. Owners 423 to 426 had their emails rewritten by the collation test. Under M7, the second collation run set up new owners and their emails were not rewritten. Some contacts are unnamed by design of the tests (442, 443, 429). DNC 95 to 121, all added by my own owners. Forms A34 were edited and reverted by the builder suite and by c1.</li>
+  <li><b>Capture store:</b> A has 939 captures, 0 pending. B has 171, 0 pending, and none were added by me.</li>
+  <li><b>Convex functions:</b> redeployed by the builder's <code>mutants.mjs</code> and my <code>c10-mutants.mjs</code>, ending on the original. The probe passed 27/27 afterwards.</li>
+  <li><b>Containers:</b> public-a and the capture backend were each SIGKILLed once and restarted (same IDs, same IP).</li>
+  <li><b>Temporary files:</b> a <code>node_modules</code> symlink at the worktree root and temp copies under <code>rawcapture/.iv-*</code> were used and removed.</li>
+  <li><b>Not done:</b> no MySQL trigger was created (refused). No B writes. No mail, DNS, TLS, public port or provider account.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>A real, not simulated, persistent Mautic 5xx for a specific capture.</li>
+  <li>Whether Mautic's CSV import stores non-ASCII or padded emails. That decides how reachable D-R3-1's precondition is.</li>
+  <li>Anything on tenant B beyond read-only counts, and the builder's full <code>replay.mjs</code> (it writes to B).</li>
+  <li>The lease under a real skew of the backend clock. The container clock cannot be changed without CAP_SYS_TIME. Expiry is judged only by the backend clock, and I showed that client clock skew is harmless.</li>
+</ul>
+
+<h2>Commands (from proofs/marketing, worktree ../remold-p2-iv fast-forwarded to d81feef)</h2>
+<pre>node --test publishing/server.test.mjs                10 pass
+node rawcapture/races.mjs probe|window|poison iv-r3   27/27, 6/6, 5/5
+node rawcapture/mutants.mjs iv-r3                     7/7 killed (needed a node_modules link at the worktree root)
+cd ownership/evidence/admission/iv/r3
+node c1-edge-attacks.mjs ; node c2-concurrency.mjs 32 ; node c3-kill-midburst.mjs edge|capture 48
+node c4-drain.mjs 1 ; node c5-lease.mjs direct|skew|stall|barrier
+node c6-collation.mjs ; node c7-5xx-probe.mjs ; node c8-5xx-poison.mjs ; node c9-long-name.mjs
+node c10-mutants.mjs ; node c11-abuse.mjs 300 ; node c4-drain.mjs abuse</pre>
+<p>c5-lease-stall-run1.json is a first run whose error text my parser missed. The rerun (c5-lease-stall.json) records the stale settle. c6-collation.json is the first attempt, where Mautic's API stripped the non-ASCII characters. It is kept because it shows that behaviour.</p>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "verdict": "APPROVE bounded prepared same-sender fixture, not LIVE completion",
+  "reviewer": "c0_verifier; independent of current h0_builder successor",
+  "at": "2026-09-25T00:24:32.553841+00:00",
+  "sourceFiles": 34,
+  "sourceAggregate": "c29dfab5c14e841ce38d31d702a54bc6ecea5063a9b3284b892dd7ee45722fa9",
+  "sourceManifestRawSha256": "01a580dc765cf53ade7556b4eec2442f26f248cc7f446de0a902fb1a3ab65db6",
+  "planSha256": "37e76789aea0bf39348e3f03324ee21070395596e13737630ba44c74a823a025",
+  "sourceUnchanged": true,
+  "baseline28Unchanged": true,
+  "sharedLedgerAndProtectedPrivateFilesUnchanged": true,
+  "releaseAbsent": true,
+  "startedAbsent": true,
+  "checks": [
+    {
+      "command": "pnpm --dir proofs/communications test",
+      "exit": 0,
+      "tests": 38
+    },
+    {
+      "command": "node proofs/communications/same-sender-replay.mjs --preflight 37e76789aea0bf39348e3f03324ee21070395596e13737630ba44c74a823a025",
+      "exit": 0,
+      "providerCalls": 0
+    },
+    {
+      "command": "same preflight with64zero wrong hash",
+      "exit": 1,
+      "expected": 1
+    },
+    {
+      "command": "node evidence/2026-09-24-unified-build/communications-same-sender-iv/altered.mjs",
+      "exit": 0,
+      "groups": 5
+    }
+  ],
+  "ownChecks": [
+    "Archived ledger independently refuses newly approved A\u2192C before behavior extension",
+    "Wrong sender C with P thread/reference stops without suppression orQ2/Q3",
+    "Right sender B with Q reference onP thread stops without suppression orQ2/Q3",
+    "Q2 unknown counts shared quota; Q3 absent and restarted exactQ2reservation refuses resend",
+    "Old parser permanently fails closed on C history beyond24h while successor reads sameledger withoutreset"
+  ],
+  "scope": [
+    "OnlyA\u2192B,A\u2192C,B\u2192A allowed; C recipient-only, five/from/AorB rolling24h",
+    "Preflight currentusageA1B4 plusplannedA4B1 yieldsA5B5, everyattempt reserves again",
+    "Five exact content messages, actual Gmail Message-ID lookup, sameQthread,120sminimumspacing,540sobservation",
+    "P2P3 denied before quota/providerdispatch; Cdelivery explicitlypending separateexactIDs",
+    "Current code prepares and consumes frozenH0 permits; liveSERVICEexecution not rerun in IV"
+  ],
+  "limits": [
+    "No provider call/send/calendar/OAuth or release/start marker creation",
+    "Synthetic sequence tests/temporaryfilesystem ledger only; actualH0SERVICE/liveproviderflow await root execution",
+    "Readiness can change; root must rerunpreflight before release, no automaticresume",
+    "Cdeliveryrequires fresh exactmessage receipt witness, Gmailacceptancealone insufficient",
+    "WholeP5/production/historywatch/twobrowser integration open",
+    "No I1authorization audit"
+  ]
+}

@@ -1,0 +1,45 @@
+✔ unchanged release verifies only for its full commit and pinned manifest digest (5.073209ms)
+✔ changed, missing and injected artifact bytes are refused (1.546333ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (0.937792ms)
+✔ version metadata must name the artifact commit (0.72ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.773875ms)
+✔ failed real process halts checks before a later process can run (24.149125ms)
+✔ successful real processes run in order (42.7975ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.44575ms)
+✔ missing metadata and destructive contraction are refused (0.092583ms)
+✔ a rollback to a schema without the expanded fields is refused (0.14875ms)
+✔ persisted changes remain blocked even when a caller supplies a synthetic passing restore claim (0.051209ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.847958ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (19.887666ms)
+✖ PR changes use their common ancestor when the target branch advances independently (216.739916ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 373.608084
+
+✖ failing tests:
+
+test at ops/release/release.test.mjs:112:1
+✖ PR changes use their common ancestor when the target branch advances independently (216.739916ms)
+  Error: Command failed: git merge-base --is-ancestor 235e362a3d70009d6bd5950debe7102f647cd857 66c84f31b5a2b77a869b1febcd18da0dac5df39f
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:925:11)
+      at execFileSync (node:child_process:961:15)
+      at git (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/release/release.mjs:73:10)
+      at resolveBase (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/release/release.mjs:77:3)
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/release/release.test.mjs:131:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18) {
+    status: 1,
+    signal: null,
+    output: [ null, '', '' ],
+    pid: 81373,
+    stdout: '',
+    stderr: ''
+  }

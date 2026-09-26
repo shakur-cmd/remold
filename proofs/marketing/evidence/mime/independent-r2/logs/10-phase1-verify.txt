@@ -1,0 +1,9 @@
+$ node verify-runtime.mjs
+PASS exact H0 source, SDK version, pinned runtime images and isolated network.
+exit=0
+$ node verify-installed.mjs
+PASS 12 installed source hashes, PHP syntax and bounded credential placement.
+exit=0
+port 3540 http 302
+port 3542 http 403
+port 3545 http 200

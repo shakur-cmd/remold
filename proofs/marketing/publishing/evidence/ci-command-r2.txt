@@ -1,0 +1,25 @@
+✔ the independent MIME parser preserves the pixel query and rejects truncated approved HTML (100.3865ms)
+✔ a separate receiver commits exact bytes before ack, retains them after restart and refuses a second submission (38.52ms)
+✔ swapped body, subject, headers or envelope cannot borrow an approved hash (16.673375ms)
+✔ the receiver refuses a boundary that changes how a mail parser reads approved parts (4.879917ms)
+✔ only Date, Message-ID and the one multipart boundary may vary across attempts (2.992583ms)
+✔ envelope changes, hidden recipients, duplicate volatile headers and nested MIME refuse (1.035875ms)
+✔ the encoding and every extra header remain part of the approved hash (0.143541ms)
+✔ Symfony unquoted boundaries preserve the same content binding across retries (0.115667ms)
+✔ changing a boundary cannot split or truncate the approved HTML (0.716792ms)
+✔ volatile headers accept generated metadata only, never arbitrary unapproved text (0.282708ms)
+✔ the serialized intent and exactly two MIME parts are required (0.100417ms)
+✔ only the exact host and published paths reach the native service (17.097417ms)
+✔ rendered form token binds tenant, form and published field labels (3.005125ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.193792ms)
+✔ client tracking headers and native cookies or redirects are not forwarded (1.334ms)
+✔ native validation failure, redirect and oversized responses cannot report success (7.562042ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before native capture (1.534292ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.231916

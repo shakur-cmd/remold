@@ -1,0 +1,82 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/baseline.test.ts (3 tests | 3 failed) 130ms
+   × an existing wildcard does not authorize writes to a future object 106ms
+   × readonly stops a human record mutation at the shared write boundary 12ms
+   × firing an agent pauses its suggestion instead of applying stale authority 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/baseline.test.ts > an existing wildcard does not authorize writes to a future object
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ ops/authority/baseline.test.ts:10:151
+      8|   expect((await call('POST', '/api/v1/changes', { action: 'create', ob…
+      9|   await client.mutation(api.objects.create, { orgId, key: 'future', la…
+     10|   expect((await call('POST', '/api/v1/changes', { action: 'create', ob…
+       |                                                                                                                                                       ^
+     11| });
+     12|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  ops/authority/baseline.test.ts > readonly stops a human record mutation at the shared write boundary
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "eventId": "00000000000000000000010049events",
++   "recordId": "0000000000000000000010048records",
+  }
+
+ ❯ ops/authority/baseline.test.ts:17:142
+     15|   const company = await objectFields(client, orgId, 'company');
+     16|   await t.run(ctx => ctx.db.patch(orgId, { flags: { readonly: true } }…
+     17|   await expect(client.mutation(api.records.create, { orgId, objectId: …
+       |                                                                                                                                              ^
+     18| });
+     19|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  ops/authority/baseline.test.ts > firing an agent pauses its suggestion instead of applying stale authority
+AssertionError: promise resolved "{ …(3) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "eventId": "00000000000000000000010053events",
++   "recordId": "0000000000000000000010052records",
++   "status": "applied",
+  }
+
+ ❯ ops/authority/baseline.test.ts:25:109
+     23|   const proposal = await rest(t, agent.key)('POST', '/api/v1/suggestio…
+     24|   await client.mutation(api.agents.revoke, { orgId, agentId: agent.age…
+     25|   await expect(client.mutation(api.suggestions.apply, { orgId, suggest…
+       |                                                                                                             ^
+     26| });
+     27|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  15:28:09
+   Duration  284ms (tests 60%, transform 25%, import 14%, worker 1%)
+

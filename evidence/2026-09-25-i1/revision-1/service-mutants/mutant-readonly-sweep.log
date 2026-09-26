@@ -1,0 +1,26 @@
+PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+PASS Production dispatch records cancelled late acceptance exactly once
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: HTTP POST /api/v1/inbox must refuse readonly writes: {"createdAt":1790349086132.346,"from":{"kind":"agent","name":"sweep agent"},"id":"j57f5basqemnzx9r4h4zecbz7x8f2pxk","note":null,"recordId":null,"resolvedAt":null,"source":"api","status":"pending","suggestionId":null,"text":"Denied inbox"}
+
+201 !== 403
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-sweeps.mjs:115:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:21:76)
+    at async Object.replaySweeps [as sweeps] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-sweeps.mjs:43:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:56:84)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:17:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 201,
+  expected: 403,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

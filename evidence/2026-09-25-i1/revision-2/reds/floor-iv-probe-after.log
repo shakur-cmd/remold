@@ -1,0 +1,81 @@
+[
+  {
+    "name": "pre-I1 3339517",
+    "sha": "3339517a92618a2275ecca5105c20490b8f1a2be",
+    "floor": false,
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it would dro",
+    "expect": "refuse"
+  },
+  {
+    "name": "I1 first handover d2c8744",
+    "sha": "d2c87449d0f7070e9843f9153082b62999801f51",
+    "floor": true,
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "I1 revision 1 f1de701",
+    "sha": "f1de7010c28d28578882497f295e5cd2eb938549",
+    "floor": true,
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "I1 revision 1 evidence 4cb4671",
+    "sha": "4cb4671761bbaca01c1aec420612fa72053b4325",
+    "floor": true,
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "7299ee9 (builder named it accepted)",
+    "sha": "7299ee98d05c39480e5ad8018e0d81ac119062d8",
+    "floor": true,
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "abbreviated sha",
+    "sha": "3339517",
+    "floor": "throws: A full Git commit SHA is required",
+    "preflight": "n/a",
+    "expect": "refuse"
+  },
+  {
+    "name": "unknown full sha",
+    "sha": "ffffffffffffffffffffffffffffffffffffffff",
+    "floor": false,
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it would dro",
+    "expect": "refuse"
+  },
+  {
+    "name": "ATTACK pre-I1 code + empty marker stubs",
+    "sha": "0ef367c27b732aa72d447b2e7f13e5e1d5ab609e",
+    "floor": false,
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it would dro",
+    "expect": "refuse"
+  },
+  {
+    "name": "I1 minus reads.ts",
+    "sha": "22bedb3e65308e84e56667c45a91a793e8dde3d6",
+    "floor": false,
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it would dro",
+    "expect": "refuse"
+  },
+  {
+    "name": "ATTACK I1 files kept, canReadRecordId returns true",
+    "sha": "b3f029b4f78aa3c8bbb526240f212ae328e72585",
+    "floor": true,
+    "preflight": "accepted",
+    "expect": "refuse"
+  },
+  {
+    "name": "tree object of 4cb4671 (not a commit)",
+    "sha": "c09bc046b4ad4f2cf75cccee0584bff6a8c0ef96",
+    "floor": false,
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it would dro",
+    "expect": "refuse"
+  }
+]
+FOOLED BY: ATTACK I1 files kept, canReadRecordId returns true
+WRONGLY REFUSED: none

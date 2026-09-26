@@ -1,0 +1,2 @@
+Fresh Opus 5.5 review of A1 r3, 2026-09-26, read-only. Verdict: APPROVE for sha256 d234fc4616002a85c011f4c3c88273d050a29bb8d2259a7a4228c524585d58b3 only. All 7 own and 10 Fable r2 findings resolved; the three smaller options (no rename, stays pending, no opsHash) judged right.
+Low notes: (1) standard field has no schema marker; define as isStandard object + key in lib/standard.ts list. (2) decide whether ensureStandard fails or adds unindexed field when slots are gone. (3) say whether dismiss is allowed under readonly (simplest: refused).

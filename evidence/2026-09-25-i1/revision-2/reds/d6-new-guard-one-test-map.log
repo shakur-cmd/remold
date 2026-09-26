@@ -1,0 +1,90 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (3 tests | 1 failed) 163ms
+   × every frozen H0 replay group maps to production tests that exercise its operations 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations
+AssertionError: expected [ …(56) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "A/B known-ID isolation, server-derived actors and full binding tuple collision: no mapped test does its own check /shared-external-id|Account already bound/",
++   "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation: mapped tests never attempt an out-of-scope grant",
++   "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation: no mapped test does its own check /currency: 'EUR'|bindings: \\[other\\.bindingId\\]/",
++   "Explicit manage lists cannot authorize firing or regranting an ancestor: mapped tests never attempt an out-of-scope grant",
++   "Explicit manage lists cannot authorize firing or regranting an ancestor: no mapped test does its own check /'authority/fire'/",
++   "Direct mode executes without human approval; propose mode and invalidated direct grant refuse: mapped tests never revoke a grant",
++   "Direct mode executes without human approval; propose mode and invalidated direct grant refuse: no mapped test does its own check //Approval/|held\\.fence > c\\.fence/",
++   "Delegation ancestry revokes queued/read/model paths while independent human grant survives: no mapped test does its own check /childRead\\(|held\\.fence > c\\.fence/",
++   "Read scopes restrict object/records/fields and every SIM surface has a leakable shape: mapped tests never attempt an out-of-scope grant",
++   "Read scopes restrict object/records/fields and every SIM surface has a leakable shape: no mapped test does its own check /MASKED_|leaked a hidden field value/",
++   "Final permit rechecks expired authority without a sweep and honors schedule: no mapped test does its own check /pause\\(1600\\); await refuse\\(t\\.adapter\\('permit'|Dispatch bounds/",
++   "Before-permit fire refuses; after-permit fire preserves one late outcome: no mapped test does its own check /revoked agent key/",
++   "Scoped adapter cannot permit, consume, reconcile, callback or provision in B: no mapped test does its own check /\\[403, 404\\]\\.includes/",
++   "Lost acceptance response reconciles once; missing usage blocks cheaper new spend: no mapped test does its own check /Unresolved usage/",
++   "Concurrent logical calls/claims and org budget reservations serialize on real backend: no mapped test does its own check /allSettled/",
++   "Per-run/global spend and global concurrency caps bound both tenants: no mapped test does its own check /Per-run budget/",
++   "Model continuation rechecks authority, step/fence and remaining exposure: no mapped test does its own check /second\\.step, 2|held\\.step, c\\.step \\+ 1/",
++   "Expired unconsumed permits retry safely; consumed crash becomes unknown: no mapped test does its own check /spent permit/",
++   "Authoritative absence and retryable rejection preserve logical key and revalidate new permits: no mapped test does its own check /firstSend\\.key, secondSend\\.key/",
++   "Material edits, audience, currency and approval expiry invalidate immutable snapshot: mapped tests never edit a payload",
++   "Material edits, audience, currency and approval expiry invalidate immutable snapshot: no mapped test does its own check /Approval changed/",
++   "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly: mapped tests never cancel, deliver a callback, set readonly",
++   "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly: no mapped test does its own check /'applied', 'duplicate'/",
++   "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship: mapped tests never cancel, set readonly",
++   "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship: no mapped test does its own check /adoptedFrom|commands\\.adopt/",
++   "Provisioning durable intents preserve delete-before/create-before races: no mapped test does its own check /cleanupRequired: true/",
++   "Partial traversal commits only full checkpoints and later traversal resumes without regression: mapped tests never page a traversal",
++   "Partial traversal commits only full checkpoints and later traversal resumes without regression: no mapped test does its own check /traversal: 'second'/",
++   "Durable cancellation survives rejection, absence, expiry and model continuation: mapped tests never cancel",
++   "Durable cancellation survives rejection, absence, expiry and model continuation: no mapped test does its own check /cancelled late|t\\.cancel\\(id\\); await t\\.adapter\\('fail'/",
++   "Scoped adapter sees cancellation signal and records one late accepted tail: mapped tests never cancel",
++   "Scoped adapter sees cancellation signal and records one late accepted tail: no mapped test does its own check /\\)\\)\\.cancel, true/",
++   "Conflicting provider reference refuses durably and holds spend without rolling back anomaly: no mapped test does its own check /providerResultCollision/",
++   "Per-recipient and per-purpose suppression never changes another contact or tenant: mapped tests never deliver a callback",
++   "Per-recipient and per-purpose suppression never changes another contact or tenant: no mapped test does its own check /recipient-B|dump\\(\\)\\.consent, before/",
++   "Server scheduler recovers adapter crashes without a callback or manual expiry call: no mapped test does its own check /pause\\(2300\\); assert\\.equal\\(\\(await t\\.get\\(id\\)\\)\\.state, 'outcomeUnknown'\\)/",
++   "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives: mapped tests never revoke a grant",
++   "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives: no mapped test does its own check /childRead\\(|held\\.fence > c\\.fence/",
++   "Unresolved consumed attempt survives sweep and holds global exposure: no mapped test does its own check /Budget or concurrency cap|budget\\(\\)\\.active, 1\\)/",
++   "Unresolved consumed attempt survives expiry and holds global exposure: no mapped test does its own check /Budget or concurrency cap|budget\\(\\)\\.active, 1\\)/",
++   "Unresolved consumed attempt survives failure and holds global exposure: no mapped test does its own check /Budget or concurrency cap|budget\\(\\)\\.active, 1\\)/",
++   "Cancellation cannot release confirmed work with missing usage: mapped tests never cancel",
++   "Cancellation cannot release confirmed work with missing usage: no mapped test does its own check /t\\.cancel\\(id\\); assert\\.equal\\(t\\.budget\\(\\)\\.reserved, 2\\)/",
++   "Unconsumed unknown is ignored and scheduler recovers false: mapped tests never cancel",
++   "Unconsumed unknown is ignored and scheduler recovers false: no mapped test does its own check /cancelled \\? 'cancelled' : 'queued'/",
++   "Unconsumed unknown is ignored and scheduler recovers true: mapped tests never cancel",
++   "Unconsumed unknown is ignored and scheduler recovers true: no mapped test does its own check /cancelled \\? 'cancelled' : 'queued'/",
++   "Exhausted successful continuation settles and releases its slot: no mapped test does its own check /second\\.maxUnits, 3/",
++   "Suppression without an existing purpose/channel row is durable: mapped tests never deliver a callback",
++   "Suppression without an existing purpose/channel row is durable: no mapped test does its own check /consent\\.map/",
++   "Settled-step provisional absence cannot settle a later unresolved step: no mapped test does its own check /current unknow/",
++   "Settled-step final absence cannot settle a later unresolved step: no mapped test does its own check /current unknow/",
++   "Old consumed fence for the same unresolved step still supports provisional absence: mapped tests never cancel",
++   "Old consumed fence for the same unresolved step still supports provisional absence: no mapped test does its own check /first\\.step, second\\.step/",
++   "Old consumed fence for the same unresolved step still supports final absence: mapped tests never cancel",
++   "Old consumed fence for the same unresolved step still supports final absence: no mapped test does its own check /first\\.step, second\\.step/",
++ ]
+
+ ❯ ops/authority/h0-parity.test.ts:78:16
+     76|     if (shared > MAX_SHARED) gaps.push(`${row.h0}: /${row.exercises}/ …
+     77|   }
+     78|   expect(gaps).toEqual([]);
+       |                ^
+     79| });
+     80|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  07:43:25
+   Duration  268ms (tests 78%, import 13%, transform 7%, worker 1%)
+

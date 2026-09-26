@@ -1,0 +1,47 @@
+$ node --test *.test.mjs
+✔ a stripped plain-text reply matches verified account, recipient and conversation without body quoting (0.648166ms)
+✔ a foreign mailbox, unknown address or wrong conversation never invents a match (0.106208ms)
+✔ ambiguous ownership between personal and marketing sequences fails closed (0.064417ms)
+✔ unreleased test run and absent calendar authorization cannot be bypassed by a token or recipient (0.463125ms)
+✔ forged or account-switched notifications cannot invoke the authenticated pull (0.193042ms)
+✔ interrupted traversal never advances cursor; replay deduplicates; expired history does not trigger broad import (0.162459ms)
+✔ calendar fixture creates one no-guests event, reschedules with version guard, and deletes only its exact ID (1.978708ms)
+✔ unknown create response is reconciled by exact-ID lookup without a second insert (0.148667ms)
+✔ foreign calendar, attendee, changed time and foreign returned event cannot be modified (1.501584ms)
+✔ OAuth requires browser-bound state and consumes it once before exchanging code (1.21025ms)
+✔ concurrent callback replay only exchanges one code (0.216584ms)
+✔ expired state and denied consent cannot exchange an authorization code (1.0295ms)
+✔ verified identity mismatch, wrong nonce and mailbox mismatch never persist credentials (0.428917ms)
+✔ reconnect preserves cursor and refuses a different Google subject for same slot (0.253959ms)
+✔ nonce and email verification are checked independently of a correct email address (0.386291ms)
+✔ authorization URL requests authorized Gmail send plus read scope with PKCE and no calendar (0.30775ms)
+✔ mailbox A refuses a partial grant missing send permission (0.116208ms)
+✔ profile failure retains a verified private candidate and read-only retry does not exchange again (0.153833ms)
+✔ calendar consent is opt-in and partial calendar grants cannot authorize the fixture (0.238209ms)
+✔ the exact planned plain-text reply is transport-valid before any provider connection (21.256834ms)
+✔ unplanned reply subject, extra header, foreign recipient and wrong reference fail offline (111.207375ms)
+✔ resume accepts only the verified provider reference for P reply and leaves Q references unchanged (71.535ms)
+✔ provider-rewritten Message-ID becomes the reference only for the exact accepted owned message (1.203417ms)
+✔ actual reply matches corrected context; original generated reference and unrelated Q stay unmatched (0.177416ms)
+✔ A to B and newly approved C share the same five-attempt allowance across restart (77.809458ms)
+✔ C remains recipient-only and B cannot address C (11.965167ms)
+✔ malformed new route, duplicate reservations and orphan outcomes still corrupt the ledger (62.660167ms)
+✔ exact plan and release refuse extra recipients, lower timing and altered allowance (1.664125ms)
+✔ same sender reaches B and C, stripped reply stops P, Q spacing and observation stay bounded without spending P2/P3 (76.058333ms)
+✔ wrong reply thread or missing cutoff stops the fixture before Q2/Q3 (94.913ms)
+✔ metadata from wrong destination or unrelated accepted ID cannot become a reply reference (0.388958ms)
+✔ capacity preflight counts prior unknown reservations without writing or resetting the ledger (29.972583ms)
+✔ provider thread drift after Q2 acceptance stops Q3 instead of pretending continuity (54.202292ms)
+✔ five uncertain attempts consume a mailbox allowance across restart (74.938625ms)
+✔ same attempt never dispatches again, and cannot change its recipient or content (19.755875ms)
+✔ concurrent independent ledgers cannot reserve more than five (42.927459ms)
+✔ rolling window expires reservations; a backwards clock refuses new sends (43.033167ms)
+✔ missing or corrupt durable state fails closed (13.976458ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 467.990167

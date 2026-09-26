@@ -1,0 +1,18 @@
+{
+  "verdict": "REVISE",
+  "reviewer": "c0_verifier independent of P4 author",
+  "manifest": "7ab1dcf38b3f154bf3a37a3da715f8f65c0acfd917c18c63e0374d5d607a6e12",
+  "sourceUnchanged": true,
+  "fullLocalTestExit": 0,
+  "typecheckExit": 0,
+  "extraProbeExit": 1,
+  "finding": "Already received paid100 callback is overwritten by older unpaid pull under unchanged epoch; void final permit and collection reservation100 both accepted. No actual Stripe execution.",
+  "scope": "Financial lifecycle accounting only. No I1 authorization audit, real Stripe lifecycle, browser or private credentials.",
+  "ports3490_3491": "Released, no listeners",
+  "unverified": [
+    "Full sandbox",
+    "Actual Stripe ceiling and webhook behavior",
+    "Production identity integration",
+    "Whole P4"
+  ]
+}

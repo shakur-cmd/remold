@@ -1,0 +1,15 @@
+Scope: all 2 workspace projects
+[ERR_PNPM_UNSAFE_MODULES_DIR] Refusing to remove the modules directory at "/Users/urkel/Documents/CodeMyVibe/Projects/remold/node_modules" because its resolved target is not a strict subdirectory of the project root at "/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-preview-readiness-ioidadnl/checkout".
+[ERROR] Command failed with exit code 1: pnpm install
+
+pnpm: Command failed with exit code 1: pnpm install
+    at getFinalError (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:89319:14)
+    at makeError (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:91626:21)
+    at getSyncResult (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:93470:10)
+    at spawnSubprocessSync (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:93430:14)
+    at execaCoreSync (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:93360:23)
+    at callBoundExeca (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:95888:23)
+    at boundExeca (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:95865:49)
+    at sync2 (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:96020:14)
+    at runPnpmCli (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:273381:5)
+    at runDepsStatusCheck (file:///opt/homebrew/Cellar/pnpm/11.23.0/libexec/lib/node_modules/pnpm/dist/pnpm.mjs:274597:7)

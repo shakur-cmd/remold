@@ -1,0 +1,91 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+... Skipped lines
+
+  [
+    {
+-     destination: '/var/www/html/var/logs',
+-     name: 'remold-marketing-proof-logs-a',
+-     type: 'volume'
+-   },
+-   {
+      destination: '/var/www/html/docroot/media/files',
+      name: 'e3b0cb0efc451dd88d1c2661299ccbf236afc4bac8e18adbe5f5c4bcaad9014f',
+      type: 'volume'
+    },
+    {
+...
+    },
++   {
++     destination: '/var/www/html/var/logs',
++     name: 'remold-marketing-proof-logs-a',
++     type: 'volume'
++   }
+  ]
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/proofs/marketing/tenants/isolation-replay.mjs:39:201 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    {
+      type: 'volume',
+      name: 'e3b0cb0efc451dd88d1c2661299ccbf236afc4bac8e18adbe5f5c4bcaad9014f',
+      destination: '/var/www/html/docroot/media/files'
+    },
+    {
+      type: 'volume',
+      name: '4d28c0c6846c64c4b346a3fb7b79cb2d555dd70a49c28eb1a361f7e673a62934',
+      destination: '/var/www/html/docroot/media/images'
+    },
+    {
+      type: 'volume',
+      name: 'remold-marketing-proof-config-a',
+      destination: '/var/www/html/config'
+    },
+    {
+      type: 'volume',
+      name: 'remold-marketing-proof-media-a',
+      destination: '/var/www/html/docroot/media'
+    },
+    {
+      type: 'volume',
+      name: 'remold-marketing-proof-logs-a',
+      destination: '/var/www/html/var/logs'
+    }
+  ],
+  expected: [
+    {
+      type: 'volume',
+      name: 'remold-marketing-proof-logs-a',
+      destination: '/var/www/html/var/logs'
+    },
+    {
+      type: 'volume',
+      name: 'e3b0cb0efc451dd88d1c2661299ccbf236afc4bac8e18adbe5f5c4bcaad9014f',
+      destination: '/var/www/html/docroot/media/files'
+    },
+    {
+      type: 'volume',
+      name: '4d28c0c6846c64c4b346a3fb7b79cb2d555dd70a49c28eb1a361f7e673a62934',
+      destination: '/var/www/html/docroot/media/images'
+    },
+    {
+      type: 'volume',
+      name: 'remold-marketing-proof-config-a',
+      destination: '/var/www/html/config'
+    },
+    {
+      type: 'volume',
+      name: 'remold-marketing-proof-media-a',
+      destination: '/var/www/html/docroot/media'
+    }
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

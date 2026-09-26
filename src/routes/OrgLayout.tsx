@@ -11,7 +11,7 @@ export function OrgLayout() {
   const orgId = useParams().orgId as Id<"orgs">;
   const orgs = useQuery(api.orgs.mine);
   const objects = useQuery(api.objects.list, { orgId });
-  if (orgs === undefined || objects === undefined) return <Loading />;
+  if (orgs === undefined || objects === undefined) return <Loading page />;
   const mine = orgs.find(({ org }) => org._id === orgId);
   if (!mine) return <Navigate to="/" replace />;
   const context: OrgContext = { org: mine.org, role: mine.role, objects };

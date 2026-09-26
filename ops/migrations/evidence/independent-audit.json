@@ -1,0 +1,66 @@
+{
+  "verdict": "PASS bounded I2 migration SERVICE slice",
+  "reviewer": "h0_builder (independent of i2_release author)",
+  "baselineRecords": 1100,
+  "partialMarked": 400,
+  "finalRecords": 1103,
+  "canonicalSnapshotsRecomputed": true,
+  "originalRecordsComparedIndividually": 1100,
+  "agentKeyHashAndIdentityRetained": true,
+  "exactExpandedSourceAfterFinalRecovery": true,
+  "authorManifestMatches": true,
+  "retainedClientInProgressObservations": [
+    {
+      "phase": "resumed-migration",
+      "iteration": 6,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 467,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 7,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 610,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 8,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 764,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    },
+    {
+      "phase": "resumed-migration",
+      "iteration": 9,
+      "migrationState": "inProgress",
+      "processedBeforeWrite": 935,
+      "rest": "read/write pass",
+      "mcp": "read/write pass"
+    }
+  ],
+  "sourceHashes": {
+    "fixture.ts": "f7abdd3ecc52addc009a302ea8228913cc0b09ea72ce85d9bd6c4627ca0bcea1",
+    "backfill.ts": "269d37b9d6ec10067646457c8c8fd03c0406ba0ae8c4f8c15de20651f5e6725e",
+    "rehearse.mjs": "185907b1028cda97b2f945a29674e2233c981e3b0b2911b88f3362c8e15e85f4",
+    "rollback.mjs": "4e7cc40cfa06d036ab6c8370c9c7cac646dd7b836871de68837bad21f48ce304"
+  },
+  "baselineTree": "8842b9ee8c935ff2e78031da6e4a6b45950f20a401dad85a99eb24b4fff0b0f0",
+  "expandedTree": "6840d73c8db02095a1150f910be232bd7b325cef689550e366458b47ba3a78c8",
+  "migrateTree": "919a8e7937c7a5fce700d888832e8e7371d690cf502b175906bc9c88ffa9906b",
+  "consumerRevision": [
+    0,
+    1,
+    0,
+    0
+  ],
+  "limitations": [
+    "Managed backup snapshot restore is not tested",
+    "Actual old browser and production identities are not tested",
+    "No production deployment or release authorization"
+  ]
+}

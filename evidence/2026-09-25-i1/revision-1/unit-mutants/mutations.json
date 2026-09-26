@@ -1,0 +1,78 @@
+{
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-rMpCQt",
+  "level": "SIM convex-test, copied source only",
+  "results": [
+    {
+      "name": "hidden-field-deny",
+      "file": "convex/authority/reads.ts",
+      "test": "ops/authority/masks.test.ts",
+      "originalSha256": "5e600f2f063b6d77b45698e08de3c07c8a6f29fda7a8971ba5da4dda63a165b3",
+      "mutantSha256": "1f6f56ed53c9b7264da69ad1a2fa89cee3409910d3396218b60bafc09a91ca0a",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "object-scope-boundary",
+      "file": "convex/authority/reads.ts",
+      "test": "ops/authority/grants.test.ts",
+      "originalSha256": "5e600f2f063b6d77b45698e08de3c07c8a6f29fda7a8971ba5da4dda63a165b3",
+      "mutantSha256": "a2bad3ebfce2a10709d89beb099b5e9648e28c60dc4c72318e0eefa4a49ad7c0",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "durable-cancel-check",
+      "file": "convex/integrations/commands.ts",
+      "test": "ops/authority/operations.test.ts",
+      "originalSha256": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+      "mutantSha256": "c96a89fbfae9a8fe47f5b1cb67a37ac11dd69b98a2e171ca1e378ea169f3210d",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "code-owned-finality-verifier",
+      "file": "convex/integrations/safetyFinality.ts",
+      "test": "ops/authority/safety.test.ts",
+      "originalSha256": "a8c5d379c039af7c05a905b76a5cce46fbb7c958235e523d6457a610ace46f0d",
+      "mutantSha256": "0b4f79a732f803852d6314993fe3bd325889b3d33f9a82104f1189ce7a43aef7",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "readable-name-match",
+      "file": "convex/lib/find.ts",
+      "test": "ops/authority/oracles.test.ts",
+      "originalSha256": "f53a9d7afffe4a6d2ced43011fb4cb8c072bfdb97b730411c7651ef93118a5f3",
+      "mutantSha256": "c7bdbb2cc54957aeb241f6ee9848443b3e4aaef3059db419298833d6fbea8b4c",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "proposal-scope-first",
+      "file": "convex/agentApi.ts",
+      "test": "ops/authority/oracles.test.ts",
+      "originalSha256": "f9de51dcd6f65655b0202240b2bb48f6856be0e3aadcedfabd3f8606aa4e4142",
+      "mutantSha256": "3e122a9a90552899f8a154707a330ab69305c73b87a87dd205d9867dd89103ec",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "frozen-keys",
+      "file": "convex/authority/migration.ts",
+      "test": "ops/authority/migration.test.ts",
+      "originalSha256": "d42fd64f6a70e4cf3ee686cd10f21c44dc2b19d595fcba69bbc01a1f43a8bdff",
+      "mutantSha256": "4841d2ed42cfe266aef695ea90a18a55fb9bdb18b09ee52901fbe91bfc1a56c8",
+      "exitCode": 1,
+      "caught": true
+    },
+    {
+      "name": "explicit-inbox-audience",
+      "file": "convex/authority/inbox.ts",
+      "test": "ops/authority/inbox.test.ts",
+      "originalSha256": "e58244c4ad9ff91ce53b37d0af24fbadccdf50a787cbc85ebc09e1edbc7052e4",
+      "mutantSha256": "bd4ed61ce28cfd9940acbb07f0a4d8093d9dc9e1535c9e049f778eb2bbc0d6fa",
+      "exitCode": 1,
+      "caught": true
+    }
+  ]
+}

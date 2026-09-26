@@ -1,0 +1,44 @@
+{
+  "phase": "before",
+  "level": "SERVICE filesystem marker; not native asset API or full restore",
+  "capturedAt": "2026-09-25T05:58:30.682Z",
+  "fixture": "e36df213-6fbf-4f0d-bb69-b031f4e4ef4a",
+  "originalMarkerSha256": "a7e5029dd6497222bd448c7bc163f9e13dd329896679aeb9f84ebd834f53004c",
+  "originalMarkerPresent": true,
+  "probe": "remold-marketing-proof-media-probe-before-61a65416",
+  "id": "e7a9d9151ea458dd45f7a87971435125e250e03b3e5144b46f06d6036fe88985",
+  "image": "mautic/mautic@sha256:0b7b0351980d061887fdffd2499f2566c5ecfd28d262f1abdf3ee1bbde24db05",
+  "network": "none",
+  "probeExitCode": 1,
+  "retained": false,
+  "declaredMounts": [
+    {
+      "name": "remold-marketing-proof-media-b",
+      "destination": "/var/www/html/docroot/media"
+    }
+  ],
+  "actualMounts": [
+    {
+      "name": "remold-marketing-proof-media-b",
+      "destination": "/var/www/html/docroot/media"
+    },
+    {
+      "name": "c474bfebae37fde46105c608bb83dee289c74a8078a278686df86ed1838b13b1",
+      "destination": "/var/www/html/var/logs"
+    },
+    {
+      "name": "1f71ae8ab4abb2e4a2ea0d0f1faefec27b69cb28cc6cc75a81c537ed7161bfc9",
+      "destination": "/var/www/html/config"
+    },
+    {
+      "name": "3648be67b2c5f859181eff9bdfe06d0b98beb824235f3b90875cd71bf7ea2f04",
+      "destination": "/var/www/html/docroot/media/files"
+    },
+    {
+      "name": "32026bc1cbf5b07a97caae2c04b02dc2f04760996b85218619e161751164f655",
+      "destination": "/var/www/html/docroot/media/images"
+    }
+  ],
+  "webContainerUnchangedDuringProbe": true,
+  "probeRetainedForReview": true
+}

@@ -1,0 +1,246 @@
+{
+  "pass": true,
+  "level": "SERVICE local Convex; SIM message pages/contacts",
+  "results": [
+    {
+      "name": "Completed cursor and known messages survive actual backend SIGKILL/restart",
+      "before": {
+        "cursor": "200",
+        "messages": [
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          }
+        ],
+        "paused": false,
+        "pending": null
+      },
+      "after": {
+        "cursor": "200",
+        "messages": [
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          }
+        ],
+        "paused": false,
+        "pending": null
+      }
+    },
+    {
+      "name": "Failed partial page and changed/gapped replay cannot advance cursor or expose partial messages",
+      "snapshot": {
+        "cursor": "200",
+        "messages": [
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          }
+        ],
+        "paused": false,
+        "pending": {
+          "count": 3,
+          "id": "partial",
+          "pages": 1
+        }
+      }
+    },
+    {
+      "name": "Restart resumes staged traversal; known IDs deduplicate; unknown and ambiguous addresses stay unmatched",
+      "before": {
+        "cursor": "200",
+        "messages": [
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          }
+        ],
+        "paused": false,
+        "pending": {
+          "count": 3,
+          "id": "partial",
+          "pages": 1
+        }
+      },
+      "after": {
+        "cursor": "300",
+        "messages": [
+          {
+            "contact": null,
+            "from": "ambiguous@example.invalid",
+            "id": "ambiguous",
+            "text": "Synthetic text ambiguous"
+          },
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          },
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "new",
+            "text": "Synthetic text new"
+          },
+          {
+            "contact": "contact-1",
+            "from": " KNOWN@EXAMPLE.INVALID ",
+            "id": "normalized",
+            "text": "Synthetic text normalized"
+          },
+          {
+            "contact": null,
+            "from": "nobody@example.invalid",
+            "id": "unmatched",
+            "text": "Synthetic text unmatched"
+          }
+        ],
+        "paused": false,
+        "pending": null
+      }
+    },
+    {
+      "name": "Concurrent duplicate commits once; next traversal uses completed cursor; identities remain mailbox-local",
+      "concurrent": [
+        "committed",
+        "duplicate"
+      ],
+      "first": {
+        "cursor": "400",
+        "messages": [
+          {
+            "contact": null,
+            "from": "ambiguous@example.invalid",
+            "id": "ambiguous",
+            "text": "Synthetic text ambiguous"
+          },
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          },
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "new",
+            "text": "Synthetic text new"
+          },
+          {
+            "contact": "contact-1",
+            "from": " KNOWN@EXAMPLE.INVALID ",
+            "id": "normalized",
+            "text": "Synthetic text normalized"
+          },
+          {
+            "contact": null,
+            "from": "nobody@example.invalid",
+            "id": "unmatched",
+            "text": "Synthetic text unmatched"
+          }
+        ],
+        "paused": false,
+        "pending": null
+      },
+      "second": {
+        "cursor": "200",
+        "messages": [
+          {
+            "contact": null,
+            "from": "nobody@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          }
+        ],
+        "paused": false,
+        "pending": null
+      }
+    },
+    {
+      "name": "History expiry durably pauses across restart, preserving completed cursor and refusing implicit resync",
+      "snapshot": {
+        "cursor": "400",
+        "messages": [
+          {
+            "contact": null,
+            "from": "ambiguous@example.invalid",
+            "id": "ambiguous",
+            "text": "Synthetic text ambiguous"
+          },
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "known",
+            "text": "Synthetic text known"
+          },
+          {
+            "contact": "contact-1",
+            "from": "known@example.invalid",
+            "id": "new",
+            "text": "Synthetic text new"
+          },
+          {
+            "contact": "contact-1",
+            "from": " KNOWN@EXAMPLE.INVALID ",
+            "id": "normalized",
+            "text": "Synthetic text normalized"
+          },
+          {
+            "contact": null,
+            "from": "nobody@example.invalid",
+            "id": "unmatched",
+            "text": "Synthetic text unmatched"
+          }
+        ],
+        "paused": true,
+        "pending": null
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "start": 1,
+      "pid": 72232,
+      "at": "2026-09-24T23:46:34.511Z",
+      "ready": true,
+      "stopSignal": "SIGKILL"
+    },
+    {
+      "start": 2,
+      "pid": 72616,
+      "at": "2026-09-24T23:46:35.868Z",
+      "ready": true,
+      "stopSignal": "SIGKILL"
+    },
+    {
+      "start": 3,
+      "pid": 72622,
+      "at": "2026-09-24T23:46:36.927Z",
+      "ready": true,
+      "stopSignal": "SIGKILL"
+    },
+    {
+      "start": 4,
+      "pid": 72628,
+      "at": "2026-09-24T23:46:38.008Z",
+      "ready": true
+    }
+  ],
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-mail-import-0v9h30",
+  "providerCalls": 0,
+  "mailSends": 0,
+  "calendarWrites": 0,
+  "privateFilesUnchanged": true,
+  "protectedFilesPresent": 7,
+  "protectedFilesAbsent": 0,
+  "rootEnvironmentUnchanged": true
+}

@@ -1,0 +1,250 @@
+{
+ "8890a8cc57c7f5f944dc51e30b46ab83158ce6fe81a0c6605c15ef0377ac871a": {
+  "bridge": {
+   "state": "delivered",
+   "hash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+   "forwardRawHash": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+   "deliveryRow": {
+    "hash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+    "receipt": {
+     "intent": "8890a8cc57c7f5f944dc51e30b46ab83158ce6fe81a0c6605c15ef0377ac871a",
+     "hash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+     "rawSha256": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+     "sender": "synthetic-sender@example.invalid",
+     "recipient": "synthetic-c559419e@example.invalid",
+     "bytes": 1313
+    }
+   }
+  },
+  "h0": {
+   "state": "confirmed",
+   "payloadContent": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+   "receipts": [
+    {
+     "providerRef": "local-mime-sink:2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+     "usage": 0
+    }
+   ]
+  },
+  "receiver": {
+   "storedHash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+   "storedRawSha": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+   "recomputedBlobSha": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+   "blobBytes": 1313,
+   "pythonHash": "8dd11b353edd0195b1c0a301c38519f9c5d9810eb9be62d7fa81537c3da62120",
+   "pythonRawSha": "2fd391b484b024eaaae756d003d41416f7deca2857e9ae00e7402d039af0f1b9",
+   "pythonError": null,
+   "hiddenChosenDelimiterInPlain": false,
+   "blobEqualsWorkerTransportProbe": false,
+   "blobEqualsQueuedProbe": false
+  },
+  "receiverAttempts": [
+   "accepted",
+   "refused",
+   "refused",
+   "refused",
+   "refused",
+   "refused",
+   "refused",
+   "duplicate-refused"
+  ],
+  "captureKinds": [
+   "native-log",
+   "message-stamped",
+   "queue-observed",
+   "transport-observed",
+   "transport-accepted"
+  ],
+  "probeStages": []
+ },
+ "da1138fefd77d55fe00aebf61439e711ce3540764bf8affc5db0184623bb2ca8": {
+  "bridge": {
+   "state": "delivered",
+   "hash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+   "forwardRawHash": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+   "deliveryRow": {
+    "hash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+    "receipt": {
+     "intent": "da1138fefd77d55fe00aebf61439e711ce3540764bf8affc5db0184623bb2ca8",
+     "hash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+     "rawSha256": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+     "sender": "synthetic-sender@example.invalid",
+     "recipient": "synthetic-a836a1a5@example.invalid",
+     "bytes": 1342
+    }
+   }
+  },
+  "h0": {
+   "state": "confirmed",
+   "payloadContent": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+   "receipts": [
+    {
+     "providerRef": "local-mime-sink:d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+     "usage": 0
+    }
+   ]
+  },
+  "receiver": {
+   "storedHash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+   "storedRawSha": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+   "recomputedBlobSha": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+   "blobBytes": 1342,
+   "pythonHash": "b61070ec836fe478bc2a12f49e98c2d9395878aa56df7c5c36ac9982b3516971",
+   "pythonRawSha": "d7d077233f69c99ecf89bb615c7e4e38e3d24eb48d9debcac79a0c8ab12ba2e2",
+   "pythonError": null,
+   "hiddenChosenDelimiterInPlain": true,
+   "blobEqualsWorkerTransportProbe": true,
+   "blobEqualsQueuedProbe": false
+  },
+  "receiverAttempts": [
+   "accepted"
+  ],
+  "captureKinds": [
+   "native-log",
+   "message-stamped",
+   "queue-observed",
+   "transport-observed",
+   "transport-accepted"
+  ],
+  "probeStages": [
+   "queued",
+   "transport"
+  ]
+ },
+ "f548701a14fbe214860c7000d9aea3b1be1c3f43fa06b6fd9f20b6d04fa71bde": {
+  "bridge": {
+   "state": "consumed",
+   "hash": "42f3b2ba800679917ca27dbd9fec3259a0689b77ca2fea777e0c23e8c5f72a92",
+   "forwardRawHash": null,
+   "deliveryRow": null
+  },
+  "h0": {
+   "state": "outcomeUnknown",
+   "payloadContent": "42f3b2ba800679917ca27dbd9fec3259a0689b77ca2fea777e0c23e8c5f72a92",
+   "receipts": []
+  },
+  "receiver": null,
+  "receiverAttempts": [],
+  "captureKinds": [
+   "native-log",
+   "message-stamped",
+   "queue-observed",
+   "transport-observed",
+   "transport-unconfirmed",
+   "transport-observed",
+   "transport-unconfirmed",
+   "transport-observed",
+   "transport-unconfirmed",
+   "transport-observed",
+   "transport-unconfirmed"
+  ],
+  "probeStages": [
+   "queued",
+   "transport",
+   "transport",
+   "transport",
+   "transport"
+  ]
+ },
+ "4d99d1e8dc4d979b813b41bcce395dbf2376dd44b6ebc841e5f2fe936fb9e329": {
+  "bridge": {
+   "state": "sealed",
+   "hash": "1dd842308e7ffe3ac6a60dc68046c338a0bb3f7dd16520b68c4878cfdf537f90",
+   "forwardRawHash": null,
+   "deliveryRow": null
+  },
+  "h0": {
+   "state": "approved",
+   "payloadContent": "1dd842308e7ffe3ac6a60dc68046c338a0bb3f7dd16520b68c4878cfdf537f90",
+   "receipts": []
+  },
+  "receiver": null,
+  "receiverAttempts": [],
+  "captureKinds": [
+   "native-log",
+   "message-stamped",
+   "queue-observed",
+   "fixture-subject-mutated",
+   "transport-observed",
+   "transport-unconfirmed",
+   "fixture-subject-mutated",
+   "transport-observed",
+   "transport-unconfirmed",
+   "fixture-subject-mutated",
+   "transport-observed",
+   "transport-unconfirmed",
+   "fixture-subject-mutated",
+   "transport-observed",
+   "transport-unconfirmed"
+  ],
+  "probeStages": [
+   "queued",
+   "transport",
+   "transport",
+   "transport",
+   "transport"
+  ]
+ },
+ "977fcaf16e7df01003675cb53d04869da0564596a91d1e36a1b45ae64d84ced2": {
+  "bridge": {
+   "state": "delivered",
+   "hash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+   "forwardRawHash": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+   "deliveryRow": {
+    "hash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+    "receipt": {
+     "intent": "977fcaf16e7df01003675cb53d04869da0564596a91d1e36a1b45ae64d84ced2",
+     "hash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+     "rawSha256": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+     "sender": "synthetic-sender@example.invalid",
+     "recipient": "synthetic-20515124@example.invalid",
+     "bytes": 1313
+    }
+   }
+  },
+  "h0": {
+   "state": "confirmed",
+   "payloadContent": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+   "receipts": [
+    {
+     "providerRef": "synthetic-conflicting-receipt",
+     "usage": 0
+    }
+   ]
+  },
+  "receiver": {
+   "storedHash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+   "storedRawSha": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+   "recomputedBlobSha": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+   "blobBytes": 1313,
+   "pythonHash": "b73f2d4580043572ec8933e66f24a3446a19fc06f88319d01896a233b035b352",
+   "pythonRawSha": "d79edb0b251109780d9cd8748f6c26143c9d75b7bf8724ec7dbb1587bd98a147",
+   "pythonError": null,
+   "hiddenChosenDelimiterInPlain": false,
+   "blobEqualsWorkerTransportProbe": false,
+   "blobEqualsQueuedProbe": true
+  },
+  "receiverAttempts": [
+   "accepted"
+  ],
+  "captureKinds": [
+   "native-log",
+   "message-stamped",
+   "queue-observed",
+   "transport-observed",
+   "transport-unconfirmed",
+   "transport-observed",
+   "transport-unconfirmed",
+   "transport-observed",
+   "transport-unconfirmed",
+   "transport-observed",
+   "transport-unconfirmed"
+  ],
+  "probeStages": [
+   "queued",
+   "transport",
+   "transport",
+   "transport"
+  ]
+ }
+}

@@ -1,0 +1,34 @@
+{
+  "result": "**Verdict: PASS (SANDBOX, staging previews only).** I checked both previews independently in the browser. I'm not the builder.\n\nBoth PR3 (`954bdfb`) and PR4 (`31c8434`) pass every criterion. Each check below was confirmed by reading the page or the tab's URL after the action, not by trusting that a click was sent:\n\n| Criterion | PR3 | PR4 |\n|---|---|---|\n| Hosted build matches the exact PR head (read-only curl and gh, extra check only) | PASS | PASS |\n| Sign-in reaches its own workspace | PASS | PASS |\n| Company list shows only its own fixture: 1 row, the other color's fixture absent | PASS | PASS |\n| A real reload keeps the session and the record | PASS | PASS |\n| Logout lands on the preview's own origin | PASS | PASS |\n| Reload after logout stays signed out | PASS | PASS |\n| Signed-out record link returns to that same record after a full AuthKit and Google login | PASS | PASS |\n\n**What actually ran:**\n- I used only the canonical `cdp.py` driver, with its own policy and its own new tab for each PR, PR3 first, then PR4. Every call passed the target, the account label and that run's four allowed origins. No unknown origin appeared.\n- I proved each reload was real: a marker I set in the page was gone afterward, and the browser reported the navigation as a reload.\n- I took each record link from the Companies row in the app, not from a guessed route.\n- **The first sign-in on each preview needed no Google prompt**, because an existing staging AuthKit session was reused. The record-link check came after a real logout, so it went through the AuthKit login page and Google's account chooser. There I picked only the account the app had just been signed in with.\n- I read no cookie, token, storage or auth network values and no page bodies. The published evidence contains no email or other account details.\n\n**Not run:** the I1 audit, any provider cleanup, deploy or create, closing PR3, recipe work, any settings or data writes, the marketing and pricing pages, and a browser check with third-party cookies blocked. This check doesn't certify authorization across tenants and makes no full I2 or production claim.\n\n**Resources:** both preview tabs are still open and signed in on their records. I didn't touch the three unrelated tabs that were already open.\n\n**Files:**\n- In `evidence/2026-09-25-preview-browser-iv/`: `report.html` (from the shared template) and `verdict.json`, with before, after, source and effect for each criterion.\n- Raw probe output is in the private folder `/tmp/remold-preview-browser-opus-EYAD2U` (only my user account can read it).\n- I added one entry to `decisions.jsonl`.\n- I didn't commit anything, because the working tree holds a lot of uncommitted builder work and your script writes `review-response.json` after I finish.\n\n**Needs your input:** nothing for this check. Whether to go ahead with the separately gated PR3 cleanup is still your call.",
+  "is_error": false,
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 3394,
+      "outputTokens": 20,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0034939999999999997,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5-5": {
+      "inputTokens": 102,
+      "outputTokens": 27186,
+      "cacheReadInputTokens": 2439290,
+      "cacheCreationInputTokens": 72544,
+      "webSearchRequests": 0,
+      "costUSD": 1.6123380000000007,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 2645,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "verdict": "APPROVE bounded actual-provider same-sender fixture",
+  "reviewer": "c0_verifier",
+  "operator": "root",
+  "sourceFiles": 34,
+  "sourceAggregate": "c29dfab5c14e841ce38d31d702a54bc6ecea5063a9b3284b892dd7ee45722fa9",
+  "manifestSha256": "01a580dc765cf53ade7556b4eec2442f26f248cc7f446de0a902fb1a3ab65db6",
+  "planSha256": "37e76789aea0bf39348e3f03324ee21070395596e13737630ba44c74a823a025",
+  "terminalEvidenceSha256": "0c54a259cb95c85283edd26c915d2b5b5c79a16cec6f9041b073840e4e3a8b1d",
+  "rootExit": 0,
+  "observationFromSequenceStartMs": 540007,
+  "rootWallElapsedMs": 541708.614,
+  "qAcceptanceGapsMs": [
+    120609,
+    120691
+  ],
+  "PfollowupCutoff": [
+    {
+      "name": "P2",
+      "at": 1790296061120,
+      "denied": true
+    },
+    {
+      "name": "P3",
+      "at": 1790296181849,
+      "denied": true
+    }
+  ],
+  "ledgerPreviousPrefixPreserved": true,
+  "ledgerSha256": "e2a7dadcd794412ce9ab3297342268f17ebe11aa043b08330f8688dcbd0e408e",
+  "currentReservations": [
+    {
+      "name": "P1",
+      "from": "shakur@envoylogic.com",
+      "to": "reply@repliedfor.com",
+      "receipt": {
+        "name": "P1",
+        "reservationId": "237331e2-1fab-416a-b433-3232acedeab3-P1",
+        "contentHash": "eb9d6b05c556f5845e31c421a4a7fa39cc9269462f1d8de672fcaee1714a091f",
+        "providerRef": "1a0d5f41cfb04f61",
+        "thread": "1a0d5f41cfb04f61",
+        "acceptedAt": 1790295940598,
+        "actualMessageId": "<CANeROf4kPzMkp8OKbpshtwYJ7iU_-jeKQTNTJELmsw2dbCzyOA@mail.gmail.com>"
+      },
+      "reservation": {
+        "kind": "reservation",
+        "at": 1790295939869,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-P1",
+        "from": "shakur@envoylogic.com",
+        "to": "reply@repliedfor.com",
+        "contentHash": "eb9d6b05c556f5845e31c421a4a7fa39cc9269462f1d8de672fcaee1714a091f"
+      },
+      "outcome": {
+        "kind": "outcome",
+        "at": 1790295940599,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-P1",
+        "status": "accepted"
+      }
+    },
+    {
+      "name": "Q1",
+      "from": "shakur@envoylogic.com",
+      "to": "shakur@codemyvibe.com",
+      "receipt": {
+        "name": "Q1",
+        "reservationId": "237331e2-1fab-416a-b433-3232acedeab3-Q1",
+        "contentHash": "7a01f012da4e3a74b3d20a844af71993263158edd1dcc6d9c86f0a41fe91b09f",
+        "providerRef": "1a0d5f41e2194e11",
+        "thread": "1a0d5f41e2194e11",
+        "acceptedAt": 1790295941067,
+        "actualMessageId": "<CANeROf7UD9Qb1BcKgA1uqbkZxOqWHGAy0CrnmKudLLqb6s+n0g@mail.gmail.com>"
+      },
+      "reservation": {
+        "kind": "reservation",
+        "at": 1790295940759,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-Q1",
+        "from": "shakur@envoylogic.com",
+        "to": "shakur@codemyvibe.com",
+        "contentHash": "7a01f012da4e3a74b3d20a844af71993263158edd1dcc6d9c86f0a41fe91b09f"
+      },
+      "outcome": {
+        "kind": "outcome",
+        "at": 1790295941068,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-Q1",
+        "status": "accepted"
+      }
+    },
+    {
+      "name": "reply-P",
+      "from": "reply@repliedfor.com",
+      "to": "shakur@envoylogic.com",
+      "receipt": {
+        "name": "reply-P",
+        "reservationId": "237331e2-1fab-416a-b433-3232acedeab3-reply-P",
+        "contentHash": "ec50a4f43f8aaf3e1fb2d815e371b8fb474b70385edc48b8068189759e05565a",
+        "providerRef": "<remold-p5-237331e2-1fab-416a-b433-3232acedeab3-reply-P@repliedfor.com>",
+        "acceptedAt": 1790295962082
+      },
+      "reservation": {
+        "kind": "reservation",
+        "at": 1790295961617,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-reply-P",
+        "from": "reply@repliedfor.com",
+        "to": "shakur@envoylogic.com",
+        "contentHash": "ec50a4f43f8aaf3e1fb2d815e371b8fb474b70385edc48b8068189759e05565a"
+      },
+      "outcome": {
+        "kind": "outcome",
+        "at": 1790295962082,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-reply-P",
+        "status": "accepted"
+      }
+    },
+    {
+      "name": "Q2",
+      "from": "shakur@envoylogic.com",
+      "to": "shakur@codemyvibe.com",
+      "receipt": {
+        "name": "Q2",
+        "reservationId": "237331e2-1fab-416a-b433-3232acedeab3-Q2",
+        "contentHash": "7db71515ad915dbad9c2c56e5d1bbcbc9e3c7b8dfbc58b237c8f01d509c1de3e",
+        "providerRef": "1a0d5f5f76c1995e",
+        "thread": "1a0d5f41e2194e11",
+        "acceptedAt": 1790296061676,
+        "actualMessageId": "<CANeROf4H4kGevkbHRcAodmJbYJmVWnThz3jH0jnNCq1KhOkdUA@mail.gmail.com>"
+      },
+      "reservation": {
+        "kind": "reservation",
+        "at": 1790296061147,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-Q2",
+        "from": "shakur@envoylogic.com",
+        "to": "shakur@codemyvibe.com",
+        "contentHash": "7db71515ad915dbad9c2c56e5d1bbcbc9e3c7b8dfbc58b237c8f01d509c1de3e"
+      },
+      "outcome": {
+        "kind": "outcome",
+        "at": 1790296061677,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-Q2",
+        "status": "accepted"
+      }
+    },
+    {
+      "name": "Q3",
+      "from": "shakur@envoylogic.com",
+      "to": "shakur@codemyvibe.com",
+      "receipt": {
+        "name": "Q3",
+        "reservationId": "237331e2-1fab-416a-b433-3232acedeab3-Q3",
+        "contentHash": "c65427634799d569a44c41bb4e9d37935d0dd08aa471a0489a34679f2d1b8c8f",
+        "providerRef": "1a0d5f7cceabd811",
+        "thread": "1a0d5f41e2194e11",
+        "acceptedAt": 1790296182367,
+        "actualMessageId": "<CANeROf51aijWyiAPG1mSKZ_gP3TrHSgT+Q93xPHNR1VY=uTpgw@mail.gmail.com>"
+      },
+      "reservation": {
+        "kind": "reservation",
+        "at": 1790296181877,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-Q3",
+        "from": "shakur@envoylogic.com",
+        "to": "shakur@codemyvibe.com",
+        "contentHash": "c65427634799d569a44c41bb4e9d37935d0dd08aa471a0489a34679f2d1b8c8f"
+      },
+      "outcome": {
+        "kind": "outcome",
+        "at": 1790296182367,
+        "id": "237331e2-1fab-416a-b433-3232acedeab3-Q3",
+        "status": "accepted"
+      }
+    }
+  ],
+  "rolling24hAtTerminal": {
+    "shakur@envoylogic.com": 5,
+    "reply@repliedfor.com": 5,
+    "shakur@codemyvibe.com": 0
+  },
+  "independentCReceiptReads": 3,
+  "reviewProviderWrites": 0,
+  "calendarCalls": 0,
+  "sourceUnchanged": true,
+  "remaining": [
+    "Product integration and two-browser timeline not established",
+    "Provider history/watch/reconnect not established",
+    "H0 SERVICE uses synthetic identities; no production authorization certification",
+    "Metadata receipt checks do not independently compare message-body bytes",
+    "Whole P5 remains open"
+  ],
+  "evidenceAttribution": "Root executed LIVE sends/P1 and reply receive checks and local H0 SERVICE; c0 independently read exact C metadata and replayed local terminal evidence assertions. No send rerun."
+}

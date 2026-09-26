@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>H0 contract harness repair evidence</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>H0 contract harness: second review repairs</h1><div class="meta">2026-09-24T18:49:08.160Z · SERVICE local Convex / SIM provider, identity and read surfaces · builder evidence, awaiting independent verification</div>
+<div class="decisions"><h2>Review gate</h2><p>No owner account, sign-in or spending decision is needed. Root, Fable, Opus and the independent verifier must review the revised source. The previous da267 manifest was blocked by independent cancellation failures and Opus D1–D5. Its conditional approval does not carry forward. H0 and dependent I1 are not declared integrated by this report.</p><p><strong>Current manifest:</strong> <code>9a316dc7d28ecf127c83b566f6ddb384b3d6bc80fadc24425dd79c199cb41cdf</code>. This includes package.json as requested.</p></div>
+<div class="status"><h2>Built and exercised</h2><p><code>pnpm --dir proofs/contract proof</code> exited 0 with <strong>29 passing behavioral groups</strong> on a real anonymous Convex backend. <code>pnpm --dir proofs/contract typecheck</code> exited 0. Actual transactional claim/budget races, provider-boundary lifecycle changes, callback dedup and server-scheduled crash expiry use this local backend. Provider acceptance, provider credentials/finality, identity sessions and read facades are explicitly SIM.</p><p>Ten behavior assertions failed against the blocked implementation before editing. Three later negative controls removed the object filter, grantor-epoch check and adapter cancellation signal; all three assertions failed. The corrected full replay then passed.</p></div>
+<h2>Before and after</h2><table><tr><th>Blocked behavior / proof gap</th><th>Repaired behavior and evidence</th></tr>
+<tr><td>Cancel intent vanished through retryable rejection, unknown absence, unconsumed expiry and model continuation. Independent replay obtained new permits.</td><td>Durable cancelRequestedAt forbids every new claim and permit regardless of transient state. All four transitions are exercised; known stops release once, unknown provisional outcomes remain reserved. A pre-issued tail is recorded truthfully as confirmed/late with a cancellation event.</td></tr>
+<tr><td>D1: over-budget actual usage was thrown away; queued work could dispatch while another op's usage was missing; no per-call remaining limit.</td><td>Full actual usage is recorded once per step receipt. Overrun sets a visible anomaly and pauses the run/new org spend. Final permit checks missing usage and remaining exposure; permit/consume return maxUnits and maxRecipients. A human must clear an anomaly.</td></tr>
+<tr><td>D2: firing plus an absent lookup discarded the consumed fence and released its reservation, so a delayed acceptance could not be recorded.</td><td>A bounded consumed-permit ledger accepts truthful old outcomes; step receipts deduplicate cost. Provisional absence retains unknown exposure when authority is gone. Final absence is explicit adapter/operator evidence, never a fabricated timer. A late result after final release records cost and anomaly without decrementing active/reserved twice.</td></tr>
+<tr><td>D3: callback suppression targeted one hard-coded fixture recipient.</td><td>Each binding resolves its local recipient. Signed/pulled observation supplies channel and purpose. Two contacts in A and a same-ID binding in B prove only the intended consent row changes.</td></tr>
+<tr><td>D4: adapters could not observe cancellation intent.</td><td>A scoped adapterStatus query returns state and cancel. Fire/cancel produces cancel:true; B's adapter is refused. A false-signal mutation fails the new probe.</td></tr>
+<tr><td>D5: recovery required the crashed adapter to call expiry.</td><td>Permit issuance schedules internal expiry at permit and lease deadlines. With no adapter call, an unconsumed permit expires safely and a consumed crash becomes outcomeUnknown; another bounded operation can then obtain the free permit slot.</td></tr>
+<tr><td>T1/T2: a record-ID whitelist hid a missing object-filter test, and manager downgrade was not exercised for descendants.</td><td>A person/records:all scope excludes invoices. Specific manager-grant revocation removes descendant queued/model/read rights while independent human grants survive. Removing each enforcing check makes its probe fail.</td></tr>
+<tr><td>Continuation could restart a confirmed operation or lose per-step provider references.</td><td>Receipts preserve each step reference. A confirmed missing-usage receipt can settle but cannot resume continuation. Same step/ref repeats do not charge twice; conflicting refs return a durable structured refusal plus an anomaly hold.</td></tr></table>
+<h2>Current passing replay groups</h2><table><tr><th>Behavior</th><th>Level/result</th></tr><tr><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Per-run/global spend and global concurrency caps bound both tenants</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Provisioning durable intents preserve delete-before/create-before races</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Durable cancellation survives rejection, absence, expiry and model continuation</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Scoped adapter sees cancellation signal and records one late accepted tail</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Late consumed outcome settles once after provisional or final absent lookup</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Per-call remaining exposure, missing usage and actual overruns fence final dispatch</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Conflicting provider reference refuses durably and holds spend without rolling back anomaly</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Per-recipient and per-purpose suppression never changes another contact or tenant</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Server scheduler recovers adapter crashes without a callback or manual expiry call</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr><tr><td>Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives</td><td>Builder PASS · SERVICE backend / SIM provider and identity</td></tr></table><h2>Accounting and finality contract</h2><p>An operation keeps its original maximum reservation in op.reserved and records actual cumulative usage in op.usage. Tenant/global reserved totals track remaining exposure, while spent increases once when an authoritative step receipt gains usage. release() reads the latest operation and returns only remaining exposure and one active slot; released prevents a second decrement. A result arriving after release still records actual spend, holds the org with an anomaly and preserves the late result.</p><p>resolveUnknown requires finality: provisional or final. A still-authorized provisional lookup may retry the same logical step key; cancelled/revoked provisional work stays unknown and reserved. Final means a scoped adapter or human operator asserts provider lookup is closed, releases once, and forbids re-sending that step. Each provider proof must establish its real finality/idempotency guarantee; this fake adapter's assertion is not provider certification. There is no invented elapsed-time finality.</p>
+<h2>API changes for independent replay</h2><pre>permit(...) returns { ..., expires, maxUnits, maxRecipients }
+consume({token,id,version,binding,fence,step,worker})
+  // omit expires/maxUnits/maxRecipients from input; output returns current bounds
+adapterStatus({token,id,fence,step}) → {state,cancel}
+resolveUnknown({token,id,fence,step,absent:true,
+                finality:'provisional'|'final'})
+control({token,suppress:true,recipient:'recipient-Y'})
+callback observation: {version,state,channel:'email',purpose:'marketing'}
+reconcile conflict → {accepted:false,error:'provider result collision'}
+  // refusal returns rather than throwing, so the anomaly remains committed
+control({token:humanOwnerSession,clearAnomaly:true})</pre>
+<h2>What this does not certify</h2><ul><li>Real product history, reports, files, REST/MCP or UI are not implemented by the SIM facades. I1 must use the shared projector and repeat these cases against the real surfaces.</li><li>Real identity, session expiry, human roles, provider signature protocols, provider finality/idempotency, token/duration enforcement and physical stream termination remain their named proof/build jobs. H0 now supplies the cancellation signal and per-call bounds those adapters need.</li><li>Readonly cancellation, exports and truthful reconciliation are covered. The live G-pay collection/refund allowlist remains deferred to I7 and the commercial gate, as root and IV explicitly reconciled. No readonly-refund proof is claimed here.</li><li>No real email, social post, payment or model call occurred. Numeric units, recipients and amounts are synthetic fixtures, not prices or provider capacity claims.</li></ul>
+<h2>Reproduce and review</h2><p>From the repository after root pnpm dependencies are installed: <code>pnpm --dir proofs/contract proof</code>. The isolated proof uses ports 3410/3411, its own schema/env/local database, an OS-environment allowlist and a three-minute timeout. The wrapper ends its backend group after replay. It never invokes the main app's Convex deployment. Backend used: precompiled-2026-09-21-0cf49cb, Convex dependency 1.46.0.</p><p>The blocked source/report/hashes are preserved under evidence/blocked-da267. New raw evidence is red-review2.log, red-review2-mutations.log, green.log, results.json and fixture-export.json. The source and fixture SHA256 values below identify this exact candidate. The independent verifier must rerun collision, race, cancellation, finality and scheduler probes; builder results do not certify H0.</p><h2>Integrity</h2><pre>{
+  &quot;convex/contract.ts&quot;: &quot;242fcef24a579bd244266a082d7f3c576286729b286337bcde90d53d10751f59&quot;,
+  &quot;convex/schema.ts&quot;: &quot;61275c1bfae3661f7dfa4e9079ec8f1cefce17fb42f1f068bbaefa03d29cd3f8&quot;,
+  &quot;convex/harness.ts&quot;: &quot;c3ada5ac770cdd1486b1ade1e08e9cfc9e4758cecd6c15acc42a0c888bfd861e&quot;,
+  &quot;replay.mjs&quot;: &quot;9e6ff924b49f0f35653c469eb451141ab9e8c767fe97eac0e1e7d23ba2459c42&quot;,
+  &quot;run.mjs&quot;: &quot;eef5a7f4c92e3f101868b2d6ac5e586fc2caaf69d7589862263d0ab79413ae65&quot;,
+  &quot;package.json&quot;: &quot;9c1eb499a14dd5461924f662250b146bb51f12f170cf269be8422214172a00d2&quot;
+}
+fixture-export SHA256 aedc758d208777c59d52638a49791b8a59e995c7ffcb737a624479d195e95398</pre><details><summary>Before edits: ten behavior reds</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:37:31 Convex functions ready! (688.57ms)
+RED D1 authoritative usage above reservation is recorded and pauses spend Error: [Request ID: ed3f024dc5835c30] Server Error
+Uncaught Error: usage exceeds reservation
+    at deny (../convex/harness.ts:6:58)
+    at handler (../convex/harness.ts:289:67)
+
+RED D1 missing usage blocks already-queued final permit AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED D1 remaining exposure exhausted blocks next model permit AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED D2 accepted consumed tail remains recordable after absence and firing Error: [Request ID: 2839e048bcc07320] Server Error
+Uncaught Error: stale/unpermitted outcome
+    at deny (../convex/harness.ts:6:58)
+    at handler (../convex/harness.ts:285:12)
+
+RED D3 callback on unrelated contact does not suppress literal fixture recipient AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+true !== false
+
+RED D5 server recovers consumed crash without adapter calling expire AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ &#x27;dispatching&#x27;
+- &#x27;outcomeUnknown&#x27;
+
+RED durable cancel rejection AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED durable cancel absence AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED durable cancel expiry AssertionError [ERR_ASSERTION]: Missing expected rejection.
+RED durable cancel continue AssertionError [ERR_ASSERTION]: Missing expected rejection.
+D4 status API is absent; no missing-function failure is counted as a behavior red. T1/T2 will get negative mutation controls.
+10 actual behavior reds
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Negative controls: three mutation reds</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:46:59 Convex functions ready! (871.26ms)
+RED T1 removing object check leaks invoice through records-all person grant AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
+    {
+      public: &#x27;visible A&#x27;
+    },
++   {
++     public: &#x27;invoice A&#x27;
++   }
+  ]
+
+RED T2 removing grantor epoch check leaves descendant reads after manager downgrade AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   {
++     public: &#x27;visible A&#x27;
++   },
++   {
++     public: &#x27;invoice A&#x27;
++   }
++ ]
+- []
+
+RED D4 a false cancellation signal is detected by adapter-status probe AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+3 mutation behavior reds
+Command `node replay.mjs` exited with code 1
+[ELIFECYCLE] Command failed with exit code 1.
+</pre></details><details><summary>Corrected complete replay</summary><pre>$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:48:09 Convex functions ready! (777.61ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+PASS Model continuation rechecks authority, step/fence and remaining exposure
+PASS Expired unconsumed permits retry safely; consumed crash becomes unknown
+PASS Unknown authoritative absence never resends after firing; terminal rejection releases reservation
+PASS Authoritative absence and retryable rejection preserve logical key and revalidate new permits
+PASS Material edits, audience, currency and approval expiry invalidate immutable snapshot
+PASS Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly
+PASS Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship
+PASS Provisioning durable intents preserve delete-before/create-before races
+PASS Partial traversal commits only full checkpoints and later traversal resumes without regression
+PASS Durable cancellation survives rejection, absence, expiry and model continuation
+PASS Scoped adapter sees cancellation signal and records one late accepted tail
+PASS Late consumed outcome settles once after provisional or final absent lookup
+PASS Per-call remaining exposure, missing usage and actual overruns fence final dispatch
+PASS Conflicting provider reference refuses durably and holds spend without rolling back anomaly
+PASS Per-recipient and per-purpose suppression never changes another contact or tenant
+PASS Server scheduler recovers adapter crashes without a callback or manual expiry call
+PASS Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives
+H0 SERVICE replay: 29 behavioral groups PASS; fixture SHA256 aedc758d208777c59d52638a49791b8a59e995c7ffcb737a624479d195e95398
+</pre></details><p>Checked by H0 builder. Exact-hash approvals and independent verification are pending. HTML structure checked; rendered layout has not been independently inspected.</p></body></html>

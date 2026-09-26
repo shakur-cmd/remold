@@ -1,0 +1,8 @@
+2026-09-25T05:08:25Z phase0 DONE: 57/57 source hashes + aggregate a0b59a92 match before runs; three test deltas read (strict strengthening). Cap 47/128.
+2026-09-25T05:08:32Z phase1 PASS: verify-runtime exit0, verify-installed exit0 (12 hashes).
+2026-09-25T05:09:30Z phase2 PASS: probe exit0; independent check 1 queued + 2 worker attempts, 3 distinct raw hashes, same sealed hash JS+Python, 0 effect.
+2026-09-25T05:12:47Z phase3 PASS: proof:mime exit0 (11/11 unit, 3 native faults, receiver 6 mutations+dup, boundary collision+native control, installed). Direct readbacks consistent.
+2026-09-25T05:16:28Z phase4 PASS: pnpm test exit0, 7 original groups PASS.
+2026-09-25T05:21:10Z phase5 PASS: proof:reliability exit0, 6/6 cases; direct readbacks for lost-response, receiver-lost-response, concurrent show 1 receiver POST.
+2026-09-25T05:22:17Z phase6 PASS: typecheck exit0, verify-runtime exit0, verify-installed exit0, 57/57 + aggregate unchanged; local delta mutants caught. Writing verdict.
+2026-09-25T05:22:51Z DONE: BOUNDED PASS. verdict.json + report.html written. Top-level evidence overwritten by runners; root to restore (pre-run copies in pre-run-top-level/).

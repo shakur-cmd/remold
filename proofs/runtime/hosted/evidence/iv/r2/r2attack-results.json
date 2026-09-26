@@ -1,0 +1,161 @@
+{
+  "runId": "r2f0a377",
+  "image": "remold-p6-hostile:468d0344f1ef",
+  "at": "2026-09-26T15:02:02.682Z",
+  "target": "89bf0a5",
+  "results": [
+    {
+      "name": "org kill in the apply window never applies output: 50 trials, varied timing",
+      "status": "PASS",
+      "ms": 68349,
+      "evidence": {
+        "trials": 50,
+        "leaks": 0
+      }
+    },
+    {
+      "name": "readonly fired concurrently (racing the settle txn) never yields a phantom or double output",
+      "status": "PASS",
+      "ms": 52513,
+      "evidence": {
+        "applied": 0,
+        "blocked": 40,
+        "of": 40
+      }
+    },
+    {
+      "name": "duplicate and concurrent settle for one op apply at most once and bill once",
+      "status": "PASS",
+      "ms": 1410,
+      "evidence": {
+        "firstApplied": true,
+        "replays": [
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "outputs": 1,
+        "spent": 4
+      }
+    },
+    {
+      "name": "replay with a different providerRef is a collision, not a second apply or bill",
+      "status": "PASS",
+      "ms": 2002,
+      "evidence": {
+        "collide": {
+          "accepted": false,
+          "applied": false,
+          "cancelled": true,
+          "underreport": false,
+          "usage": 4
+        },
+        "outputs": 1,
+        "spent": 4,
+        "anomaly": "provider result collision"
+      }
+    },
+    {
+      "name": "usage floor: under-report billed at meter and not applied; over-report bills reported, overruns, not applied; honest applies",
+      "status": "PASS",
+      "ms": 4173,
+      "evidence": {
+        "under": {
+          "billed": 4,
+          "applied": false,
+          "anomaly": "usageUnderreport",
+          "usage": 4
+        },
+        "over": {
+          "billed": 999,
+          "applied": false,
+          "overrun": true,
+          "anomaly": "usageOverrun",
+          "usage": 999
+        },
+        "honest": {
+          "applied": true,
+          "usage": 4,
+          "outputs": 1
+        }
+      }
+    },
+    {
+      "name": "missing usage still holds the tenant even though settle now floors usage at the meter",
+      "status": "PASS",
+      "ms": 1163,
+      "evidence": {
+        "missing": {
+          "tenant": "A",
+          "id": "jh72wgax7t2n618aask8mry8qn8f4gv8",
+          "mode": "noUsage",
+          "units": 2,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 2,
+          "exitAt": 1790434911510,
+          "tokens": 2,
+          "providerRef": "stub:remold-p6-r2f0a377-A-1",
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        },
+        "next": {
+          "tenant": "A",
+          "id": "jh7cah4gd7ac84dx6xj9e025kh8f57st",
+          "mode": "normal",
+          "units": 1,
+          "applied": false,
+          "refused": "[Request ID: b92e91d03fe549bc] Server Error\nUncaught Error: usage unresolved\n    at deny (../convex/harness.ts:7:58)\n    at handler (../convex/harness.ts:346:33)\n"
+        }
+      }
+    },
+    {
+      "name": "revocation mid-run kills within the bound and applies nothing, across 6 trials",
+      "status": "PASS",
+      "ms": 9244,
+      "evidence": {
+        "latenciesMs": [
+          102,
+          99,
+          95,
+          117,
+          101,
+          96
+        ]
+      }
+    },
+    {
+      "name": "global kill via disable() before the apply is sent applies nothing and waits for in-flight",
+      "status": "PASS",
+      "ms": 1253,
+      "evidence": {
+        "r": {
+          "tenant": "A",
+          "id": "jh7axa5xkzdnaj8s6gr6mynxnx8f475y",
+          "mode": "normal",
+          "units": 4,
+          "applied": false,
+          "fence": 1,
+          "step": 1,
+          "maxUnits": 4,
+          "exitAt": 1790434921843,
+          "tokens": 4,
+          "providerRef": "stub:remold-p6-r2f0a377-A-1",
+          "usage": 4,
+          "accepted": true,
+          "late": false,
+          "overrun": false,
+          "underreport": false,
+          "cancelledBeforeReconcile": false
+        }
+      }
+    }
+  ]
+}

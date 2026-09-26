@@ -1,0 +1,31 @@
+$ node run.mjs
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3410 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3410
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 14:25:14 Convex functions ready! (708.45ms)
+PASS A/B known-ID isolation, server-derived actors and full binding tuple collision
+PASS Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation
+PASS Explicit manage lists cannot authorize firing or regranting an ancestor
+PASS Direct mode executes without human approval; propose mode and invalidated direct grant refuse
+PASS Delegation ancestry revokes queued/read/model paths while independent human grant survives
+PASS Read scopes restrict object/records/fields and every SIM surface has a leakable shape
+PASS Final permit rechecks expired authority without a sweep and honors schedule
+PASS Before-permit fire refuses; after-permit fire preserves one late outcome
+PASS Scoped adapter cannot permit, consume, reconcile, callback or provision in B
+PASS Lost acceptance response reconciles once; missing usage blocks cheaper new spend
+PASS Concurrent logical calls/claims and org budget reservations serialize on real backend
+PASS Per-run/global spend and global concurrency caps bound both tenants
+PASS Model continuation rechecks authority, step/fence and remaining exposure
+PASS Expired unconsumed permits retry safely; consumed crash becomes unknown
+PASS Unknown authoritative absence never resends after firing; terminal rejection releases reservation
+PASS Authoritative absence and retryable rejection preserve logical key and revalidate new permits
+PASS Material edits, audience, currency and approval expiry invalidate immutable snapshot
+PASS Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly
+PASS Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship
+PASS Provisioning durable intents preserve delete-before/create-before races
+PASS Partial traversal commits only full checkpoints and later traversal resumes without regression
+H0 SERVICE replay: 21 behavioral groups PASS; fixture SHA256 123919706ac12d0e20fe7c8870927a311d947ef8dfc4a7b4446117c97254bea1

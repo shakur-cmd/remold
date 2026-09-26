@@ -1,0 +1,12 @@
+{
+  "task": "remold-workos-test-setup",
+  "outcome": "Configure Remold development AuthKit email and Google sign-in in the user signed-in test environment, without production cutover",
+  "allowedOrigins": [
+    "https://dashboard.workos.com"
+  ],
+  "accountLabel": "Shakur signed-in WorkOS account",
+  "risk": "development identity configuration; no billing, deletion or production changes",
+  "target": "11ECCB3B4730A63C2ECDA4AF9B4361BA",
+  "authorization": "User requested full implementation, reported WorkOS Chrome sign-in; preserve production state",
+  "maxIrreversibleCommitPerRun": 1
+}

@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 1 failed) 1129ms
+   × suggestion lists and the agent summary ignore any number of hidden pending suggestions 39ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:11
+   Duration  1.46s (tests 72%, transform 17%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > suggestion lists and the agent summary ignore any number of hidden pending suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:129:101
+    127|   const agent = await f.client.action(api.agents.createScoped, { orgId…
+    128|   await grant(f, agent.agentId, company.object._id, [mine], Object.val…
+    129|   expect(((await rest(f.t, agent.key)('GET', '/api/v1/suggestions')).j…
+       |                                                                                                     ^
+    130|   expect((await rest(f.t, agent.key)('GET', '/api/v1/me')).json.pendin…
+    131| }, 60000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

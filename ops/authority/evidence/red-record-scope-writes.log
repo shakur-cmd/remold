@@ -1,0 +1,50 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/masks.test.ts (3 tests | 1 failed) 198ms
+   × record-bounded human scope cannot create outside it or delete hidden fields 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/masks.test.ts > record-bounded human scope cannot create outside it or delete hidden fields
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "eventId": "00000000000000000000010053events",
++   "recordId": "0000000000000000000010052records",
+  }
+
+ ❯ ops/authority/masks.test.ts:39:165
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/masks.test.ts > record-bounded human scope cannot create outside it or delete hidden fields
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "eventId": "00000000000000000000010054events",
++   "recordId": "0000000000000000000010048records",
+  }
+
+ ❯ ops/authority/masks.test.ts:40:106
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  16:38:50
+   Duration  372ms (tests 67%, transform 23%, import 9%, worker 1%)
+

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>H0 independent verification: REVISE</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body><h1>H0 independent verification: REVISE</h1><div class="meta">2026-09-24 · independent reviewer: /root/c0_verifier · frozen revision reviewed</div>
+<div class="decisions"><h2>Decision</h2><p>Do not approve H0 or unblock I1 on this revision. Four recovery paths permit another dispatch after cancellation. Accepted in-flight results also lose the cancellation distinction. Repair, refreeze, then repeat independent and formal shape reviews. No owner input is needed for these corrections.</p></div>
+<div class="status"><h2>Proven</h2><p>Independent rerun of all 21 builder groups passed. Six additional adversarial groups passed on real local Convex. Five additional checks failed and block approval. A separate readonly refund probe failed within explicitly deferred finance scope.</p><p>Manifest: <code>da267c64f6eb02fe5938e1c0c66217d92f4614fa51385dd1f6a9158eb4309d22</code>. Source hashes were independently recomputed before replay and the frozen scratch copy was rechecked afterward. Canonical proof files were not modified by this reviewer.</p></div>
+<h2>Before and independent challenge</h2><table><tr><th>Baseline</th><th>Independent result on same revision</th></tr><tr><td>Builder suite: 21 of 21 passed.</td><td>Retryable rejection, authoritative absence, unconsumed expiry and model continuation each change cancellationPending to queued, then successfully issue a fresh dispatch permit.</td></tr><tr><td>Existing revocation and bounded-tail cases passed.</td><td>An already-issued permit consumed after cancellation settles confirmed with late:false and a plain confirmed audit after cancellationRequested.</td></tr></table>
+<p>Passing cases exercise new tenant/account/resource-kind ID collisions; delegated grant revocation on both sides of the permit; competing permits plus consent change; model reservation overrun rejection and missing usage; stale worker fencing; and eight concurrent claims across two tenants sharing global caps. These checks change inputs and race schedules rather than merely repeat builder assertions.</p>
+<h2>Detailed replay</h2><table><tr><th>Behavior</th><th>Result</th><th>Evidence</th></tr><tr><td>New external/event ID collisions remain separated by tenant account and resource kind</td><td>PASS</td><td>Independent behavior assertion passed.</td></tr><tr><td>Delegated grant revoked on either side of permit produces refusal or one late result</td><td>PASS</td><td>Independent behavior assertion passed.</td></tr><tr><td>Concurrent permits stay bounded and post-claim suppression blocks the losing dispatch</td><td>PASS</td><td>Independent behavior assertion passed.</td></tr><tr><td>Model overrun rejects atomically and unknown usage keeps reservation until exact total settles</td><td>PASS</td><td>Independent behavior assertion passed.</td></tr><tr><td>Old worker cannot permit or reconcile after lease expiry and new claim</td><td>PASS</td><td>Independent behavior assertion passed.</td></tr><tr><td>Eight real concurrent claims keep both tenant and global caps</td><td>PASS</td><td>Independent behavior assertion passed.</td></tr><tr><td>Cancellation survives provider rejection without a new permit</td><td>FAIL</td><td>AssertionError [ERR_ASSERTION]: Cancellation must never authorize another provider attempt; observed queued
+
+true !== false
+</td></tr><tr><td>Cancellation survives provider absence without a new permit</td><td>FAIL</td><td>AssertionError [ERR_ASSERTION]: Cancellation must never authorize another provider attempt; observed queued
+
+true !== false
+</td></tr><tr><td>Cancellation survives unconsumed expiry without a new permit</td><td>FAIL</td><td>AssertionError [ERR_ASSERTION]: Cancellation must never authorize another provider attempt; observed queued
+
+true !== false
+</td></tr><tr><td>Cancellation survives model continuation without a new permit</td><td>FAIL</td><td>AssertionError [ERR_ASSERTION]: Cancellation must never authorize another provider attempt; observed queued
+
+true !== false
+</td></tr><tr><td>Accepted pre-cancel permit tail is recorded as completed after cancellation</td><td>FAIL</td><td>AssertionError [ERR_ASSERTION]: Accepted in-flight tail must retain canceled status in outcome
+
+false !== true
+</td></tr><tr><td>C5 readonly permits explicitly authorized refund safety operation</td><td>FAIL</td><td>Deferred finance probe, not H0 acceptance blocker.</td></tr></table>
+<h2>Limits and reproduction</h2><p>SERVICE means a real isolated local Convex backend, database, mutations and HTTP requests. Identities, provider adapters, signatures, provider behavior and read-surface fixtures are SIM. This does not certify production, real AuthKit, real provider cancellation, product UI/API masking or finance. The handover explicitly assigns finance to P4/I7/I11. Opus formal findings are additional independent acceptance work.</p><p>All reviewer writes are within this evidence directory. The isolated runner uses ports 3410/3411; both are now released. Run the frozen proof launcher with the independent replay script in an isolated copy, preserving its local-target guard. No live service data was touched.</p><p>The tail check correctly fails on late:false. Its console event list used the wrong resource field and printed an empty list; <a href="cancellation-tail-evidence.json">tail evidence</a> is extracted from the preserved export using the correct events.resource field. <a href="independent-next.mjs">Next replay script</a> corrects that evidence-only selector; <a href="independent.mjs">executed script</a> is preserved unchanged.</p>
+<h2>Evidence</h2><p><a href="verdict.json">Machine-readable verdict and SHA256 evidence hashes</a> · <a href="reviewed-manifest.json">Reviewed source manifest</a> · <a href="builder-replay-results.json">Builder suite replay</a> · <a href="independent-results.json">Independent results</a> · <a href="independent-final-replay.log">Run log</a> · <a href="independent-fixtures.json">Database export</a></p><p>No repaired after-state is claimed. This is the red evidence to compare with the next frozen revision.</p></body></html>

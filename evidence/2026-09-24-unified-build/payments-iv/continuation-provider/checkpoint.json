@@ -1,0 +1,428 @@
+{
+  "status": "PASS bounded read-only continuation1 checkpoint",
+  "reviewer": "c0_verifier",
+  "at": "2026-09-24T23:38:34.617Z",
+  "level": "SANDBOX actual Stripe GET responses",
+  "runId": "3f7c6229-f345-4b59-8b6a-971208c4efe7-manual-continuation-1",
+  "originalEvidenceSha256": "65a23a4e2d933e9aae8e6fe690691015be3f62eea501d8f3792e74ff0a0a2d9d",
+  "guard": {
+    "account": "acct_1UJHeKJjT84hNemU",
+    "livemode": false
+  },
+  "rows": [
+    {
+      "name": "A",
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "customer": "cus_VJzrZTORGay5Lp",
+      "testMode": true,
+      "originalMetadataMatches": true,
+      "syntheticEmailMatches": true,
+      "balance": 0,
+      "cashBalanceEmpty": true,
+      "inventory": {
+        "invoices": {
+          "count": 1,
+          "ids": [
+            "in_1UJM6fJL8hhTtG1oZ5396711"
+          ],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        },
+        "invoiceitems": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        },
+        "payment_intents": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        },
+        "charges": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        },
+        "subscriptions": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        },
+        "setup_intents": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        },
+        "balance_transactions": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzrZTORGay5Lp"
+        }
+      }
+    },
+    {
+      "name": "B",
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "customer": "cus_VJzr8q1ZtrR81v",
+      "testMode": true,
+      "originalMetadataMatches": true,
+      "syntheticEmailMatches": true,
+      "balance": 0,
+      "cashBalanceEmpty": true,
+      "inventory": {
+        "invoices": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        },
+        "invoiceitems": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        },
+        "payment_intents": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        },
+        "charges": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        },
+        "subscriptions": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        },
+        "setup_intents": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        },
+        "balance_transactions": {
+          "count": 0,
+          "ids": [],
+          "complete": true,
+          "customerScope": "cus_VJzr8q1ZtrR81v"
+        }
+      }
+    }
+  ],
+  "invoice": {
+    "account": "acct_1UJIndJL8hhTtG1o",
+    "fields": {
+      "id": {
+        "present": true,
+        "value": "in_1UJM6fJL8hhTtG1oZ5396711"
+      },
+      "customer": {
+        "present": true,
+        "value": "cus_VJzrZTORGay5Lp"
+      },
+      "status": {
+        "present": true,
+        "value": "draft"
+      },
+      "livemode": {
+        "present": true,
+        "value": false
+      },
+      "collection_method": {
+        "present": true,
+        "value": "send_invoice"
+      },
+      "auto_advance": {
+        "present": true,
+        "value": false
+      },
+      "currency": {
+        "present": true,
+        "value": "usd"
+      },
+      "total": {
+        "present": true,
+        "value": 0
+      },
+      "amount_due": {
+        "present": true,
+        "value": 0
+      },
+      "amount_paid": {
+        "present": true,
+        "value": 0
+      },
+      "amount_remaining": {
+        "present": true,
+        "value": 0
+      },
+      "starting_balance": {
+        "present": true,
+        "value": 0
+      },
+      "amount_overpaid": {
+        "present": true,
+        "value": 0
+      },
+      "application_fee_amount": {
+        "present": false,
+        "value": null
+      },
+      "transfer_data": {
+        "present": false,
+        "value": null
+      },
+      "application": {
+        "present": true,
+        "value": "ca_VJwFj4FcjohaD0wjZKB5vJcllH0TPDnD"
+      },
+      "on_behalf_of": {
+        "present": true,
+        "value": null
+      },
+      "issuer": {
+        "present": true,
+        "value": {
+          "type": "self"
+        }
+      },
+      "parent": {
+        "present": true,
+        "value": null
+      },
+      "subscription": {
+        "present": false,
+        "value": null
+      }
+    },
+    "lineCount": 0,
+    "linesComplete": true,
+    "continuationMetadataMatches": true,
+    "feeConclusion": "application_fee_amount and transfer_data absent: unobserved, not proof of zero fees"
+  },
+  "receipts": [
+    {
+      "method": "GET",
+      "path": "/v1/account",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_zlVLCdFYFrYd91",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJHeKJjT84hNemU",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_CpqN37hPPJUoJm",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzrZTORGay5Lp",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_TWPuIZ9RX1vE09",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzrZTORGay5Lp/cash_balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_Js0r9e26kq7Stn",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_VG5c5wczgDbcqx",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoiceitems",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_uEb01oeFNqezTp",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_zwbfhDt2o6DzgH",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_4pLTx96F23QuVX",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_TVK1RyAQzYBxhS",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/setup_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_z8MS86rvsALpp1",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzrZTORGay5Lp/balance_transactions",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_4PbjpGQAWOTzmW",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzr8q1ZtrR81v",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_luYF2RTyOy1Cwf",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzr8q1ZtrR81v/cash_balance",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_62QEZkQt8VFxZg",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_88fcbVRuefpOn9",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoiceitems",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_eRuGu3DwI6qupV",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payment_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_aoOHsDLVdg4vmy",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/charges",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_Sci5uhPN1DKTQp",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/subscriptions",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_zIggd2zVGiPoCk",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/setup_intents",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_OZwBfozTvn2yEW",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/customers/cus_VJzr8q1ZtrR81v/balance_transactions",
+      "responseLossInjected": false,
+      "account": "acct_1UJL2DR59Pk6MTFE",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_wMY34xg5BymoGg",
+      "apiVersion": "2025-05-28.basil"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/invoices/in_1UJM6fJL8hhTtG1oZ5396711",
+      "responseLossInjected": false,
+      "account": "acct_1UJIndJL8hhTtG1o",
+      "idempotencyDigest": null,
+      "httpStatus": 200,
+      "requestId": "req_h1ciTkgsD0V4Tl",
+      "apiVersion": "2025-05-28.basil"
+    }
+  ],
+  "limits": "Exact two customers only. No mutations, local backend, private journal access or continuation replay. Whole P4 remains incomplete."
+}

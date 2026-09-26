@@ -1,0 +1,178 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-epsvTM[39m
+
+ [31m❯[39m ops/authority/inbox.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 135[2mms[22m[39m
+[31m   [31m×[31m a new scoped agent sees its own inbox rows and counts, not unshared human text[39m[32m 103[2mms[22m[39m
+[31m   [31m×[31m an agent cannot resolve an unreadable inbox row or attach an unreadable record[39m[32m 13[2mms[22m[39m
+[31m   [31m×[31m sharing requires deliberate human choice plus a separate current agent entitlement[39m[32m 6[2mms[22m[39m
+[31m   [31m×[31m masked agents lose shared text and restricted humans cannot publish or widen shared inbox authority[39m[32m 9[2mms[22m[39m
+[31m   [31m×[31m old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes[39m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[90m (5)[39m
+[2m   Start at [22m 10:16:01
+[2m   Duration [22m 252ms[2m (tests 67%, transform 24%, import 8%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/inbox.test.ts[2m > [22ma new scoped agent sees its own inbox rows and counts, not unshared human text
+[31m[1mAssertionError[22m: expected [ …(2) ] to deeply equal [ '0000000000000000010051agentInbox' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[31m+   "0000000000000000010050agentInbox",[39m
+[2m    "0000000000000000010051agentInbox",[22m
+[2m  ][22m
+
+[36m [2m❯[22m ops/authority/inbox.test.ts:[2m8:80[22m[39m
+    [90m  6|[39m   await f.client.mutation(api.inbox.add, { orgId: f.orgId, text: 'Unsh…
+    [90m  7|[39m   const own = await call('POST', '/api/v1/inbox', { text: 'My own work…
+    [90m  8|[39m   expect.soft((await call('GET', '/api/v1/inbox')).json.map((r: any) =…
+    [90m   |[39m                                                                                [31m^[39m
+    [90m  9|[39m   expect.soft((await call('GET', '/api/v1/me')).json.pendingInbox).toB…
+    [90m 10|[39m });
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/inbox.test.ts[2m > [22ma new scoped agent sees its own inbox rows and counts, not unshared human text
+[31m[1mAssertionError[22m: expected 2 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 2[39m
+
+[36m [2m❯[22m ops/authority/inbox.test.ts:[2m9:68[22m[39m
+    [90m  7|[39m   const own = await call('POST', '/api/v1/inbox', { text: 'My own work…
+    [90m  8|[39m   expect.soft((await call('GET', '/api/v1/inbox')).json.map((r: any) =…
+    [90m  9|[39m   expect.soft((await call('GET', '/api/v1/me')).json.pendingInbox).toB…
+    [90m   |[39m                                                                    [31m^[39m
+    [90m 10|[39m });
+    [90m 11|[39m it('an agent cannot resolve an unreadable inbox row or attach an unrea…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/inbox.test.ts[2m > [22man agent cannot resolve an unreadable inbox row or attach an unreadable record
+[31m[1mAssertionError[22m: expected 200 to be 404 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 404[39m
+[31m+ 200[39m
+
+[36m [2m❯[22m ops/authority/inbox.test.ts:[2m14:83[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/inbox.test.ts[2m > [22msharing requires deliberate human choice plus a separate current agent entitlement
+[31m[1mAssertionError[22m: expected [ { …(10) }, { …(10) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "createdAt": 1790345761262.002,[39m
+[31m+     "from": {[39m
+[31m+       "kind": "user",[39m
+[31m+       "name": "A",[39m
+[31m+     },[39m
+[31m+     "id": "0000000000000000010050agentInbox",[39m
+[31m+     "note": null,[39m
+[31m+     "recordId": null,[39m
+[31m+     "resolvedAt": null,[39m
+[31m+     "source": "api",[39m
+[31m+     "status": "pending",[39m
+[31m+     "suggestionId": null,[39m
+[31m+     "text": "Explicit shared work",[39m
+[31m+   },[39m
+[31m+   {[39m
+[31m+     "createdAt": 1790345761262.003,[39m
+[31m+     "from": {[39m
+[31m+       "kind": "user",[39m
+[31m+       "name": "A",[39m
+[31m+     },[39m
+[31m+     "id": "0000000000000000010051agentInbox",[39m
+[31m+     "note": null,[39m
+[31m+     "recordId": null,[39m
+[31m+     "resolvedAt": null,[39m
+[31m+     "source": "api",[39m
+[31m+     "status": "pending",[39m
+[31m+     "suggestionId": null,[39m
+[31m+     "text": "Not shared by default",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m ops/authority/inbox.test.ts:[2m23:53[22m[39m
+    [90m 21|[39m   const shared = await f.client.mutation(api.inbox.add, { orgId: f.org…
+    [90m 22|[39m   await f.client.mutation(api.inbox.add, { orgId: f.orgId, text: 'Not …
+    [90m 23|[39m   expect((await call('GET', '/api/v1/inbox')).json).toEqual([]);
+    [90m   |[39m                                                     [31m^[39m
+    [90m 24|[39m   await f.client.mutation(api.agents.setSharedInbox, { orgId: f.orgId,…
+    [90m 25|[39m   expect((await call('GET', '/api/v1/inbox')).json.map((r: any) => r.i…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/inbox.test.ts[2m > [22mmasked agents lose shared text and restricted humans cannot publish or widen shared inbox authority
+[31m[1mAssertionError[22m: expected [ { …(10) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "createdAt": 1790345761268.002,[39m
+[31m+     "from": {[39m
+[31m+       "kind": "user",[39m
+[31m+       "name": "A",[39m
+[31m+     },[39m
+[31m+     "id": "0000000000000000010052agentInbox",[39m
+[31m+     "note": null,[39m
+[31m+     "recordId": null,[39m
+[31m+     "resolvedAt": null,[39m
+[31m+     "source": "api",[39m
+[31m+     "status": "pending",[39m
+[31m+     "suggestionId": null,[39m
+[31m+     "text": "Explicit shared work",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m ops/authority/inbox.test.ts:[2m37:53[22m[39m
+    [90m 35|[39m   await f.client.mutation(api.inbox.add, { orgId: f.orgId, text: 'Expl…
+    [90m 36|[39m   await f.client.mutation(anyApi['authority/policies'].setAgentMasks, …
+    [90m 37|[39m   expect((await call('GET', '/api/v1/inbox')).json).toEqual([]);
+    [90m   |[39m                                                     [31m^[39m
+    [90m 38|[39m   const memberId = await f.t.run(async ctx => (await ctx.db.query('mem…
+    [90m 39|[39m   await f.client.mutation(anyApi['authority/policies'].setMember, { or…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/inbox.test.ts[2m > [22mold inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes
+[31m[1mAssertionError[22m: expected [ …(2) ] to deeply equal [ '0000000000000000010050agentInbox' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "0000000000000000010050agentInbox",[22m
+[31m+   "0000000000000000010051agentInbox",[39m
+[2m  ][22m
+
+[36m [2m❯[22m ops/authority/inbox.test.ts:[2m53:75[22m[39m
+    [90m 51|[39m   });
+    [90m 52|[39m   await f.t.run(ctx => ctx.db.insert('agentInbox', { orgId: f.orgId, t…
+    [90m 53|[39m   expect((await call('GET', '/api/v1/inbox')).json.map((r: any) => r.i…
+    [90m   |[39m                                                                           [31m^[39m
+    [90m 54|[39m   await f.t.mutation(anyApi['authority/migration'].migrateAgent, { age…
+    [90m 55|[39m   expect((await call('GET', '/api/v1/inbox')).json.map((r: any) => r.i…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+

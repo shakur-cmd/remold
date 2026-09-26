@@ -1,0 +1,36 @@
+{
+  "verdict": "PASS",
+  "scope": "Bounded Remold P2 capture/callback SERVICE slice only (16-file candidate). Not P2 completion, not I1, not CRM applyChange integration, not engine selection, not production or LIVE.",
+  "checkedBy": "Fresh Claude Opus 5.5 verifier session (claude-opus-5-5), not the builder. No delegation.",
+  "checkedAt": "2026-09-25",
+  "sourceAggregateSha256": "85863e6c5e1b2af65f211dc70b2db546760cf11bd97289901c3062d5d7419e80",
+  "sourceUnchanged": {"capture16": true, "publishing10": true, "tenants7": true, "mime57": true, "priorCaptureEvidence31": true},
+  "commands": [
+    {"cmd": "node --test proofs/marketing/capture/receiver.test.mjs", "exit": 0, "result": "3/3 pass"},
+    {"cmd": "node --test capture/receiver.test.mjs mime.test.mjs mime-oracle.test.mjs mime-sink.test.mjs publishing/server.test.mjs (cwd proofs/marketing)", "exit": 0, "result": "20/20 pass"},
+    {"cmd": "node proofs/marketing/capture/run.mjs independent-first --callback-outage", "exit": 0, "result": "PASS; 3 real backend SIGKILL restarts (4 starts); callback-a stopped/started"},
+    {"cmd": "node proofs/marketing/capture/callback-replay.mjs independent-first", "exit": 0, "result": "PASS both tenants; each receiver SIGKILL/restart"}
+  ],
+  "nativeEffects": {
+    "tenantA": {"submissions": [11, 15], "contacts": [170, 174], "emailDnc": ["167", "167,171"], "webhookLogs": [6, 10], "receipts": [2, 3], "queuedEmails": [0, 0], "emailStats": [170, 170], "webhookQueue": [0, 0], "anonymousPageHitsDownloads": "unchanged", "hooksAndWebConfig": "unchanged"},
+    "tenantB": {"allDomainCountersAndDigest": "unchanged", "queuedEmails": [4, 4], "emailStats": [4, 4], "receipts": [1, 1], "onlyChange": "own callback-b receiver restart time"}
+  },
+  "adversarial": {
+    "receiverMutants": {"caught": ["no-hmac-compare", "insert-not-idempotent", "ack-despite-storage-failure", "no-size-cap", "no-content-type-check"], "survivedSuite": ["no-json-object-check", "no-fatal-utf8", "tenant-from-origin-header", "no-duplicate-signature-header-check (equivalent: regex already refuses joined header)"], "originalReceiverProbes": {"jsonArray": 400, "invalidUtf8": 400, "duplicateSignatureHeadersRawSocket": 401, "freshBodyForeignOriginStoredTenant": "a"}},
+    "importerIsolatedCopy": {"ports": "3720/3721 own backend, synthetic rows, no native access", "baselineCases": "28 protection cases behave as intended", "mutantsCaught": ["no-page-gap", "no-tenant-scope", "no-consent-coverage", "blind-replay", "no-missing-suppress"]}
+  },
+  "actualBugsInBoundedSlice": [],
+  "testStrengthFindings": [
+    "Importer has no committed tests for PAGE_GAP, foreign-tenant CAPTURE_SCOPE, REPLAY_CHANGED, TRAVERSAL_IN_PROGRESS or MISSING_CONTACT_MUST_SUPPRESS; run.mjs never sends such inputs. Code is correct under this verifier's isolated harness only.",
+    "Receiver test and callback-replay 'origin cannot change tenant' send the foreign origin only with an already-stored body, so the check cannot fail. Runtime behavior is correct (fresh body stored as tenant a).",
+    "Receiver JSON-object and fatal UTF-8 refusals are correct at runtime but no committed test fails when they are removed."
+  ],
+  "risksBeyondClaims": [
+    "Analysis only, not reproduced: ID-watermark cursor can permanently skip a native submission whose auto-increment ID commits after a higher ID is already visible (concurrent inserts). Must be resolved before any production import claim.",
+    "max100: once 100 captures exist, the 101st finish fails and the finished pending traversal wedges the instance (every new scan TRAVERSAL_IN_PROGRESS). Reproduced in isolated copy.",
+    "Server does not order observations: a later-committed stale 'unsuppressed' observation overwrites a recorded suppression. Reproduced in isolated copy; within the acknowledged read/finalize race boundary.",
+    "Non-ASCII form result keys are refused by Convex validation (fails closed, liveness only)."
+  ],
+  "acknowledgedOpenNotClaimed": ["read/finalize observation race boundary", "100-capture bound", "no installed scheduler or callback consumer", "provider-history rollback", "native existing-email identity overwrite", "no CRM applyChange integration", "native deletion and queue redelivery", "production auth", "rate limits, browser/DNS/TLS, dynamic publishing, backup restore, LIVE delivery", "I1 excluded from this review"],
+  "notDone": ["setup-receivers.mjs, allow-callbacks.mjs, old public host baseline, payment/mail proofs not run (as instructed)", "No mail sent, no email worker, no production or network provider account touched", "Nothing reset or deleted"]
+}

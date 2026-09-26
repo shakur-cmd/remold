@@ -1,0 +1,23 @@
+{
+  "verdict": "APPROVE bounded local financial regression slice",
+  "reviewer": "c0_verifier independent of author i2_release",
+  "sourceFiles": 41,
+  "sourceManifest": "97cbec6399219e43bdf5d1e9c6d836490c645273afd103528cefe441d93052f6",
+  "sourceUnchanged": true,
+  "fullLocalSuiteExit": 0,
+  "typecheckExit": 0,
+  "originalIndependentFailureReplayExit": 0,
+  "newCapacityReplayExit": 0,
+  "freshCapacityCases": 6,
+  "scope": "Financial lifecycle receipt accounting only; no I1 authorization audit or provider writes",
+  "before": "Paid100 callback overwritten by older unpaid pull; void and collection100 permitted",
+  "after": "Stale generation refused; paid100 retained, complete false; void and collection denied",
+  "additional": "Obligation137 outside29 local61 leaves47;47allowed/48refused across held, ack-first and receipt-first. Receipt before acknowledgement retains hold; exact ack permits correct capacity.",
+  "limits": [
+    "Synthetic provider records and local HTTP only",
+    "Actual Stripe status, allocation, ceilings and lifecycle need SANDBOX",
+    "Outside provider changes after a pull remain non-atomic with local permits",
+    "Failed/cancelled collection holds have no automatic release",
+    "Full P4, webhook matrix, production identity, UI and merchant readiness remain open"
+  ]
+}
