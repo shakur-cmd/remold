@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold build: 2026-09-26 session</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Remold build: 2026-09-26 session</h1>
+<div class="meta">2026-09-26 · scope: unified build, branch <code>build/unified-remold-2026-09-24</code> · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<p>Everything after I1 needs I2, and I2 now waits only on you. These unblock the most:</p>
+<ul>
+  <li><b>WorkOS staging:</b> OK to remove the old PR3 preview's callback, CORS and sign-out entries, and turn on email/password for staging (one verification email to an address you own).</li>
+  <li><b>Alerts:</b> pick the channel. Any HTTPS webhook works with no code change (Slack, Discord, ntfy and so on). Also say if a job stuck for 15 minutes is the right alarm point.</li>
+  <li><b>Backups:</b> scheduled backups need Convex Pro. I have not checked its price against your $50 a month infrastructure allowance. Yes or no.</li>
+  <li><b>Previews per pull request:</b> OK to keep Cloudflare and Convex deploy keys as GitHub secrets on the public repo so each PR gets a preview?</li>
+  <li><b>Agents reshaping the CRM (design A1, approved by root, Fable and Opus):</b> propose-only at launch; default limits of 10 changes per proposal and 3 open proposals <i>per grant</i> (the doc says "per agent", which is wrong); two small changes for people (a lookup field with no index slot left is refused; the built-in fields of standard objects can no longer be retired). Yes to all, or say which to change. Building waits for this.</li>
+  <li><b>Still waiting from earlier:</b> AGPL or FSL license, managed tier price, social API connections and test post content, merchant payment policy.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li><b>I1, the authority core, is certified and merged.</b> Five rounds of independent checks by a fresh Opus 5.5 session; each round found real leaks and the builder fixed them. Round 5 passed all four I1 checks at <code>bb8e3ed</code>. Merged with a merge commit as <code>328941c</code>. The merged tree passes typecheck, 73 app tests, 97 authority tests, 19 release tests and the build. Rollback is now refused to anything older than the certified commit.</li>
+  <li><b>Public forms can no longer damage contacts (P2 slice).</b> Before: a form on the marketing engine merged the owner's contact and removed their do-not-contact, and an admin editing a live form brought that back. After: the public form writes to Remold's own store, never to the marketing engine's forms, and a separate job only ever adds new contacts. Independent check round 4 passed. Merged.</li>
+  <li><b>Stripe notifications are recorded exactly once (P4 slice).</b> Signed, bound to the right merchant, survive crashes and replays, pause instead of dropping when a key expires, and a sweep re-reads anything left incomplete. Independent check round 3 passed. Merged. No Stripe calls were made.</li>
+  <li><b>Hosted agent work is isolated and stoppable (P6 slice).</b> With a stub model and no spend: each tenant's worker runs in its own locked-down container, kill switches stop work in under 170 ms, spending caps hold under concurrency, and a result that arrives after a kill is never applied (a race the verifier found went from 8 of 8 to 0 of 50). Independent check round 2 passed. Merged.</li>
+  <li><b>Alerts work locally (I2 alert row).</b> Failed background jobs, server errors and stuck jobs each raise one alert with no customer data in it, plus a resolved notice. It keeps working under heavy load and raises a coverage alert if it falls behind. Independent check round 3 passed. Merged. Delivery to your channel is untested until you pick one, and something outside Remold should watch that the alert check itself keeps running.</li>
+  <li><b>Design A1 for agents reshaping the CRM</b> was approved by Fable 5.1 and a fresh Opus 5.5 after 5 rounds, and its rollback check passed. Nothing built yet; it waits for your answers above.</li>
+  <li><b>Status record</b> (<code>docs/unified-launch/execution.json</code>) brought up to date for I1, I2, P2, P4 and P6.</li>
+</ul>
+</div>
+
+
+<h2>Decisions I made (reversible, logged)</h2>
+<table>
+<tr><th>Decision</th><th>Why</th></tr>
+<tr><td>Fix I1's last small leak instead of asking you to accept it</td><td>The fix used an existing index; certification then needed nothing from you.</td></tr>
+<tr><td>Merge I1 with a merge commit; raise the rollback floor to the certified commit</td><td>A squash would lock every rollback; older I1 revisions have known leaks.</td></tr>
+<tr><td>Public form writes go to Remold's store, not the marketing engine (Astra's advice)</td><td>Removes the whole class of admin-edit damage and deletes code; does not pick the marketing engine.</td></tr>
+<tr><td>Stripe events for a merchant we have not linked are accepted and parked, not refused</td><td>Refusing risks Stripe disabling the endpoint for every merchant.</td></tr>
+<tr><td>No live public form until an abuse gate exists</td><td>The verifier accepted 113 posts a second with no limit. Needed: rate limits, one pending capture per email, a pending cap with alert, and confirmation before a contact is created.</td></tr>
+<tr><td>A1 waits for you (Astra's advice)</td><td>Its approval record names your answers as a gate.</td></tr>
+</table>
+
+<h2>Carried forward</h2>
+<ul>
+  <li>Small I1 follow-on: one audit label (<code>convex/integrations/outcomes.ts:36</code>) does not mark a result late after an org kill. No write gets through; bundle with the A1 build.</li>
+  <li>Contract amendment needed later: hosted runs are cancelled after 2 seconds because the lease cannot be renewed, and the global kill covers one host only.</li>
+  <li>Telemetry drains about 60 records a second locally; sustained traffic above that would back up. Look at before real traffic.</li>
+  <li>None of this is live. Every result above is SERVICE or SIM level on isolated local systems with made-up data.</li>
+</ul>
+
+<h2>Where the evidence is</h2>
+<ul>
+  <li>I1: branch <code>i1/iv-r5-2026-09-26</code>, <code>evidence/2026-09-25-i1/iv-r5/report.html</code></li>
+  <li>P2: branch <code>p2/admission-iv-2026-09-26</code>, <code>proofs/marketing/ownership/evidence/admission/iv/r4/report.html</code></li>
+  <li>P4: <code>proofs/payments/evidence/callback-ingestion/iv/r3/report.html</code></li>
+  <li>P6: <code>proofs/runtime/hosted/evidence/iv/r2/report.html</code></li>
+  <li>I2 alerts: <code>evidence/2026-09-26-i2-alerts/iv/r3/report.html</code></li>
+  <li>A1: <code>docs/unified-launch/h0-amendment-agent-setup.html</code>, reviews and approval in <code>evidence/2026-09-26-coordination/</code></li>
+  <li>Astra's advice: <code>evidence/2026-09-26-coordination/astra-*.txt</code></li>
+</ul>
+<p>Who checked: every "done" item above was checked by a separate verifier session that did not build it. This report itself has not been checked by anyone else.</p>
+</body>
+</html>
