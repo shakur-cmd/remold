@@ -213,7 +213,10 @@
       ],
       "scopeNote": "Owner-local ChatGPT subscription completion and pre-output interruption recorded. Root repeated no-inference preflight/checker. No actual Remold MCP runtime integration, hosted adoption, per-call permit or active-stream/residual usage bound; full P6 open.",
       "evidence": "proofs/runtime/report.html",
-      "frozenManifest": "c53f4bfd778d850e171b1e803fe33dc20e2cb7ad3ce6d2b71833782598473e1d"
+      "frozenManifest": "c53f4bfd778d850e171b1e803fe33dc20e2cb7ad3ce6d2b71833782598473e1d",
+      "verifiedSlices": [
+        "Deterministic hosted-execution proofs, SERVICE/SIM, stub model, no spend: per-tenant Docker sandbox (no network, read-only root, non-root, tenant-only volume, no env secrets) through unchanged H0; kills under 170 ms vs 1500 ms bound; missing cap means zero; concurrent caps hold; atomic status-checked settle (org-kill race 0/50); billing max(meter, reported); missing usage holds tenant. Builder 89bf0a5, IV r2 PASS 077be60 (proofs/runtime/hosted/evidence/iv/r2/report.html). Open: real hosted executor and OS isolation on the real host, provider-authoritative usage metering, renewable lease and cross-host global kill (H0 amendment), provider-side token limits, subscription route, funding gate at zero."
+      ]
     },
     {
       "id": "D0A",
