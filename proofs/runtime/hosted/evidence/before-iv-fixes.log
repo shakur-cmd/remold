@@ -1,0 +1,85 @@
+CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the future.
+▌ Developing against deployment:
+▌ [Local] Port 3810 • No Convex account (run npx convex login to link to a project)
+▌ └─ http://127.0.0.1:3810
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 10:16:30 Convex functions ready! (827.42ms)
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+PASS isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets
+PASS missing cap means zero: no executor cap refuses before any reservation
+PASS concurrent reservations never exceed org or global hard caps
+PASS org kill switch stops the running sandbox within the bound, refuses queued work, leaves the other tenant running
+PASS cancel stops a running sandbox; a result reported after cancel is recorded as late and has no effect
+FAIL an org kill landing just before the result is applied never applies it (8 tries) - applied after org kill: [{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0},{"applied":true,"late":false,"spent":4,"outputs":0}]
++ actual - expected
+
++ [
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   },
++   {
++     applied: true,
++     late: false,
++     outputs: 0,
++     spent: 4
++   }
++ ]
+- []
+
+FAIL a global kill landing just before the result is applied never applies it - {"tenant":"A","id":"jh798jt3dejgzyshf5njg4ddb98f5dca","mode":"normal","units":4,"applied":true,"fence":1,"step":1,"maxUnits":4,"exitAt":1790432209570,"tokens":4,"usage":4,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":false}
+
+true !== false
+
+PASS revoking the agent grant mid-run stops the sandbox within the bound and applies nothing
+FAIL a guest that under-reports usage is billed the executor meter, flagged, and not applied - billed max(meter, reported) {"tenant":"A","id":"jh7c7gp7czkzd5kpmaakve7tvd8f5gex","mode":"underreport","units":4,"applied":true,"fence":1,"step":1,"maxUnits":4,"exitAt":1790432211323,"tokens":4,"usage":1,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":false}
+
+1 !== 4
+
+PASS global kill switch stops every running sandbox within the bound and refuses new runs
+PASS missing usage report fails closed for that tenant only
+PASS token overshoot and duration limits stop the sandbox and fail visibly
+exit=1
