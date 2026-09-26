@@ -6,19 +6,28 @@ import assert from 'node:assert/strict';
 
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mediaType=value=>value.split(';',1)[0].trim().toLowerCase();
+// Server-owned tracking policy. Mautic's ContactTracker returns no contact when Blocked-Tracking is set, so a raw
+// (unmapped) form captures a submission without matching, merging or creating any native contact.
+export const TRACKING_POLICY='raw-capture/blocked-tracking-v1';
+const NATIVE_PRIVACY={Cookie:'Blocked-Tracking=1',DNT:'1','Sec-GPC':'1'};
 export function formToken(config){return createHmac('sha256',config.key).update(JSON.stringify([config.host,config.form])).digest('hex');}
 export function createPublicServer(config){
  assert.match(config.host,/^tenant-[ab]\.marketing-proof\.invalid$/);assert.match(config.key,/^[a-f0-9]{64}$/);assert.ok(Number.isSafeInteger(config.form.id)&&config.form.id>0);
  assert.deepEqual(config.form.fields.map(f=>[f.name,f.type]),[['email','email'],['firstname','text']]);
+ if(config.admission?.policy!==TRACKING_POLICY||config.admission.formId!==config.form.id)throw Error('Form not admitted under the server tracking policy; refusing to serve');
  const upstream=new URL(config.upstream);assert.equal(upstream.protocol,'http:');assert.equal(upstream.username,'');assert.equal(upstream.password,'');assert.equal(upstream.pathname,'/');assert.equal(upstream.search,'');
  const formPath='/form/'+config.form.id,token=formToken(config),cap=8192,responseCap=1048576;
  const reply=(res,status,body,type='text/plain; charset=utf-8')=>{res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"});res.end(body);};
  function native(path,method='GET',body=''){
   return new Promise((resolve,reject)=>{
-   const req=http.request({hostname:upstream.hostname,port:upstream.port||80,path,method,headers:method==='POST'?{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}:{DNT:'1','Sec-GPC':'1'}},res=>{let size=0;const chunks=[];res.on('data',chunk=>{size+=chunk.length;if(size>responseCap)res.destroy(Error('Native response too large'));else chunks.push(chunk);});res.on('error',reject);res.on('end',()=>resolve({status:res.statusCode,type:String(res.headers['content-type']??''),body:Buffer.concat(chunks)}));});
+   const req=http.request({hostname:upstream.hostname,port:upstream.port||80,path,method,headers:method==='POST'?{...NATIVE_PRIVACY,'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}:{DNT:'1','Sec-GPC':'1'}},res=>{let size=0;const chunks=[];res.on('data',chunk=>{size+=chunk.length;if(size>responseCap)res.destroy(Error('Native response too large'));else chunks.push(chunk);});res.on('error',reject);res.on('end',()=>resolve({status:res.statusCode,type:String(res.headers['content-type']??''),body:Buffer.concat(chunks)}));});
    req.setTimeout(10000,()=>req.destroy(Error('Native timeout')));req.on('error',reject);req.end(body);
   });
  }
+ // One native submission at a time: concurrent posts to one form deadlock in Mautic (S->X upgrade on the forms row
+ // for submission_count) and are lost with a 500. A retry could duplicate an ambiguous commit, so serialize instead.
+ let queue=Promise.resolve();
+ const submitNative=body=>{const run=queue.then(()=>native('/form/submit?formId='+config.form.id+'&ajax=1','POST',body));queue=run.catch(()=>{});return run;};
  return http.createServer(async(req,res)=>{
   try{
    const hosts=req.rawHeaders.filter((_,i)=>i%2===0).filter(h=>h.toLowerCase()==='host');
@@ -41,7 +50,7 @@ export function createPublicServer(config){
     const email=values.get('email'),firstname=values.get('firstname')??'';
     if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||firstname.length>100||/[\x00-\x1f\x7f]/.test(firstname))return reply(res,400,'Invalid form values');
     const body=new URLSearchParams({'mauticform[formId]':String(config.form.id),'mauticform[formName]':config.form.name,'mauticform[return]':'','mauticform[email]':email,'mauticform[firstname]':firstname});
-    const result=await native('/form/submit?formId='+config.form.id+'&ajax=1','POST',body.toString());
+    const result=await submitNative(body.toString());
     let accepted;try{accepted=JSON.parse(result.body);}catch{return reply(res,502,'Submission could not be confirmed');}
     if(result.status!==200||mediaType(result.type)!=='application/json'||accepted.success!==1||accepted.errorMessage||accepted.validationErrors)return reply(res,502,'Submission could not be confirmed');
     return reply(res,200,'Submission received');

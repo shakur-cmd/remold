@@ -1,0 +1,47 @@
+12c12
+< const NATIVE_PRIVACY={Cookie:'Blocked-Tracking=1',DNT:'1','Sec-GPC':'1'};
+---
+> const NATIVE_PRIVACY={DNT:'1','Sec-GPC':'1'};
+✔ only the exact host and published paths reach the native service (18.877167ms)
+✔ rendered form token binds tenant, form and published field labels (2.526417ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.172125ms)
+✖ native capture always gets the server tracking block, never the client cookie or tracking headers (3.052333ms)
+✔ native validation failure, redirect and oversized responses cannot report success (8.147084ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before native capture (1.422375ms)
+✔ an edge without an admitted form under the server tracking policy refuses to start (0.328333ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.162375
+
+✖ failing tests:
+
+test at publishing/server.test.mjs:39:1
+✖ native capture always gets the server tracking block, never the client cookie or tracking headers (3.052333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'Blocked-Tracking=1'
+  
+      at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/server.test.mjs:41:36
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async fixture (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/server.test.mjs:14:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'Blocked-Tracking=1',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+FAIL
+a: submission linked to native contact(s) 193,191,192,190
+a: native contacts 185->189, anonymous 25->29
+b: submission linked to native contact(s) 42,41,40
+b: native contacts 35->38, anonymous 19->22

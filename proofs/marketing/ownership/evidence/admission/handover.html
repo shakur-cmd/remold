@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P2 public form admission at the proof edge</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>P2 public form admission at the proof edge</h1>
+<div class="meta">2026-09-26 · scope: proofs/marketing only, SERVICE, isolated local containers (colima-remold-proof), synthetic data · status: builder-run, NOT independently verified, awaiting independent check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>None. The next step is a fresh independent verifier rerunning this, not a decision from you.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (by the builder only)</h2>
+<ul>
+  <li><b>Before:</b> the live proof edge served form 1. Four concurrent posts per tenant merged the owner (A 182 became 186, B 32 became 34), replaced the first name and wiped the email do-not-contact on both tenants. Tenant A also made two contacts for one new email. Evidence: <code>baseline.json</code>.</li>
+  <li><b>After:</b> the edge only publishes a form that passes admission, and it always sends its own <code>Blocked-Tracking=1</code> cookie to Mautic. Four concurrent posts per tenant (two for an existing suppressed owner, two for a new email) were all captured, none were linked to a contact, and the owner's profile and do-not-contact did not change. No contacts were created. Two passing runs: <code>final.json</code>, <code>final-r2.json</code>.</li>
+  <li>Admission refused form 1 and fresh mapped, action-bearing and campaign-linked forms on both tenants, and native counters did not move. A publish of form 1 was refused with both running edges left untouched. The edge refuses to start with a missing, empty or foreign tracking policy.</li>
+  <li>Mutation checks. Removing admission failed the SERVICE run ("form 1 on a was admitted") and 4 unit tests. Removing the tracking cookie failed the SERVICE run (A +4 and B +3 anonymous contacts, every submission linked) and 1 unit test.</li>
+  <li>This closes one P2 gap: public form admission at the proof edge. It does not complete P2 or D0M.</li>
+</ul>
+</div>
+
+<h2>What changed</h2>
+<table>
+<tr><th>File</th><th>Change</th></tr>
+<tr><td><code>publishing/admission.mjs</code> (new)</td><td><code>admissionRefusals(form, campaignLinks)</code> is a pure rule. It refuses a form that is unpublished, is not standalone, has any native action, maps any field (mappedObject, mappedField or leadField), does not have exactly email and firstname, or has a nonzero or unknown <code>campaign_form_xref</code> count. <code>admitForm</code> reads the native form and link count and returns an admission record that carries the server tracking policy.</td></tr>
+<tr><td><code>publishing/setup.mjs</code></td><td>Admits both tenants before stopping or reconfiguring any container. It uses <code>intakeFormsId</code> and falls back to form 1, which is refused. The admission record goes into the edge config.</td></tr>
+<tr><td><code>publishing/server.mjs</code></td><td>(1) Refuses to start unless <code>config.admission.policy</code> equals the server constant and matches the form. (2) Every native form post carries the server-owned <code>Cookie: Blocked-Tracking=1</code>, DNT and Sec-GPC. Client cookies were never forwarded, and they still are not. (3) Native form posts are serialized, one at a time per edge. See the deadlock finding below.</td></tr>
+<tr><td><code>publishing/server.test.mjs</code>, <code>publishing/admission.test.mjs</code></td><td>13 unit tests, all passing. New ones cover the forced tracking cookie over a hostile client cookie, refusal to start without the policy, serialized concurrent posts, and each admission refusal.</td></tr>
+<tr><td><code>ownership/admission-replay.mjs</code> (new)</td><td>A one-shot SERVICE proof. <code>baseline</code> mode posts through whatever edge is deployed. <code>after</code> mode proves the refusals first, then admits and publishes fresh raw forms and posts through them.</td></tr>
+</table>
+
+<h2>Before and after (native Mautic database, per tenant)</h2>
+<table>
+<tr><th>Run</th><th>Edge form</th><th>Accepted / captured</th><th>Linked to contact</th><th>Owner profile + DNC</th><th>Contacts (anon)</th><th>New-email contacts</th></tr>
+<tr><td>baseline A</td><td>1 (mapped)</td><td>4 / 4</td><td>183 to 186</td><td>merged, name replaced, DNC 1 to 0</td><td>179 to 182 (25)</td><td>183, 184 (duplicate)</td></tr>
+<tr><td>baseline B</td><td>1 (mapped)</td><td>4 / 4</td><td>33, 34, 36</td><td>merged, name replaced, DNC 1 to 0</td><td>30 to 32 (19)</td><td>36</td></tr>
+<tr><td>final A</td><td>30 (admitted)</td><td>4 / 4</td><td>none</td><td>unchanged, DNC 1</td><td>191 to 191 (29 to 29)</td><td>none</td></tr>
+<tr><td>final B</td><td>25 (admitted)</td><td>4 / 4</td><td>none</td><td>unchanged, DNC 1</td><td>40 to 40 (22 to 22)</td><td>none</td></tr>
+<tr><td>final-r2 A</td><td>34 (admitted)</td><td>4 / 4</td><td>none</td><td>unchanged, DNC 1</td><td>192 to 192 (29 to 29)</td><td>none</td></tr>
+<tr><td>final-r2 B</td><td>29 (admitted)</td><td>4 / 4</td><td>none</td><td>unchanged, DNC 1</td><td>41 to 41 (22 to 22)</td><td>none</td></tr>
+</table>
+<p>Each run also kept mail queue, email stats and campaign memberships (A 135, B 0) unchanged. The client sent <code>Cookie: mtc_id=&lt;owner id&gt;; Blocked-Tracking=0</code> on every post to try to claim the owner and turn tracking back on. Neither worked.</p>
+
+<h2>Mutation results</h2>
+<table>
+<tr><th>Removed</th><th>SERVICE result</th><th>Unit result</th><th>File</th></tr>
+<tr><td>Admission (<code>admissionRefusals</code> returns [])</td><td>exit 1: "Unsafe existing form 1 form 1 on a was admitted". It stopped before any publish or submission.</td><td>4 of 5 fail</td><td><code>mutation-admission-removed.txt</code>, <code>mut-admission.json</code></td></tr>
+<tr><td>Tracking guard (no <code>Blocked-Tracking=1</code>)</td><td>exit 1: A anonymous 25 to 29, B 19 to 22. Every submission was linked to a new anonymous contact. The owner DNC held.</td><td>1 fails</td><td><code>mutation-tracking-removed.txt</code>, <code>mut-tracking.json</code></td></tr>
+<tr><td>Edge start-time policy check</td><td>not run (unit only)</td><td>1 fails</td><td><code>mutation-edge-policy-check-removed.txt</code></td></tr>
+<tr><td>Submission serialization</td><td>not run (unit only)</td><td>1 fails (max in flight 4, not 1)</td><td><code>mutation-serialization-removed.txt</code></td></tr>
+</table>
+<p>The tracking mutation ran before serialization was added. It tests the cookie, not the queue.</p>
+
+<h2>Finding: concurrent raw posts deadlock inside Mautic</h2>
+<p>The first three after-admission runs (<code>after</code>, <code>after-r2</code>, <code>after-final</code>) did not lose any identity or suppression. But 1 to 2 of every 4 concurrent posts got a Mautic 500. Accepted counts were A 3, 3, 2 and B 3, 4, 3. The edge answered 502 "Submission could not be confirmed", and no row was written. InnoDB shows the cause (<code>deadlock-innodb-a.txt</code>). Two transactions each hold a shared lock on the <code>forms</code> row, which they took for the foreign-key check on the submission insert. Both then wait to upgrade it for <code>UPDATE forms SET submission_count = submission_count + 1</code>, and MySQL rolls one back. Mapped form 1 did not hit this in the baseline, probably because contact matching spreads the transactions out. I did not retry, because a 500 can follow a commit and a retry could duplicate the submission. Instead the edge sends one native post at a time. After that change both final runs accepted 4 of 4. This only holds per edge process. Several edge replicas, or direct posts to Mautic, could still deadlock.</p>
+
+<h2>Still open (not proven here)</h2>
+<ul>
+  <li>Admission runs at publish time. If someone maps a field, adds an action or links a campaign to an admitted form after publishing, the running edge would not notice until the next publish. The edge has no native admin credential by design. A periodic re-admission or a native-side lock is still needed.</li>
+  <li>This proof does not cover campaign decisions that reference a form in event properties, rather than as a source. With a null contact they should not fire, but that is not tested.</li>
+  <li><code>publishing/replay.mjs</code> still posts to <code>/form/1</code> and expects mapped contact creation. Both are now intentionally refused or 404, so that old replay's submission section is superseded by this one and will fail if rerun.</li>
+  <li>Raw capture moves identity resolution into Remold. The importer on raw forms, core Person reconciliation, send-time suppression in Convex, applyChange attribution, the late-ID cursor, stale consent and the 100-capture cap all remain open from earlier P2 reports. P2 and D0M are not complete.</li>
+  <li>Deployed state now: both public edges run server.mjs <code>c9951a8a…9d85</code> and serve admitted raw forms A 34 and B 29. <code>intakeFormsId</code> is recorded in <code>private/publishing/fixtures.json</code>.</li>
+</ul>
+
+<h2>Commands, exits, hashes</h2>
+<pre>cd proofs/marketing
+node ownership/admission-replay.mjs baseline baseline      exit 1 (expected; before any edit to the edge)
+node ownership/admission-replay.mjs after after            exit 1 (deadlock: 3/4 accepted per tenant; identity held)
+node ownership/admission-replay.mjs after-r2 after         exit 0 (interim check allowed 502s; A 3/4, B 4/4)
+node ownership/admission-replay.mjs mut-admission after    exit 1 (admission removed)
+node ownership/admission-replay.mjs mut-tracking after     exit 1 (tracking cookie removed)
+node ownership/admission-replay.mjs after-final after      exit 1 (A 2/4 accepted, deadlock)
+node ownership/admission-replay.mjs final after            exit 0 PASS (serialized edge)
+node ownership/admission-replay.mjs final-r2 after         exit 0 PASS
+REMOLD_PUBLISH_EVIDENCE_DIR=ownership/evidence/admission/ node publishing/read-effects-replay.mjs after   exit 0
+node --test publishing/server.test.mjs publishing/admission.test.mjs   13 pass, 0 fail
+
+sha256 (first 16 hex)
+publishing/server.mjs          c9951a8a96bd10f4  (same inside both public containers)
+publishing/admission.mjs       ab8987aa338c23fc
+publishing/setup.mjs           1135a49bd3fc24a0
+publishing/server.test.mjs     a1ca42f4669aeb51
+publishing/admission.test.mjs  5222a2f0dd334e04
+ownership/admission-replay.mjs a42a43b458dbca35</pre>
+<p>All evidence is in <code>proofs/marketing/ownership/evidence/admission/</code>. The one-shot state for each run is in <code>proofs/marketing/private/admission-&lt;label&gt;/</code> (not committed). Native effects were limited to synthetic forms, one unpublished campaign per tenant per after-run, synthetic contacts with DNC, submissions, and the anonymous contacts from the tracking mutation. No mail was sent. No DNS, TLS, host port or provider account was used, and no Convex backend on 3450-3453 or 3490-3491 was touched.</p>
+<p>Builder: Claude Opus 5.5 (this session). Independent verification has not happened. To check, rerun <code>final</code> and both mutations under new labels in a fresh session.</p>
+</body>
+</html>

@@ -1,0 +1,134 @@
+10c10
+<  const refusals=[],inputs=(form.fields??[]).filter(f=>f.type!=='button');
+---
+>  return [];const refusals=[],inputs=(form.fields??[]).filter(f=>f.type!=='button');
+✔ an unmapped, action-free, campaign-free raw form is admitted (0.495541ms)
+✖ a form that maps any field to a contact is refused (0.496208ms)
+✖ a form with any native action is refused, in list or keyed shape (0.129542ms)
+✖ a campaign-linked form or an unknown link count is refused (0.093375ms)
+✖ unpublished, non-standalone or differently shaped forms are refused (0.080834ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 1
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 50.73175
+
+✖ failing tests:
+
+test at publishing/admission.test.mjs:6:1
+✖ a form that maps any field to a contact is refused (0.496208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'mapped field firstname'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/admission.test.mjs:7:157)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'mapped field firstname' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at publishing/admission.test.mjs:9:1
+✖ a form with any native action is refused, in list or keyed shape (0.129542ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'has native actions'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/admission.test.mjs:10:101)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'has native actions' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at publishing/admission.test.mjs:12:1
+✖ a campaign-linked form or an unknown link count is refused (0.093375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'campaign-linked'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/admission.test.mjs:13:46)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'campaign-linked' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at publishing/admission.test.mjs:15:1
+✖ unpublished, non-standalone or differently shaped forms are refused (0.080834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'unpublished'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/admission.test.mjs:16:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'unpublished' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Unsafe existing form 1 form 1 on a was admitted
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/ownership/admission-replay.mjs:53:11 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: null,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

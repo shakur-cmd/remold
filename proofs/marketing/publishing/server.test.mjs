@@ -1,17 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import {createPublicServer,formToken} from './server.mjs';
+import {createPublicServer,formToken,TRACKING_POLICY} from './server.mjs';
 const listen=server=>new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(server.address().port)));
 const close=server=>new Promise(resolve=>server.close(resolve));
 function call(port,host,path,{method='GET',body='',headers={},chunked=false}={}){return new Promise((resolve,reject)=>{const req=http.request({hostname:'127.0.0.1',port,path,method,headers:{Host:host,...headers,...(body&&!chunked?{'Content-Length':Buffer.byteLength(body)}:{}),...(chunked?{'Transfer-Encoding':'chunked'}:{})}},res=>{const chunks=[];res.on('data',c=>chunks.push(c));res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,body:Buffer.concat(chunks).toString()}));res.on('error',reject);});req.on('error',reject);req.end(body);});}
 async function fixture(fn){
- const calls=[];let response={status:200,type:'text/plain',body:'native asset'};
- const native=http.createServer(async(req,res)=>{let body='';for await(const c of req)body+=c;calls.push({path:req.url,headers:req.headers,body});res.writeHead(response.status,{'Content-Type':response.type,'Set-Cookie':'native=untrusted','Location':'https://example.invalid/redirect'});res.end(response.body);});
+ const calls=[],flight={now:0,max:0};let response={status:200,type:'text/plain',body:'native asset'};
+ const native=http.createServer(async(req,res)=>{flight.max=Math.max(flight.max,++flight.now);let body='';for await(const c of req)body+=c;calls.push({path:req.url,headers:req.headers,body});await new Promise(r=>setTimeout(r,20));flight.now--;res.writeHead(response.status,{'Content-Type':response.type,'Set-Cookie':'native=untrusted','Location':'https://example.invalid/redirect'});res.end(response.body);});
  const upstream='http://127.0.0.1:'+await listen(native);
- const make=t=>({host:'tenant-'+t+'.marketing-proof.invalid',key:(t==='a'?'a':'b').repeat(64),upstream,form:{id:1,name:'fixture',title:'Fixture '+t,fields:[{name:'email',type:'email',label:'Email'},{name:'firstname',type:'text',label:'First name'}]},routes:[{path:'/asset/fixture',nativePath:'/asset/native',contentType:'text/plain'}]});
+ const make=t=>({host:'tenant-'+t+'.marketing-proof.invalid',key:(t==='a'?'a':'b').repeat(64),upstream,form:{id:1,name:'fixture',title:'Fixture '+t,fields:[{name:'email',type:'email',label:'Email'},{name:'firstname',type:'text',label:'First name'}]},admission:{formId:1,policy:TRACKING_POLICY},routes:[{path:'/asset/fixture',nativePath:'/asset/native',contentType:'text/plain'}]});
  const a=make('a'),b=make('b'),sa=createPublicServer(a),sb=createPublicServer(b),pa=await listen(sa),pb=await listen(sb);
- try{await fn({a,b,pa,pb,calls,response:value=>{response=value;}});}finally{await Promise.all([close(sa),close(sb),close(native)]);}
+ try{await fn({a,b,pa,pb,calls,flight,response:value=>{response=value;}});}finally{await Promise.all([close(sa),close(sb),close(native)]);}
 }
 const submit=(config,overrides={})=>({method:'POST',body:new URLSearchParams({email:'local@example.invalid',firstname:'Local',t:formToken(config)}).toString(),headers:{'Content-Type':'application/x-www-form-urlencoded'},...overrides});
 test('only the exact host and published paths reach the native service',()=>fixture(async({a,pa,calls})=>{
@@ -36,9 +36,9 @@ test('malformed, duplicate and extra form inputs never reach native capture',()=
  assert.equal((await call(pa,a.host,'/form/1',{...valid,headers:{'Content-Type':'multipart/form-data; boundary=a'}})).status,415);
  assert.equal((await call(pa,a.host,'/form/1',{...valid,headers:{...valid.headers,Origin:'http://tenant-b.marketing-proof.invalid'}})).status,403);assert.equal(calls.length,0);
 }));
-test('client tracking headers and native cookies or redirects are not forwarded',()=>fixture(async({a,pa,calls,response})=>{
- response({status:200,type:'application/json',body:JSON.stringify({success:1})});const valid=submit(a),r=await call(pa,a.host,'/form/1',{...valid,headers:{...valid.headers,Cookie:'mtc_id=1',Referer:'http://evil.invalid',Authorization:'Basic invalid','User-Agent':'untrusted'}});
- assert.equal(r.status,200);for(const header of ['cookie','referer','authorization','user-agent'])assert.equal(calls[0].headers[header],undefined);assert.equal(r.headers['set-cookie'],undefined);assert.equal(r.headers.location,undefined);assert.equal(r.body,'Submission received');
+test('native capture always gets the server tracking block, never the client cookie or tracking headers',()=>fixture(async({a,pa,calls,response})=>{
+ response({status:200,type:'application/json',body:JSON.stringify({success:1})});const valid=submit(a),r=await call(pa,a.host,'/form/1',{...valid,headers:{...valid.headers,Cookie:'mtc_id=1; Blocked-Tracking=0',DNT:'0','Sec-GPC':'0',Referer:'http://evil.invalid',Authorization:'Basic invalid','User-Agent':'untrusted'}});
+ assert.equal(r.status,200);assert.equal(calls[0].headers.cookie,'Blocked-Tracking=1');assert.equal(calls[0].headers.dnt,'1');assert.equal(calls[0].headers['sec-gpc'],'1');for(const header of ['referer','authorization','user-agent'])assert.equal(calls[0].headers[header],undefined);assert.equal(r.headers['set-cookie'],undefined);assert.equal(r.headers.location,undefined);assert.equal(r.body,'Submission received');
 }));
 test('native validation failure, redirect and oversized responses cannot report success',()=>fixture(async({a,pa,response})=>{
  for(const candidate of [{status:200,type:'application/json',body:'{"success":0,"errorMessage":"invalid"}'},{status:200,type:'application/json',body:'{"success":0}'},{status:200,type:'application/json',body:'{}'},{status:302,type:'text/plain',body:'redirect'},{status:200,type:'text/plain',body:'{"success":1}'},{status:200,type:'application/json-evil',body:'{"success":1}'},{status:200,type:'application/json',body:JSON.stringify({success:1,padding:'x'.repeat(1048576)})}]){response(candidate);assert.equal((await call(pa,a.host,'/form/1',submit(a))).status,502);}
@@ -53,4 +53,16 @@ test('raw invalid UTF-8 and streamed oversized forms refuse before native captur
  assert.equal((await call(pa,a.host,'/form/1',{...valid,body:raw})).status,400);
  assert.equal((await call(pa,a.host,'/form/1',{...valid,body:new URLSearchParams({email:'local@example.invalid',firstname:'x'.repeat(20000),t:formToken(a)}).toString(),chunked:true})).status,413);
  assert.equal(calls.length,0);
+}));
+
+test('an edge without an admitted form under the server tracking policy refuses to start',()=>{
+ const config={host:'tenant-a.marketing-proof.invalid',key:'a'.repeat(64),upstream:'http://127.0.0.1:9',form:{id:1,name:'fixture',title:'Fixture',fields:[{name:'email',type:'email',label:'Email'},{name:'firstname',type:'text',label:'First name'}]},routes:[]};
+ for(const admission of [undefined,{formId:1},{formId:1,policy:'client-supplied'},{formId:2,policy:TRACKING_POLICY}])assert.throws(()=>createPublicServer({...config,admission}),/not admitted/);
+ assert.doesNotThrow(()=>createPublicServer({...config,admission:{formId:1,policy:TRACKING_POLICY}}));
+});
+
+test('concurrent submissions reach native capture one at a time and all succeed',()=>fixture(async({a,pa,calls,flight,response})=>{
+ response({status:200,type:'application/json',body:JSON.stringify({success:1})});
+ const results=await Promise.all([1,2,3,4].map(()=>call(pa,a.host,'/form/1',submit(a))));
+ assert.deepEqual(results.map(r=>r.status),[200,200,200,200]);assert.equal(calls.length,4);assert.equal(flight.max,1);
 }));

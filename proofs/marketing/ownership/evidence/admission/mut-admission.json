@@ -1,0 +1,21 @@
+{
+  "label": "mut-admission",
+  "mode": "after",
+  "fixture": "e4ce46ff-073b-4d95-bf8f-644775d81cf2",
+  "startedAt": "2026-09-26T11:29:24.952Z",
+  "level": "SERVICE isolated local Mautic A/B plus internal public edges; synthetic data; no mail, DNS, TLS or host ports",
+  "tenants": {},
+  "refusals": [
+    {
+      "tenant": "a",
+      "kind": "existing form 1",
+      "formId": 1,
+      "refused": null
+    }
+  ],
+  "status": "FAIL",
+  "failures": [
+    "Unsafe existing form 1 form 1 on a was admitted"
+  ],
+  "finishedAt": "2026-09-26T11:29:28.944Z"
+}

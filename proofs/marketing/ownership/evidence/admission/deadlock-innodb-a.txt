@@ -1,0 +1,39 @@
+LATEST DETECTED DEADLOCK
+------------------------
+2026-09-26 11:31:19 265278017236736
+*** (1) TRANSACTION:
+TRANSACTION 14317, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 7 lock struct(s), heap size 1128, 3 row lock(s), undo log entries 1
+MySQL thread id 2284, OS thread handle 265277989637888, query id 31242 172.19.0.5 mautic_a updating
+UPDATE forms SET submission_count = submission_count + 1 WHERE id = 26
+
+*** (1) HOLDS THE LOCK(S):
+RECORD LOCKS space id 45 page no 12 n bits 80 index PRIMARY of table `mautic_a`.`forms` trx id 14317 lock mode S locks rec but not gap
+Record lock, heap no 7 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+
+
+*** (1) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 45 page no 12 n bits 80 index PRIMARY of table `mautic_a`.`forms` trx id 14317 lock_mode X locks rec but not gap waiting
+Record lock, heap no 7 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+
+
+*** (2) TRANSACTION:
+TRANSACTION 14316, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 7 lock struct(s), heap size 1128, 3 row lock(s), undo log entries 1
+MySQL thread id 2281, OS thread handle 265277990756096, query id 31243 172.19.0.5 mautic_a updating
+UPDATE forms SET submission_count = submission_count + 1 WHERE id = 26
+
+*** (2) HOLDS THE LOCK(S):
+RECORD LOCKS space id 45 page no 12 n bits 80 index PRIMARY of table `mautic_a`.`forms` trx id 14316 lock mode S locks rec but not gap
+Record lock, heap no 7 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+
+
+*** (2) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 45 page no 12 n bits 80 index PRIMARY of table `mautic_a`.`forms` trx id 14316 lock_mode X locks rec but not gap waiting
+Record lock, heap no 7 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+
+*** WE ROLL BACK TRANSACTION (2)
+------------
+

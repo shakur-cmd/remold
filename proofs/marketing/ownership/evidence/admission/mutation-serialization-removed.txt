@@ -1,0 +1,41 @@
+30c30
+<  const submitNative=body=>{const run=queue.then(()=>native('/form/submit?formId='+config.form.id+'&ajax=1','POST',body));queue=run.catch(()=>{});return run;};
+---
+>  const submitNative=body=>{const run=native('/form/submit?formId='+config.form.id+'&ajax=1','POST',body);queue=run.catch(()=>{});return run;};
+✔ only the exact host and published paths reach the native service (37.830458ms)
+✔ rendered form token binds tenant, form and published field labels (47.786916ms)
+✔ malformed, duplicate and extra form inputs never reach native capture (2.533791ms)
+✔ native capture always gets the server tracking block, never the client cookie or tracking headers (23.459ms)
+✔ native validation failure, redirect and oversized responses cannot report success (231.335209ms)
+✔ raw invalid UTF-8 and streamed oversized forms refuse before native capture (3.913291ms)
+✔ an edge without an admitted form under the server tracking policy refuses to start (0.737709ms)
+✖ concurrent submissions reach native capture one at a time and all succeed (29.082208ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 430.196
+
+✖ failing tests:
+
+test at publishing/server.test.mjs:64:1
+✖ concurrent submissions reach native capture one at a time and all succeed (29.082208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  4 !== 1
+  
+      at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/server.test.mjs:67:99
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async fixture (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ac09bb63e531a007c/proofs/marketing/publishing/server.test.mjs:14:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
