@@ -175,7 +175,7 @@
       "builder": "/root/c0_verifier",
       "independentVerifier": "/root/h0_builder, bounded code/offline/evidence review and exact calendar GET",
       "costCap": 0,
-      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests plus A\u2192shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Both A5/B5 consumed at2026-09-25T00:34:39Z; no further capacity then. C recipient only. Calendar and same-sender one-shot proofs consumed; no replay.",
+      "externalAllowance": "A=shakur@envoylogic.com and B=reply@repliedfor.com reciprocal tests plus A→shakur@codemyvibe.com for same-sender P/Q. Five FROM each A/B per rolling24h in SAME durable ledger. Both A5/B5 consumed at2026-09-25T00:34:39Z; no further capacity then. C recipient only. Calendar and same-sender one-shot proofs consumed; no replay.",
       "depends": [
         "H0"
       ],
@@ -268,8 +268,8 @@
     {
       "id": "I1",
       "state": "dispatched",
-      "builder": "/root/h0_builder",
-      "independentVerifier": "Blocked: automatic approval review rejected authorization audit; not retried",
+      "builder": "root builder session (wip/i1-authority)",
+      "independentVerifier": "Fresh Opus 5.5 sessions: r1 REVISE (evidence/2026-09-25-i1/iv/report.html on i1/iv-2026-09-25); r2 against 4cb4671 in progress 2026-09-26",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
@@ -284,7 +284,10 @@
         "src/** only necessary identity/authority consumers coordinated with root"
       ],
       "environment": "isolated anonymous local Convex3480/3481, synthetic migration fixtures only",
-      "scopeNote": "Builder WIP retained uncommitted. Automatic approval review rejected independent authorization testing as potentially enabling cybersecurity abuse; user notified, no certification and no dependent completion claim."
+      "scopeNote": "Builder-run, not certified. Revision 1 addresses IV r1 defects D1-D8; builder reports IV suite 24/24, SERVICE 64/64. Rollback floor (authorityFloor) decided by Shakur 2026-09-25. The earlier automatic-approval block no longer applies: IV r1 ran. No dependent completion claim until IV r2 certifies.",
+      "head": "4cb4671 on wip/i1-authority (revision 1, evidence from f1de701)",
+      "evidence": "evidence/2026-09-25-i1/builder-handover.html",
+      "independentEvidence": "evidence/2026-09-25-i1/iv/report.html (r1, REVISE)"
     },
     {
       "id": "I2",
@@ -313,10 +316,11 @@
         "local Workers /version JSON no-store routing, independent alternate-SHA replay",
         "local migration component interrupted/resumed over1000records, compatible exact-source rollback; root replay1000 and independent1100",
         "AuthKit source/SDK reviewed independently; root hostedGooglelogin refreshlogout deepinvite, actualJWTissuer/memberisolation; independentmembershippostcondition and currentChrome witness; commit3932963 CI36045807967",
-        "Bounded internal REST telemetry: root50 and independent73 concurrent receipts, actualdelay/error and schedulerejection, real3minute transportgap/recovery,63app tests/typecheck; no publicdashboard/alerts orreleasecomparison"
+        "Bounded internal REST telemetry: root50 and independent73 concurrent receipts, actualdelay/error and schedulerejection, real3minute transportgap/recovery,63app tests/typecheck; no publicdashboard/alerts orreleasecomparison",
+        "Restored-snapshot release gate bound to operator-named backup file, real old-browser migration/rollback, PR3 hosting cleanup: PR 6 merged 4fbe55f; independent r2 PASS (i2/iv-2026-09-25 evidence/2026-09-25-i2/iv/report.html)"
       ],
       "evidence": "evidence/2026-09-24-unified-build/i2-slice-verdict.json",
-      "remaining": "Email/password, blocked-third-party-cookie and production first-party session proof, PR3 WorkOS entry removal and automated PR lifecycle, scheduled managed backups, delivered alerts and remaining measurement UI integration; builder slices on i2/finish-2026-09-25 await independent verification",
+      "remaining": "Owner-gated: WorkOS PR3 callback/CORS/sign-out removal, staging email/password plus verification email and blocked-third-party-cookie check, scheduled backups (Convex Pro), alert channel, automated per-PR previews with CI secrets, production first-party session (needs L0 and custom auth domain). Measurement UI belongs to I10. Not integrated.",
       "additionalEvidence": "evidence/2026-09-24-unified-build/flags-version-verdict.json",
       "migrationEvidence": "ops/migrations/evidence/independent.html",
       "authEvidence": "evidence/2026-09-24-unified-build/authkit-iv/invite-report.html",
