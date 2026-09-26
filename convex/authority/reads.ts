@@ -3,6 +3,7 @@ import type { QueryCtx, MutationCtx } from '../_generated/server';
 import type { Principal } from '../identity';
 import type { RecordScope } from '../../packages/contracts/authority';
 import { fail } from '../errors';
+import { compareValues, type Value } from 'convex/values';
 
 type Ctx = QueryCtx | MutationCtx;
 export function scopes(principal: Principal, object: Doc<'objects'>): RecordScope[] {
@@ -37,10 +38,16 @@ export async function listedRecords(ctx: Ctx, principal: Principal, object: Doc<
   const rows = await Promise.all(ids.map(id => ctx.db.get(id)));
   return rows.filter((r): r is Doc<'records'> => !!r && canReadRecord(principal, object, r));
 }
-// Convex index order for slot values: missing, then numbers, booleans, strings.
-const rank = (v: unknown) => v === undefined ? 0 : v === null ? 1 : typeof v === 'number' ? 2 : typeof v === 'boolean' ? 3 : 4;
-export function compareIndexValues(a: unknown, b: unknown) { const d = rank(a) - rank(b); return d || ((a as any) < (b as any) ? -1 : (a as any) > (b as any) ? 1 : 0); }
+// Convex's own index ordering (strings by UTF-8 bytes, -0 before 0), so the list path
+// sorts and filters exactly like the index path would.
+export function compareIndexValues(a: unknown, b: unknown) { return compareValues(a as Value | undefined, b as Value | undefined); }
 // Offset pagination over an in-memory list, shaped like Convex's paginate result.
+// Paginates an index query. Our own cursor formats, or any cursor Convex cannot parse,
+// get a clean refusal instead of a raw server error.
+export async function paginateIndex<T = any>(query: { paginate(opts: any): Promise<T> }, opts: { cursor: string | null; numItems: number; endCursor?: string | null }) {
+  if ([opts.cursor, opts.endCursor].some(c => typeof c === 'string' && /^(list|events):/.test(c))) fail('VALIDATION', 'Invalid cursor');
+  try { return await query.paginate(opts); } catch (error) { if (/cursor/i.test(String((error as Error)?.message ?? error))) fail('VALIDATION', 'Invalid cursor'); throw error; }
+}
 export function pageList<T>(rows: T[], opts: { cursor: string | null; numItems: number; endCursor?: string | null }) {
   const at = (cursor: string) => { const m = /^list:(\d+)$/.exec(cursor); if (!m) fail('VALIDATION', 'Invalid cursor'); return Number(m[1]); };
   const start = opts.cursor ? at(opts.cursor) : 0, end = opts.endCursor ? at(opts.endCursor) : start + Math.max(0, Math.floor(opts.numItems));

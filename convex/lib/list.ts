@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { fail } from "../errors";
 import type { Principal } from "../identity";
-import { requireObjectRead, requireQueryField, projectRecord, listedRecords, compareIndexValues, pageList } from "../authority/reads";
+import { requireObjectRead, requireQueryField, projectRecord, listedRecords, compareIndexValues, pageList, paginateIndex } from "../authority/reads";
 
 const slotName = (kind: string, index: number) => `${kind}${index}`;
 type PageOpts = { cursor: string | null; numItems: number; endCursor?: string | null };
@@ -32,10 +32,10 @@ export async function pageRecords(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id
     }
     return pageList(rows, paginationOpts);
   }
-  if (!name) return ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).order("desc").paginate(paginationOpts);
+  if (!name) return paginateIndex(ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).order("desc"), paginationOpts);
   let builder: any = (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => { const base = q.eq("orgId", orgId).eq("objectId", objectId); return filter ? base.eq(name, filter.value ?? undefined) : base; });
   if (sort) builder = builder.order(sort.direction);
-  return builder.paginate(paginationOpts);
+  return paginateIndex(builder, paginationOpts);
 }
 
 export async function listRecords(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">, paginationOpts: PageOpts, sort?: { fieldId: Id<"fields">; direction: "asc" | "desc" }, filter?: { fieldId: Id<"fields">; value: unknown }, principal?: Principal) {

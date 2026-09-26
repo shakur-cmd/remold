@@ -110,3 +110,56 @@ it('agent inbox list fills its limit with items the agent may see', async () => 
   const own = (await rest(f.t, agent.key)('POST', '/api/v1/inbox', { text: 'mine' })).json.id;
   expect(((await rest(f.t, agent.key)('GET', '/api/v1/inbox')).json as any[]).map(r => r.id)).toEqual([own]);
 }, 30000);
+
+// More hidden items than any scan cap. A list that scans past hidden rows would drop
+// the caller's own item here; one that reads only what the caller may see keeps it
+// (IV round 4, S, and the quiet-deals gap).
+const MANY = 1100;
+it('suggestion lists and the agent summary ignore any number of hidden pending suggestions', async () => {
+  const f = await userAndOrg(), company = await objectFields(f.client, f.orgId, 'company');
+  const create = (name: string) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: company.object._id, values: { [company.fields.name._id]: name } }).then((r: any) => r.recordId);
+  const mine = await create('Mine'), secret = await create('Secret'), proposer = await f.client.action(api.agents.create, { orgId: f.orgId, name: 'proposer' });
+  const doc = (recordId: any) => ({ orgId: f.orgId, agentId: proposer.agentId, status: 'pending', change: { action: 'update', objectId: company.object._id, recordId, values: { [company.fields.name._id]: 'x' } }, recordId, before: {}, reason: 'r' });
+  const own = await f.t.run((ctx: any) => ctx.db.insert('suggestions', doc(mine)));
+  await f.t.run(async (ctx: any) => { for (let i = 0; i < MANY; i++) await ctx.db.insert('suggestions', doc(secret)); });
+  await restrictMember(f, [{ objectId: company.object._id, records: [mine], fields: 'all' }]);
+  expect((await f.client.query(api.suggestions.list, { orgId: f.orgId })).map((r: any) => r.suggestion._id)).toEqual([own]);
+  const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'reader', origin: 'external' });
+  await grant(f, agent.agentId, company.object._id, [mine], Object.values(company.fields).map((x: any) => x._id));
+  expect(((await rest(f.t, agent.key)('GET', '/api/v1/suggestions')).json as any[]).map(r => r.id)).toEqual([own]);
+  expect((await rest(f.t, agent.key)('GET', '/api/v1/me')).json.pendingSuggestions).toBe(1);
+}, 60000);
+it('inbox lists and the agent summary ignore any number of other people\'s private notes', async () => {
+  const f = await userAndOrg(), other = await f.t.withIdentity({ tokenIdentifier: 'clerk|other', name: 'Other' }).mutation(api.users.store, {});
+  await f.t.run(async (ctx: any) => { for (let i = 0; i < MANY; i++) await ctx.db.insert('agentInbox', { orgId: f.orgId, text: 'private ' + i, source: 'api', from: { kind: 'user', id: other }, status: 'pending', audience: 'author' }); });
+  const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'inbox', origin: 'external' });
+  const own = (await rest(f.t, agent.key)('POST', '/api/v1/inbox', { text: 'mine' })).json.id;
+  expect(((await rest(f.t, agent.key)('GET', '/api/v1/inbox')).json as any[]).map(r => r.id)).toEqual([own]);
+  expect((await rest(f.t, agent.key)('GET', '/api/v1/me')).json.pendingInbox).toBe(1);
+  const company = await objectFields(f.client, f.orgId, 'company');
+  await restrictMember(f, [{ objectId: company.object._id, records: [], fields: 'all' }]);
+  const mineAsMember = await f.client.mutation(api.inbox.add, { orgId: f.orgId, text: 'member note' });
+  expect((await f.client.query(api.inbox.list, { orgId: f.orgId })).map((r: any) => r._id)).toEqual([mineAsMember]);
+}, 60000);
+it('quiet deals ignore any number of hidden deals untouched for longer', async () => {
+  const f = await userAndOrg(), deal = await objectFields(f.client, f.orgId, 'opportunity');
+  const mine = (await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: 'Mine', [deal.fields.stage._id]: 'new' } })).recordId;
+  await f.t.run(async (ctx: any) => {
+    await ctx.db.patch(mine, { updatedAt: Date.now() - 20 * DAY });
+    for (let i = 0; i < MANY; i++) await ctx.db.insert('records', { orgId: f.orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: 'Hidden ' + i }, title: 'Hidden ' + i, createdBy: (await ctx.db.query('users').first())._id, updatedAt: Date.now() - 40 * DAY });
+  });
+  await restrictMember(f, [{ objectId: deal.object._id, records: [mine], fields: 'all' }]);
+  expect((await f.client.query(api.today.get, { orgId: f.orgId, today: Date.now() })).quiet.map((r: any) => r._id)).toEqual([mine]);
+  const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'quiet', origin: 'external' });
+  await grant(f, agent.agentId, deal.object._id, [mine], Object.values(deal.fields).map((x: any) => x._id));
+  expect((await rest(f.t, agent.key)('GET', '/api/v1/today')).json.quiet.map((r: any) => r.id)).toEqual([mine]);
+}, 60000);
+
+// Readers who see every task still skip only the done tasks they can see are done.
+it('the daily list keeps looking past done tasks until it has open ones', async () => {
+  const f = await userAndOrg(), task = await objectFields(f.client, f.orgId, 'task'), today = Math.floor(Date.now() / DAY) * DAY;
+  const create = (title: string, due: number, done: boolean) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: task.object._id, values: { [task.fields.title._id]: title, [task.fields.dueDate._id]: due, [task.fields.done._id]: done } }).then((r: any) => r.recordId);
+  for (let i = 0; i < 60; i++) await create('Done ' + i, today - 2 * DAY, true);
+  const open = await create('Open', today, false);
+  expect((await f.client.query(api.today.get, { orgId: f.orgId, today })).tasks.map((r: any) => r._id)).toEqual([open]);
+});

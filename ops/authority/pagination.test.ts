@@ -74,3 +74,39 @@ it('csv.exportPage: hidden deals do not change the export pages', async () => {
   await w.hide(201);
   expect(await pages()).toEqual(before);
 }, 30000);
+
+// The list path must return exactly what the index path returns for the same query,
+// restricted to readable rows: same filter, same order, same tie-break (IV round 4).
+it('the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text', async () => {
+  const f = await userAndOrg(), deal = await objectFields(f.client, f.orgId, 'opportunity');
+  const create = (name: string, amount?: number) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: name, ...(amount === undefined ? {} : { [deal.fields.amount._id]: amount }) } }).then((r: any) => r.recordId);
+  // UTF-16 order and code-point order disagree on the emoji and U+FFFD; three deals tie on 5.
+  const listed: string[] = [];
+  for (const [name, amount] of [['b', 5], ['B', 5], ['a', undefined], ['é', 0], ['Z', -1], ['😀x', 1e9], ['�y', 2.5], ['10', 5], ['9', 7]] as [string, number | undefined][]) { listed.push(await create(name, amount)); await create('hidden ' + name, amount); }
+  const member = f.t.withIdentity({ tokenIdentifier: 'clerk|lister', name: 'Lister' }), userId = await member.mutation(api.users.store, {});
+  await member.mutation(api.invites.accept, { token: (await f.client.mutation(api.invites.create, { orgId: f.orgId, role: 'member' })).token });
+  const memberId = await f.t.run(async (ctx: any) => (await ctx.db.query('members').collect()).find((m: any) => m.userId === userId)._id);
+  // The scope lists the records newest first, so a lost tie-break shows up as a different order.
+  await f.client.mutation(anyApi['authority/policies'].setMember, { orgId: f.orgId, memberId, scopes: [{ objectId: deal.object._id, records: [...listed].reverse(), fields: 'all' }], hiddenFieldIds: [] });
+  const ids = async (client: any, extra: any, numItems: number) => { const out: string[] = []; let cursor = null; for (let i = 0; i < 40; i++) { const r: any = await client.query(api.records.list, { orgId: f.orgId, objectId: deal.object._id, ...extra, paginationOpts: { numItems, cursor } }); out.push(...r.page.map((x: any) => x._id)); if (r.isDone) break; cursor = r.continueCursor; } return out; };
+  const amount = deal.fields.amount._id, name = deal.fields.name._id;
+  const cases: Record<string, any> = { recent: {}, amountAsc: { sort: { fieldId: amount, direction: 'asc' } }, amountDesc: { sort: { fieldId: amount, direction: 'desc' } }, nameAsc: { sort: { fieldId: name, direction: 'asc' } }, nameDesc: { sort: { fieldId: name, direction: 'desc' } }, amount5: { filter: { fieldId: amount, value: 5 } }, amount5Desc: { filter: { fieldId: amount, value: 5 }, sort: { fieldId: amount, direction: 'desc' } }, amountMinus0: { filter: { fieldId: amount, value: -0 } }, amountEmpty: { filter: { fieldId: amount, value: null } } };
+  const differ: Record<string, unknown> = {};
+  for (const [label, extra] of Object.entries(cases)) {
+    const expected = (await ids(f.client, extra, 100)).filter(id => listed.includes(id)), got = await ids(member, extra, 2);
+    if (JSON.stringify(expected) !== JSON.stringify(got)) differ[label] = { expected, got };
+  }
+  expect(differ).toEqual({});
+  // The sort really is by code point: U+FFFD before the emoji.
+  const titles = async (extra: any) => (await member.query(api.records.list, { orgId: f.orgId, objectId: deal.object._id, ...extra, paginationOpts: { numItems: 20, cursor: null } })).page.map((r: any) => r.title);
+  expect(await titles(cases.nameAsc)).toEqual(['10', '9', 'B', 'Z', 'a', 'b', 'é', '�y', '😀x']);
+  expect(await titles(cases.amountMinus0)).toEqual([]);
+});
+
+it('a cursor from the other path is refused cleanly, not with a server error', async () => {
+  const f = await userAndOrg(), deal = await objectFields(f.client, f.orgId, 'opportunity');
+  const list = (cursor: string) => f.client.query(api.records.list, { orgId: f.orgId, objectId: deal.object._id, paginationOpts: { numItems: 2, cursor } });
+  await expect(list('list:0')).rejects.toMatchObject({ data: { code: 'VALIDATION', message: 'Invalid cursor' } });
+  await expect(list('not a cursor')).rejects.toMatchObject({ data: { code: 'VALIDATION', message: 'Invalid cursor' } });
+  await expect(f.client.query(api.events.forOrg, { orgId: f.orgId, paginationOpts: { numItems: 2, cursor: 'events:start:' } })).rejects.toMatchObject({ data: { code: 'VALIDATION', message: 'Invalid cursor' } });
+});

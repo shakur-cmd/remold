@@ -4,7 +4,7 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { requireMember } from "./identity";
 import { fail } from "./errors";
-import { canReadRecord, projectEvent, listedRecordIds } from "./authority/reads";
+import { canReadRecord, projectEvent, listedRecordIds, paginateIndex } from "./authority/reads";
 
 export const forRecord = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId);
@@ -29,7 +29,7 @@ export const forOrg = query({ args: { orgId: v.id("orgs"), paginationOpts: pagin
   const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect();
   const streams: ({ objectId: Id<"objects"> } | { recordId: Id<"records"> })[] = []; let restricted = false;
   for (const object of objects) { const ids = listedRecordIds(principal, object); if (ids === null) streams.push({ objectId: object._id }); else { restricted = true; streams.push(...ids.map(recordId => ({ recordId }))); } }
-  const page = restricted ? await mergedEvents(ctx, args.orgId, streams, args.paginationOpts) : await ctx.db.query("events").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).order("desc").paginate(args.paginationOpts);
+  const page = restricted ? await mergedEvents(ctx, args.orgId, streams, args.paginationOpts) : await paginateIndex(ctx.db.query("events").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).order("desc"), args.paginationOpts);
   return { ...page, page: (await Promise.all(page.page.map(e => projectEvent(ctx, principal, e)))).filter((event): event is NonNullable<typeof event> => event !== null) };
 } });
 

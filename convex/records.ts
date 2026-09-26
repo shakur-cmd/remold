@@ -6,7 +6,7 @@ import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { listRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
-import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList } from "./authority/reads";
+import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
 
 const values = v.record(v.string(), v.any());
 const direction = v.union(v.literal("asc"), v.literal("desc"));
@@ -24,9 +24,9 @@ export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("reco
   if (field.type !== "links" && (field.type !== "lookup" || (field.targetObjectId && field.targetObjectId !== target.objectId) || !field.slot)) fail("NOT_FOUND", "Field does not relate to record");
   const listed = await listedRelated(ctx, principal, sourceObject, field, target._id);
   if (listed) { const page = pageList(listed, args.paginationOpts); return { ...page, page: (await Promise.all(page.page.map(r => projectRecord(ctx, principal, r)))).filter(Boolean) }; }
-  if (field.type === "links") { const links = await ctx.db.query("links").withIndex("by_to", (q) => q.eq("orgId", args.orgId).eq("fieldId", args.fieldId).eq("toRecordId", args.recordId)).paginate(args.paginationOpts); const page = []; for (const row of links.page) { const record = await ctx.db.get(row.fromRecordId); if (record) { const masked = await projectRecord(ctx, principal, record); if (masked) page.push(masked); } } return { ...links, page }; }
+  if (field.type === "links") { const links = await paginateIndex(ctx.db.query("links").withIndex("by_to", (q) => q.eq("orgId", args.orgId).eq("fieldId", args.fieldId).eq("toRecordId", args.recordId)), args.paginationOpts); const page = []; for (const row of links.page) { const record = await ctx.db.get(row.fromRecordId); if (record) { const masked = await projectRecord(ctx, principal, record); if (masked) page.push(masked); } } return { ...links, page }; }
   const index = `by_${slotName(field.slot!.kind, field.slot!.index)}` as any;
-  const page = await (ctx.db.query("records") as any).withIndex(index, (q: any) => q.eq("orgId", args.orgId).eq("objectId", field.objectId).eq(slotName(field.slot!.kind, field.slot!.index), args.recordId)).paginate(args.paginationOpts);
+  const page = await paginateIndex((ctx.db.query("records") as any).withIndex(index, (q: any) => q.eq("orgId", args.orgId).eq("objectId", field.objectId).eq(slotName(field.slot!.kind, field.slot!.index), args.recordId)), args.paginationOpts);
   return { ...page, page: (await Promise.all(page.page.map((r: any) => projectRecord(ctx, principal, r)))).filter(Boolean) };
 } });
 export const reverseFields = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const object = await ctx.db.get(args.objectId); if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect(); const result = []; for (const source of objects.filter(o => canReadObject(principal, o))) { const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", source._id)).collect(); for (const field of fields) if (!field.retired && canReadField(principal, source, field) && (field.type === "lookup" || field.type === "links") && (!field.targetObjectId || field.targetObjectId === args.objectId)) result.push({ field, object: source }); } return result; } });
