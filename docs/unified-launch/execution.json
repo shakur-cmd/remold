@@ -116,7 +116,10 @@
         "independentEvidence": "proofs/marketing/ownership/evidence/independent/report.html",
         "frozenManifest": "adc4d0352121693e8a65e4406d52055af8add59447693cf9dfce0ee1508c28e2",
         "limits": "Raw capture-only forms independently pass concurrent intake without native identity writes. Existing public edge still uses unsafe mapped form1; no promotion. Fixed-cookie and unmapped/action-free/campaign-unlinked admission, raw importer and core reconciliation remain unbuilt. Full P2 open."
-      }
+      },
+      "verifiedSlices": [
+        "Public capture preserves identity and suppression, SERVICE: edge writes tenant-bound idempotent Convex raw captures, zero Mautic form POSTs; leased reconciler creates contacts only for unknown emails, never edits existing contacts or DNC. Builder 1d639b5, IV r4 9e10220 (proofs/marketing/ownership/evidence/admission/iv/r4/report.html). Carried: abuse gate required before any live form (rate limits, one pending per email, pending cap with alert, confirmation before contact creation); lease stall inside a Mautic create; persistent 5xx parking; capture backend memory ~347/512 MiB under load; tenant B not re-verified with the final reconciler."
+      ]
     },
     {
       "id": "P3",
