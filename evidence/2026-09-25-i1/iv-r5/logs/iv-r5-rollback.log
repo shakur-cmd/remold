@@ -1,0 +1,62 @@
+[
+ {
+  "step": "on HEAD",
+  "pending": {
+   "suggestions": 1,
+   "inbox": [
+    "member before"
+   ]
+  },
+  "memberFeed": 2,
+  "expected": 2,
+  "events": 3
+ },
+ {
+  "step": "rolled back to 87d4c10 code and schema",
+  "droppedIndexes": [
+   "[-] suggestions.by_object_status   orgId, change.objectId, status, _creationTime",
+   "[-] agentInbox.by_org_status_audience   orgId, status, audience, _creationTime",
+   "[-] agentInbox.by_org_status_from   orgId, status, from.kind, from.id, _creationTime"
+  ],
+  "deployed": true,
+  "indexDropped": [
+   "✔ Deleted table indexes:",
+   "  [-] suggestions.by_object_status   orgId, change.objectId, status, _creationTime"
+  ],
+  "events": 3
+ },
+ {
+  "step": "old code reads",
+  "pending": {
+   "suggestions": 2,
+   "inbox": [
+    "member before",
+    "member during rollback"
+   ]
+  },
+  "memberPageLen": 3,
+  "events": 5
+ },
+ {
+  "step": "forward again to HEAD (indexes rebuilt)",
+  "pending": {
+   "suggestions": 2,
+   "inbox": [
+    "member before",
+    "member during rollback"
+   ]
+  },
+  "addedIndexes": [
+   "[+] agentInbox.by_org_status_audience   orgId, status, audience, _creationTime",
+   "[+] agentInbox.by_org_status_from   orgId, status, from.kind, from.id, _creationTime",
+   "[+] suggestions.by_object_status   orgId, change.objectId, status, _creationTime"
+  ],
+  "deployed": true,
+  "memberFeed": 3,
+  "expected": 3,
+  "same": true,
+  "events": 5
+ }
+]
+ROLLBACK PASS
+exit 0

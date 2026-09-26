@@ -1,0 +1,401 @@
+{
+  "results": [
+    {
+      "id": "R3-P1",
+      "claim": 3,
+      "name": "records.list (member, recent-first, 5 per page): adding unreadable rows does not change what the member sees",
+      "status": "PASS",
+      "observed": {
+        "before": [
+          {
+            "n": 1,
+            "done": true
+          }
+        ],
+        "after": [
+          {
+            "n": 1,
+            "done": true
+          }
+        ],
+        "inferredHidden": 0
+      }
+    },
+    {
+      "id": "R3-P2",
+      "claim": 3,
+      "name": "records.list filtered on amount (member, 1 per page): a value held only by unreadable deals looks the same as a value nobody holds",
+      "status": "PASS",
+      "observed": {
+        "hiddenValue": [
+          {
+            "n": 0,
+            "done": true
+          }
+        ],
+        "missingValue": [
+          {
+            "n": 0,
+            "done": true
+          }
+        ],
+        "beforeHiddenAdded": [
+          {
+            "n": 0,
+            "done": true
+          }
+        ],
+        "pagesCountHiddenDeals": 0
+      }
+    },
+    {
+      "id": "R3-P3",
+      "claim": 3,
+      "name": "Agent REST /records filtered on amount (limit 1): hidden value vs missing value give the same body",
+      "status": "PASS",
+      "observed": {
+        "hiddenValue": {
+          "status": 200,
+          "records": 0,
+          "cursor": null
+        },
+        "missingValue": {
+          "status": 200,
+          "records": 0,
+          "cursor": null
+        },
+        "before": {
+          "records": 0,
+          "cursor": null
+        },
+        "followUpPagesForHiddenValue": 0
+      }
+    },
+    {
+      "id": "R3-P4",
+      "claim": 3,
+      "name": "records.related (member, lookup opportunity.company -> readable Acme, 5 per page): unreadable linked deals do not change the pages",
+      "status": "PASS",
+      "observed": {
+        "before": [
+          {
+            "n": 1,
+            "done": true
+          }
+        ],
+        "after": [
+          {
+            "n": 1,
+            "done": true
+          }
+        ],
+        "agentRelatedCount": 1
+      }
+    },
+    {
+      "id": "R3-P5",
+      "claim": 3,
+      "name": "events.forOrg (member, first page of 5): events of unreadable records do not change the page",
+      "status": "PASS",
+      "observed": {
+        "beforeLen": 2,
+        "afterLen": 2,
+        "afterDone": true
+      }
+    },
+    {
+      "id": "R3-P7",
+      "claim": 3,
+      "name": "Pagination cursors are opaque: a cursor that ends on an unreadable row does not contain its id, amount or title",
+      "status": "PASS",
+      "observed": {
+        "cursorLength": 6,
+        "cursorSample": "list:1",
+        "containsId": false,
+        "containsAmount": false,
+        "containsTitle": false
+      }
+    },
+    {
+      "id": "R3-P6",
+      "claim": 3,
+      "name": "CSV exportPage (member, 200 raw rows per page): unreadable rows do not change rows/done",
+      "status": "PASS",
+      "observed": {
+        "before": [
+          {
+            "rows": 1,
+            "done": true
+          }
+        ],
+        "after": [
+          {
+            "rows": 1,
+            "done": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "R3-F1",
+      "claim": 3,
+      "name": "firstVisible scan cap: the member/agent recent-first search result does not depend on whether 999 or 1000 unreadable rows are newer than their own",
+      "status": "PASS",
+      "observed": {
+        "with999Hidden": {
+          "member": [
+            "Mine Deal"
+          ],
+          "agent": [
+            "Mine Deal"
+          ]
+        },
+        "with1000Hidden": {
+          "member": [
+            "Mine Deal"
+          ],
+          "agent": [
+            "Mine Deal"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R3-F2",
+      "claim": 3,
+      "name": "Timing: recent-first search (limit 1) returns the same single row in about the same time with 0 and 999 unreadable newer rows (median of 21, <5 ms and <2x)",
+      "status": "PASS",
+      "observed": {
+        "memberMs": {
+          "hidden0": 1.79,
+          "hidden999": 1.59
+        },
+        "agentMs": {
+          "hidden0": 6.5,
+          "hidden999": 7.6
+        }
+      }
+    },
+    {
+      "id": "R3-F3",
+      "claim": 3,
+      "name": "Text search over many unreadable matches (agent, no object filter, and member) returns normally, never a platform-limit error that only unreadable rows could cause",
+      "status": "PASS",
+      "observed": {
+        "agentNoObject": "200 [{\"createdAt\":1790428158361.43,\"id\":\"nd76a3r4mm1men8ykzt7fp8bm98f59ey\",\"object\":\"opportunity\",\"ref\":\"salt-anchor-nickel\",\"title\":\"Mine Deal\",\"updatedAt\":1790428",
+        "agentObject": "200 [{\"createdAt\":1790428158361.43,\"id\":\"nd76a3r4mm1men8ykzt7fp8bm98f59ey\",\"object\":\"opportunity\",\"ref\":\"salt-anchor-nickel\",\"title\":\"Mine Deal\",\"updatedAt\":1790428",
+        "member": [
+          "Mine Deal"
+        ]
+      }
+    }
+  ],
+  "hiddenRows": 1000,
+  "baseline": {
+    "list": [
+      {
+        "n": 1,
+        "done": true,
+        "ids": [
+          "nd76a3r4mm1men8ykzt7fp8bm98f59ey"
+        ]
+      }
+    ],
+    "listByAmount": [
+      {
+        "n": 0,
+        "done": true,
+        "ids": []
+      }
+    ],
+    "related": [
+      {
+        "n": 1,
+        "done": true,
+        "ids": [
+          "nd76a3r4mm1men8ykzt7fp8bm98f59ey"
+        ]
+      }
+    ],
+    "events": 2,
+    "agentFilter": {
+      "cursor": null,
+      "records": []
+    },
+    "exportFirst": {
+      "cursor": "list:200",
+      "done": true,
+      "header": [
+        "Code",
+        "Name",
+        "Amount",
+        "Stage",
+        "Close Date",
+        "Company",
+        "Person"
+      ],
+      "rows": [
+        [
+          "salt-anchor-nickel",
+          "Mine Deal",
+          "100",
+          "",
+          "",
+          "Acme Readable",
+          ""
+        ]
+      ]
+    },
+    "searchMs": 1.79,
+    "agentSearchMs": 6.5
+  },
+  "sourceManifest": {
+    "convex/agentApi.ts": "4d68d167577d29f8910818d89d786b8f9aaee213ae22462873f99cd91b30fca9",
+    "convex/agents.ts": "3aebc5324cb4614dcc1e3b2d797d8a3e7a412fff57ef9ad501055e7d9075b4ec",
+    "convex/auth.config.ts": "6dcb82235f345a6f61e2adc5cc501bb085be02156f49d2a340594dde3e3318a4",
+    "convex/authorityFixture.ts": "757c4168ed0545f6b5a620dfd9614215503ba0d0ed8c33d92c4f90a0c1f59834",
+    "convex/authorityFixtureH0.ts": "fdbd8ff8513771ccecf06fff70a2a0c1e49ffd2748a6540d725bf41f3e1ce4b8",
+    "convex/authorityFixtureIv.ts": "19dd35992d94bd5b9dcd52a5274be0dff76fc9c9c717d03b290a5bdb50af7109",
+    "convex/authorityFixtureSweeps.ts": "78f655fd9e47f63af25eb83e4ceea3291f7df90ee06325655c0e1131ba924d8c",
+    "convex/capture.ts": "283369a245ab894b8ac8cc978365f2dc0c9ce1a9d6a6486e0d66ae137b05c196",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.ts": "bc6ef159de1185b7d1a38d17abdb39efcc4ae92e44a0c7e0c1b4cc66ed7e0ae6",
+    "convex/errors.ts": "499423efb133eff7ea0cf31b9c5d87d684ffa2f47f45187af94e2cb6778e9a66",
+    "convex/events.ts": "464dc78ad6994d671691560edc9dee1ee7d11672697f0cd8aab1272a72ae2b38",
+    "convex/fields.ts": "d39b4c3582e9bfb1109f4d0b97dddb0c0d0ac3ebc8c20f3af9d43709c280021e",
+    "convex/http.ts": "82bdda9ddefe98f41c82ac3974925746a03c85e1034e4f940559d41c17fb04fe",
+    "convex/identity.ts": "252d0cf969d008616a0533e314d6af25b3d08c8cfb7f7979bddc28f7ee0a59a3",
+    "convex/inbox.ts": "c8286d7925535070092bb722769580902519e05bf4c2b79fdb32ddc8cb491967",
+    "convex/invites.ts": "c191f04b6be5d9de8a943c53511e86c596d461f54b146bc5a8097a1e8fee2f3e",
+    "convex/objects.ts": "c2c9badd9b4590c2775d47e923e8b883ab12fcef3db26f4fe4835e3ed66acc13",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "ff19e47a6e5d23469c958330a64b4a34b2800c55647097c3199dba2c2a384949",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "2ccea237c4c2491ccfc65445e420bbbfd97f56c7d9da94d19e14f8e055108bd8",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/schema.ts": "2077681f280b6deb7e6ebb80887ea2983a03ea1575f19e211dcd3fe46f00c717",
+    "convex/seed.ts": "9db92800d9a1235f08423ba27d306fc6b4f801d061396dc23406c3dabeed189c",
+    "convex/suggestions.ts": "135bb418920077925e0d971fa720f195a95bc718bf137df095b80c12bbe217eb",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/today.ts": "010508bbd31ea6a68b44ae289f67098170d2e171652702492d9d02b6158d7429",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "1c9eb4734c5b0c41c92ba4dd19c154493ab4d557e5139150095b53864d41f68b",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/authority/grants.ts": "1bd5d05378316c7dd2ad851b873c31e5e5a9aadf70f4f3701dd8e7cbf788f3e0",
+    "convex/authority/inbox.ts": "e58244c4ad9ff91ce53b37d0af24fbadccdf50a787cbc85ebc09e1edbc7052e4",
+    "convex/authority/migration.ts": "d42fd64f6a70e4cf3ee686cd10f21c44dc2b19d595fcba69bbc01a1f43a8bdff",
+    "convex/authority/pending.ts": "79acb2b768c247f6040525224ee327f068b123ab82eadeacf82a8edee09199f0",
+    "convex/authority/policies.ts": "c120d03444ae3bf3417cd3d99249c2e904748fc4cf33a4341bced13f79c76d1f",
+    "convex/authority/readonly.ts": "8be51e982ba0c20583d03b947e8f03290e4b209f868bfbe6f08c6ee5bf5f011d",
+    "convex/authority/reads.ts": "364f18aed4018e0597a604cfd946e9452b1b006a11b394fce03dfa368ae77f22",
+    "convex/integrations/bindings.ts": "e1ad0a3699d985c16b3db45b92e109a10e141b0e24379294cb9193727316230e",
+    "convex/integrations/budgets.ts": "975dedfb81f5793dbfc081c89b9f972243172cf14bc1c52076f8a8d30caadaac",
+    "convex/integrations/callbacks.ts": "a135380048d8f40fc3d3e2980f72ef6d41ae7787a4ba271cf26516aa3821d24f",
+    "convex/integrations/commands.ts": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+    "convex/integrations/connections.ts": "c3168fbaead7a1196011bfe8f7f98b4393ae32df6bc52995ce2992eab878c005",
+    "convex/integrations/core.ts": "6054e86765db12050eee4d3e651a3ce46f722bb64bf4a2b7cbf466ae100cf2f9",
+    "convex/integrations/dispatch.ts": "75b7b09a85562bfada04d885e7f9a2277147501129663f12247777059688845c",
+    "convex/integrations/http.ts": "4e4c21b1d1fd59e036a085c5b95d7279a0203aa298b899588ca5dc7d0f3c1401",
+    "convex/integrations/lifecycle.ts": "617f60334b74d16b85fe9e840beb11bb4c934055a807907faefcfb962eab0b5f",
+    "convex/integrations/lookups.ts": "13fa88c6deb6f004155bbb1ec15acf49d79db7dadc1720a4009702e3cec375b6",
+    "convex/integrations/outcomes.ts": "22f0ef2e283179b1f7dae6f4fa09cc17ec51ab9088c37e5e9c054044ff0565bd",
+    "convex/integrations/receipts.ts": "187e1c4f0052aed6104ff7086b1a15c1d1ebf879c8f0a8bc9c912cecf962f3d6",
+    "convex/integrations/safety.ts": "e5abbde2777eb9dd34987d4b2a92f23717a767fc886398bc52fbe64c883de923",
+    "convex/integrations/safetyAdapters.ts": "cef29eb5dad271d5a7cfaabf1a778eff84dbfe710912194cc74026b001863f84",
+    "convex/integrations/safetyFinality.ts": "a8c5d379c039af7c05a905b76a5cce46fbb7c958235e523d6457a610ace46f0d",
+    "convex/integrations/tables.ts": "556d1dfcb641617b25014b000053ab87b72b0cd8169d2599ce87fcbcd875b5d6",
+    "convex/lib/applyChange.ts": "61bcc9776ee48c1d7b21cd42685662b744f0c0a565aa002636a52b63d934e069",
+    "convex/lib/daily.ts": "3705ebd69161585827ac965f42a523f2ba8632d37a45a3f1912a3becc59a80e2",
+    "convex/lib/find.ts": "7fd9011eb956cd9884ea5f23997d25d8efd800bd7464f7e596f05091196cf66c",
+    "convex/lib/list.ts": "7fdc63ff009661bb72b8fb5458e65b0091981e12d28b3f5fbdb4e311f7503c55",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/search.ts": "7491384a837f88722bd209e54cd845b5a568a87fbaea1bbdf8198abf196f68f8",
+    "convex/lib/shape.ts": "60f293044d631787e04b93e1caa224104a5a8580d4fe808bad66a81e1d9f8b86",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "f015224e9bfb6b86c4ffb66658614bc715a85931f88ac40cd634c15a2d045a0a",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "eae72f25923c2cea4330398f4a30b6c70ed13c0703bd981e523f2ca01e2e0338"
+  },
+  "finalSourceManifest": {
+    "convex/agentApi.ts": "4d68d167577d29f8910818d89d786b8f9aaee213ae22462873f99cd91b30fca9",
+    "convex/agents.ts": "3aebc5324cb4614dcc1e3b2d797d8a3e7a412fff57ef9ad501055e7d9075b4ec",
+    "convex/auth.config.ts": "6dcb82235f345a6f61e2adc5cc501bb085be02156f49d2a340594dde3e3318a4",
+    "convex/authorityFixture.ts": "757c4168ed0545f6b5a620dfd9614215503ba0d0ed8c33d92c4f90a0c1f59834",
+    "convex/authorityFixtureH0.ts": "fdbd8ff8513771ccecf06fff70a2a0c1e49ffd2748a6540d725bf41f3e1ce4b8",
+    "convex/authorityFixtureIv.ts": "19dd35992d94bd5b9dcd52a5274be0dff76fc9c9c717d03b290a5bdb50af7109",
+    "convex/authorityFixtureSweeps.ts": "78f655fd9e47f63af25eb83e4ceea3291f7df90ee06325655c0e1131ba924d8c",
+    "convex/capture.ts": "283369a245ab894b8ac8cc978365f2dc0c9ce1a9d6a6486e0d66ae137b05c196",
+    "convex/convex.config.ts": "89bc15d77d1263f3ec3df79afeaa73bc1870ca67d06d4ccb4d5f723a78e63c5c",
+    "convex/crons.ts": "f9d95bb8b0f241fda45af0c8de4078496fbba49f5c4ba95dcfcd05f9e3c85115",
+    "convex/csv.ts": "bc6ef159de1185b7d1a38d17abdb39efcc4ae92e44a0c7e0c1b4cc66ed7e0ae6",
+    "convex/errors.ts": "499423efb133eff7ea0cf31b9c5d87d684ffa2f47f45187af94e2cb6778e9a66",
+    "convex/events.ts": "464dc78ad6994d671691560edc9dee1ee7d11672697f0cd8aab1272a72ae2b38",
+    "convex/fields.ts": "d39b4c3582e9bfb1109f4d0b97dddb0c0d0ac3ebc8c20f3af9d43709c280021e",
+    "convex/http.ts": "82bdda9ddefe98f41c82ac3974925746a03c85e1034e4f940559d41c17fb04fe",
+    "convex/identity.ts": "252d0cf969d008616a0533e314d6af25b3d08c8cfb7f7979bddc28f7ee0a59a3",
+    "convex/inbox.ts": "c8286d7925535070092bb722769580902519e05bf4c2b79fdb32ddc8cb491967",
+    "convex/invites.ts": "c191f04b6be5d9de8a943c53511e86c596d461f54b146bc5a8097a1e8fee2f3e",
+    "convex/objects.ts": "c2c9badd9b4590c2775d47e923e8b883ab12fcef3db26f4fe4835e3ed66acc13",
+    "convex/ops.ts": "563c75695b70da8e07d11f1eb4db985764317f831d1ccc69c63a5a69dded71ea",
+    "convex/orgs.ts": "ff19e47a6e5d23469c958330a64b4a34b2800c55647097c3199dba2c2a384949",
+    "convex/rateLimit.ts": "bc881c1c62b8b6d9cd7f6b7d83d6a529d66c8dc58d8710f79e9bf121fab30afa",
+    "convex/records.ts": "2ccea237c4c2491ccfc65445e420bbbfd97f56c7d9da94d19e14f8e055108bd8",
+    "convex/release.ts": "8f1ee1db850727a5ac498d9587d515d7152dac6e16103fa14239e1cec86b4f50",
+    "convex/schema.ts": "2077681f280b6deb7e6ebb80887ea2983a03ea1575f19e211dcd3fe46f00c717",
+    "convex/seed.ts": "9db92800d9a1235f08423ba27d306fc6b4f801d061396dc23406c3dabeed189c",
+    "convex/suggestions.ts": "135bb418920077925e0d971fa720f195a95bc718bf137df095b80c12bbe217eb",
+    "convex/telemetry.ts": "4559583924aa317093809c03d2ecbda8ec4a957a0e15c8c4ec6064ba3a8145ff",
+    "convex/telemetryHttp.ts": "798bebf01f3d24d611e7249ef332af33bef09052744572ede50a25e169825120",
+    "convex/today.ts": "010508bbd31ea6a68b44ae289f67098170d2e171652702492d9d02b6158d7429",
+    "convex/tsconfig.json": "2319fd0c531ddb9727c23f574245c61c674dac4e056fef2b0891217696ef6436",
+    "convex/users.ts": "cd12025ee468cee4096348d1aa28187b283a1ac7fb655e1e65938b6b326ebae4",
+    "convex/_generated/api.d.ts": "1c9eb4734c5b0c41c92ba4dd19c154493ab4d557e5139150095b53864d41f68b",
+    "convex/_generated/dataModel.d.ts": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "convex/_generated/server.d.ts": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b",
+    "convex/authority/grants.ts": "1bd5d05378316c7dd2ad851b873c31e5e5a9aadf70f4f3701dd8e7cbf788f3e0",
+    "convex/authority/inbox.ts": "e58244c4ad9ff91ce53b37d0af24fbadccdf50a787cbc85ebc09e1edbc7052e4",
+    "convex/authority/migration.ts": "d42fd64f6a70e4cf3ee686cd10f21c44dc2b19d595fcba69bbc01a1f43a8bdff",
+    "convex/authority/pending.ts": "79acb2b768c247f6040525224ee327f068b123ab82eadeacf82a8edee09199f0",
+    "convex/authority/policies.ts": "c120d03444ae3bf3417cd3d99249c2e904748fc4cf33a4341bced13f79c76d1f",
+    "convex/authority/readonly.ts": "8be51e982ba0c20583d03b947e8f03290e4b209f868bfbe6f08c6ee5bf5f011d",
+    "convex/authority/reads.ts": "364f18aed4018e0597a604cfd946e9452b1b006a11b394fce03dfa368ae77f22",
+    "convex/integrations/bindings.ts": "e1ad0a3699d985c16b3db45b92e109a10e141b0e24379294cb9193727316230e",
+    "convex/integrations/budgets.ts": "975dedfb81f5793dbfc081c89b9f972243172cf14bc1c52076f8a8d30caadaac",
+    "convex/integrations/callbacks.ts": "a135380048d8f40fc3d3e2980f72ef6d41ae7787a4ba271cf26516aa3821d24f",
+    "convex/integrations/commands.ts": "d520079686483573f13e986a2bf8a280c797621ac1c498cd528fc19ebf312a25",
+    "convex/integrations/connections.ts": "c3168fbaead7a1196011bfe8f7f98b4393ae32df6bc52995ce2992eab878c005",
+    "convex/integrations/core.ts": "6054e86765db12050eee4d3e651a3ce46f722bb64bf4a2b7cbf466ae100cf2f9",
+    "convex/integrations/dispatch.ts": "75b7b09a85562bfada04d885e7f9a2277147501129663f12247777059688845c",
+    "convex/integrations/http.ts": "4e4c21b1d1fd59e036a085c5b95d7279a0203aa298b899588ca5dc7d0f3c1401",
+    "convex/integrations/lifecycle.ts": "617f60334b74d16b85fe9e840beb11bb4c934055a807907faefcfb962eab0b5f",
+    "convex/integrations/lookups.ts": "13fa88c6deb6f004155bbb1ec15acf49d79db7dadc1720a4009702e3cec375b6",
+    "convex/integrations/outcomes.ts": "22f0ef2e283179b1f7dae6f4fa09cc17ec51ab9088c37e5e9c054044ff0565bd",
+    "convex/integrations/receipts.ts": "187e1c4f0052aed6104ff7086b1a15c1d1ebf879c8f0a8bc9c912cecf962f3d6",
+    "convex/integrations/safety.ts": "e5abbde2777eb9dd34987d4b2a92f23717a767fc886398bc52fbe64c883de923",
+    "convex/integrations/safetyAdapters.ts": "cef29eb5dad271d5a7cfaabf1a778eff84dbfe710912194cc74026b001863f84",
+    "convex/integrations/safetyFinality.ts": "a8c5d379c039af7c05a905b76a5cce46fbb7c958235e523d6457a610ace46f0d",
+    "convex/integrations/tables.ts": "556d1dfcb641617b25014b000053ab87b72b0cd8169d2599ce87fcbcd875b5d6",
+    "convex/lib/applyChange.ts": "61bcc9776ee48c1d7b21cd42685662b744f0c0a565aa002636a52b63d934e069",
+    "convex/lib/daily.ts": "3705ebd69161585827ac965f42a523f2ba8632d37a45a3f1912a3becc59a80e2",
+    "convex/lib/find.ts": "7fd9011eb956cd9884ea5f23997d25d8efd800bd7464f7e596f05091196cf66c",
+    "convex/lib/list.ts": "7fdc63ff009661bb72b8fb5458e65b0091981e12d28b3f5fbdb4e311f7503c55",
+    "convex/lib/ref.ts": "26a4a5c20f222b3b48818c6a3d38f91994dd1c3a2090c41eb34b30897216e18c",
+    "convex/lib/search.ts": "7491384a837f88722bd209e54cd845b5a568a87fbaea1bbdf8198abf196f68f8",
+    "convex/lib/shape.ts": "60f293044d631787e04b93e1caa224104a5a8580d4fe808bad66a81e1d9f8b86",
+    "convex/lib/slots.ts": "3adfc8b719ea51b180af884a927142288982c88816921cb9a6cad08ee59fbd4e",
+    "convex/lib/standard.ts": "59da3e60020bb486f09ed68b0eb7c6f85122e684c5db8e8372a22913aa88f483",
+    "convex/lib/values.ts": "f015224e9bfb6b86c4ffb66658614bc715a85931f88ac40cd634c15a2d045a0a",
+    "packages/contracts/authority.ts": "6c32ac84aecb8d86ec8fdd332c180f07c8d3dd1af3c8676cf2ba1ec7608d2c3e",
+    "packages/contracts/integrations.ts": "eae72f25923c2cea4330398f4a30b6c70ed13c0703bd981e523f2ca01e2e0338"
+  },
+  "safetyAdapter": {
+    "level": "SIM scratch-only",
+    "productionHash": "5d52dc4995c79fa62640ec3ca0c0062415f0c463d2f6d460f6f0c6734e7c6fbc",
+    "effectiveHash": "cef29eb5dad271d5a7cfaabf1a778eff84dbfe710912194cc74026b001863f84"
+  }
+}

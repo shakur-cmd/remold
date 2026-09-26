@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I1 independent verification, round 5: certify bb8e3ed</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>I1 independent verification, round 5: certify bb8e3ed</h1>
+<div class="meta">2026-09-26 · target: <code>wip/i1-authority</code>, code <code>bb8e3ed</code>, evidence <code>6a1d83e</code> (builder revision 4) · verifier: fresh Opus 5.5, own worktree, not the builder · level: SERVICE on an isolated local Convex (127.0.0.1:3580/3581), synthetic JWTs and data, no providers, spend or sends · status: CERTIFY</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Raise the rollback floor pin to <code>bb8e3ed1a6df925e155c7eaeed4de5d9166fc14f</code></b>, the certified code commit. 6a1d83e only adds evidence on top of it. I checked the raised pin: it accepts bb8e3ed and 6a1d83e and refuses 87d4c10, babeb42, d2c8744 and pre-I1 3339517.</li>
+  <li><b>Merge I1 with a merge commit, not a squash</b>, or re-pin at merge time. A squash merge makes every rollback target fail the floor (fails closed).</li>
+  <li>Optional follow-up, not blocking: 7 of the new pending-list breaks are not caught by the builder's tests. Three are ordering or status bugs that my suite catches; four are defence-in-depth layers. None leaks today. Add them to the builder suite when convenient.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Reproduced on 6a1d83e: typecheck passes, app tests 73/73, authority unit tests 97/97, release tests 19/19, build passes, MCP build plus 2/2, builder SERVICE replay 65/65, migration replay PASS.</li>
+  <li>Every earlier IV suite now passes in full: round 1 24/24, round 2 14/14, round 3 10/10, prototype-key bodies 25/25 refused and unlogged, round 4 7/7. The round-4 sort-order failure is fixed.</li>
+  <li>Residual S is closed. Round-4 cap probe: the caller's own suggestion stays listed with 1000 hidden ahead (was 0), and the inbox note stays listed after 1001 hidden notes (was 0). Latency with 80 vs 980 hidden suggestions went from 1.9 to 2.4 ms (member) and 6.0 to 7.1 ms (agent), against 8.7 to 67 and 10 to 56 before.</li>
+  <li>Two-workspace timing control, sampled alternately, with a visible write before every sample so nothing is served from cache. Only A gets 1000 hidden suggestions and 1000 hidden private notes. A vs B after: member suggestions 10.62 vs 10.99 ms, member inbox 4.68 vs 4.75, agent /suggestions 16.76 vs 16.94, agent /inbox 10.20 vs 10.07, agent /me 10.36 vs 10.91. No dependency on hidden items.</li>
+  <li>Round-5 suite <code>iv-r5.mjs</code>: 6/6 PASS. It covers suggestion lists, status lists, lost access and grant unions, the inbox audience matrix (five audience kinds, five reader kinds), subscriptions, and timing.</li>
+  <li>Subscriptions: across six open subscriptions of a record-scoped member (suggestions, inbox, records.list, events feed, search, today), 25 hidden-only changes caused 0 updates. One visible change updated every subscription that should change.</li>
+  <li>Rollback of the three new indexes: going back to 87d4c10 on a non-empty backend drops them, and the old code keeps working. Going forward rebuilds them, and the suggestion list, inbox and events feed are exact, including items written during the rollback.</li>
+  <li>Long lists: record lists of 1000 to 4000 IDs answer every surface, including suggestions, inbox and /me, in 4 to 560 ms. Storing more than about 4080 IDs is refused. An agent holding two grants of 3000 records gets a generic 500 on list reads, including /suggestions and /me: it fails closed, never partial.</li>
+  <li>Deliberate breaks: 29 of 40 caught by the builder suites. Every break that would bring a leak back is caught. The 11 misses are listed below.</li>
+</ul>
+</div>
+
+<h2>Verdict per I1 check (docs/unified-launch/jobs.json)</h2>
+<table>
+<tr><th>#</th><th>Check</th><th>Verdict</th><th>Why</th></tr>
+<tr><td>1</td><td>All H0 adversarial cases pass on production, including stale worker/approval/role downgrade and same-ID different-provider-instance</td><td>PASS</td><td>SERVICE 65/65, including the H0#5 fire-chain test. Round-1 and round-2 attack suites 38/38. Map guard 5/5 self-tests. The 19 weak own-check rows describe their tests loosely; each group is still exercised.</td></tr>
+<tr><td>2</td><td>Old clients keep exactly their operations; wildcards expand; no widening through migration or rollback</td><td>PASS</td><td>Migration replay PASS (old MCP/REST transcript retained, schema refusal, enforcing rollback). Round-1 C1/C2 11/11. All four additive indexes roll back and forward on live data. The floor refuses pre-I1, squash, shallow and tree targets, each with an accurate reason. Known limit: it cannot detect pre-I1 code restored inside an I1 descendant.</td></tr>
+<tr><td>3</td><td>No path bypasses readonly, field masks or external-action authorization; hidden field leaves an open subscription within 2 s</td><td>PASS</td><td>No hidden-row effect remains on any list, page, search, name match, daily list, suggestion list, inbox or /me count. Checked for record-scoped, field-masked, mixed-scope, two-list, no-scope, shared-inbox and legacy readers, by content, count, cursor, timing and subscription push. Readonly sweeps pass. Subscription mask on this run: 10.8 ms field, 11.7 ms record (builder SERVICE: 15.95 ms).</td></tr>
+<tr><td>4</td><td>Invalid provider/secret reference fails closed; callback and ops logs reveal no secrets</td><td>PASS</td><td>Round-1 C4 checks and the builder secrets suite pass. 25/25 bodies with built-in object key names are refused before Convex, with no body or key hash logged.</td></tr>
+</table>
+<p><b>Overall: CERTIFY. Certified code commit <code>bb8e3ed1a6df925e155c7eaeed4de5d9166fc14f</code></b> (evidence commit 6a1d83e descends from it and changes only <code>evidence/</code>).</p>
+
+<h2>What I attacked in pending.ts</h2>
+<table>
+<tr><th>Attack</th><th>Result</th></tr>
+<tr><td>Suggestion list, agent list and /me count vs the owner's list restricted to readable records; then 60 more hidden suggestions</td><td>exact (3 of 3, newest first); unchanged after</td></tr>
+<tr><td>Dismissed list after dismissing one readable and 5 hidden suggestions</td><td>only the readable one, member and agent</td></tr>
+<tr><td>Member narrowed from [a, b] to [a]; agent with grants [a] + [b], then [b] revoked; agent with a list grant plus an all grant</td><td>b's suggestions gone after narrowing and after revoke; union correct; list+all sees all 64, same as owner</td></tr>
+<tr><td>Inbox: shared, private, legacy pre-freeze (no audience), post-freeze no audience; readers: restricted member, scoped agent, shared-inbox agent, legacy pre-freeze agent, owner. Then 40 hidden private notes</td><td>every reader sees exactly the expected set in creation order; /me counts match; unchanged after</td></tr>
+<tr><td>Subscriptions under 25 hidden-only writes (new, edited and dismissed hidden rows, other agents' notes)</td><td>0 pushes on all 6; visible write pushes all that should change</td></tr>
+<tr><td>Cap probe (round 4): 1000 hidden suggestions and 1001 hidden notes ahead of the caller's own</td><td>own items still listed</td></tr>
+</table>
+
+<h2>Deliberate breaks (iv-r5-breaks.mjs, 40 breaks)</h2>
+<p>Caught (29): every list-path, related, CSV, events-merge, search, name-match, daily-list and cursor break; compareValues back to UTF-16; suggestions or inbox read from the org-wide index; legacy inbox stream removed; R1, R3 (both), R4 (both); D6 guard own-check line and MAX_SHARED.</p>
+<table>
+<tr><th>Missed by builder suites</th><th>Effect if shipped</th><th>My suite</th></tr>
+<tr><td>Per-record suggestion stream ignores status</td><td>dismissed suggestions on your own records shown as pending (wrong, no leak)</td><td>caught (R5-A2, A3)</td></tr>
+<tr><td>Merge sorts oldest first</td><td>wrong order (no leak)</td><td>caught (R5-A3)</td></tr>
+<tr><td>Inbox shared stream opened to every caller; legacy stream ignores the freeze bound</td><td>no visible change: the final <code>canSeeInbox</code> filter removes the extra rows. Past 100 rows the list would be cut short again (count leak).</td><td>not caught; defence in depth</td></tr>
+<tr><td>Final readability filter dropped (suggestions, inbox); merge without de-duplication</td><td>none today: the streams already hold only visible, distinct rows</td><td>not caught; defence in depth</td></tr>
+<tr><td>Due-tasks index path without its read check</td><td>unreachable: that path is only taken when every row is readable</td><td>n/a</td></tr>
+<tr><td>D6 rows 5, 8, 38 reverted to old patterns</td><td>documentation only; the guard cannot judge meaning</td><td>n/a</td></tr>
+</table>
+
+<h2>Remaining known limits (none blocks certification)</h2>
+<ul>
+  <li>Unreadable lookup IDs still show on readable records. Their titles are masked, and deletes clear them, so an ID's presence confirms the linked record exists. Unchanged since round 2, where it was optional.</li>
+  <li>Floor content limit: an I1 descendant that restores pre-I1 code plus empty marker files passes the floor.</li>
+  <li>Record lists are capped near 4080 IDs per write. Larger unions across agent grants fail closed with a generic 500.</li>
+  <li>Offset list cursors shift if rows are added between pages. Restricted-reader behaviour changes (search scope, ranking, daily list) were accepted in round 4.</li>
+</ul>
+
+<h2>Not checked</h2>
+<ul>
+  <li>Hosted Convex; everything ran locally.</li>
+  <li><code>git revert</code> of the whole I1 range (the range has merge commits).</li>
+  <li>Reactive subscriptions for agents (agents read over HTTP only).</li>
+</ul>
+
+<h2>How to reproduce</h2>
+<pre>git worktree add --detach ../remold-i1-iv5 6a1d83e &amp;&amp; cd ../remold-i1-iv5
+git apply evidence/2026-09-25-i1/iv-r5/local-ports.patch        # 3580/3581
+git checkout origin/i1/iv-r2-2026-09-26 -- evidence/2026-09-25-i1/iv evidence/2026-09-25-i1/iv-r2
+git checkout origin/i1/iv-r3-2026-09-26 -- evidence/2026-09-25-i1/iv-r3
+git checkout origin/i1/iv-r4-2026-09-26 -- evidence/2026-09-25-i1/iv-r4
+pnpm install &amp;&amp; pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm verify:release &amp;&amp; pnpm build
+(cd packages/mcp &amp;&amp; pnpm build &amp;&amp; pnpm test)
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/service.mjs ; I1_EVIDENCE_DIR=/tmp/m node ops/authority/migration-service.mjs
+cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts evidence/2026-09-25-i1/iv-r5/fixture-ivfive.ts ops/authority/
+for s in iv/iv-service iv-r2/iv-r2 iv-r3/iv-r3 iv-r4/iv-r4 iv-r4/iv-r4-timing iv-r4/iv-r4-rollback iv-r5/iv-r5 iv-r5/iv-r5-rollback; do I1_EVIDENCE_DIR=/tmp/x node evidence/2026-09-25-i1/$s.mjs; done
+IV_ONLY=R2-D8a I1_EVIDENCE_DIR=/tmp/x node evidence/2026-09-25-i1/iv-r3/iv-r3-d8.mjs
+SIZES=1000,2000,3000,4000 I1_EVIDENCE_DIR=/tmp/x node evidence/2026-09-25-i1/iv-r5/iv-r5-limits.mjs
+node evidence/2026-09-25-i1/iv-r5/iv-r5-floor.mjs "$PWD/../remold" /tmp/floor
+node evidence/2026-09-25-i1/iv-r5/iv-r5-breaks.mjs /tmp/breaks</pre>
+<p>Files: <code>logs/</code> (every run; <code>iv-r5-run1-idbug.log</code> is a first run where my script read the wrong response field, <code>iv-r5-break-*.log</code> are my suite against three missed breaks, <code>floor-raised-pin.log</code> is the pin check), <code>data/</code>, <code>breaks/breaks.json</code>. No fixture zips or plaintext keys are committed.</p>
+</body>
+</html>

@@ -1,0 +1,25 @@
+PASS R5-A1 Suggestion lists (member, agent) and agent /me return exactly the suggestions on readable records, newest first, and do not change when hidden suggestions are added
+FAIL R5-A2 Status lists: after dismissing one readable and several hidden suggestions, the dismissed list shows only the readable one; pending drops it 
+    [Request ID: 4472f42bedd8899a] Server Error
+ArgumentValidationError: Object is missing the required field `suggestionId`. Consider wrapping the field validator in `v.optional(...)` if this is expected.
+
+Object: {orgId: "p57b63qexd7peq460gcdk6n9gx8f4cnf"}
+Validator: v.object({orgId: v.id("orgs"), suggestionId: v.id("suggestions")})
+
+
+FAIL R5-A3 Lost access: a member narrowed from [a,b] to [a], and an agent whose grant on b is revoked, stop seeing b's suggestions; a union of two list grants and a list+all grant pair behave as a union 
+    {"memberAfterNarrow":["ns79w8g9e1742xv8zw6k06p62d8f450f","ns76p09229f00drd8h75qjcsq58f5234"],"yBoth":["ns7dpj9t8tmcygwv5f8g2jv7x98f5m39","ns79w8g9e1742xv8zw6k06p62d8f450f","ns7b269810c7edtnq7jhp409eh8f56fr","ns76p09229f00drd8h75qjcsq58f5234"],"yAfter":["ns79w8g9e1742xv8zw6k06p62d8f450f","ns76p09229f00drd8h75qjcsq58f5234"],"zAll":70,"ownerPending":70,"ids":{}}
++ actual - expected
+
+  [
++   'ns79w8g9e1742xv8zw6k06p62d8f450f',
++   'ns76p09229f00drd8h75qjcsq58f5234'
+-   undefined,
+-   undefined
+  ]
+
+PASS R5-B1 Inbox audiences: own, shared (org), private (author), legacy pre-freeze (no audience) and post-freeze no-audience items reach exactly the right readers (restricted member, scoped agent, shared-inbox agent, legacy pre-freeze agent, owner), and hidden notes change nothing
+PASS R5-C1 Open subscriptions of the record-scoped member (suggestions, inbox, records.list, events feed, search, today) receive no update when only hidden rows change, and do update on a visible change
+PASS R5-T1 Timing: two identical workspaces sampled alternately; only A gets 1000 hidden suggestions and 1000 hidden private notes. Median latency of member suggestions/inbox lists and agent /suggestions, /inbox, /me stays equal (within 2 ms or 30%)
+R5 SUMMARY 4 PASS / 2 FAIL
+exit 0

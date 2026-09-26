@@ -1,0 +1,402 @@
+[
+  {
+    "id": "P listedRecordIds always null (no list path anywhere)",
+    "file": "convex/authority/reads.ts",
+    "diff": [
+      "-  if (all.some(s => s.records === 'all')) return null;",
+      "+  return null;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 48ms |    × name matching still finds a readable record when many unreadable near-matches outrank it 51ms |    × daily task membership cannot reveal due or done fields denied for that particular record 161ms"
+  },
+  {
+    "id": "P pageRecords list path off",
+    "file": "convex/lib/list.ts",
+    "diff": [
+      "-  if (listed) {",
+      "+  if (false && listed) {"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × records.list: a filter value only hidden deals hold pages like a value nobody holds 246ms |    × records.list: hidden deals do not change the recent-first pages 30ms |    × records.list: sorting by a field still pages only readable rows 23ms"
+  },
+  {
+    "id": "P list path ignores filter",
+    "file": "convex/lib/list.ts",
+    "diff": [
+      "-      if (filter) rows = rows.filter(r => compareIndexValues(at(r), filter.value ?? undefined) === 0);",
+      "+      if (false) rows = rows.filter(r => compareIndexValues(at(r), filter.value ?? undefined) === 0);"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 147ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  },
+  {
+    "id": "P list path ignores desc",
+    "file": "convex/lib/list.ts",
+    "diff": [
+      "-      if (sort?.direction === \"desc\") rows.reverse();",
+      "+      "
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 144ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  },
+  {
+    "id": "P list path tie-break dropped",
+    "file": "convex/lib/list.ts",
+    "diff": [
+      "-      rows = [...rows].sort((a, b) => compareIndexValues(at(a), at(b)) || a._creationTime - b._creationTime);",
+      "+      rows = [...rows].sort((a, b) => compareIndexValues(at(a), at(b)));"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 128ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  },
+  {
+    "id": "P pageList isDone off by one",
+    "file": "convex/authority/reads.ts",
+    "diff": [
+      "-  return { page: rows.slice(start, end), isDone: end >= rows.length, continueCursor: 'list:' + end };",
+      "+  return { page: rows.slice(start, end), isDone: end > rows.length, continueCursor: 'list:' + end };"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × records.list: sorting by a field still pages only readable rows 26ms |  FAIL  ops/authority/pagination.test.ts > records.list: sorting by a field still pages only readable rows"
+  },
+  {
+    "id": "P records.related list path off",
+    "file": "convex/records.ts",
+    "diff": [
+      "-  if (listed) { const page = pageList(listed, args.paginationOpts); return { ...page, page: (await Promise.all(page.page.map(r => projectRecord(ctx, principal, r)))).filter(Boolean) }; }",
+      "+  if (false && listed) { const page = pageList(listed, args.paginationOpts); return { ...page, page: (await Promise.all(page.page.map(r => projectRecord(ctx, principal, r)))).filter(Boolean) }; }"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × records.related: hidden deals linked to a readable company do not change the pages 31ms |  FAIL  ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages"
+  },
+  {
+    "id": "P agent related list path off",
+    "file": "convex/lib/list.ts",
+    "diff": [
+      "-  if (!listed) return null;",
+      "+  if (!listed || true) return null;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × records.related: hidden deals linked to a readable company do not change the pages 25ms |    × agent related through a lookup fills its limit with readable records 42ms |    × agent related through a links field fills its limit with readable records 41ms"
+  },
+  {
+    "id": "P csv list path off",
+    "file": "convex/csv.ts",
+    "diff": [
+      "-    const page = listed ? pageList([...listed].sort((a, b) => a._creationTime - b._creationTime), { cursor: args.cursor, numItems: 200 }) : await paginateIndex(ctx.db.query(\"records\").withIndex(\"by_object\", (q) => q.eq(",
+      "+    const page = false && listed ? pageList([...listed].sort((a, b) => a._creationTime - b._creationTime), { cursor: args.cursor, numItems: 200 }) : await paginateIndex(ctx.db.query(\"records\").withIndex(\"by_object\", (q)"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × csv.exportPage: hidden deals do not change the export pages 335ms |  FAIL  ops/authority/pagination.test.ts > csv.exportPage: hidden deals do not change the export pages"
+  },
+  {
+    "id": "P events merge off",
+    "file": "convex/events.ts",
+    "diff": [
+      "-  const page = restricted ? await mergedEvents(ctx, args.orgId, streams, args.paginationOpts) : await paginateIndex(ctx.db.query(\"events\").withIndex(\"by_org\", (q) => q.eq(\"orgId\", args.orgId)).order(\"desc\"), args.pagina",
+      "+  const page = false ? await mergedEvents(ctx, args.orgId, streams, args.paginationOpts) : await paginateIndex(ctx.db.query(\"events\").withIndex(\"by_org\", (q) => q.eq(\"orgId\", args.orgId)).order(\"desc\"), args.paginationO"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × events.forOrg: activity on hidden deals does not change the member's pages 18ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages"
+  },
+  {
+    "id": "P events merge keeps already-seen ids",
+    "file": "convex/events.ts",
+    "diff": [
+      "-  ).order(\"desc\").take(take)))).flat().filter(e => !seen.includes(e._id));",
+      "+  ).order(\"desc\").take(take)))).flat();"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × events.forOrg: a restricted member pages every event they can see, newest first, once each 61ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: a restricted member pages every event they can see, newest first, once each"
+  },
+  {
+    "id": "P events: listed objects streamed whole",
+    "file": "convex/events.ts",
+    "diff": [
+      "-  for (const object of objects) { const ids = listedRecordIds(principal, object); if (ids === null) streams.push({ objectId: object._id }); else { restricted = true; streams.push(...ids.map(recordId => ({ recordId })));",
+      "+  for (const object of objects) { const ids = listedRecordIds(principal, object); if (true) streams.push({ objectId: object._id }); else { restricted = true; streams.push(...ids.map(recordId => ({ recordId }))); } }"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × events.forOrg: activity on hidden deals does not change the member's pages 21ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages"
+  },
+  {
+    "id": "F search: record-scoped treated as fully searchable",
+    "file": "convex/lib/search.ts",
+    "diff": [
+      "-  if (depth > 5 || listedRecordIds(principal, object) !== null || !object.titleFieldId) return false;",
+      "+  if (depth > 5 || !object.titleFieldId) return false;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 51ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing"
+  },
+  {
+    "id": "F search recent: list path off",
+    "file": "convex/lib/search.ts",
+    "diff": [
+      "-    return listed ? listed.sort((a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime).slice(0, limit) : readableOnly(await ctx.db.query(\"records\").withIndex(\"by_object_updated\", (q) => q.eq(\"orgId\", ",
+      "+    return false && listed ? listed.sort((a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime).slice(0, limit) : readableOnly(await ctx.db.query(\"records\").withIndex(\"by_object_updated\", (q) => q.eq("
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 32ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing"
+  },
+  {
+    "id": "F name match list path off",
+    "file": "convex/lib/find.ts",
+    "diff": [
+      "-  if (listed) return listed.filter(record => record.title.trim().toLowerCase() === want).sort((a, b) => a._creationTime - b._creationTime)[0] ?? null;",
+      "+  if (false) return listed!.filter(record => record.title.trim().toLowerCase() === want).sort((a, b) => a._creationTime - b._creationTime)[0] ?? null;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × name matching still finds a readable record when many unreadable near-matches outrank it 34ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches outrank it"
+  },
+  {
+    "id": "F dueTasks list path off",
+    "file": "convex/lib/daily.ts",
+    "diff": [
+      "-  if (listed) return listed.filter(row => canReadField(principal, task, due, row._id) && (!done || canReadField(principal, task, done, row._id))).filter(row => typeof at(row) === \"number\" && (at(row) as number) > 0 && (",
+      "+  if (false) return listed!.filter(row => canReadField(principal, task, due, row._id) && (!done || canReadField(principal, task, done, row._id))).filter(row => typeof at(row) === \"number\" && (at(row) as number) > 0 && ("
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × daily task membership cannot reveal due or done fields denied for that particular record 123ms |  FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record |  FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record"
+  },
+  {
+    "id": "F quietDeals list path off",
+    "file": "convex/lib/daily.ts",
+    "diff": [
+      "-  if (listed) return listed.filter(row => !stage || canReadField(principal, deal, stage, row._id)).filter(row => row.updatedAt < before && open(row)).sort((a, b) => a.updatedAt - b.updatedAt || a._creationTime - b._crea",
+      "+  if (false) return listed!.filter(row => !stage || canReadField(principal, deal, stage, row._id)).filter(row => row.updatedAt < before && open(row)).sort((a, b) => a.updatedAt - b.updatedAt || a._creationTime - b._crea"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × quiet deals ignore any number of hidden deals untouched for longer 75ms |  FAIL  ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer"
+  },
+  {
+    "id": "F dueTasks index path skips canReadRecord",
+    "file": "convex/lib/daily.ts",
+    "diff": [
+      "-  return firstVisible<Doc<\"records\">, Doc<\"records\">>(rows, limit, row => open(row) && canReadRecord(principal, task, row) ? row : null);",
+      "+  return firstVisible<Doc<\"records\">, Doc<\"records\">>(rows, limit, row => open(row) ? row : null);"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S suggestions: record-scoped callers read the org-wide index",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-  if (everything) streams.splice(0, streams.length, ctx.db.query('suggestions').withIndex('by_org_status', q => q.eq('orgId', orgId).eq('status', status)).order('desc'));",
+      "+  if (true) streams.splice(0, streams.length, ctx.db.query('suggestions').withIndex('by_org_status', q => q.eq('orgId', orgId).eq('status', status)).order('desc'));"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × member suggestion list fills its limit with readable suggestions 17ms |    × agent suggestion list fills its limit with readable suggestions 9ms |    × suggestion lists and the agent summary ignore any number of hidden pending suggestions 24ms"
+  },
+  {
+    "id": "S suggestions: final readability filter dropped",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-  return (await merge(streams, 'desc', limit)).filter(s => { const o = byId.get(s.change.objectId); return !!o && canReadRecordId(principal, o, s.change.recordId); });",
+      "+  return (await merge(streams, 'desc', limit));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S suggestions: per-record stream ignores status",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-    for (const recordId of ids) streams.push(ctx.db.query('suggestions').withIndex('by_record', q => q.eq('orgId', orgId).eq('recordId', recordId)).order('desc').filter(q => q.eq(q.field('status'), status)));",
+      "+    for (const recordId of ids) streams.push(ctx.db.query('suggestions').withIndex('by_record', q => q.eq('orgId', orgId).eq('recordId', recordId)).order('desc'));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S merge: newest-first sort reversed",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-  const unique = [...new Map(rows.map(r => [r._id, r])).values()].sort((a, b) => order === 'asc' ? a._creationTime - b._creationTime : b._creationTime - a._creationTime);",
+      "+  const unique = [...new Map(rows.map(r => [r._id, r])).values()].sort((a, b) => a._creationTime - b._creationTime);"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S merge: no de-duplication",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-  const unique = [...new Map(rows.map(r => [r._id, r])).values()].sort((a, b) => order === 'asc' ? a._creationTime - b._creationTime : b._creationTime - a._creationTime);",
+      "+  const unique = [...rows].sort((a, b) => order === 'asc' ? a._creationTime - b._creationTime : b._creationTime - a._creationTime);"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S inbox: restricted callers read the whole org index",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-  if (unrestrictedHuman(principal)) streams.push(ctx.db.query('agentInbox').withIndex('by_org_status', q => q.eq('orgId', orgId).eq('status', status)).order('asc'));",
+      "+  if (true) streams.push(ctx.db.query('agentInbox').withIndex('by_org_status', q => q.eq('orgId', orgId).eq('status', status)).order('asc'));"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × member inbox list fills its limit with items the member may see 12ms |    × agent inbox list fills its limit with items the agent may see 15ms |    × inbox lists and the agent summary ignore any number of other people's private notes 23ms"
+  },
+  {
+    "id": "S inbox: shared stream for everyone",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-    if (sharedInboxReader(principal)) {",
+      "+    if (true) {"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S inbox: legacy pre-freeze items not streamed",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-      if (frozenAt !== undefined) streams.push(ctx.db.query('agentInbox').withIndex('by_org_status_audience', q => q.eq('orgId', orgId).eq('status', status).eq('audience', undefined).lte('_creationTime', frozenAt)).orde",
+      "+      if (false) streams.push(ctx.db.query('agentInbox').withIndex('by_org_status_audience', q => q.eq('orgId', orgId).eq('status', status).eq('audience', undefined).lte('_creationTime', frozenAt)).order('asc'));"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes 15ms |  FAIL  ops/authority/inbox.test.ts > old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes"
+  },
+  {
+    "id": "S inbox: legacy stream ignores the freeze bound",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-      if (frozenAt !== undefined) streams.push(ctx.db.query('agentInbox').withIndex('by_org_status_audience', q => q.eq('orgId', orgId).eq('status', status).eq('audience', undefined).lte('_creationTime', frozenAt)).orde",
+      "+      if (frozenAt !== undefined) streams.push(ctx.db.query('agentInbox').withIndex('by_org_status_audience', q => q.eq('orgId', orgId).eq('status', status).eq('audience', undefined)).order('asc'));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "S inbox: final canSeeInbox filter dropped",
+    "file": "convex/authority/pending.ts",
+    "diff": [
+      "-  return (await merge(streams, 'asc', limit)).filter(item => canSeeInbox(principal, item));",
+      "+  return (await merge(streams, 'asc', limit));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "O compareValues back to JS UTF-16 compare",
+    "file": "convex/authority/reads.ts",
+    "diff": [
+      "-export function compareIndexValues(a: unknown, b: unknown) { return compareValues(a as Value | undefined, b as Value | undefined); }",
+      "+export function compareIndexValues(a: unknown, b: unknown) { return (a as any) < (b as any) ? -1 : (a as any) > (b as any) ? 1 : 0; }"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 139ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text"
+  },
+  {
+    "id": "C paginateIndex passes list: cursors to Convex",
+    "file": "convex/authority/reads.ts",
+    "diff": [
+      "-  if ([opts.cursor, opts.endCursor].some(c => typeof c === 'string' && /^(list|events):/.test(c))) fail('VALIDATION', 'Invalid cursor');",
+      "+  if ([opts.cursor, opts.endCursor].some(c => false)) fail('VALIDATION', 'Invalid cursor');"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × a cursor from the other path is refused cleanly, not with a server error 24ms |  FAIL  ops/authority/pagination.test.ts > a cursor from the other path is refused cleanly, not with a server error"
+  },
+  {
+    "id": "R1 shape: Object.hasOwn back to `in`",
+    "file": "convex/lib/shape.ts",
+    "diff": [
+      "-      if (Object.keys(record).some(key => !Object.hasOwn(fields, key))) return false;",
+      "+      if (Object.keys(record).some(key => !(key in fields))) return false;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × refuses extra body keys even when they share a name with an Object.prototype member 3ms |  FAIL  ops/authority/shape.test.ts > refuses extra body keys even when they share a name with an Object.prototype member"
+  },
+  {
+    "id": "R3 events.forRecord: drop the read check",
+    "file": "convex/events.ts",
+    "diff": [
+      "-  if (!record || !object || !canReadRecord(principal, object, record)) fail(\"NOT_FOUND\", \"Record not found\");",
+      "+  if (!record || !object) fail(\"NOT_FOUND\", \"Record not found\");"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × a record ID the member cannot read gets the same answer as a deleted record 29ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record"
+  },
+  {
+    "id": "R3 records.related: drop the target read check",
+    "file": "convex/records.ts",
+    "diff": [
+      "-  if (!target || !targetObject || !canReadRecord(principal, targetObject, target) || !field || field.orgId !== args.orgId) fail(\"NOT_FOUND\", \"Record or field not found\");",
+      "+  if (!target || !targetObject || !field || field.orgId !== args.orgId) fail(\"NOT_FOUND\", \"Record or field not found\");"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × a record ID the member cannot read gets the same answer as a deleted record 39ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record"
+  },
+  {
+    "id": "R4 floor: drop the ancestry clause",
+    "file": "ops/release/release.mjs",
+    "diff": [
+      "-  if (!ok('merge-base', '--is-ancestor', floorSha, targetSha)) return `rollback target ${targetSha} does not descend from the I1 floor commit ${floorSha}. Either it predates I1, or I1 reached it by squash or rebase, whi",
+      "+  if (false) return `rollback target ${targetSha} does not descend from the I1 floor commit ${floorSha}. Either it predates I1, or I1 reached it by squash or rebase, which the floor cannot trace; ${shallow ? history : '"
+    ],
+    "result": "CAUGHT by release",
+    "detail": "✖ after the I1 freeze, rollback to code that predates I1 authority is refused (401.83375ms) | ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (398.112708ms) | ✖ failing tests:"
+  },
+  {
+    "id": "R4 floor: generic refusal message",
+    "file": "ops/release/release.mjs",
+    "diff": [
+      "-  if (type !== 'commit') return `rollback target ${targetSha} is a ${type}, not a commit`;",
+      "+  if (type !== 'commit') return 'refused';"
+    ],
+    "result": "CAUGHT by release",
+    "detail": "✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (484.841541ms) | ✖ failing tests: | ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (484.841541ms)"
+  },
+  {
+    "id": "D6 guard: own-check line disabled",
+    "file": "ops/authority/h0-parity.test.ts",
+    "diff": [
+      "-    if (!own.test(covered)) gaps.push(`${row.h0}: no mapped test does its own check /${row.exercises}/`);",
+      "+    if (false) gaps.push(`${row.h0}: no mapped test does its own check /${row.exercises}/`);"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × the guard reports a row whose own check no mapped test performs 18ms |  FAIL  ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs"
+  },
+  {
+    "id": "D6 guard: MAX_SHARED 6 -> 60",
+    "file": "ops/authority/h0-parity.test.ts",
+    "diff": [
+      "-const MAX_SHARED = 6;",
+      "+const MAX_SHARED = 60;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × the guard reports an own check that seven production tests share 23ms |  FAIL  ops/authority/h0-parity.test.ts > the guard reports an own check that seven production tests share"
+  },
+  {
+    "id": "D6 row 5 own check -> old revoke pattern",
+    "file": "ops/authority/h0-parity.json",
+    "diff": [
+      "-    \"exercises\": \"const afterFire = await childRead\\\\(\\\\)\",",
+      "+    \"exercises\": \"childRead\\\\(\","
+    ],
+    "result": "MISSED (unit green)",
+    "detail": ""
+  },
+  {
+    "id": "D6 row 8 own check -> old key pattern",
+    "file": "ops/authority/h0-parity.json",
+    "diff": [
+      "-    \"exercises\": \"result\\\\.late, true[\\\\s\\\\S]*agentId: before\\\\.agentId \\\\}\\\\); await assert\\\\.rejects\\\\(t\\\\.adapter\\\\('permit', \\\\{ id: pending, \\\\.\\\\.\\\\.c, worker: 'w' \\\\}\\\\), /Agent inactive/\\\\)\",",
+      "+    \"exercises\": \"revoked agent key\","
+    ],
+    "result": "MISSED (unit green)",
+    "detail": ""
+  },
+  {
+    "id": "D6 row 38 own check -> old exposure pattern",
+    "file": "ops/authority/h0-parity.json",
+    "diff": [
+      "-    \"exercises\": \"exhausted\\\\.continuationRefused, true\",",
+      "+    \"exercises\": \"second\\\\.maxUnits, 3\","
+    ],
+    "result": "MISSED (unit green)",
+    "detail": ""
+  }
+]

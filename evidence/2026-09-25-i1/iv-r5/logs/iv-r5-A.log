@@ -1,0 +1,5 @@
+PASS R5-A1 Suggestion lists (member, agent) and agent /me return exactly the suggestions on readable records, newest first, and do not change when hidden suggestions are added
+PASS R5-A2 Status lists: after dismissing one readable and several hidden suggestions, the dismissed list shows only the readable one; pending drops it
+PASS R5-A3 Lost access: a member narrowed from [a,b] to [a], and an agent whose grant on b is revoked, stop seeing b's suggestions; a union of two list grants and a list+all grant pair behave as a union
+R5 SUMMARY 3 PASS / 0 FAIL
+exit 0

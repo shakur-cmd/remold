@@ -1,0 +1,43 @@
+CAUGHT P listedRecordIds always null (no list path anywhere) <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 48ms |    × name matching still finds a readable record when many unreadable near-matches outrank it 51ms |    × daily task membership c
+CAUGHT P pageRecords list path off <- unit:    × records.list: a filter value only hidden deals hold pages like a value nobody holds 246ms |    × records.list: hidden deals do not change the recent-first pages 30ms |    × records.list: sorting by a field still pag
+CAUGHT P list path ignores filter <- unit:    × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 147ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, includi
+CAUGHT P list path ignores desc <- unit:    × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 144ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, includi
+CAUGHT P list path tie-break dropped <- unit:    × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 128ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, includi
+CAUGHT P pageList isDone off by one <- unit:    × records.list: sorting by a field still pages only readable rows 26ms |  FAIL  ops/authority/pagination.test.ts > records.list: sorting by a field still pages only readable rows
+CAUGHT P records.related list path off <- unit:    × records.related: hidden deals linked to a readable company do not change the pages 31ms |  FAIL  ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages
+CAUGHT P agent related list path off <- unit:    × records.related: hidden deals linked to a readable company do not change the pages 25ms |    × agent related through a lookup fills its limit with readable records 42ms |    × agent related through a links field fil
+CAUGHT P csv list path off <- unit:    × csv.exportPage: hidden deals do not change the export pages 335ms |  FAIL  ops/authority/pagination.test.ts > csv.exportPage: hidden deals do not change the export pages
+CAUGHT P events merge off <- unit:    × events.forOrg: activity on hidden deals does not change the member's pages 18ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages
+CAUGHT P events merge keeps already-seen ids <- unit:    × events.forOrg: a restricted member pages every event they can see, newest first, once each 61ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: a restricted member pages every event they can see, newest f
+CAUGHT P events: listed objects streamed whole <- unit:    × events.forOrg: activity on hidden deals does not change the member's pages 21ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages
+CAUGHT F search: record-scoped treated as fully searchable <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 51ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+CAUGHT F search recent: list path off <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 32ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+CAUGHT F name match list path off <- unit:    × name matching still finds a readable record when many unreadable near-matches outrank it 34ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches ou
+CAUGHT F dueTasks list path off <- unit:    × daily task membership cannot reveal due or done fields denied for that particular record 123ms |  FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that 
+CAUGHT F quietDeals list path off <- unit:    × quiet deals ignore any number of hidden deals untouched for longer 75ms |  FAIL  ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer
+MISSED F dueTasks index path skips canReadRecord 
+CAUGHT S suggestions: record-scoped callers read the org-wide index <- unit:    × member suggestion list fills its limit with readable suggestions 17ms |    × agent suggestion list fills its limit with readable suggestions 9ms |    × suggestion lists and the agent summary ignore any number of hid
+MISSED S suggestions: final readability filter dropped 
+MISSED S suggestions: per-record stream ignores status 
+MISSED S merge: newest-first sort reversed 
+MISSED S merge: no de-duplication 
+CAUGHT S inbox: restricted callers read the whole org index <- unit:    × member inbox list fills its limit with items the member may see 12ms |    × agent inbox list fills its limit with items the agent may see 15ms |    × inbox lists and the agent summary ignore any number of other peop
+MISSED S inbox: shared stream for everyone 
+CAUGHT S inbox: legacy pre-freeze items not streamed <- unit:    × old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes 15ms |  FAIL  ops/authority/inbox.test.ts > old inbox compatibility is bounded to pre-freeze agents and 
+MISSED S inbox: legacy stream ignores the freeze bound 
+MISSED S inbox: final canSeeInbox filter dropped 
+CAUGHT O compareValues back to JS UTF-16 compare <- unit:    × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 139ms |  FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, includi
+CAUGHT C paginateIndex passes list: cursors to Convex <- unit:    × a cursor from the other path is refused cleanly, not with a server error 24ms |  FAIL  ops/authority/pagination.test.ts > a cursor from the other path is refused cleanly, not with a server error
+CAUGHT R1 shape: Object.hasOwn back to `in` <- unit:    × refuses extra body keys even when they share a name with an Object.prototype member 3ms |  FAIL  ops/authority/shape.test.ts > refuses extra body keys even when they share a name with an Object.prototype member
+CAUGHT R3 events.forRecord: drop the read check <- unit:    × a record ID the member cannot read gets the same answer as a deleted record 29ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record
+CAUGHT R3 records.related: drop the target read check <- unit:    × a record ID the member cannot read gets the same answer as a deleted record 39ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record
+CAUGHT R4 floor: drop the ancestry clause <- release: ✖ after the I1 freeze, rollback to code that predates I1 authority is refused (401.83375ms) | ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (398.112708ms) | ✖ fa
+CAUGHT R4 floor: generic refusal message <- release: ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (484.841541ms) | ✖ failing tests: | ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin
+CAUGHT D6 guard: own-check line disabled <- unit:    × the guard reports a row whose own check no mapped test performs 18ms |  FAIL  ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs
+CAUGHT D6 guard: MAX_SHARED 6 -> 60 <- unit:    × the guard reports an own check that seven production tests share 23ms |  FAIL  ops/authority/h0-parity.test.ts > the guard reports an own check that seven production tests share
+MISSED D6 row 5 own check -> old revoke pattern 
+MISSED D6 row 8 own check -> old key pattern 
+MISSED D6 row 38 own check -> old exposure pattern 
+tree after breaks: M ops/authority/local.mjs
+?? ops/authority/fixture-iv.ts
+?? ops/authority/fixture-ivfive.ts

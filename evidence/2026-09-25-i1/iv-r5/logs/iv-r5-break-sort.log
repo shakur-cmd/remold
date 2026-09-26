@@ -1,0 +1,14 @@
+PASS R5-A1 Suggestion lists (member, agent) and agent /me return exactly the suggestions on readable records, newest first, and do not change when hidden suggestions are added
+PASS R5-A2 Status lists: after dismissing one readable and several hidden suggestions, the dismissed list shows only the readable one; pending drops it
+FAIL R5-A3 Lost access: a member narrowed from [a,b] to [a], and an agent whose grant on b is revoked, stop seeing b's suggestions; a union of two list grants and a list+all grant pair behave as a union 
+    {"memberAfterNarrow":["ns7b9n203fx6eewsyfw35x5yjh8f5eaz","ns7e8yvaebs6vfanq33me38pd58f4f0w"],"yBoth":["ns7b9n203fx6eewsyfw35x5yjh8f5eaz","ns7e8yvaebs6vfanq33me38pd58f4f0w","ns79jdeepre2v5ad8wzwrjychh8f5c7k"],"yAfter":["ns7b9n203fx6eewsyfw35x5yjh8f5eaz","ns7e8yvaebs6vfanq33me38pd58f4f0w"],"zAll":64,"ownerPending":64,"ids":{"sa1":"ns7b9n203fx6eewsyfw35x5yjh8f5eaz","sa2":"ns7e8yvaebs6vfanq33me38pd58f4f0w","sb2":"ns79jdeepre2v5ad8wzwrjychh8f5c7k"}}
++ actual - expected
+
+  [
++   'ns7b9n203fx6eewsyfw35x5yjh8f5eaz',
+    'ns7e8yvaebs6vfanq33me38pd58f4f0w',
+-   'ns7b9n203fx6eewsyfw35x5yjh8f5eaz'
+  ]
+
+PASS R5-B1 Inbox audiences: own, shared (org), private (author), legacy pre-freeze (no audience) and post-freeze no-audience items reach exactly the right readers (restricted member, scoped agent, shared-inbox agent, legacy pre-freeze agent, owner), and hidden notes change nothing
+R5 SUMMARY 3 PASS / 1 FAIL

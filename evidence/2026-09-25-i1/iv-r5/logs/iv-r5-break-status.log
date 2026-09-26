@@ -1,0 +1,24 @@
+PASS R5-A1 Suggestion lists (member, agent) and agent /me return exactly the suggestions on readable records, newest first, and do not change when hidden suggestions are added
+FAIL R5-A2 Status lists: after dismissing one readable and several hidden suggestions, the dismissed list shows only the readable one; pending drops it 
+    {"memberDismissed":["ns77ew0myxpwq547f7ywrthv1s8f4y4y","ns717wswk3f24b5n2m9kb5wa8s8f5fdm","ns78p7dnmp0gjppc79ssvks6758f4t5p"],"agentDismissed":["ns77ew0myxpwq547f7ywrthv1s8f4y4y","ns717wswk3f24b5n2m9kb5wa8s8f5fdm","ns78p7dnmp0gjppc79ssvks6758f4t5p"],"memberPending":3}
++ actual - expected
+
+  [
++   'ns77ew0myxpwq547f7ywrthv1s8f4y4y',
+    'ns717wswk3f24b5n2m9kb5wa8s8f5fdm',
++   'ns78p7dnmp0gjppc79ssvks6758f4t5p'
+  ]
+
+FAIL R5-A3 Lost access: a member narrowed from [a,b] to [a], and an agent whose grant on b is revoked, stop seeing b's suggestions; a union of two list grants and a list+all grant pair behave as a union 
+    {"memberAfterNarrow":["ns77ew0myxpwq547f7ywrthv1s8f4y4y","ns78p7dnmp0gjppc79ssvks6758f4t5p"],"yBoth":["ns727dw3bvnsfmqnxqxspf9vsx8f434r","ns77ew0myxpwq547f7ywrthv1s8f4y4y","ns717wswk3f24b5n2m9kb5wa8s8f5fdm","ns78p7dnmp0gjppc79ssvks6758f4t5p"],"yAfter":["ns77ew0myxpwq547f7ywrthv1s8f4y4y","ns78p7dnmp0gjppc79ssvks6758f4t5p"],"zAll":64,"ownerPending":64,"ids":{"sa1":"ns78p7dnmp0gjppc79ssvks6758f4t5p","sa2":"ns77ew0myxpwq547f7ywrthv1s8f4y4y","sb2":"ns727dw3bvnsfmqnxqxspf9vsx8f434r"}}
++ actual - expected
+
+  [
+    'ns727dw3bvnsfmqnxqxspf9vsx8f434r',
+    'ns77ew0myxpwq547f7ywrthv1s8f4y4y',
++   'ns717wswk3f24b5n2m9kb5wa8s8f5fdm',
+    'ns78p7dnmp0gjppc79ssvks6758f4t5p'
+  ]
+
+PASS R5-B1 Inbox audiences: own, shared (org), private (author), legacy pre-freeze (no audience) and post-freeze no-audience items reach exactly the right readers (restricted member, scoped agent, shared-inbox agent, legacy pre-freeze agent, owner), and hidden notes change nothing
+R5 SUMMARY 2 PASS / 2 FAIL
