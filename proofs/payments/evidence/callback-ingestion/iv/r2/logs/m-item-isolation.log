@@ -1,0 +1,15 @@
+PASS same event id with a different body is refused after the first {"s1":200,"s2":400,"receipts":1,"keptFirstDigest":true}
+PASS Stripe-Account header does not override payload account {"status":200,"underA":1,"underB":0}
+PASS replay after acknowledgement has no second effect {"status":200,"receipts":1,"done":true,"secondDrain":[],"observedDelta":0,"firstDrain":[{"merchant":"A","eventId":"evt_ivAcked","result":"applied"}]}
+PASS parallel duplicate deliveries store one receipt and one effect {"identical":{"200":25},"variants":[200,400,400,400,400,400,400,400,400,400],"receiptsParallel":1,"receiptsRace":1,"observedDelta":2,"drain":[{"merchant":"A","eventId":"evt_ivParallel","result":"applied"},{"merchant":"A","eventId":"evt_ivRace","result":"applied"}]}
+file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p4-iv/proofs/payments/iv-r2.mjs:101
+ const ack=async(merchant,row)=>{if(ackFailNext){ackFailNext=false;throw Error('crash before acknowledgement');}await m('ackEvent',{token:merchant.token,id:row.id??row._id});};
+                                                                         ^
+
+Error: crash before acknowledgement
+    at ack (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p4-iv/proofs/payments/iv-r2.mjs:101:74)
+    at drain (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p4-iv/proofs/payments/private/iv-r2-item-isolation-p0Phpt/callback-ingestion.mjs:53:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-p4-iv/proofs/payments/iv-r2.mjs:148:29
+
+Node.js v24.18.0
