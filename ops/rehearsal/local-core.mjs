@@ -14,6 +14,7 @@ export async function withLocalCore(check, { cloudPort = 3420, sitePort = 3421 }
   const liveEnvHash = configHash();
   const env = { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, CONVEX_AGENT_MODE: "anonymous", CI: "1", CONVEX_DISABLE_METRICS: "1" };
   cpSync(join(root, "convex"), join(scratch, "convex"), { recursive: true, filter: (p) => !p.endsWith(".test.ts") && !p.endsWith("test.helpers.ts") && !p.endsWith("test.setup.ts") });
+  cpSync(join(root, "packages/contracts"), join(scratch, "packages/contracts"), { recursive: true });
   cpSync(join(root, "ops/rehearsal/rate-fixture.ts"), join(scratch, "convex/rateFixture.ts"));
   writeFileSync(join(scratch, "convex/auth.config.ts"), "export default { providers: [] };\n");
   writeFileSync(join(scratch, "package.json"), JSON.stringify({ name: "remold-rate-proof", private: true, type: "module", dependencies: { convex: "1.46.0", "@convex-dev/rate-limiter": "0.4.0" } }));

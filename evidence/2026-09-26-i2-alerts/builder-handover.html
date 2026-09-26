@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 alerts: builder handover</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>I2 alerts: builder handover</h1>
+<div class="meta">2026-09-26 · scope: I2 alert row (background error, caught REST 500, stalled operation) · level: SERVICE, builder-run · status: awaiting independent verification</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Pick the alert channel and account (for example a Slack incoming webhook, an email relay, or a paging service). Until you do, alerts queue up and nobody gets them. Any HTTPS webhook URL works with no code change: set <code>REMOLD_ALERT_WEBHOOK_URL</code>.</li>
+  <li>Confirm the defaults: stalled means not finished 15 minutes after its start time; REST alert window is 5 minutes. Both can be changed by env var.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (builder only, not yet independently checked)</h2>
+<ul>
+  <li><b>Before:</b> the same three injected faults produced 0 notifications in 75 seconds. The facts existed (a failed scheduled row, a REST 500 metric, a long-running action) but nothing told anyone. <code>baseline.json</code></li>
+  <li><b>After:</b> a failed background function, a caught REST 500 and a stalled scheduled action each produced their own alert at a local HTTP sink. Repeat faults and repeat checks sent nothing new. Each alert sent one "resolved" notice after recovery. The sink got 6 notices in total, all with unique ids. <code>service.json</code></li>
+  <li>The first alert arrived through the minute cron alone, with no manual trigger (11.6 s after the failure).</li>
+  <li>Scrubbing: no email, secret, record text, error text, URL query or auth header reached the sink. The scan checked every raw byte the sink received against 8 forbidden strings.</li>
+  <li>13 of 13 unit mutants were killed (scrubbing x2, dedupe, each trigger, resolve x2, delivery x2, channel). One service mutant that forwarded the real Convex error text was caught by the scrub check with <code>['Synthetic background failure']</code>.</li>
+  <li>Typecheck passes. App tests 80/80 (7 new). Authority tests 97/97. Release tests 19/19. Build passes.</li>
+</ul>
+</div>
+
+<h2>What this does not prove</h2>
+<ul>
+  <li>Delivery to the channel you choose. The only receiver so far was a local loopback sink, so the contract's "delivered alerts" check stays <b>open, owner-gated</b>.</li>
+  <li>Hosted behavior. Everything ran in a disposable local anonymous Convex on ports 3830/3831 with the sink on 3832. There were no provider accounts, no cloud deploys and only synthetic data.</li>
+  <li>Watching the watcher. If the alert cron itself stops, nothing reports it. That needs an outside heartbeat on the chosen channel.</li>
+  <li>Cron-invoked function failures. Convex does not write cron runs to <code>_scheduled_functions</code>, so only work started through <code>ctx.scheduler</code> is covered. Stuck integration effects (<code>integrationOps</code> leases) belong to the later I13 alert row and are not covered here.</li>
+  <li>Platform function logs were not inspected. The alert code writes no logs, and the REST 500 path is caught with a generic message.</li>
+</ul>
+
+<h2>How it works</h2>
+<p>A cron runs <code>alerts:check</code> every minute. It reads three things: scheduled functions from the last 60 minutes (at most 5000 rows), REST metric rows with status 500, and the list of open alerts. It then works out which conditions hold:</p>
+<table>
+<tr><th>Alert</th><th>Opens when</th><th>Resolves when</th></tr>
+<tr><td><code>background-error:&lt;function&gt;</code></td><td>the latest finished run of that function failed</td><td>a later run succeeds, or no failure is left in the 60 minute lookback</td></tr>
+<tr><td><code>rest-500</code></td><td>any caught 500 in the window (default: the previous 5 minutes plus the current one). The deliberate 503 migration pause is excluded</td><td>the window has no 500s</td></tr>
+<tr><td><code>stalled:&lt;function&gt;</code></td><td>scheduled work is still pending or running 15 minutes after its start time</td><td>it finishes</td></tr>
+<tr><td><code>coverage</code></td><td>the scan hit its 5000-row cap, so some work went unchecked</td><td>the scan fits again</td></tr>
+</table>
+<p>One alert row exists per key. A notice is queued only when the key opens or resolves, which is where dedupe happens. Notices are built only from the kind, a code-defined function name, counts and a timestamp. Error text and arguments are never read into them. Delivery claims a notice for 60 seconds, POSTs JSON with the notice id, marks it delivered on a 2xx response, and retries otherwise. Plain HTTP is accepted only for loopback. With no channel set, notices wait and <code>alerts:status</code> shows the count. Delivery is at-least-once, so a receiver should dedupe by <code>id</code>. Notices are kept for 7 days.</p>
+
+<h2>What went wrong on the way (kept as evidence)</h2>
+<ul>
+  <li>Local-core rehearsals were broken on the current branch: <code>ops/rehearsal/local-core.mjs</code> did not copy <code>packages/contracts</code>, which the I1 schema now imports. I added one line. This also affects <code>proof:rate-limit</code>, <code>proof:flags</code> and the telemetry rehearsal, which I did not re-run.</li>
+  <li>The first service run sent the same REST notice twice. The cron and a manual check overlapped, and both sent the same queued notice. The fix is a claim before sending. A new unit test covers it, and its mutant is killed.</li>
+  <li>After that, the same id still arrived twice. The cause was my harness, not the product: the sink runs in the rehearsal's own Node process, and a synchronous CLI call blocked it past the backend's 10 s send timeout, so the product correctly retried. The harness now calls checks asynchronously. See <code>service-run-blocked-sink-failure.txt</code>. It is also a live example of why receivers should dedupe by id.</li>
+</ul>
+
+<h2>Changed files</h2>
+<ul>
+  <li>New: <code>convex/alerts.ts</code>, <code>convex/alerts.test.ts</code>, <code>ops/telemetry/alerts.mjs</code> (service rehearsal, <code>--baseline</code> mode), <code>ops/telemetry/alerts-mutants.mjs</code>.</li>
+  <li>Additive convex changes (outside the I2 allowed paths, kept minimal): two new tables, <code>opsAlerts</code> and <code>opsNotices</code>, in <code>convex/schema.ts</code>; one cron line in <code>convex/crons.ts</code>; two lines in <code>convex/_generated/api.d.ts</code>, matching codegen output for <code>alerts</code>. No existing table or field changed.</li>
+  <li>Authority inventory (outside the I2 allowed paths): 5 new rows in <code>ops/authority/inventory.json</code> and the new cron name added to the hard-coded cron list in <code>ops/authority/inventory.test.ts</code>. The existing guard correctly failed until these were added.</li>
+  <li><code>ops/rehearsal/local-core.mjs</code> (one line, above) and <code>package.json</code> (<code>proof:alerts</code>, <code>proof:alerts-mutants</code>).</li>
+</ul>
+
+<h2>How to re-check</h2>
+<pre>pnpm install --frozen-lockfile
+node ops/telemetry/alerts.mjs --baseline --out=/tmp/baseline.json   # before behavior: expect 0 delivered (run on base d66eb0b)
+pnpm proof:alerts                # after: PASS, 3 opens + 3 resolves, leaks []
+pnpm proof:alerts-mutants        # 13/13 killed, restored source green
+pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm verify:release &amp;&amp; pnpm build</pre>
+<p>Base: <code>d66eb0b</code> on <code>build/unified-remold-2026-09-24</code>. Branch: <code>i2/alerts-2026-09-26</code>. Evidence files are in <code>evidence/2026-09-26-i2-alerts/</code>. Checked by: the builder only. Independent verification is pending.</p>
+</body>
+</html>

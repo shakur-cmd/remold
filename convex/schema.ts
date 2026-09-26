@@ -5,10 +5,13 @@ import { actor, capability, capabilityScope, recordScope } from "../packages/con
 
 const slot = v.object({ kind: v.union(v.literal("n"), v.literal("s"), v.literal("d"), v.literal("b")), index: v.number() });
 const values = v.record(v.string(), v.any());
+const alertKind = v.union(v.literal("background-error"), v.literal("rest-500"), v.literal("stalled"), v.literal("coverage"));
 
 export default defineSchema({
   ...integrationTables,
   opsMetrics: defineTable({ minute:v.number(), route:v.union(v.literal("rest"),v.literal("probe")), status:v.string(), release:v.string(), count:v.number(), serverErrors:v.number(), clientErrors:v.number(), sumMs:v.number(), maxMs:v.number(), buckets:v.array(v.number()) }).index("by_minute",["minute"]),
+  opsAlerts: defineTable({ key: v.string(), kind: alertKind, fn: v.optional(v.string()), count: v.number(), state: v.union(v.literal("open"), v.literal("resolved")), openedAt: v.number(), resolvedAt: v.optional(v.number()) }).index("by_key", ["key"]).index("by_state", ["state"]),
+  opsNotices: defineTable({ payload: v.object({ source: v.literal("remold"), event: v.union(v.literal("open"), v.literal("resolve")), kind: alertKind, key: v.string(), count: v.number(), at: v.string(), summary: v.string() }), attempts: v.number(), claimedUntil: v.optional(v.number()), deliveredAt: v.optional(v.number()) }).index("by_pending", ["deliveredAt"]),
   opsProbes: defineTable({minute:v.number(),result:v.union(v.literal("sent"),v.literal("failed"),v.literal("unconfigured"))}).index("by_minute",["minute"]),
   authorityAudit: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.union(v.literal("user"), v.literal("agent"), v.literal("operator")), id: v.string() }), action: v.string(), targetId: v.string(), objectIds: v.optional(v.array(v.id("objects"))), epoch: v.optional(v.number()) }).index("by_org", ["orgId"]),
   capabilityGrants: defineTable({ orgId: v.id("orgs"), agentId: v.id("agents"), grantor: actor, grantorEpoch: v.number(), grantorMembershipId: v.optional(v.id('members')), parent: v.optional(v.id("capabilityGrants")), capability, scope: capabilityScope, mode: v.union(v.literal("propose"), v.literal("direct")), delegate: v.boolean(), expiresAt: v.number(), revokedAt: v.optional(v.number()) }).index("by_agent", ["orgId", "agentId"]).index("by_agent_capability", ["orgId", "agentId", "capability"]),
