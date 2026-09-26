@@ -22,7 +22,7 @@
 </head>
 <body>
 <h1>P2 raw capture: public forms no longer write to Mautic</h1>
-<div class="meta">2026-09-26 · scope: proofs/marketing only, SERVICE, isolated local containers (colima-remold-proof), synthetic data · status: builder-run, NOT independently verified, awaiting independent check · supersedes the admission design in <code>../admission/handover.html</code></div>
+<div class="meta">2026-09-26 · scope: proofs/marketing only, SERVICE, isolated local containers (colima-remold-proof), synthetic data · status: builder-run, NOT independently verified, round 2 fixes awaiting independent check (round 1 was checked by the IV at 7b994e0: D1 closed) · supersedes the admission design in <code>../admission/handover.html</code></div>
 
 <div class="decisions">
 <h2>Your calls</h2>
@@ -32,7 +32,34 @@
 </div>
 
 <div class="status">
-<h2>Done and proven (by the builder only)</h2>
+<h2>Round 2 (after IV 7b994e0): reconciler defects fixed (builder only)</h2>
+<p>The IV confirmed D1 closed and found three reconciler defects. Each one was reproduced first on the unchanged code, with only a timing hook added, and then fixed. All runs were on tenant A, to keep load off db-b (483 to 485 of 512 MiB).</p>
+<table>
+<tr><th>Defect</th><th>Before (reproduced)</th><th>Fix</th><th>After</th></tr>
+<tr><td>D-R2-1: one bad email stops the tenant</td><td>The IV's <code>b6 poison</code> copy: both runs exited 1 ("Mautic API refused 400"), and the good capture stayed pending. My <code>poison before</code>: a 64-plus-character email (Mautic caps email at 64) and <code>_…@example.invalid</code>, which Mautic's search matched against 306 contacts, both halted the run.</td><td>A strict email rule at both the edge and the Convex mutation, answering 400 for <code>% * ' &amp;</code>, spaces, quoting, dot errors, a missing TLD, or a local part longer than 64. The lookup now uses Mautic's exact <code>where l.email eq</code>, which is case-insensitive and treats % and _ literally. A capture Mautic refuses (400 or 422) settles as a new terminal outcome, <code>rejected</code>, with the reason, and the run carries on.</td><td><code>poison after</code> 5/5: the long email settled as rejected ("email: This value is too long..."), the underscore email resolved to one contact, and the good capture was created with its name. The IV poison posts now get 400 at the edge, and both runs exit 0.</td></tr>
+<tr><td>D-R2-2: two reconcilers at once</td><td>The IV's <code>b6 two</code> copy: duplicate contacts 349 and 350 for one email, and one reconciler crashed.</td><td>A Convex lease per tenant (acquire with expiry, renew before every Mautic write, release). Every settle must present the live token, so stale or expired tokens are refused.</td><td><code>b6 two</code>: one contact for each of the 6 emails, both runs exit 0. The second run waited for the lease and found nothing to do.</td></tr>
+<tr><td>D-R2-3: an admin create inside the lookup-then-create window gets renamed</td><td><code>window before</code>: admin contact 354 was renamed "Public suggestion", and the capture was recorded as created.</td><td>Create with the email only. Set the first name only on a 201 for an id the lookup did not see. A 200 (Mautic's upsert found an existing contact) settles as existing and is never patched.</td><td><code>window after-r2</code> 6/6. The test now waits for the reconciler to report it is in the window before the admin creates, and it checks that the window was hit. The admin kept "Admin" and DNC, and the capture settled as existing.</td></tr>
+</table>
+<p><b>Item 4 (the replay missed C4 and C5):</b> a new Convex-only probe checks 14 bad emails, 3 bad fields, that a settled capture cannot be re-settled, and lease exclusivity and fencing. It makes no Mautic calls, and <code>rawcapture/replay.mjs</code> now runs it. The replay's tenant refusals now require the exact codes (scope, credential), and A holds a live lease, so a refusal can only come from tenant scope. Before the fix the probe scored 8/27: the store accepted 9 of the 14 bad emails, and none of the lease functions existed. After the fix it scored 27/27.</p>
+<p><b>Mutants</b> (<code>rawcapture/mutants.mjs</code>, one per fix, all killed):</p>
+<ul>
+  <li>C4 re-settle allowed: probe 26/27.</li>
+  <li>C5 validation removed: probe 9/27.</li>
+  <li>L1 acquire ignores a live lease: probe 23/27.</li>
+  <li>L2 settle not fenced: probe 25/27.</li>
+  <li>R1 refusal throws instead of settling as rejected: poison 0/5.</li>
+  <li>R2 LIKE search instead of exact lookup: poison 0/5.</li>
+  <li>R3 a 200 upsert treated as new and named: window 4/6. R3 first survived against the old, timing-dependent window test. That exposed that the test had not hit the window, so I made it deterministic and it now kills R3.</li>
+</ul>
+<p>The replay imports the same probe, but I did not re-run the full replay with the C4 and C5 mutants, to spare db-b.</p>
+<p><b>Full run r4:</b> PASS 70/70 (the previous 43 checks plus the probe and exact refusal codes). Mautic form submissions stayed at A 184 and B 92, and the edges run server.mjs f6f3713e644f16d0. Unit tests 10/10, typecheck clean.</p>
+<p><b>Item 5 (the nonce stays unsigned). Decision, and why it does not matter for identity or suppression:</b> the nonce only decides which posts count as one retry. A client that picks its own nonce can only dedupe or conflict with its own posts, because other people's nonces are 128-bit random and never shown to anyone else. Signing it would not stop flooding either, because a fresh GET gives a fresh signed nonce. Identity and suppression are protected elsewhere: the reconciler never edits an existing contact and never touches DNC. What remains is abuse, meaning unlimited captures and new contacts for arbitrary emails (IV N-1). That needs a rate limit or email confirmation, not a signature. It is recorded as open. The smaller system wins.</p>
+<p><b>N-3:</b> my first setup's forward was attached to the shared colima SSH master, because of ControlMaster in its ssh.config. That is why <code>forward.pid</code> pointed at a dead process. I left the working master forward alone. <code>rawcapture/setup.mjs</code> now opens any new forward as a separate process (<code>ControlMaster=no</code>, <code>ControlPath=none</code>).</p>
+<p><b>IV b6b-unblock after the fix:</b> it exits with a TypeError because no poison capture is pending any more, since the edge refuses those emails. There is nothing to unblock.</p>
+</div>
+
+<div class="status">
+<h2>Round 1: done and proven (by the builder only)</h2>
 <ul>
   <li><b>Before (IV D1, rerun unchanged):</b> an admin mapped email and firstname and added a remove-DNC action on the live admitted form A34. Four posts through the running edge replaced the owner's first name (owner 245), dropped DNC from 1 to 0, created new contact 246, and linked all 4 submissions. Evidence: <code>d1/a4-post-publish-edit-a.json</code>.</li>
   <li><b>After:</b> the edge makes zero Mautic form posts. Each submission goes to one tenant-bound, validated, idempotent Convex mutation, and the edge answers 200 only after the mutation has committed. The same D1 edit was live on the old native forms A34 and B29 during the run. Mautic form submissions stayed exactly at A 184 and B 92 for the whole run, and the owner's profile and DNC did not change.</li>
@@ -86,7 +113,14 @@
   <li>The capture container first came up with <code>ip_forward=1</code>. The setup check caught this, and I recreated the empty container with <code>--sysctl net.ipv4.ip_forward=0</code> before any data went in.</li>
   <li>The lost-reply case is simulated with a proxy that drops the reply after the commit, inside a second edge instance in the tenant's edge container. That instance uses the deployed source and config. The deployed edge process itself was not killed.</li>
   <li>The nonce is unsigned. A client can choose its own nonce, and that only dedupes that client's own posts. It is 128-bit random, so it cannot be guessed across users.</li>
-  <li>The reconciler assumes one instance per tenant, with no lease. If an admin creates the same email in Mautic between the reconciler's lookup and its create, Mautic's API would update that contact. The "ambiguous" branch (more than one match) is implemented but not exercised, because Mautic merges on email and I could not create a duplicate cheaply.</li>
+  <li><s>No lease; admin race overwrites the name; ambiguous branch untested.</s> Fixed or covered in round 2. The IV exercised the ambiguous branch. Remaining limits:
+    <ul>
+      <li>A reconciler that stalls longer than the 15 s lease between its renew and a Mautic call could overlap with a successor for that one call. The settle is fenced, but the Mautic write is not.</li>
+      <li>A crash between create and the name update leaves a new contact with no name. It settles as existing, and the suggestion is dropped rather than overwriting anything.</li>
+      <li>The email rule refuses some valid addresses, such as apostrophes and quoted local parts.</li>
+      <li>A capture that keeps getting a 5xx or a network error still stops that run. It is treated as transient.</li>
+    </ul>
+  </li>
   <li>The mutant runs left synthetic leftovers: duplicate capture rows for the idempotency mutant's nonces, 3 cross-tenant contacts in A from the tenant mutant, and first names overwritten on the overwrite mutant's owners, which are synthetic. The native forms A34 and B29 were reverted to unmapped with no actions after every run.</li>
   <li><code>d1/a4-post-publish-edit.mjs</code> imports the deleted admission module. To rerun the "before", check out 0c2cdf5. The "after" D1 check is in <code>rawcapture/replay.mjs</code>.</li>
   <li>Still open for P2 and D0M: core Person reconciliation in Remold Convex and applyChange attribution, send-time suppression, a scheduled reconciler, and a production auth design for edge keys. This proof's keys are per-tenant bearer secrets in a local file.</li>
@@ -109,7 +143,31 @@ node --test publishing/server.test.mjs        9 pass
 tsc -p rawcapture/convex/tsconfig.json        exit 0
 REMOLD_PUBLISH_EVIDENCE_DIR=... node publishing/read-effects-replay.mjs after   PASS
 
-sha256 (first 16 hex)
+Round 2 (tenant A only unless noted; IV copies in ivr2/before and ivr2/after are byte-identical to 7b994e0)
+ivr2/before: node b6-reconciler.mjs poison   runs exit 1, 1 (reproduced); node b6b-unblock.mjs (to clear it)
+ivr2/before: node b6-reconciler.mjs two      duplicates 349/350, one crash (reproduced)
+node rawcapture/races.mjs window before      FAIL 3/5 (admin 354 renamed, reproduced)
+node rawcapture/races.mjs probe before-r2    FAIL 8/27;  poison before  FAIL 0/5
+node rawcapture/setup.mjs ; REMOLD_PUBLISH_EVIDENCE_DIR=.../r4-setup/ node publishing/setup.mjs
+node rawcapture/races.mjs probe after        PASS 27/27; poison after PASS 5/5; window after-r2 PASS 6/6
+ivr2/after: b6 two  one contact per email, both exit 0; b6 poison  posts 400,400,200, both runs exit 0; b6b-unblock  nothing to unblock
+node rawcapture/mutants.mjs r2               C4 C5 L1 L2 R1 R2 killed (R3 survived old window test)
+node rawcapture/mutants.mjs r2-window R3     killed
+node rawcapture/replay.mjs r4                PASS 70/70 (both tenants)
+node --test publishing/server.test.mjs       10 pass; tsc exit 0
+
+Round 2 sha256 (first 16 hex)
+publishing/server.mjs        f6f3713e644f16d0 (same in both deployed edges)
+publishing/server.test.mjs   8de0cc8843f87c82
+rawcapture/convex/capture.ts 72277556540765dd
+rawcapture/convex/schema.ts  73549de3305cef00
+rawcapture/reconcile.mjs     f824b358079c9938
+rawcapture/races.mjs         0a8796f4f93979cb
+rawcapture/mutants.mjs       fe02b15ba37a44c7
+rawcapture/replay.mjs        0db6dde465a02721
+rawcapture/setup.mjs         c1d0663ffbaa6fb1
+
+Round 1 sha256 (first 16 hex)
 publishing/server.mjs        3a46cf7701daa2e9 (same in both deployed edges)
 publishing/setup.mjs         e111e0349b79ff66
 publishing/server.test.mjs   62d44a92c193f9a9

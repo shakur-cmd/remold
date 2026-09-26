@@ -1,0 +1,112 @@
+{
+ "section": "poison",
+ "label": "after",
+ "at": "2026-09-26T12:43:13.025Z",
+ "status": "PASS",
+ "failed": [],
+ "checks": [
+  {
+   "ok": true,
+   "name": "reconciler completes despite poison",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "email Mautic refuses is settled as rejected with the reason",
+   "detail": {
+    "contactId": null,
+    "email": "long-af0d4f92-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid",
+    "firstname": "Too long for Mautic",
+    "id": "j57ft62p1333wk0gd6vbzs9mns8f56ef",
+    "idempotencyKey": "4082a0669fe8ad4368daffda973c772d",
+    "outcome": "rejected",
+    "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less.",
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": true,
+   "name": "underscore email resolved by exact match, one contact",
+   "detail": {
+    "contactId": 358,
+    "email": "_af0d4f92@example.invalid",
+    "firstname": "Underscore",
+    "id": "j575my0grqcydfxqt4zwtbkhax8f5m1c",
+    "idempotencyKey": "950c8f69c6dc46651b582222c8226e67",
+    "outcome": "created",
+    "reason": null,
+    "status": "settled",
+    "tenant": "a"
+   }
+  },
+  {
+   "ok": true,
+   "name": "capture behind the poison is created with its suggested name",
+   "detail": [
+    {
+     "id": 359,
+     "firstname": "Good after poison"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "nothing left pending on A"
+  }
+ ],
+ "out": {
+  "reconciler": {
+   "exit": 0,
+   "err": ""
+  },
+  "tooLong": {
+   "contactId": null,
+   "email": "long-af0d4f92-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid",
+   "firstname": "Too long for Mautic",
+   "id": "j57ft62p1333wk0gd6vbzs9mns8f56ef",
+   "idempotencyKey": "4082a0669fe8ad4368daffda973c772d",
+   "outcome": "rejected",
+   "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less.",
+   "status": "settled",
+   "tenant": "a"
+  },
+  "underscore": {
+   "contactId": 358,
+   "email": "_af0d4f92@example.invalid",
+   "firstname": "Underscore",
+   "id": "j575my0grqcydfxqt4zwtbkhax8f5m1c",
+   "idempotencyKey": "950c8f69c6dc46651b582222c8226e67",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  },
+  "good": {
+   "contactId": 359,
+   "email": "good-af0d4f92@example.invalid",
+   "firstname": "Good after poison",
+   "id": "j575rhd7hbx3qp23gpjvp031an8f5qkx",
+   "idempotencyKey": "1db8fabdc26a5739db28e4c367e65cae",
+   "outcome": "created",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  },
+  "contacts": {
+   "tooLong": [],
+   "underscore": [
+    {
+     "id": 358,
+     "firstname": "Underscore"
+    }
+   ],
+   "good": [
+    {
+     "id": 359,
+     "firstname": "Good after poison"
+    }
+   ]
+  }
+ }
+}

@@ -9,6 +9,7 @@ import {randomUUID,createHash} from 'node:crypto';
 import {directory,context,prefix,docker} from '../runtime.mjs';
 import {api} from '../tenants/api.mjs';
 import {keys,query,mutation} from './runtime.mjs';
+import {probe} from './races.mjs';
 const label=process.argv[2];assert.match(label??'',/^[a-zA-Z0-9_-]+$/);
 const outDir=directory+'ownership/evidence/raw-capture/',output=outDir+label+'.json';assert.ok(!existsSync(output),'One-shot: use a new label');mkdirSync(outDir,{recursive:true});
 const fx=randomUUID().slice(0,8),K=keys(),hosts={a:'tenant-a.marketing-proof.invalid',b:'tenant-b.marketing-proof.invalid'},T=['a','b'];
@@ -77,10 +78,16 @@ try{
  }});
  await phase('tenant binding',async()=>{
   const bCapture=(await inventory('b')).find(c=>c.idempotencyKey===state.b.nonces[0]);
-  const tries={'reconciler A settles a B capture':()=>mutation('capture:settle',{key:K.a.reconciler,id:bCapture.id,outcome:'existing',contactId:1}),'edge A key reads pending':()=>query('capture:pending',{key:K.a.edge,limit:1}),'reconciler A key writes a capture':()=>mutation('capture:capture',{key:K.a.reconciler,idempotencyKey:'f'.repeat(32),email:'x@example.invalid',firstname:''}),'unknown key':()=>query('capture:inventory',{key:'e'.repeat(64)})};
-  evidence.tenantRefusals={};for(const [name,fn] of Object.entries(tries)){let code=null;try{await fn();}catch(e){code=e.code??e.message;}evidence.tenantRefusals[name]=code;check(code!==null,'refused: '+name,code);}
+  // A holds its own live lease, so a refusal here can only come from tenant scope.
+  const lease=randomUUID().replaceAll('-','');await mutation('capture:acquire',{key:K.a.reconciler,token:lease,ttlMs:20000});
+  const expect={'reconciler A settles a B capture':'scope','edge A key reads pending':'credential','reconciler A key writes a capture':'credential','unknown key':'credential'};
+  const tries={'reconciler A settles a B capture':()=>mutation('capture:settle',{key:K.a.reconciler,lease,id:bCapture.id,outcome:'existing',contactId:1}),'edge A key reads pending':()=>query('capture:pending',{key:K.a.edge,limit:1}),'reconciler A key writes a capture':()=>mutation('capture:capture',{key:K.a.reconciler,idempotencyKey:'f'.repeat(32),email:'x@example.invalid',firstname:''}),'unknown key':()=>query('capture:inventory',{key:'e'.repeat(64)})};
+  evidence.tenantRefusals={};for(const [name,fn] of Object.entries(tries)){let code=null;try{await fn();}catch(e){code=e.code??e.message;}evidence.tenantRefusals[name]=code;check(code===expect[name],'refused ('+expect[name]+'): '+name,code);}
+  await mutation('capture:release',{key:K.a.reconciler,token:lease});
   check((await inventory('b')).find(c=>c.id===bCapture.id).status==='pending','B capture untouched by A credentials');
  });
+ // Store refusals with no Mautic call: input validation, no re-settle, lease exclusivity and fencing (tenant A lease only).
+ await phase('store probe',async()=>{for(const c of await probe())check(c.ok,'store: '+c.name,c.detail);});
  const beforeReconcile={};for(const t of T)beforeReconcile[t]=mautic(t);evidence.mauticBeforeReconcile=beforeReconcile;
  for(const t of T)check(JSON.stringify(beforeReconcile[t])===JSON.stringify(afterSeed[t]),t+': Mautic untouched by every public post (form submissions '+afterSeed[t].formSubmissions+' to '+beforeReconcile[t].formSubmissions+')',{afterSeed:afterSeed[t],beforeReconcile:beforeReconcile[t]});
  for(const t of T)check(JSON.stringify(profile(t,state[t].ownerId))===JSON.stringify(state[t].ownerBefore),t+': owner unchanged after public posts with the D1 edit live');

@@ -8,6 +8,9 @@ import assert from 'node:assert/strict';
 // after that mutation commits; rawcapture/reconcile.mjs later feeds captures to Mautic through its API.
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mediaType=value=>value.split(';',1)[0].trim().toLowerCase();
+// Same deliberately narrow email rule as rawcapture/convex/capture.ts: no %, *, ', &, quoting or spaces.
+const EMAIL=/^[A-Za-z0-9_+-]+(\.[A-Za-z0-9_+-]+)*@([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
+export const validEmail=email=>email.length<=254&&EMAIL.test(email)&&email.indexOf('@')<=64;
 export function formToken(config){return createHmac('sha256',config.key).update(JSON.stringify([config.host,config.form])).digest('hex');}
 export function createPublicServer(config){
  assert.match(config.host,/^tenant-[ab]\.marketing-proof\.invalid$/);assert.match(config.key,/^[a-f0-9]{64}$/);assert.match(config.form.id,/^[a-z0-9-]{1,40}$/);
@@ -51,7 +54,7 @@ export function createPublicServer(config){
     if(keys.length!==new Set(keys).size||keys.some(k=>!['email','firstname','t','n'].includes(k))||!values.has('email')||!values.has('t')||!/^[a-f0-9]{32}$/.test(values.get('n')??''))return reply(res,400,'Unexpected form fields');
     const supplied=values.get('t');if(!/^[a-f0-9]{64}$/.test(supplied)||!timingSafeEqual(Buffer.from(supplied,'hex'),Buffer.from(token,'hex')))return reply(res,403,'Wrong published form');
     const email=values.get('email'),firstname=values.get('firstname')??'';
-    if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||firstname.length>100||/[\x00-\x1f\x7f]/.test(firstname))return reply(res,400,'Invalid form values');
+    if(!validEmail(email)||firstname.length>100||/[\x00-\x1f\x7f]/.test(firstname))return reply(res,400,'Invalid form values');
     // The rendered nonce is the idempotency key: a client retry of the same page resends it and is stored once.
     let stored;try{stored=await capture(values.get('n'),email,firstname);}catch{return reply(res,502,'Submission could not be confirmed');}
     return stored==='stored'?reply(res,200,'Submission received'):reply(res,409,'Submission conflicts with an earlier one');

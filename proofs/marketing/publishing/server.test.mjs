@@ -61,6 +61,13 @@ test('raw invalid UTF-8 and streamed oversized forms refuse before capture',()=>
  assert.equal((await call(pa,a.host,'/form/intake',{...valid,body:new URLSearchParams({email:'local@example.invalid',firstname:'x'.repeat(20000),t:formToken(a),n:nonce}).toString(),chunked:true})).status,413);
  assert.equal(stored.length,0);
 }));
+test('only plain addresses are captured; wildcard, quoting and malformed emails are refused before capture',()=>fixture(async({a,pa,stored})=>{
+ const post=email=>call(pa,a.host,'/form/intake',submit(a,{body:new URLSearchParams({email,firstname:'Local',t:formToken(a),n:nonce}).toString()}));
+ for(const email of ['plain@example.invalid','First.Last+tag@Sub-1.example.invalid','under_score@example.invalid','x'.repeat(64)+'@example.invalid'])assert.equal((await post(email)).status,200,email);
+ const accepted=stored.length;
+ for(const email of ['iv%pct@example.invalid','%@%.%','a*b@example.invalid',"o'neil@example.invalid",'a&b@example.invalid','a b@example.invalid','.a@example.invalid','a..b@example.invalid','a.@example.invalid','a@-x.invalid','a@b','a@@example.invalid','"q"@example.invalid','x'.repeat(65)+'@example.invalid','a@'+'d'.repeat(250)+'.invalid'])assert.equal((await post(email)).status,400,email);
+ assert.equal(stored.length,accepted);
+}));
 test('an edge without a well-formed capture key or store refuses to start',()=>{
  const config={host:'tenant-a.marketing-proof.invalid',key:'a'.repeat(64),upstream:'http://127.0.0.1:9',form:{id:'intake',title:'Fixture',fields:[{name:'email',type:'email',label:'Email'},{name:'firstname',type:'text',label:'First name'}]},routes:[]};
  for(const capture of [undefined,{url:'http://127.0.0.1:9'},{url:'http://127.0.0.1:9',key:'short'},{url:'https://user:pw@x/',key:'c'.repeat(64)}])assert.throws(()=>createPublicServer({...config,capture}));

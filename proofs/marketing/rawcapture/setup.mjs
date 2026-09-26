@@ -25,7 +25,7 @@ assert.equal(docker(['exec',name,'cat','/proc/sys/net/ipv4/ip_forward']).trim(),
 const ip=current.NetworkSettings.Networks[prefix].IPAddress;
 async function up(){try{return (await fetch(url+'/version',{signal:AbortSignal.timeout(2000)})).ok;}catch{return false;}}
 if(!await up()){
- const ssh=spawn('ssh',['-F',process.env.HOME+'/.colima/_lima/colima-remold-proof/ssh.config','-N','-o','ExitOnForwardFailure=yes','-L','127.0.0.1:'+port+':'+ip+':3210','lima-colima-remold-proof'],{detached:true,stdio:'ignore'});ssh.unref();
+ const ssh=spawn('ssh',['-F',process.env.HOME+'/.colima/_lima/colima-remold-proof/ssh.config','-N','-o','ControlMaster=no','-o','ControlPath=none','-o','ExitOnForwardFailure=yes','-L','127.0.0.1:'+port+':'+ip+':3210','lima-colima-remold-proof'],{detached:true,stdio:'ignore'});ssh.unref();
  writeFileSync(privateDir+'forward.pid',String(ssh.pid),{mode:0o600});
  const deadline=Date.now()+60000;while(!await up()){assert.ok(Date.now()<deadline,'Raw capture backend not reachable');await new Promise(r=>setTimeout(r,500));}
 }

@@ -1,0 +1,228 @@
+{
+ "section": "window",
+ "label": "r2-r3",
+ "at": "2026-09-26T12:46:51.830Z",
+ "status": "PASS",
+ "failed": [],
+ "checks": [
+  {
+   "ok": true,
+   "name": "reconciler completes",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "admin contact first name not overwritten by the public suggestion",
+   "detail": "Admin"
+  },
+  {
+   "ok": true,
+   "name": "admin DNC kept"
+  },
+  {
+   "ok": true,
+   "name": "one contact for the email",
+   "detail": [
+    {
+     "id": 368,
+     "firstname": "Admin"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "capture settled as existing on the admin contact",
+   "detail": {
+    "status": "settled",
+    "outcome": "existing",
+    "contactId": 368
+   }
+  }
+ ],
+ "out": {
+  "email": "win-b55bf425@example.invalid",
+  "adminId": 368,
+  "reconciler": {
+   "exit": 0,
+   "log": [
+    {
+     "capture": "j573ne43tn8cpgsz0yfgwv6s3x8f4835",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: %@%.% is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j571xta36bb4mh9zj682pvxaqh8f4rjd",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a*b@example.invalid has characters not allowed in email addresses.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57c9cngsp9gvjwyt3hnjngvdd8f41dy",
+     "outcome": "created",
+     "contactId": 369,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j573bajja2jd1tetswrn5q14s98f5x8x",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@b is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j578bn3v0rp3e60vhpfrh44bk58f5ydy",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j572ra1pae6qetwf63ksw5eg6d8f5jfa",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: .a@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j572acb5bna5yg2pfjnmbf2p7x8f4fyq",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a..b@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j575e0j628ypjbmher5hn7zded8f5ma3",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@-x.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j579aet06kgxaaydptx3sqqyrs8f4r9z",
+     "outcome": "created",
+     "contactId": 370,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57b8t5qqbsm47adjz2dpsf6ms8f4x48",
+     "outcome": "existing",
+     "contactId": 355,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j577f39atdcnzyaygjmzkven3h8f4def",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a&b@example.invalid has characters not allowed in email addresses.",
+     "result": "settled"
+    },
+    {
+     "capture": "j5730zd2k4k6hpkdd7btvzfs9d8f433c",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid is invalid.",
+     "result": "settled"
+    },
+    {
+     "capture": "j579qndxwag65thqmkt92qetks8f4mfv",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: a@ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+     "result": "settled"
+    },
+    {
+     "capture": "j577apv15nkafd3f96zqmgv6tn8f5byn",
+     "outcome": "created",
+     "contactId": 371,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j579x3v7b79e2kpetdbjjd31x18f5bap",
+     "outcome": "existing",
+     "contactId": 371,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57ffnbab5wxx33p3q3ecp8f5d8f4s9j",
+     "outcome": "existing",
+     "contactId": 371,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j576exggjbgb739f5fpawzaqns8f4dn7",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less.",
+     "result": "settled"
+    },
+    {
+     "capture": "j570a3epgstsq1wanw307rr2r58f43ht",
+     "outcome": "created",
+     "contactId": 372,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j574sgk54sfbm1twvd9rdfq5yd8f4zyg",
+     "outcome": "created",
+     "contactId": 373,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j570sy0xk9vqe2qscz5d4yv6zh8f5b8n",
+     "outcome": "rejected",
+     "contactId": null,
+     "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less.",
+     "result": "settled"
+    },
+    {
+     "capture": "j57bscsw2h6e1x7hp2tvkbsvax8f4m6h",
+     "outcome": "created",
+     "contactId": 374,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j57c5n4s4n2b88yr1rb2pyy7ax8f4m1k",
+     "outcome": "created",
+     "contactId": 375,
+     "reason": null,
+     "result": "settled"
+    },
+    {
+     "capture": "j576m91c6bmj4ye0w9ns5j602h8f5k09",
+     "outcome": "existing",
+     "contactId": 368,
+     "reason": null,
+     "result": "settled"
+    }
+   ],
+   "err": ""
+  },
+  "adminAfter": {
+   "firstname": "Admin",
+   "dnc": 1
+  },
+  "contacts": [
+   {
+    "id": 368,
+    "firstname": "Admin"
+   }
+  ],
+  "capture": {
+   "status": "settled",
+   "outcome": "existing",
+   "contactId": 368
+  }
+ }
+}

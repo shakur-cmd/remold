@@ -1,0 +1,78 @@
+{
+ "section": "window",
+ "label": "after-r2",
+ "at": "2026-09-26T12:47:18.202Z",
+ "status": "PASS",
+ "failed": [],
+ "checks": [
+  {
+   "ok": true,
+   "name": "admin create landed inside the lookup-then-create window"
+  },
+  {
+   "ok": true,
+   "name": "reconciler completes",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "admin contact first name not overwritten by the public suggestion",
+   "detail": "Admin"
+  },
+  {
+   "ok": true,
+   "name": "admin DNC kept"
+  },
+  {
+   "ok": true,
+   "name": "one contact for the email",
+   "detail": [
+    {
+     "id": 376,
+     "firstname": "Admin"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "capture settled as existing on the admin contact",
+   "detail": {
+    "status": "settled",
+    "outcome": "existing",
+    "contactId": 376
+   }
+  }
+ ],
+ "out": {
+  "email": "win-946f4d30@example.invalid",
+  "adminId": 376,
+  "reconciler": {
+   "exit": 0,
+   "log": [
+    {
+     "capture": "j57fy5sr606zz9k1t376bk6vtn8f4ccr",
+     "outcome": "existing",
+     "contactId": 376,
+     "reason": null,
+     "result": "settled"
+    }
+   ],
+   "err": ""
+  },
+  "adminAfter": {
+   "firstname": "Admin",
+   "dnc": 1
+  },
+  "contacts": [
+   {
+    "id": 376,
+    "firstname": "Admin"
+   }
+  ],
+  "capture": {
+   "status": "settled",
+   "outcome": "existing",
+   "contactId": 376
+  }
+ }
+}

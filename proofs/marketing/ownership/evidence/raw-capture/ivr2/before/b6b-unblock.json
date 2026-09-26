@@ -1,0 +1,29 @@
+{
+ "run": "e93faa35",
+ "capturedAt": "2026-09-26T12:37:30.196Z",
+ "steps": [
+  {
+   "settle": "iv%pct",
+   "result": "settled"
+  },
+  {
+   "run": "after first unblock",
+   "exit": 1,
+   "err": "AssertionError [ERR_ASSERTION]: Do not truncate the email match set",
+   "out": ""
+  },
+  {
+   "settle": "%@%.%",
+   "result": "settled"
+  },
+  {
+   "run": "after second unblock",
+   "exit": 0,
+   "err": "",
+   "out": "[{\"capture\":\"j571fgaxzmh18s7da98mznqthx8f4axn\",\"outcome\":\"created\",\"contactId\":346,\"result\":\"settled\"}]"
+  },
+  {
+   "pendingLeft": 0
+  }
+ ]
+}
