@@ -61,11 +61,9 @@ const accepts = (row: typeof parity[number], covered: string) => {
   return operations.every(([, inH0, inProduction]) => !inH0.test(h0) || inProduction.test(covered)) && new RegExp(row.exercises).test(covered);
 };
 
-test('every frozen H0 replay group maps to production tests that exercise its operations', () => {
-  expect(parity).toHaveLength(43);
-  expect(new Set(parity.map(row => row.h0)).size).toBe(43);
+function gapsFor(rows: typeof parity) {
   const gaps: string[] = [];
-  for (const row of parity) {
+  for (const row of rows) {
     const h0 = body(replay, row.h0);
     expect(row.production.length, row.h0).toBeGreaterThan(0);
     const covered = row.production.map(name => body(production, name)).join('\n');
@@ -75,7 +73,27 @@ test('every frozen H0 replay group maps to production tests that exercise its op
     if (!own.test(covered)) gaps.push(`${row.h0}: no mapped test does its own check /${row.exercises}/`);
     if (shared > MAX_SHARED) gaps.push(`${row.h0}: /${row.exercises}/ appears in ${shared} tests, too generic to identify this group`);
   }
-  expect(gaps).toEqual([]);
+  return gaps;
+}
+
+test('every frozen H0 replay group maps to production tests that exercise its operations', () => {
+  expect(parity).toHaveLength(43);
+  expect(new Set(parity.map(row => row.h0)).size).toBe(43);
+  expect(gapsFor(parity)).toEqual([]);
+});
+
+// The guard itself must notice bad maps, not only pass on today's good one.
+test('the guard reports a row whose own check no mapped test performs', () => {
+  const rows = parity.map((row, i) => i === 0 ? { ...row, exercises: 'NO_TEST_DOES_THIS_zq' } : row);
+  expect(gapsFor(rows)).toEqual([`${parity[0]!.h0}: no mapped test does its own check /NO_TEST_DOES_THIS_zq/`]);
+});
+test('the guard reports an own check that seven production tests share', () => {
+  // Find a real word that appears in exactly seven test bodies: one more than the limit of six.
+  const words = [...new Set(allBodies.flatMap(b => b.match(/\b[A-Za-z]{5,}\b/g) ?? []))];
+  const seven = words.find(word => allBodies.filter(b => new RegExp(`\\b${word}\\b`).test(b)).length === 7);
+  expect(seven).toBeDefined();
+  const rows = parity.map((row, i) => i === 0 ? { ...row, exercises: `\\b${seven}\\b` } : row);
+  expect(gapsFor(rows)).toContain(`${parity[0]!.h0}: /\\b${seven}\\b/ appears in 7 tests, too generic to identify this group`);
 });
 
 test('no single production test can stand in for more than five groups', () => {

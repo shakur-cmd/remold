@@ -1,0 +1,11 @@
+PASS R3-P1 records.list (member, recent-first, 5 per page): adding unreadable rows does not change what the member sees
+PASS R3-P2 records.list filtered on amount (member, 1 per page): a value held only by unreadable deals looks the same as a value nobody holds
+PASS R3-P3 Agent REST /records filtered on amount (limit 1): hidden value vs missing value give the same body
+PASS R3-P4 records.related (member, lookup opportunity.company -> readable Acme, 5 per page): unreadable linked deals do not change the pages
+PASS R3-P5 events.forOrg (member, first page of 5): events of unreadable records do not change the page
+PASS R3-P7 Pagination cursors are opaque: a cursor that ends on an unreadable row does not contain its id, amount or title
+PASS R3-P6 CSV exportPage (member, 200 raw rows per page): unreadable rows do not change rows/done
+PASS R3-F1 firstVisible scan cap: the member/agent recent-first search result does not depend on whether 999 or 1000 unreadable rows are newer than their own
+PASS R3-F2 Timing: recent-first search (limit 1) returns the same single row in about the same time with 0 and 999 unreadable newer rows (median of 21, <5 ms and <2x)
+PASS R3-F3 Text search over many unreadable matches (agent, no object filter, and member) returns normally, never a platform-limit error that only unreadable rows could cause
+R3 SUMMARY 10 PASS / 0 FAIL

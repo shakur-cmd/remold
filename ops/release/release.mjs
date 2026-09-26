@@ -68,6 +68,8 @@ const appDocuments = canonical => Object.entries(canonical?.tables ?? {}).reduce
 export function preflight(manifest, targetSha, targetSchemaDigest, snapshotReceipt, manifestSha256, expectedBackup, targetHasAuthority) {
   requireSha(targetSha);
   // Fails closed: the caller must prove the target contains the I1 authority core.
+  // A string is authorityFloorCheck's reason for refusing; say what actually failed.
+  if (typeof targetHasAuthority === 'string') throw new Error('Rollback floor refused: ' + targetHasAuthority);
   if (targetHasAuthority !== true) throw new Error('Rollback target predates the I1 authority core; after the I1 freeze it would drop masks and record scopes');
   if (targetSha !== manifest.release.rollbackTarget) throw new Error('Rollback target is not the declared compatible commit');
   if (targetSchemaDigest !== manifest.schemaSha256) throw new Error('Rollback schema differs; destructive or earlier schema rollback is unsupported');
@@ -93,10 +95,23 @@ export function preflight(manifest, targetSha, targetSchemaDigest, snapshotRecei
 // every target (fail closed) until this pin is updated.
 const AUTHORITY_CORE = ['convex/authority/migration.ts', 'convex/authority/reads.ts'];
 export const FIRST_I1_COMMIT = '7299ee98d05c39480e5ad8018e0d81ac119062d8';
-export function authorityFloor(cwd, targetSha, floorSha = FIRST_I1_COMMIT) {
+// Returns true, or the reason the target is refused.
+export function authorityFloorCheck(cwd, targetSha, floorSha = FIRST_I1_COMMIT) {
   requireSha(targetSha);
-  return spawnSync('git', ['merge-base', '--is-ancestor', floorSha, targetSha], { cwd }).status === 0
-    && AUTHORITY_CORE.every(path => spawnSync('git', ['cat-file', '-e', `${targetSha}:${path}`], { cwd }).status === 0);
+  const ok = (...args) => spawnSync('git', args, { cwd }).status === 0;
+  const shallow = spawnSync('git', ['rev-parse', '--is-shallow-repository'], { cwd, encoding: 'utf8' }).stdout?.trim() === 'true';
+  const history = shallow ? 'this clone is shallow; fetch full history (git fetch --unshallow) and rerun' : 'fetch the history that contains it and rerun';
+  if (!ok('cat-file', '-e', `${floorSha}^{commit}`)) return `the pinned I1 floor commit ${floorSha} is not in this clone; ${history}`;
+  const type = spawnSync('git', ['cat-file', '-t', targetSha], { cwd, encoding: 'utf8' }).stdout?.trim();
+  if (!type) return `rollback target ${targetSha} is not in this clone; ${history}`;
+  if (type !== 'commit') return `rollback target ${targetSha} is a ${type}, not a commit`;
+  if (!ok('merge-base', '--is-ancestor', floorSha, targetSha)) return `rollback target ${targetSha} does not descend from the I1 floor commit ${floorSha}. Either it predates I1, or I1 reached it by squash or rebase, which the floor cannot trace; ${shallow ? history : 'merge I1 with a merge commit'}`;
+  const missing = AUTHORITY_CORE.filter(path => !ok('cat-file', '-e', `${targetSha}:${path}`));
+  if (missing.length) return `rollback target ${targetSha} descends from I1 but lacks ${missing.join(' and ')}`;
+  return true;
+}
+export function authorityFloor(cwd, targetSha, floorSha = FIRST_I1_COMMIT) {
+  return authorityFloorCheck(cwd, targetSha, floorSha) === true;
 }
 function git(cwd, ...args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
@@ -162,7 +177,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToP
       const receipt = notes ? JSON.parse(readFileSync(notes, 'utf8')) : undefined;
       // The operator names the real backup file; its bytes, not the receipt, define the expected snapshot.
       const expected = snapshot ? { snapshotSha256: digest(readFileSync(snapshot)), canonical: canonical(snapshot) } : undefined;
-      console.log(JSON.stringify(preflight(manifest, manifest.release.rollbackTarget, digest(schema), receipt, third, expected, authorityFloor(process.cwd(), manifest.release.rollbackTarget))));
+      console.log(JSON.stringify(preflight(manifest, manifest.release.rollbackTarget, digest(schema), receipt, third, expected, authorityFloorCheck(process.cwd(), manifest.release.rollbackTarget))));
     } else if (command === 'snapshot') {
       const manifest = verifyArtifact(directory, sha, third);
       assertClean(notes, sha);

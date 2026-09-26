@@ -20,7 +20,7 @@ export async function replayAgents({ runtime, tenant, test }) {
     const before = await t.human.action(anyApi.agents.createScoped, { orgId: t.orgId, name: 'before', origin: 'external' }), beforeCall = rest(before.key);
     await grant(t, before.agentId, 'model.call', { kind: 'model', maxUnitsPerRun: 5, maxSteps: 2 });
     const pending = await beforeCall('POST', 'operations', { ...proposal, logical: 'before' }), c = await beforeCall('POST', 'operations/' + pending + '/claim', { worker: 'w' });
-    await t.human.mutation(anyApi.agents.revoke, { orgId: t.orgId, agentId: before.agentId }); await assert.rejects(t.adapter('permit', { id: pending, ...c, worker: 'w' }));
+    await t.human.mutation(anyApi.agents.revoke, { orgId: t.orgId, agentId: before.agentId }); await assert.rejects(t.adapter('permit', { id: pending, ...c, worker: 'w' }), /Agent inactive/);
     await pause(300); assert.equal((await t.get(pending)).state, 'paused');
   });
   await test('Delegation revocation changes actual REST read projection while independent human grants survive', async () => {
@@ -42,6 +42,22 @@ export async function replayAgents({ runtime, tenant, test }) {
     await assert.rejects(rest(child.key)('POST', 'operations/' + operation + '/claim', { worker: 'stale' }), /403/);
     await pause(150); assert.equal((await t.get(operation)).state, 'paused');
     await assert.rejects(rest(manager.key)('POST', 'authority/fire', { target: manager.agentId }));
+  });
+  await test('H0#5 firing a manager removes delegated reads and queued model work while the child keeps its independent human grant', async () => {
+    const t = await tenant('fire-chain'), objects = await t.human.query(anyApi.objects.list, { orgId: t.orgId }), company = objects.find(o => o.key === 'company');
+    const detail = await t.human.query(anyApi.objects.get, { orgId: t.orgId, objectId: company._id }), name = detail.fields.find(f => f.key === 'name'), city = detail.fields.find(f => f.key === 'city');
+    const row = await t.human.mutation(anyApi.records.create, { orgId: t.orgId, objectId: company._id, values: { [name._id]: 'Delegated name', [city._id]: 'Own city' } });
+    const manager = await t.human.action(anyApi.agents.createScoped, { orgId: t.orgId, name: 'manager', origin: 'external' }), child = await t.human.action(anyApi.agents.createScoped, { orgId: t.orgId, name: 'child', origin: 'external' });
+    const scope = { kind: 'records', objectId: company._id, records: [row.recordId], fields: [name._id] }, modelScope = { kind: 'model', maxUnitsPerRun: 5, maxSteps: 1 };
+    const readParent = await grant(t, manager.agentId, 'read', scope), modelParent = await grant(t, manager.agentId, 'model.call', modelScope); await grant(t, manager.agentId, 'agent.manage', { kind: 'agents', agents: [child.agentId] });
+    for (const [capability, delegated, parent] of [['read', scope, readParent], ['model.call', modelScope, modelParent]]) await rest(manager.key)('POST', 'authority/grant', { target: child.agentId, capability, scope: delegated, mode: 'direct', delegate: false, expiresAt: Date.now() + 30000, parent });
+    await grant(t, child.agentId, 'read', { ...scope, fields: [city._id] }); const childRead = () => rest(child.key)('GET', 'records/' + row.recordId);
+    const queued = await rest(child.key)('POST', 'operations', { logical: 'delegated-model', bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 5, maxSteps: 1 });
+    assert.deepEqual((await childRead()).record.values, { name: 'Delegated name', city: 'Own city' });
+    await t.human.mutation(anyApi.agents.revoke, { orgId: t.orgId, agentId: manager.agentId });
+    const afterFire = await childRead(); assert.deepEqual(afterFire.record.values, { city: 'Own city' }); assert.equal(afterFire.record.title, '');
+    await assert.rejects(rest(child.key)('POST', 'operations/' + queued + '/claim', { worker: 'after-fire' }), /403/);
+    await pause(150); assert.equal((await t.get(queued)).state, 'paused');
   });
   await test('Existing human subscription loses masked field within the 2-second target on real backend', async () => {
     const t = await tenant('subscription'), objects = await t.human.query(anyApi.objects.list, { orgId: t.orgId }), company = objects.find(o => o.key === 'company');

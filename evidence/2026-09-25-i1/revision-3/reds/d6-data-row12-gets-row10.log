@@ -1,0 +1,57 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (5 tests | 2 failed) 206ms
+   × every frozen H0 replay group maps to production tests that exercise its operations 17ms
+   × the guard reports a row whose own check no mapped test performs 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Per-run/global spend and global concurrency caps bound both tenants: no mapped test does its own check /Unresolved usage/",
++ ]
+
+ ❯ ops/authority/h0-parity.test.ts:82:27
+     80|   expect(parity).toHaveLength(43);
+     81|   expect(new Set(parity.map(row => row.h0)).size).toBe(43);
+     82|   expect(gapsFor(parity)).toEqual([]);
+       |                           ^
+     83| });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    "A/B known-ID isolation, server-derived actors and full binding tuple collision: no mapped test does its own check /NO_TEST_DOES_THIS_zq/",
++   "Per-run/global spend and global concurrency caps bound both tenants: no mapped test does its own check /Unresolved usage/",
+  ]
+
+ ❯ ops/authority/h0-parity.test.ts:88:25
+     86| test('the guard reports a row whose own check no mapped test performs'…
+     87|   const rows = parity.map((row, i) => i === 0 ? { ...row, exercises: '…
+     88|   expect(gapsFor(rows)).toEqual([`${parity[0]!.h0}: no mapped test doe…
+       |                         ^
+     89| });
+     90| test('the guard reports an own check that seven production tests share…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  08:23:55
+   Duration  311ms (tests 82%, import 11%, transform 6%, worker 1%)
+

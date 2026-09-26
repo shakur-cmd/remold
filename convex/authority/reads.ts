@@ -21,6 +21,31 @@ export async function firstVisible<T, R>(rows: AsyncIterable<T>, limit: number, 
   for await (const row of rows) { const kept = await keep(row); if (kept) out.push(kept); if (out.length >= limit || ++scanned >= scanCap) break; }
   return out;
 }
+// Record-scoped readers. When no scope a caller holds on an object covers all of
+// its records, answer from the caller's explicit record list instead of the
+// object's index. Page sizes, done flags, cursors, scan limits and timing then
+// depend only on rows the caller can read. Returns null when some scope covers
+// every record: a per-object index then holds no row the caller cannot read.
+export function listedRecordIds(principal: Principal, object: Doc<'objects'>): Id<'records'>[] | null {
+  const all = scopes(principal, object);
+  if (all.some(s => s.records === 'all')) return null;
+  return [...new Set(all.flatMap(s => s.records === 'all' ? [] : s.records))];
+}
+export async function listedRecords(ctx: Ctx, principal: Principal, object: Doc<'objects'>): Promise<Doc<'records'>[] | null> {
+  const ids = listedRecordIds(principal, object);
+  if (!ids) return null;
+  const rows = await Promise.all(ids.map(id => ctx.db.get(id)));
+  return rows.filter((r): r is Doc<'records'> => !!r && canReadRecord(principal, object, r));
+}
+// Convex index order for slot values: missing, then numbers, booleans, strings.
+const rank = (v: unknown) => v === undefined ? 0 : v === null ? 1 : typeof v === 'number' ? 2 : typeof v === 'boolean' ? 3 : 4;
+export function compareIndexValues(a: unknown, b: unknown) { const d = rank(a) - rank(b); return d || ((a as any) < (b as any) ? -1 : (a as any) > (b as any) ? 1 : 0); }
+// Offset pagination over an in-memory list, shaped like Convex's paginate result.
+export function pageList<T>(rows: T[], opts: { cursor: string | null; numItems: number; endCursor?: string | null }) {
+  const at = (cursor: string) => { const m = /^list:(\d+)$/.exec(cursor); if (!m) fail('VALIDATION', 'Invalid cursor'); return Number(m[1]); };
+  const start = opts.cursor ? at(opts.cursor) : 0, end = opts.endCursor ? at(opts.endCursor) : start + Math.max(0, Math.floor(opts.numItems));
+  return { page: rows.slice(start, end), isDone: end >= rows.length, continueCursor: 'list:' + end };
+}
 export function canReadObject(principal: Principal, object: Doc<'objects'>) { return scopes(principal, object).length > 0; }
 export function canReadRecordId(principal: Principal, object: Doc<'objects'>, recordId?: Id<'records'>) {
   return scopes(principal, object).some(s => s.records === 'all' || (recordId !== undefined && s.records.includes(recordId)));
@@ -39,8 +64,13 @@ export async function requireObjectAdministration(ctx: Ctx, principal: Principal
   if (!all.length || fields.some(f => !canReadField(principal, object, f) || !all.some(s => s.fields === 'all' || s.fields.includes(f._id)))) fail('FORBIDDEN', 'Full object scope required for metadata changes');
 }
 export function requireRecordRead(principal: Principal, object: Doc<'objects'>, record: Doc<'records'>) { if (!canReadRecord(principal, object, record)) fail('NOT_FOUND', 'Record not found'); }
+// A field every scope on the object covers, so filtering, sorting or matching on it
+// treats every readable record the same way.
+export function canQueryField(principal: Principal, object: Doc<'objects'>, field: Doc<'fields'>) {
+  return canReadField(principal, object, field) && scopes(principal, object).every(s => s.fields === 'all' || s.fields.includes(field._id));
+}
 export function requireQueryField(principal: Principal, object: Doc<'objects'>, field: Doc<'fields'>) {
-  if (!canReadField(principal, object, field) || scopes(principal, object).some(s => s.fields !== 'all' && !s.fields.includes(field._id))) fail('NOT_FOUND', 'Field not found');
+  if (!canQueryField(principal, object, field)) fail('NOT_FOUND', 'Field not found');
 }
 export async function visibleTitle(ctx: Ctx, principal: Principal, record: Doc<'records'>, depth = 0): Promise<string> {
   const object = await ctx.db.get(record.objectId);

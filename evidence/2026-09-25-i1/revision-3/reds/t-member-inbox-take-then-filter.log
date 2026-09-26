@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 1 failed) 917ms
+   × member inbox list fills its limit with items the member may see 11ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:40
+   Duration  1.16s (tests 79%, transform 13%, import 8%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member inbox list fills its limit with items the member may see
+AssertionError: expected [] to deeply equal [ '0000000000000000010151agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000010151agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:106:93
+    104|   await restrictMember(f, [{ objectId: company.object._id, records: []…
+    105|   const own = await f.client.mutation(api.inbox.add, { orgId: f.orgId,…
+    106|   expect((await f.client.query(api.inbox.list, { orgId: f.orgId })).ma…
+       |                                                                                             ^
+    107| }, 30000);
+    108| it('agent inbox list fills its limit with items the agent may see', as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

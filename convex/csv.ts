@@ -7,7 +7,7 @@ import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
 import { findReadableByTitle } from "./lib/find";
-import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQueryField, visibleTitle } from "./authority/reads";
+import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQueryField, visibleTitle, listedRecords, pageList } from "./authority/reads";
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
 const US = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
@@ -114,7 +114,9 @@ export const exportPage = query({
     const { object, fields: allFields } = await fieldsOf(ctx, args.orgId, args.objectId);
     requireObjectRead(principal, object);
     const fields = allFields.filter(f => canReadField(principal, object, f));
-    const page = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)).paginate({ cursor: args.cursor, numItems: 200 });
+    // A record-scoped reader pages their own list, so hidden rows never shorten a page.
+    const listed = await listedRecords(ctx, principal, object);
+    const page = listed ? pageList([...listed].sort((a, b) => a._creationTime - b._creationTime), { cursor: args.cursor, numItems: 200 }) : await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)).paginate({ cursor: args.cursor, numItems: 200 });
     const titles = new Map<string, string>();
     const titleOf = async (id: string) => {
       if (!titles.has(id)) { const normal = ctx.db.normalizeId("records", id); const record = normal ? await ctx.db.get(normal) : null; titles.set(id, record ? await visibleTitle(ctx, principal, record) : ""); }

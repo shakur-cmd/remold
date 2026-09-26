@@ -1,0 +1,59 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 2 failed) 827ms
+   × agent related through a lookup fills its limit with readable records 35ms
+   × agent related through a links field fills its limit with readable records 41ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  2 failed | 89 passed (91)
+   Start at  08:23:20
+   Duration  1.12s (tests 71%, transform 18%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > agent related through a lookup fills its limit with readable records
+AssertionError: expected [] to deeply equal [ '0000000000000000000010250records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010250records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:70:65
+     68| }
+     69| it('agent related through a lookup fills its limit with readable recor…
+     70|   const w = await relatedWorld('lookup'); expect(await w.ids()).toEqua…
+       |                                                                 ^
+     71| }, 30000);
+     72| it('agent related through a links field fills its limit with readable …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/limits.test.ts > agent related through a links field fills its limit with readable records
+AssertionError: expected [] to deeply equal [ '0000000000000000000010350records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010350records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:73:64
+     71| }, 30000);
+     72| it('agent related through a links field fills its limit with readable …
+     73|   const w = await relatedWorld('links'); expect(await w.ids()).toEqual…
+       |                                                                ^
+     74| }, 30000);
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

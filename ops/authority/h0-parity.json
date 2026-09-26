@@ -35,8 +35,9 @@
   },
   {
     "h0": "Delegation ancestry revokes queued/read/model paths while independent human grant survives",
-    "exercises": "childRead\\(|held\\.fence > c\\.fence",
+    "exercises": "const afterFire = await childRead\\(\\)",
     "production": [
+      "H0#5 firing a manager removes delegated reads and queued model work while the child keeps its independent human grant",
       "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives",
       "Delegation revocation changes actual REST read projection while independent human grants survive"
     ]
@@ -61,7 +62,7 @@
   },
   {
     "h0": "Before-permit fire refuses; after-permit fire preserves one late outcome",
-    "exercises": "revoked agent key",
+    "exercises": "result\\.late, true[\\s\\S]*agentId: before\\.agentId \\}\\); await assert\\.rejects\\(t\\.adapter\\('permit', \\{ id: pending, \\.\\.\\.c, worker: 'w' \\}\\), /Agent inactive/\\)",
     "production": [
       "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail"
     ]
@@ -301,7 +302,7 @@
   },
   {
     "h0": "Exhausted successful continuation settles and releases its slot",
-    "exercises": "second\\.maxUnits, 3",
+    "exercises": "exhausted\\.continuationRefused, true",
     "production": [
       "Continuation reduces per-call exposure and old fence cannot consume the next step"
     ]

@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 1 failed) 867ms
+   × member today: quiet deals fill the list with readable deals 191ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:31
+   Duration  1.12s (tests 75%, transform 16%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member today: quiet deals fill the list with readable deals
+AssertionError: expected [] to deeply equal [ '0000000000000000000010448records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010448records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:44:121
+     42| it('member today: quiet deals fill the list with readable deals', asyn…
+     43|   const w = await dealWorld(200); await restrictMember(w.f, [{ objectI…
+     44|   expect((await w.f.client.query(api.today.get, { orgId: w.f.orgId, to…
+       |                                                                                                                         ^
+     45| }, 60000);
+     46| it('agent today: quiet deals fill the list with readable deals', async…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

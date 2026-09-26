@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (5 tests | 1 failed) 339ms
+   × the guard reports a row whose own check no mapped test performs 19ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:44
+   Duration  1.17s (tests 78%, transform 13%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs
+AssertionError: expected [] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+- [
+-   "A/B known-ID isolation, server-derived actors and full binding tuple collision: no mapped test does its own check /NO_TEST_DOES_THIS_zq/",
+- ]
++ []
+
+ ❯ ops/authority/h0-parity.test.ts:88:25
+     86| test('the guard reports a row whose own check no mapped test performs'…
+     87|   const rows = parity.map((row, i) => i === 0 ? { ...row, exercises: '…
+     88|   expect(gapsFor(rows)).toEqual([`${parity[0]!.h0}: no mapped test doe…
+       |                         ^
+     89| });
+     90| test('the guard reports an own check that seven production tests share…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

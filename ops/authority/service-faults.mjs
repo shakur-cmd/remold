@@ -19,8 +19,10 @@ export async function replayFaults({ runtime, tenant, test }) {
   await test('Continuation reduces per-call exposure and old fence cannot consume the next step', async () => {
     const t = await tenant('remaining'), id = await t.propose('steps'), first = await t.permit(id); assert.equal(first.maxUnits, 5); await t.consume(first);
     await t.adapter('reconcile', { id, fence: first.fence, step: first.step, providerRef: 'step1', usage: 2, continue: true }); const second = await t.permit(id); assert.equal(second.maxUnits, 3); assert.equal(second.step, 2);
-    await assert.rejects(t.consume(first), /spent permit/); await t.consume(second); await t.adapter('reconcile', { id, fence: second.fence, step: second.step, providerRef: 'step2', usage: 3, continue: true });
-    assert.equal((await t.get(id)).state, 'confirmed'); assert.equal(t.budget().active, 0); assert.equal(t.budget().spent, 5);
+    await assert.rejects(t.consume(first), /spent permit/); await t.consume(second); const exhausted = await t.adapter('reconcile', { id, fence: second.fence, step: second.step, providerRef: 'step2', usage: 3, continue: true });
+    // The last allowed step asked to continue: it settles, refuses the continuation and frees its slot.
+    assert.equal(exhausted.continuationRefused, true); assert.equal((await t.get(id)).state, 'confirmed'); assert.equal(t.budget().active, 0); assert.equal(t.budget().spent, 5);
+    await assert.rejects(t.claim(id), /Operation stopped/);
   });
   await test('Final permit refuses expired approval without relying on asynchronous sweeps', async () => {
     const t = await tenant('approval-expiry'), id = await t.propose('expires'); await t.human.mutation(commands.approve, { orgId: t.orgId, id, expiresAt: Date.now() + 250 }); const c = await t.claim(id); await pause(300);

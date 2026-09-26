@@ -1,0 +1,52 @@
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.932584ms)
+✔ changed, missing and injected artifact bytes are refused (1.433792ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (51.936625ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.010708ms)
+✔ version metadata must name the artifact commit (0.906333ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.823583ms)
+✔ failed real process halts checks before a later process can run (22.0885ms)
+✔ successful real processes run in order (39.822375ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.222708ms)
+✔ missing metadata and destructive contraction are refused (0.100292ms)
+✔ a rollback to a schema without the expanded fields is refused (0.11175ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.564459ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (43.562792ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.045875ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (24.116542ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (21.009ms)
+✔ PR changes use their common ancestor when the target branch advances independently (227.007ms)
+✔ after the I1 freeze, rollback to code that predates I1 authority is refused (539.539291ms)
+✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (309.129916ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 18
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1325.71625
+
+✖ failing tests:
+
+test at ops/release/release.test.mjs:233:1
+✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (309.129916ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /does not descend from the I1 floor commit.*predates I1, or I1 reached it by squash/. Input:
+  
+  'Rollback target predates the I1 authority core'
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/release/release.test.mjs:248:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Rollback target predates the I1 authority core',
+    expected: /does not descend from the I1 floor commit.*predates I1, or I1 reached it by squash/,
+    operator: 'match',
+    diff: 'simple'
+  }
+[ELIFECYCLE] Command failed with exit code 1.
+$ node --test ops/release/release.test.mjs

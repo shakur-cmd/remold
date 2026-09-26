@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, rmSync, symlinkSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { digest, sealArtifact, verifyArtifact, runChecks, validateReleaseNotes, preflight, resolveBase, authorityFloor } from './release.mjs';
+import { digest, sealArtifact, verifyArtifact, runChecks, validateReleaseNotes, preflight, resolveBase, authorityFloor, authorityFloorCheck } from './release.mjs';
 import { canonical } from './snapshot.mjs';
 
 const sha = 'a'.repeat(40);
@@ -228,4 +228,33 @@ test('after the I1 freeze, rollback to code that predates I1 authority is refuse
   assert.throws(() => preflight(manifest(preI1), preI1, schema, undefined, undefined, undefined, floor(preI1)), /predates the I1 authority core/);
   assert.throws(() => preflight(manifest(preI1), preI1, schema), /predates the I1 authority core/);
   assert.deepEqual(preflight(manifest(withI1), withI1, schema, undefined, undefined, undefined, floor(withI1)), { snapshot: 'not-required', deploymentAuthorized: false });
+});
+
+test('a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file', t => {
+  const root = mkdtempSync(join(tmpdir(), 'remold-floor-reasons-')), repo = join(root, 'repo');
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const env = { ...process.env, GIT_AUTHOR_NAME: 'fixture', GIT_AUTHOR_EMAIL: 'f@example.invalid', GIT_COMMITTER_NAME: 'fixture', GIT_COMMITTER_EMAIL: 'f@example.invalid' };
+  const gitIn = cwd => (...args) => execFileSync('git', args, { cwd, encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'] }).trim(), run = gitIn(repo);
+  mkdirSync(join(repo, 'convex/authority'), { recursive: true }); run('init', '-q', '-b', 'main');
+  writeFileSync(join(repo, 'convex/schema.ts'), 'export default {};'); run('add', '-A'); run('commit', '-qm', 'pre-I1'); const preI1 = run('rev-parse', 'HEAD');
+  run('checkout', '-q', '-b', 'i1');
+  for (const file of ['migration.ts', 'reads.ts']) writeFileSync(join(repo, 'convex/authority', file), '// authority core');
+  run('add', '-A'); run('commit', '-qm', 'I1'); const floor = run('rev-parse', 'HEAD');
+  run('commit', '-q', '--allow-empty', '-m', 'I1 tip'); const tip = run('rev-parse', 'HEAD');
+  run('checkout', '-q', 'main'); run('merge', '-q', '--squash', 'i1'); run('commit', '-qm', 'squash I1'); const squash = run('rev-parse', 'HEAD');
+  run('checkout', '-q', '-b', 'removed', tip); run('rm', '-q', 'convex/authority/reads.ts'); run('commit', '-qm', 'drop core'); const removed = run('rev-parse', 'HEAD');
+  const check = (target, cwd = repo) => authorityFloorCheck(cwd, target, floor);
+  assert.equal(check(tip), true);
+  assert.match(check(preI1), /does not descend from the I1 floor commit.*predates I1, or I1 reached it by squash/);
+  assert.match(check(squash), /does not descend from the I1 floor commit.*squash/);
+  assert.match(check(run('rev-parse', `${tip}^{tree}`)), /is a tree, not a commit/);
+  assert.match(check(removed), /descends from I1 but lacks convex\/authority\/reads\.ts/);
+  assert.match(check('f'.repeat(40)), /is not in this clone/);
+  const shallow = join(root, 'shallow'); execFileSync('git', ['clone', '-q', '--depth', '1', '-b', 'i1', 'file://' + repo, shallow], { env });
+  assert.match(check(tip, shallow), /floor commit .* is not in this clone; this clone is shallow/);
+  const noPin = join(root, 'nopin'); execFileSync('git', ['init', '-q', noPin], { env }); gitIn(noPin)('fetch', '-q', repo, 'main:refs/heads/squashed');
+  assert.match(check(squash, noPin), /floor commit .* is not in this clone; fetch the history/);
+  const manifest = { schemaSha256: schema, release: { class: 'ui-only', rollbackTarget: squash } };
+  assert.throws(() => preflight(manifest, squash, schema, undefined, undefined, undefined, check(squash)), /Rollback floor refused: .*squash/);
+  assert.equal(authorityFloor(repo, squash, floor), false);
 });

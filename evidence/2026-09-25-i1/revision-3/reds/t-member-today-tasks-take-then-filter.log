@@ -1,0 +1,60 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/read-boundaries.test.ts (3 tests | 1 failed) 173ms
+   × daily task membership cannot reveal due or done fields denied for that particular record 125ms
+ ❯ ops/authority/limits.test.ts (10 tests | 1 failed) 898ms
+   × member today: due tasks fill the list with readable tasks 381ms
+
+ Test Files  2 failed | 15 passed (17)
+      Tests  2 failed | 89 passed (91)
+   Start at  08:23:30
+   Duration  1.16s (tests 76%, transform 15%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member today: due tasks fill the list with readable tasks
+AssertionError: expected [] to deeply equal [ '0000000000000000000010448records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010448records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:35:118
+     33| it('member today: due tasks fill the list with readable tasks', async …
+     34|   const w = await taskWorld(200); await restrictMember(w.f, [{ objectI…
+     35|   expect((await w.f.client.query(api.today.get, { orgId: w.f.orgId, to…
+       |                                                                                                                      ^
+     36| }, 60000);
+     37| it('agent today: due tasks fill the list with readable tasks', async (…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that particular record
+AssertionError: expected [ …(2) ] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+  [
+    "0000000000000000000010048records",
++   "0000000000000000000010050records",
+  ]
+
+ ❯ ops/authority/read-boundaries.test.ts:16:110
+     14|   const memberId = await f.t.run(async ctx => (await ctx.db.query('mem…
+     15|   await f.client.mutation(policies.setMember, { orgId: f.orgId, member…
+     16|   expect.soft((await f.client.query(api.today.get, { orgId: f.orgId, t…
+       |                                                                                                              ^
+     17| });
+     18| it('deleted-record suggestions remain scoped to the original record an…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
