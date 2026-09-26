@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold P6 deterministic slice - independent verification round 2</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+  .pass { color: #1a7a1a; font-weight: 600; }
+  .partial { color: #a86400; font-weight: 600; }
+  .fail { color: #a11; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Remold P6 deterministic slice - independent verification round 2</h1>
+<div class="meta">2026-09-26 · scope: remold/P6/deterministic-iv · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>The P6 deterministic slice can be closed at SERVICE/SIM.</b> Both round-1 defects are fixed and I re-broke them independently on fresh ports: my two round-1 defect probes now fail to reproduce (they can no longer make the leak happen), and eight harder round-2 probes plus the builder's 13 checks and 19 mutants all hold. This is a proof of the control plane, not a hosted-runtime certification.</li>
+  <li><b>The fix lives in proof-owned <code>convex/settle.ts</code>, not in I1.</b> If this hosted-executor pattern is later promoted into production, the same atomic settle must be carried into I1: I1's own <code>reconcile</code> at <code>convex/integrations/outcomes.ts:36</code> still does not treat readonly as late. In I1 today that is an audit misclassification, not a write bypass, so nothing is broken now, but the pattern does not port safely by copy-paste.</li>
+  <li><b>Usage is now tamper-resistant, not tamper-proof, and that is the right bar for SIM.</b> Settle bills <code>max(meter, reported)</code> and flags under-reports, so a guest can no longer be billed less than the executor metered. The meter is the sandbox's stdout token count, which in SIM is the unit of work. For LIVE the meter must come from the trusted model runtime, not the tenant stdout. Flag this as a LIVE gate, not a slice blocker.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Moved my worktree to <code>89bf0a5</code>. Frozen H0 files (<code>contract.ts</code>, <code>harness.ts</code>, <code>schema.ts</code>) still byte-identical to <code>proofs/contract/convex</code>.</li>
+  <li>Confirmed the harness patch changes no attack logic or assertion: it only repoints the port and routes the name <code>settle</code> to <code>api.settle.settle</code>, plus writes a run-result file. I re-ran my own round-1 attack with that one-line routing and watched both defect probes flip to <b>FAIL</b> (i.e. the leaks are gone). Evidence: <code>round1-attack-against-fix.json</code>.</li>
+  <li>Reran the builder suite three times on ports 3960/3961: 13/13 PASS each. Reran all mutants: 19/19 KILLED. Evidence: <code>r2-suite-run1..3.json</code>, <code>r2-mutants.log</code>, <code>r2-mutants.json</code>.</li>
+  <li>Wrote and ran eight round-2 stress probes on ports 3970/3971: all PASS, including 50-trial org-kill timing, a concurrent race against the settle transaction, concurrent duplicate settle, and a forged-providerRef replay. Evidence: <code>r2attack-results.json</code>, <code>attack-harness/</code>.</li>
+  <li>Confirmed the only code that writes applied output is <code>settle.ts:34</code>, inside one transaction; the executor's <code>effects.push</code> is local bookkeeping gated on the transaction's own decision. No apply path exists outside settle.</li>
+</ul>
+</div>
+
+<h2>Target</h2>
+<p>Origin branch <code>p6/deterministic-2026-09-26</code>, commit <code>89bf0a5</code>, worktree <code>../remold-p6-iv2</code>. Stub model only: no inference, no API/subscription, no spend, nothing from the owner home or global connectors. Fresh ports 3960/3961 (suite), 3970/3971 (attack); reserved ranges avoided.</p>
+
+<h2>Round-1 defects - re-verified closed</h2>
+<table>
+<tr><th>Round-1 defect</th><th>Fix</th><th>Round-2 verdict</th></tr>
+<tr><td>Org kill in the reconcile window still applied output (reproduced 8/8)</td><td>Apply moved into one <code>settle.ts</code> transaction that re-reads <code>adapterStatus</code> and writes the output record atomically. A readonly commit orders entirely before (settle sees cancel, no apply) or entirely after (apply already committed).</td><td class="pass">CLOSED</td></tr>
+<tr><td>Finished-run usage was the guest's self-reported number; under-report billed 1 of 4 and was applied</td><td>Settle bills <code>usage = killed ? meter : reported === undefined ? undefined : max(meter, reported)</code>, flags <code>reported &lt; meter</code> as <code>usageUnderreport</code>, and does not apply a flagged run.</td><td class="pass">CLOSED</td></tr>
+</table>
+<p>My original probes were written to <b>pass while the defect exists</b>. Against <code>89bf0a5</code> they both fail to reproduce: under-report now shows <code>billed 4, applied false</code>; the widened org-kill probe applies output 0 times. That is the intended signal that the fixes hold. See <code>round1-attack-against-fix.json</code>.</p>
+
+<h2>Round-2 stress probes (fresh, all PASS)</h2>
+<table>
+<tr><th>Probe</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Org kill in the apply window, 50 trials, varied 0-4 ms timing</td><td class="pass">PASS</td><td>0 leaks: never applied, never a <code>modelOutput</code> record, spend always the metered 4.</td></tr>
+<tr><td>Readonly fired concurrently, unawaited, racing the settle transaction, 40 trials</td><td class="pass">PASS</td><td>Records count always equals applied count; spend always exactly the meter; never two records for one op (40/40 blocked in this timing, invariant held every time).</td></tr>
+<tr><td>Six concurrent duplicate settle calls for one op, different output payload</td><td class="pass">PASS</td><td>Exactly one <code>STUB_OK</code> record, billed 4 once; all six replays returned <code>applied:false</code>. Removing the receipt guard did not open a double-apply: the first apply confirms the op, and <code>adapterStatus</code> then reads cancel, so replays cannot apply.</td></tr>
+<tr><td>Replay with a forged providerRef</td><td class="pass">PASS</td><td>Recorded as <code>provider result collision</code> anomaly, not applied, not billed twice.</td></tr>
+<tr><td>Usage floor: under-report / over-report / honest</td><td class="pass">PASS</td><td>Under-report billed 4, flagged <code>usageUnderreport</code>, not applied. Over-report billed 999, <code>usageOverrun</code> anomaly, not applied. Honest report applied, billed 4, one output.</td></tr>
+<tr><td>Missing usage still holds the tenant after the meter floor</td><td class="pass">PASS</td><td>A missing report stays missing (<code>reported === undefined -&gt; undefined</code>), org marked <code>missingUsage</code>, next run refused <code>usage unresolved</code>.</td></tr>
+<tr><td>Revocation mid-run, 6 trials</td><td class="pass">PASS</td><td>Killed <code>cancel</code> in 95-117 ms (bound 1500 ms), applied nothing, billed only the meter, no leaked reservation.</td></tr>
+<tr><td>Global kill via <code>disable()</code> before the apply is sent</td><td class="pass">PASS</td><td>Not applied, no output record, usage still billed; <code>disable()</code> returns only after in-flight settles resolve.</td></tr>
+</table>
+
+<h2>Racing settle.ts itself</h2>
+<p>The apply cannot be split. In Convex a mutation is one serializable transaction, and settle reads <code>adapterStatus</code> and writes the output record inside it, so a kill cannot land between the status read and the write: it commits before settle's snapshot (settle sees cancel) or after settle commits. I stressed this two ways - readonly at 0-4 ms before settle over 50 trials, and readonly fired unawaited to race the transaction over 40 trials - and never saw a phantom apply, a double apply, or a spend that was not exactly the meter. The global kill has one honest semantic worth stating plainly: <code>disable()</code> sets the in-memory flag and the executor reads it synchronously right before sending settle, so a kill that arrives after that send does not recall the already-dispatched apply - <code>disable()</code> instead waits for it. That is correct kill-switch behaviour (a committed transaction cannot be un-committed), not a leak; a kill before the send blocks the apply, which the probe confirms.</p>
+
+<h2>Per-claim verdict</h2>
+<table>
+<tr><th>Builder claim (89bf0a5)</th><th>Verdict</th></tr>
+<tr><td>Apply is one Convex transaction in proof-owned <code>settle.ts</code> (reads status, reconciles, writes output)</td><td class="pass">PASS</td></tr>
+<tr><td>Global flag checked synchronously at send; <code>disable()</code> waits for in-flight apply</td><td class="pass">PASS</td></tr>
+<tr><td>Bill <code>max(meter, reported)</code>; under-report flagged and not applied</td><td class="pass">PASS</td></tr>
+<tr><td>Dedicated mid-run revocation kill within the bound</td><td class="pass">PASS (95-117 ms)</td></tr>
+<tr><td>13/13 checks, 19/19 mutants, frozen H0 byte-identical</td><td class="pass">PASS (reproduced on my ports)</td></tr>
+<tr><td>Removing the "first receipt only" guard does not open a double-apply</td><td class="pass">PASS (6 concurrent replays -&gt; one record, one bill)</td></tr>
+<tr><td>Usage is now un-lieable</td><td class="partial">PARTIAL - the reported-vs-meter lie is closed; the meter itself is sandbox stdout and must be provider-authoritative for LIVE</td></tr>
+</table>
+
+<h2>SHA and what I could not check</h2>
+<p>Target <code>89bf0a5</code>. Frozen H0 hashes unchanged from round 1: contract.ts <code>242fcef...</code>, harness.ts <code>8b02331...</code>, schema.ts <code>61275c1...</code>. I1 merge <code>328941c</code>, reconcile line still <code>outcomes.ts:36</code>.</p>
+<p><b>Could not check:</b> a real hosted executor and OS-level isolation on a real multi-tenant host (local colima Docker only); the meter as a trusted provider token count (in SIM the meter is stdout tokens); real-model stream cancellation; cross-host global kill (single host, in-memory flag); the subscription route and funding gate (default zero).</p>
+
+<h2>Can the slice close?</h2>
+<p><b>Yes, at SERVICE (local Convex, verbatim H0) / SIM (stub model) / local Docker sandbox.</b> Every round-1 defect is fixed and independently re-broken; isolation, hard caps, all five kill triggers, the usage floor, missing-usage hold, replay and concurrent-duplicate protection all hold under harder probes. The open items above are LIVE gates, not deterministic-slice blockers.</p>
+</body>
+</html>

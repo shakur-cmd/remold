@@ -1,0 +1,221 @@
+{
+  "at": "2026-09-26T15:03:32.955Z",
+  "summary": [
+    {
+      "mutant": "sandbox network",
+      "file": "executor.mjs",
+      "expectedFailure": "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets"
+      ],
+      "error": "A reached [{\"host\":\"172.17.0.2\",\"port\":8080},{\"host\":\"172.17.0.1\",\"port\":22},{\"host\":\"1.1.1.1\",\"port\":443}]\n+ actual - expected\n\n+ [\n+   {\n+     host: '172.17.0.2',\n+     port: 8080\n+   },\n+   {\n+     host: '172.17.0.1',\n+     port: 22\n+   },\n+   {\n+     host: '1.1.1.1',\n+     port: 443\n+   }\n+ ]\n- []\n"
+    },
+    {
+      "mutant": "sandbox volume selection",
+      "file": "executor.mjs",
+      "expectedFailure": "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets"
+      ],
+      "error": "B sees only its own secret file\n+ actual - expected\n\n  [\n    {\n+     path: '/work/tenant-secret-A.txt',\n+     text: 'SECRET-A-703792fe'\n-     path: '/work/tenant-secret-B.txt',\n-     text: 'SECRET-B-703792fe'\n    }\n  ]\n"
+    },
+    {
+      "mutant": "sandbox environment",
+      "file": "executor.mjs",
+      "expectedFailure": "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets"
+      ],
+      "error": "A env HOME,HOSTNAME,NODE_VERSION,PATH,REMOLD_ADAPTER_TOKEN,YARN_VERSION\n+ actual - expected\n\n+ [\n+   'REMOLD_ADAPTER_TOKEN'\n+ ]\n- []\n"
+    },
+    {
+      "mutant": "read-only root filesystem",
+      "file": "executor.mjs",
+      "expectedFailure": "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets"
+      ],
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "mutant": "non-root user",
+      "file": "executor.mjs",
+      "expectedFailure": "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "isolation: each tenant sandbox sees only its own workspace, no network, no host paths or secrets"
+      ],
+      "error": "Expected values to be strictly equal:\n\n0 !== 65534\n"
+    },
+    {
+      "mutant": "missing cap means zero",
+      "file": "executor.mjs",
+      "expectedFailure": "missing cap means zero: no executor cap refuses before any reservation",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "missing cap means zero: no executor cap refuses before any reservation"
+      ],
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'executor policy cap'\n"
+    },
+    {
+      "mutant": "release undispatched claim",
+      "file": "executor.mjs",
+      "expectedFailure": "concurrent reservations never exceed org or global hard caps",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "concurrent reservations never exceed org or global hard caps"
+      ],
+      "error": "B leaked reservation\n\n4 !== 0\n"
+    },
+    {
+      "mutant": "H0 org and global budget cap",
+      "file": "convex/harness.ts",
+      "expectedFailure": "concurrent reservations never exceed org or global hard caps",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "concurrent reservations never exceed org or global hard caps"
+      ],
+      "error": "A spent 12 + reserved 0 exceeds cap 10"
+    },
+    {
+      "mutant": "H0 one dispatch per org",
+      "file": "convex/harness.ts",
+      "expectedFailure": "concurrent reservations never exceed org or global hard caps",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "concurrent reservations never exceed org or global hard caps"
+      ],
+      "error": "peaks {\"global\":3,\"A\":2,\"B\":1}"
+    },
+    {
+      "mutant": "kill watcher",
+      "file": "executor.mjs",
+      "expectedFailure": "org kill switch stops the running sandbox within the bound, refuses queued work, leaves the other tenant running",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "concurrent reservations never exceed org or global hard caps",
+        "org kill switch stops the running sandbox within the bound, refuses queued work, leaves the other tenant running",
+        "cancel stops a running sandbox; a result reported after cancel is recorded as late and has no effect",
+        "revoking the agent grant mid-run stops the sandbox within the bound and applies nothing"
+      ],
+      "error": "{\"tenant\":\"A\",\"id\":\"jh7e5jgmmyfcktf2ew6jwgm7px8f5vvt\",\"mode\":\"normal\",\"units\":8,\"applied\":false,\"fence\":1,\"step\":1,\"maxUnits\":8,\"exitAt\":1790434730587,\"tokens\":8,\"providerRef\":\"stub:remold-p6-47aa00c4-A-1\",\"usage\":8,\"accepted\":true,\"late\":false,\"overrun\":false,\"underreport\":false,\"cancelledBeforeReconcile\":true}\n+ actual - expected\n\n+ undefined\n- 'cancel'\n"
+    },
+    {
+      "mutant": "global kill switch",
+      "file": "executor.mjs",
+      "expectedFailure": "global kill switch stops every running sandbox within the bound and refuses new runs",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "global kill switch stops every running sandbox within the bound and refuses new runs"
+      ],
+      "error": "{\"tenant\":\"A\",\"id\":\"jh7a77qpyefakaxn3vg8wqvjp58f40sn\",\"mode\":\"normal\",\"units\":8,\"applied\":false,\"fence\":1,\"step\":1,\"maxUnits\":8,\"exitAt\":1790434774458,\"tokens\":8,\"providerRef\":\"stub:remold-p6-dc9b704e-A-1\",\"usage\":8,\"accepted\":true,\"late\":false,\"overrun\":false,\"underreport\":false,\"cancelledBeforeReconcile\":false}\n+ actual - expected\n\n+ undefined\n- 'global'\n"
+    },
+    {
+      "mutant": "status re-checked inside the apply transaction",
+      "file": "convex/settle.ts",
+      "expectedFailure": "an org kill landing just before the result is applied never applies it (8 tries)",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "cancel stops a running sandbox; a result reported after cancel is recorded as late and has no effect",
+        "an org kill landing just before the result is applied never applies it (8 tries)",
+        "a replayed result never applies or bills twice"
+      ],
+      "error": "applied after org kill: [{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1},{\"applied\":true,\"late\":false,\"spent\":4,\"outputs\":1}]\n+ actual - expected\n\n+ [\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   },\n+   {\n+     applied: true,\n+     late: false,\n+     outputs: 1,\n+     spent: 4\n+   }\n+ ]\n- []\n"
+    },
+    {
+      "mutant": "global kill checked when the apply is sent",
+      "file": "executor.mjs",
+      "expectedFailure": "a global kill landing just before the result is applied never applies it",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "a global kill landing just before the result is applied never applies it"
+      ],
+      "error": "{\"tenant\":\"A\",\"id\":\"jh74tnfz5kzra113hnp6jms6tn8f4k5q\",\"mode\":\"normal\",\"units\":4,\"applied\":true,\"fence\":1,\"step\":1,\"maxUnits\":4,\"exitAt\":1790434833642,\"tokens\":4,\"providerRef\":\"stub:remold-p6-319351a9-A-1\",\"usage\":4,\"accepted\":true,\"late\":false,\"overrun\":false,\"underreport\":false,\"cancelledBeforeReconcile\":false}\n\ntrue !== false\n"
+    },
+    {
+      "mutant": "H0 status treats lost authority as cancel (throwaway copy)",
+      "file": "convex/harness.ts",
+      "expectedFailure": "revoking the agent grant mid-run stops the sandbox within the bound and applies nothing",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "org kill switch stops the running sandbox within the bound, refuses queued work, leaves the other tenant running",
+        "an org kill landing just before the result is applied never applies it (8 tries)",
+        "revoking the agent grant mid-run stops the sandbox within the bound and applies nothing"
+      ],
+      "error": "{\"tenant\":\"A\",\"id\":\"jh77vpba6amzam200tc6gasp4x8f5mp4\",\"mode\":\"normal\",\"units\":8,\"applied\":true,\"fence\":1,\"step\":1,\"maxUnits\":8,\"exitAt\":1790434863483,\"tokens\":8,\"providerRef\":\"stub:remold-p6-07aa160a-A-1\",\"usage\":8,\"accepted\":true,\"late\":true,\"overrun\":false,\"underreport\":false,\"cancelledBeforeReconcile\":false}\n+ actual - expected\n\n+ undefined\n- 'cancel'\n"
+    },
+    {
+      "mutant": "bill at least the executor meter",
+      "file": "convex/settle.ts",
+      "expectedFailure": "a guest that under-reports usage is billed the executor meter, flagged, and not applied",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "a guest that under-reports usage is billed the executor meter, flagged, and not applied"
+      ],
+      "error": "billed max(meter, reported) {\"tenant\":\"A\",\"id\":\"jh71k2whmg1y7yzbz15cy1zp4h8f5yrw\",\"mode\":\"underreport\",\"units\":4,\"applied\":false,\"fence\":1,\"step\":1,\"maxUnits\":4,\"exitAt\":1790434892834,\"tokens\":4,\"providerRef\":\"stub:remold-p6-5d257646-A-1\",\"usage\":1,\"accepted\":true,\"late\":false,\"overrun\":false,\"underreport\":true,\"cancelledBeforeReconcile\":false}\n\n1 !== 4\n"
+    },
+    {
+      "mutant": "under-report flagged and not applied",
+      "file": "convex/settle.ts",
+      "expectedFailure": "a guest that under-reports usage is billed the executor meter, flagged, and not applied",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "a guest that under-reports usage is billed the executor meter, flagged, and not applied"
+      ],
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "mutant": "missing usage stays missing",
+      "file": "convex/settle.ts",
+      "expectedFailure": "missing usage report fails closed for that tenant only",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "missing usage report fails closed for that tenant only"
+      ],
+      "error": "{\"tenant\":\"A\",\"id\":\"jh7fen2vgwbqcf7fbhszpekqwx8f4tyr\",\"mode\":\"noUsage\",\"units\":2,\"applied\":true,\"fence\":1,\"step\":1,\"maxUnits\":2,\"exitAt\":1790434953062,\"tokens\":2,\"providerRef\":\"stub:remold-p6-c954ef2e-A-1\",\"usage\":2,\"accepted\":true,\"late\":false,\"overrun\":false,\"underreport\":false,\"cancelledBeforeReconcile\":false}\n\n2 !== undefined\n"
+    },
+    {
+      "mutant": "token limit",
+      "file": "executor.mjs",
+      "expectedFailure": "token overshoot and duration limits stop the sandbox and fail visibly",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "token overshoot and duration limits stop the sandbox and fail visibly"
+      ],
+      "error": "{\"tenant\":\"A\",\"id\":\"jh7e78dy7mmryp861z1rryaeas8f4ddh\",\"mode\":\"overshoot\",\"units\":4,\"applied\":false,\"fence\":1,\"step\":1,\"maxUnits\":4,\"exitAt\":1790434985261,\"tokens\":9,\"killed\":\"duration\",\"killLatencyMs\":65,\"providerRef\":\"stub:remold-p6-1a20f0a7-A-1\",\"usage\":9,\"accepted\":true,\"late\":false,\"overrun\":true,\"underreport\":false,\"cancelledBeforeReconcile\":false}\n+ actual - expected\n\n+ 'duration'\n- 'tokens'\n"
+    },
+    {
+      "mutant": "duration limit",
+      "file": "executor.mjs",
+      "expectedFailure": "token overshoot and duration limits stop the sandbox and fail visibly",
+      "killed": true,
+      "exit": 1,
+      "failed": [
+        "token overshoot and duration limits stop the sandbox and fail visibly"
+      ],
+      "error": "{\"tenant\":\"B\",\"id\":\"jh71r9gan70e02mv90581ba6qx8f5rqp\",\"mode\":\"hang\",\"units\":4,\"applied\":false,\"fence\":1,\"step\":1,\"maxUnits\":4,\"exitAt\":1790435012598,\"tokens\":1,\"killed\":\"cancel\",\"killLatencyMs\":55,\"providerRef\":\"stub:remold-p6-52a33b2b-B-3\",\"usage\":1,\"accepted\":true,\"late\":false,\"overrun\":false,\"underreport\":false,\"cancelledBeforeReconcile\":true}\n+ actual - expected\n\n+ 'cancel'\n- 'duration'\n"
+    }
+  ]
+}
