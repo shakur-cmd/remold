@@ -1,0 +1,300 @@
+{
+ "level": "SERVICE/SIM independent verifier run; no Stripe calls, no sandbox writes",
+ "mutant": "ack-before-store",
+ "ports": {
+  "cloud": 3730,
+  "site": 3731,
+  "receiver": 3732
+ },
+ "startedAt": "2026-09-26T11:40:47.866Z",
+ "attacks": [
+  {
+   "name": "same event id with a different body is refused after the first",
+   "pass": false,
+   "detail": {
+    "s1": 200,
+    "s2": 200,
+    "receipts": 0,
+    "keptFirstDigest": false
+   }
+  },
+  {
+   "name": "Stripe-Account header does not override payload account",
+   "pass": false,
+   "detail": {
+    "status": 200,
+    "underA": 0,
+    "underB": 0
+   }
+  },
+  {
+   "name": "replay after acknowledgement has no second effect",
+   "pass": false,
+   "detail": {
+    "status": 200,
+    "receipts": 1,
+    "done": true,
+    "secondDrain": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivAcked",
+      "result": "applied"
+     }
+    ],
+    "observedDelta": 1,
+    "firstDrain": []
+   }
+  },
+  {
+   "name": "parallel duplicate deliveries store one receipt and one effect",
+   "pass": false,
+   "detail": {
+    "identical": {
+     "200": 25
+    },
+    "variants": [
+     200,
+     200,
+     200,
+     200,
+     200,
+     200,
+     200,
+     200,
+     200,
+     200
+    ],
+    "receiptsParallel": 1,
+    "receiptsRace": 1,
+    "observedDelta": 1,
+    "drain": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivParallel",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ack loss after ledger write: financial state equals a clean drain; only audit rows differ",
+   "pass": false,
+   "detail": {
+    "docAfterAckLoss": {
+     "_id": "js746wrhn9rrp8xqha2k72rxy18f4hzv",
+     "adjustmentsComplete": true,
+     "amountMinor": 100,
+     "binding": "j973hqz0n05actesec6b08szf18f5f6h",
+     "creditedMinor": 0,
+     "currency": "usd",
+     "customer": "kd7eta4nbar663w1nshppfgd518f5gdf",
+     "customerName": "IV Ain_ivA",
+     "externalId": "in_ivA",
+     "kind": "invoice",
+     "org": "mn7atxe8q9991qaaf0j7ghyazd8f40nk",
+     "paidMinor": 100,
+     "refundedMinor": 0,
+     "retentionUntil": 1821958850700,
+     "snapshotHash": "91269e2700d52b3ea4edb4636f726a5d4303651c8dbeca90bcecc9a49e4ece6f",
+     "state": "paid"
+    },
+    "docAfterCleanUpdate": {
+     "_id": "js746wrhn9rrp8xqha2k72rxy18f4hzv",
+     "adjustmentsComplete": true,
+     "amountMinor": 100,
+     "binding": "j973hqz0n05actesec6b08szf18f5f6h",
+     "creditedMinor": 0,
+     "currency": "usd",
+     "customer": "kd7eta4nbar663w1nshppfgd518f5gdf",
+     "customerName": "IV Ain_ivA",
+     "externalId": "in_ivA",
+     "kind": "invoice",
+     "org": "mn7atxe8q9991qaaf0j7ghyazd8f40nk",
+     "paidMinor": 100,
+     "refundedMinor": 0,
+     "retentionUntil": 1821958850700,
+     "snapshotHash": "91269e2700d52b3ea4edb4636f726a5d4303651c8dbeca90bcecc9a49e4ece6f",
+     "state": "paid"
+    },
+    "epochs": [
+     7,
+     7
+    ],
+    "observedMidToAfter": 2,
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivRace",
+      "result": "retry",
+      "reason": "crash before acknowledgement"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_ivRace",
+      "result": "applied"
+     },
+     {
+      "merchant": "A",
+      "eventId": "evt_ivPaid",
+      "result": "applied"
+     }
+    ]
+   }
+  },
+  {
+   "name": "A-signed event naming B invoice is refused and closed, B untouched, B account never read",
+   "pass": false,
+   "detail": {
+    "status": 200,
+    "outcomes": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivPaidClean",
+      "result": "applied"
+     }
+    ],
+    "refusedOnA": 0,
+    "newReads": [
+     {
+      "account": "acct_ivA",
+      "path": "/v1/invoices/in_ivA"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/invoice_payments"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/invoice_payments/inpay_ivA"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/payment_intents/pi_ivA"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/charges/ch_ivA"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/refunds"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/charges/ch_ivA"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/credit_notes"
+     },
+     {
+      "account": "acct_ivA",
+      "path": "/v1/invoices/in_ivA"
+     }
+    ]
+   }
+  },
+  {
+   "name": "oversized, malformed and type-confused bodies refused with no receipt",
+   "pass": true,
+   "detail": {
+    "statuses": {
+     "oversized": 400,
+     "notJson": 400,
+     "nullBody": 400,
+     "arrayBody": 400,
+     "numericObjectId": 400,
+     "missingId": 400,
+     "liveMode": 400,
+     "arrayAccount": 400,
+     "paddedAccount": 400,
+     "protoAccount": 400
+    },
+    "receiptDelta": 0
+   }
+  },
+  {
+   "name": "signature timestamp window is 300s both directions; header shape edges",
+   "pass": true,
+   "detail": {
+    "past295": 200,
+    "past305": 400,
+    "future295": 200,
+    "future305": 400,
+    "twoV1OneGood": 200,
+    "v0Only": 400,
+    "noHeader": 400,
+    "signedWithoutTimestampPrefix": 400
+   }
+  },
+  {
+   "name": "backend down: receiver returns non-2xx and stores nothing; redelivery after recovery stores once",
+   "pass": false,
+   "detail": {
+    "whileDown": 200,
+    "afterRecovery": 200,
+    "receiptsAfter": 0
+   }
+  },
+  {
+   "name": "transient provider failure is retried, not refused or acknowledged",
+   "pass": false,
+   "detail": {
+    "first": [],
+    "second": [
+     {
+      "merchant": "A",
+      "eventId": "evt_ivTransient",
+      "result": "retry",
+      "reason": "fetch failed ECONNRESET"
+     }
+    ]
+   }
+  },
+  {
+   "name": "B adapter token cannot refuse or list A receipts",
+   "pass": true,
+   "detail": {
+    "refuseErr": "Cannot read properties of undefined (reading '_id')",
+    "readErr": "[Request ID: ab988c04e7cb3c03] Server Error\nUncaught Error: adapter account denied\n    at adapter (../convex/callbackIng",
+    "stillPending": true
+   }
+  },
+  {
+   "name": "tenant B financial export unchanged through attacks 1-11 (B had no own events yet)",
+   "pass": true,
+   "detail": {}
+  },
+  {
+   "name": "drain isolates a failing merchant from other merchants",
+   "pass": false,
+   "detail": {
+    "threw": "[Request ID: 764741545a138d91] Server Error\nUncaught Error: adapter account denied\n    at deny (../convex/payments.ts:6:54)\n    at adapter (../convex/payments.t",
+    "bDone": false,
+    "outcomes": null
+   }
+  },
+  {
+   "name": "liveness: provider-404 receipts are closed or skipped so later receipts still drain",
+   "pass": false,
+   "detail": {
+    "deliveries200": 100,
+    "firstDrain": {
+     "retry": 36
+    },
+    "sampleReason": "Stripe sandbox request failed: 404 invalid_request_error resource_missing id",
+    "laterReceiptDone": false,
+    "laterDrainTouchedIt": false,
+    "receiptsQueryUsable": false
+   }
+  }
+ ],
+ "providerReads": {
+  "total": 326,
+  "byAccount": {
+   "acct_ivA": 322,
+   "acct_ivB": 4
+  }
+ },
+ "finishedAt": "2026-09-26T11:41:06.432Z"
+}
