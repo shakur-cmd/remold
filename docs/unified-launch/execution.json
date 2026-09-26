@@ -267,9 +267,9 @@
     },
     {
       "id": "I1",
-      "state": "dispatched",
+      "state": "integrated",
       "builder": "root builder session (wip/i1-authority)",
-      "independentVerifier": "Fresh Opus 5.5 sessions: r1 REVISE (evidence/2026-09-25-i1/iv/report.html on i1/iv-2026-09-25); r2 against 4cb4671 in progress 2026-09-26",
+      "independentVerifier": "Fresh Opus 5.5 verifier sessions r1-r5: r1 d2c8744 REVISE, r2 4cb4671 REVISE, r3 babeb42 REVISE, r4 87d4c10 certify-if-S-accepted, r5 bb8e3ed CERTIFY",
       "costCap": 0,
       "externalAllowance": "none",
       "depends": [
@@ -284,10 +284,10 @@
         "src/** only necessary identity/authority consumers coordinated with root"
       ],
       "environment": "isolated anonymous local Convex3480/3481, synthetic migration fixtures only",
-      "scopeNote": "Builder-run, not certified. Revision 1 addresses IV r1 defects D1-D8; builder reports IV suite 24/24, SERVICE 64/64. Rollback floor (authorityFloor) decided by Shakur 2026-09-25. The earlier automatic-approval block no longer applies: IV r1 ran. No dependent completion claim until IV r2 certifies.",
-      "head": "4cb4671 on wip/i1-authority (revision 1, evidence from f1de701)",
-      "evidence": "evidence/2026-09-25-i1/builder-handover.html",
-      "independentEvidence": "evidence/2026-09-25-i1/iv/report.html (r1, REVISE)"
+      "scopeNote": "All 4 I1 checks certified by IV r5 at SERVICE (isolated local Convex, synthetic). Residual S fixed rather than accepted. Known limits: hidden lookup IDs visible (titles masked), floor cannot detect pre-I1 content restored inside an I1 descendant, record scope lists capped near 4080 IDs (fail closed), readonly one-send tail per H0, hosted Convex not checked. Behavior changes for restricted readers: search skips objects with unreadable titles, record-scoped ranking differs, daily list can be empty. Merge commit required; squash fails closed.",
+      "head": "bb8e3ed (certified code); 285f9fc raises the rollback floor pin to it; merged into build/unified-remold-2026-09-24 as 328941c with a merge commit",
+      "evidence": "evidence/2026-09-25-i1/builder-handover.html (revision-4)",
+      "independentEvidence": "shakur-cmd/remold@i1/iv-r5-2026-09-26 (2e99886) evidence/2026-09-25-i1/iv-r5/report.html"
     },
     {
       "id": "I2",
