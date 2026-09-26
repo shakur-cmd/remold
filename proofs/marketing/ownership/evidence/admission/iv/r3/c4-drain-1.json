@@ -1,0 +1,81 @@
+{
+ "run": "775a00f5",
+ "capturedAt": "2026-09-26T12:56:09.485Z",
+ "pending": 141,
+ "exit": 0,
+ "err": "",
+ "ms": 113884,
+ "perCaptureMs": 808,
+ "outcomes": {
+  "existing": 127,
+  "created": 11,
+  "rejected": 3
+ },
+ "rule": [
+  {
+   "case": "punycode domain",
+   "emailLength": 32,
+   "outcome": "created",
+   "contactId": 382,
+   "reason": null
+  },
+  {
+   "case": "upper-case owner email",
+   "emailLength": 38,
+   "outcome": "existing",
+   "contactId": 380,
+   "reason": null
+  },
+  {
+   "case": "plus-addressed owner",
+   "emailLength": 42,
+   "outcome": "created",
+   "contactId": 383,
+   "reason": null
+  },
+  {
+   "case": "local part 64",
+   "emailLength": 80,
+   "outcome": "rejected",
+   "contactId": null,
+   "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less."
+  },
+  {
+   "case": "label 63",
+   "emailLength": 135,
+   "outcome": "rejected",
+   "contactId": null,
+   "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less."
+  },
+  {
+   "case": "total 254",
+   "emailLength": 254,
+   "outcome": "rejected",
+   "contactId": null,
+   "reason": "Mautic refused create (400): email: This value is too long. It should have 64 characters or less."
+  }
+ ],
+ "mauticBefore": {
+  "formSubmissions": 184,
+  "submissionCountSum": 184,
+  "contacts": 376,
+  "anonymousContacts": 42,
+  "maxLeadId": 381,
+  "dnc": 103,
+  "campaignLeads": 137,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "mauticAfter": {
+  "formSubmissions": 184,
+  "submissionCountSum": 184,
+  "contacts": 387,
+  "anonymousContacts": 42,
+  "maxLeadId": 392,
+  "dnc": 103,
+  "campaignLeads": 137,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "pendingAfter": 0
+}

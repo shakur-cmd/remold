@@ -1,0 +1,47 @@
+{
+ "run": "086062d8",
+ "capturedAt": "2026-09-26T13:06:38.174Z",
+ "bad": "iv-5xx-086062d8@example.invalid",
+ "good": "iv-after-5xx-086062d8@example.invalid",
+ "posts": [
+  200,
+  200
+ ],
+ "runs": [
+  {
+   "exit": 1,
+   "err": "Error: Mautic create failed 500",
+   "bad": "pending",
+   "good": "pending"
+  },
+  {
+   "exit": 1,
+   "err": "Error: Mautic create failed 500",
+   "bad": "pending",
+   "good": "pending"
+  },
+  {
+   "exit": 1,
+   "err": "Error: Mautic create failed 500",
+   "bad": "pending",
+   "good": "pending"
+  }
+ ],
+ "goodContactsWhileBlocked": 0,
+ "afterFix": {
+  "exit": 0,
+  "err": "",
+  "bad": "created",
+  "good": "created",
+  "goodContacts": [
+   {
+    "id": 433,
+    "firstname": "Behind the 5xx"
+   }
+  ]
+ },
+ "verdict": {
+  "haltsEveryRun": true,
+  "recoversWhenFixed": true
+ }
+}

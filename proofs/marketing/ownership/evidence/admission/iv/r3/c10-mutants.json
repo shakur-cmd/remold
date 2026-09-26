@@ -1,0 +1,88 @@
+{
+ "run": "ef754c08",
+ "capturedAt": "2026-09-26T13:09:23.232Z",
+ "results": [
+  {
+   "mutant": "M1 edge email rule back to the loose r2 rule",
+   "checks": {
+    "unit": {
+     "exit": 1,
+     "out": "    operator: 'strictEqual', |     diff: 'simple' |   }"
+    }
+   },
+   "killedByBuilderSuite": true
+  },
+  {
+   "mutant": "M2 store email rule back to the loose r2 rule",
+   "checks": {
+    "probe": {
+     "exit": 1,
+     "out": "  store refuses email \"a&b@example.invalid\" |   store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\" |   no refused input was stored"
+    }
+   },
+   "killedByBuilderSuite": true
+  },
+  {
+   "mutant": "M3 lease expiry not checked on renew/settle",
+   "checks": {
+    "probe": {
+     "exit": 1,
+     "out": "FAIL 26/27 |   settle with an expired lease is refused"
+    }
+   },
+   "killedByBuilderSuite": true
+  },
+  {
+   "mutant": "M4 acquire refuses an expired lease held by another",
+   "checks": {
+    "probe": {
+     "exit": 1,
+     "out": "FAIL 26/27 |   an expired lease can be taken over"
+    }
+   },
+   "killedByBuilderSuite": true
+  },
+  {
+   "mutant": "M5 any non-2xx create settles as rejected",
+   "checks": {
+    "poison": {
+     "exit": 0,
+     "out": "PASS 5/5"
+    },
+    "c8": {
+     "exit": 0,
+     "out": "{\"bad\":\"iv-5xx-d5f64426@example.invalid\",\"good\":\"iv-after-5xx-d5f64426@example.invalid\",\"posts\":[200,200],\"runs\":[{\"exit\":0,\"err\":\"\",\"bad\":\"settled\",\"good\":\"settled\"},{\"exit\":0,\"err\":\"\",\"bad\":\"settled\",\"good\":\"settled\"},{\"exit\":0,\"err\":\"\",\"bad\":\"settled\",\"good\":\"settled\"}],\"goodContactsWhileBlocked\""
+    }
+   },
+   "killedByBuilderSuite": false
+  },
+  {
+   "mutant": "M6 no renew right before create",
+   "checks": {
+    "window": {
+     "exit": 0,
+     "out": "PASS 6/6"
+    },
+    "poison": {
+     "exit": 0,
+     "out": "PASS 5/5"
+    }
+   },
+   "killedByBuilderSuite": false
+  },
+  {
+   "mutant": "M7 exact lookup trusts the LIKE-free DB rows but drops the JS equality filter",
+   "checks": {
+    "poison": {
+     "exit": 0,
+     "out": "PASS 5/5"
+    },
+    "c6": {
+     "exit": 0,
+     "out": "[{\"kind\":\"accent\",\"via\":\"sql\",\"post\":200,\"capture\":{\"outcome\":\"existing\",\"contactId\":454},\"before\":\"[josé-0506edd0@example.invalid]\",\"after\":\"[josé-0506edd0@example.invalid]\",\"rewritten\":false,\"nameChanged\":false,\"dnc\":true,\"contacts\":[454]},{\"kind\":\"sharp s\",\"via\":\"sql\",\"post\":200,\"capture\":{\"outco"
+    }
+   },
+   "killedByBuilderSuite": false
+  }
+ ]
+}

@@ -1,0 +1,141 @@
+{
+ "section": "probe",
+ "label": "iv-r3m-ef754c-4",
+ "at": "2026-09-26T13:08:25.130Z",
+ "status": "FAIL",
+ "failed": [
+  "an expired lease can be taken over"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "store refuses email \"iv%pct@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"%@%.%\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a*b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a@b\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a@@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \".a@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a..b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a@-x.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"x@example.invalid\\n\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"o'neil@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a&b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses email \"a@dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses control char in first name",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses 101-char first name",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store refuses short nonce",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "no refused input was stored",
+   "detail": [
+    622,
+    622
+   ]
+  },
+  {
+   "ok": true,
+   "name": "first reconciler acquires the lease"
+  },
+  {
+   "ok": true,
+   "name": "second reconciler is refused while the lease is live"
+  },
+  {
+   "ok": true,
+   "name": "tenant B lease is independent of A"
+  },
+  {
+   "ok": true,
+   "name": "a foreign token cannot renew"
+  },
+  {
+   "ok": true,
+   "name": "a settled capture cannot be re-settled differently, even by the lease holder",
+   "detail": "j574dxs4m2ask0p85bs177qw0d8f4sqx"
+  },
+  {
+   "ok": true,
+   "name": "settle with a stale lease token is refused"
+  },
+  {
+   "ok": true,
+   "name": "after release the lease can be taken"
+  },
+  {
+   "ok": true,
+   "name": "settle with an expired lease is refused"
+  },
+  {
+   "ok": false,
+   "name": "an expired lease can be taken over"
+  }
+ ]
+}

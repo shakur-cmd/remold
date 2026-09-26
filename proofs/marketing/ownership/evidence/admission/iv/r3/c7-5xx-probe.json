@@ -1,0 +1,204 @@
+{
+ "run": "72c32021",
+ "capturedAt": "2026-09-26T13:00:00.713Z",
+ "emails": [
+  {
+   "email": "a72c32021@b.co",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 401,
+    "msg": null
+   }
+  },
+  {
+   "email": "_72c32021@example.invalid",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 402,
+    "msg": null
+   }
+  },
+  {
+   "email": "+72c32021@example.invalid",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 403,
+    "msg": null
+   }
+  },
+  {
+   "email": "-72c32021@example.invalid",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 404,
+    "msg": null
+   }
+  },
+  {
+   "email": "a-72c32021@1.2.3.example",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 405,
+    "msg": null
+   }
+  },
+  {
+   "email": "a.72c32021.b@example.invalid",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 406,
+    "msg": null
+   }
+  },
+  {
+   "email": "A72c32021@EXAMPLE.INVALID",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 407,
+    "msg": null
+   }
+  },
+  {
+   "email": "a72c32021@xn--bcher-kva.example",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 408,
+    "msg": null
+   }
+  },
+  {
+   "email": "a72c32021@a-b.c-d.example",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 409,
+    "msg": null
+   }
+  },
+  {
+   "email": "xxxxxxxxxxxxxxxxxxxx…(60)",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 410,
+    "msg": null
+   }
+  },
+  {
+   "email": "xxxxxxxxxxxxxxxxxxxx…(61)",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 411,
+    "msg": null
+   }
+  },
+  {
+   "email": "a72c32021@dddddddddd…(76)",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 400,
+    "id": null,
+    "msg": "email: This value is too long. It should have 64 characters or less."
+   }
+  },
+  {
+   "email": "null72c32021@example.invalid",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 412,
+    "msg": null
+   }
+  },
+  {
+   "email": "a72c32021@localhost.localdomain",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 201,
+    "id": 413,
+    "msg": null
+   }
+  },
+  {
+   "email": "a72c32021@example.invalid",
+   "valid": true,
+   "lookup": 200,
+   "create": {
+    "status": 200,
+    "id": 407,
+    "msg": null
+   }
+  }
+ ],
+ "names": [
+  {
+   "name": "Emoji 😀 name",
+   "patch": 200,
+   "stored": "Emoji 😀 name"
+  },
+  {
+   "name": "‮RTL override",
+   "patch": 200,
+   "stored": "RTL override"
+  },
+  {
+   "name": "<script>alert(1)</script>",
+   "patch": 200,
+   "stored": "alert(1)"
+  },
+  {
+   "name": "ääääääääääääääääääääääääääääää",
+   "patch": 400,
+   "stored": null
+  },
+  {
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "patch": 400,
+   "stored": null
+  },
+  {
+   "name": "O'Brien \"Q\"",
+   "patch": 200,
+   "stored": "O'Brien \"Q\""
+  },
+  {
+   "name": "\\\\backslash",
+   "patch": 200,
+   "stored": "\\\\backslash"
+  },
+  {
+   "name": "%s %d {{x}}",
+   "patch": 200,
+   "stored": "%s %d {{x}}"
+  },
+  {
+   "name": "tab",
+   "patch": 200,
+   "stored": "tab"
+  }
+ ],
+ "fiveXX": []
+}

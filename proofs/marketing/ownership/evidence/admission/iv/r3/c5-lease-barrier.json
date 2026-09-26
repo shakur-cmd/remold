@@ -1,0 +1,38 @@
+{
+ "run": "e776d5c6",
+ "capturedAt": "2026-09-26T13:05:08.654Z",
+ "section": "barrier",
+ "email": "iv-barrier-e776d5c6@example.invalid",
+ "reconcilers": [
+  {
+   "exit": 1,
+   "err": "Error: Mautic name update failed 422"
+  },
+  {
+   "exit": 1,
+   "err": "Error: Mautic name update failed 422"
+  }
+ ],
+ "contacts": [
+  {
+   "id": 429,
+   "firstname": ""
+  },
+  {
+   "id": 430
+  }
+ ],
+ "capture": {
+  "status": "pending",
+  "outcome": null,
+  "contactId": null
+ },
+ "verdict": {
+  "duplicateContacts": true,
+  "oneFenced": false
+ },
+ "cleanup": {
+  "exit": 0,
+  "capture": "ambiguous"
+ }
+}
