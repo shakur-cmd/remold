@@ -61,13 +61,17 @@ export function notice(event: "open" | "resolve", c: Condition, at: number) {
   return { source: "remold" as const, event, kind: c.kind, key: c.key, count: c.count, at: new Date(at).toISOString(), summary: event === "open" ? `${subject} (${c.count} seen).` : `Resolved: ${subject.replace(" is ", " was ").replace(" are ", " were ")}.` };
 }
 
-const internalHost = (host: string) => {
+const internalHost = (raw: string) => {
+  const host = raw.replace(/\.+$/, "");
   if (host === "localhost" || /\.(localhost|local|internal)$/.test(host)) return true;
-  if (host.startsWith("[")) { const a = host.slice(1, -1); return a === "::" || a === "::1" || /^f[cd]/.test(a) || /^fe[89ab]/.test(a) || a.startsWith("::ffff:"); }
+  // IPv6 as normalized by URL: unspecified, loopback, unique-local, link-local, multicast,
+  // IPv4-mapped (::ffff:), IPv4-compatible (::a:b) and NAT64 (64:ff9b::).
+  if (host.startsWith("[")) { const a = host.slice(1, -1); return a === "::" || a === "::1" || /^f[cd]/.test(a) || /^fe[89ab]/.test(a) || /^ff/.test(a) || a.startsWith("::ffff:") || /^::[0-9a-f]{1,4}:[0-9a-f]{1,4}$/.test(a) || a.startsWith("64:ff9b:"); }
   const ip = /^(\d+)\.(\d+)\.\d+\.\d+$/.exec(host);
   if (!ip) return false;
   const [a, b] = [Number(ip[1]), Number(ip[2])];
-  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+  // 0/8, 10/8, 127/8, 169.254/16, 172.16/12, 192.168/16, 100.64/10, 198.18/15, and 224+ (multicast, reserved, broadcast).
+  return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || (a === 198 && (b === 18 || b === 19)) || a >= 224;
 };
 // HTTPS to a public host, or plain HTTP to exactly 127.0.0.1 or localhost for local
 // rehearsals. The check is on the URL string; a public name resolving to a private
@@ -88,7 +92,8 @@ export const scanPage = internalQuery({
     const outcomes: Outcome[] = [], pending: { jobId: Id<"_scheduled_functions">; fn: string; due: number }[] = [];
     for (const r of rows) {
       const kind = r.state.kind, fn = fnName(r.name);
-      if (kind === "success" || kind === "failed") outcomes.push({ fn, at: r.scheduledTime, failed: kind === "failed" });
+      // Results are timed by when they finished, so a late failure still counts as recent.
+      if (kind === "success" || kind === "failed") outcomes.push({ fn, at: r.completedTime ?? r.scheduledTime, failed: kind === "failed" });
       else if (kind === "pending" || kind === "inProgress") pending.push({ jobId: r._id, fn, due: r.scheduledTime });
     }
     const done = rows.length < a.limit;
@@ -100,8 +105,8 @@ export const watchPage = internalQuery({
   args: { after: v.number(), through: v.number(), cursor: v.union(v.string(), v.null()) },
   handler: async (ctx, { after, through, cursor }) => {
     const page = await ctx.db.query("opsAlertWatch").withIndex("by_due", (q) => q.gt("due", after).lte("due", through)).paginate({ cursor, numItems: WATCH_PAGE });
-    const rows: { id: Id<"opsAlertWatch">; fn: string; due: number; stalled: boolean; state: string }[] = [];
-    for (const w of page.page) rows.push({ id: w._id, fn: w.fn, due: w.due, stalled: w.stalledAt !== undefined, state: (await ctx.db.system.get(w.jobId))?.state.kind ?? "missing" });
+    const rows: { id: Id<"opsAlertWatch">; fn: string; due: number; stalled: boolean; state: string; finishedAt?: number }[] = [];
+    for (const w of page.page) { const job = await ctx.db.system.get(w.jobId); rows.push({ id: w._id, fn: w.fn, due: w.due, stalled: w.stalledAt !== undefined, state: job?.state.kind ?? "missing", ...(job?.completedTime !== undefined ? { finishedAt: job.completedTime } : {}) }); }
     return { rows, cursor: page.continueCursor, done: page.isDone };
   },
 });
@@ -212,10 +217,10 @@ export const check = internalAction({
       for (let page = 0; ; page++) {
         if (page === WATCH_PAGES || Date.now() > now + READ_BUDGET_MS) { if (mustFinish) behind = true; return; }
         try {
-          const result: { rows: { id: Id<"opsAlertWatch">; fn: string; due: number; stalled: boolean; state: string }[]; cursor: string; done: boolean } = await ctx.runQuery(internal.alerts.watchPage, { after, through: upTo, cursor });
+          const result: { rows: { id: Id<"opsAlertWatch">; fn: string; due: number; stalled: boolean; state: string; finishedAt?: number }[]; cursor: string; done: boolean } = await ctx.runQuery(internal.alerts.watchPage, { after, through: upTo, cursor });
           watchChecked += result.rows.length;
           for (const w of result.rows) {
-            if (w.state === "success" || w.state === "failed") { outcomes.push({ fn: w.fn, at: w.due, failed: w.state === "failed" }); watchDone.push(w.id); }
+            if (w.state === "success" || w.state === "failed") { outcomes.push({ fn: w.fn, at: w.finishedAt ?? w.due, failed: w.state === "failed" }); watchDone.push(w.id); }
             else if (w.state === "pending" || w.state === "inProgress") { if (late(w.due) && !w.stalled) watchStalled.push(w.id); }
             else watchDone.push(w.id);
           }

@@ -36,6 +36,25 @@ const mutants = [
   ['channel: any hostname starting with localhost', 'url.hostname === "127.0.0.1" || url.hostname === "localhost"', 'url.hostname === "127.0.0.1" || url.hostname.startsWith("localhost")'],
   ['channel: any non-http scheme accepted', 'return url.protocol === "https:" && !internalHost', 'return url.protocol !== "http:" && !internalHost'],
   ['channel: HTTPS to private or link-local hosts accepted', '&& !internalHost(url.hostname) ? url.href', '? url.href'],
+  // Round 3: the IV's ten round-2 survivors, then one per new rule.
+  ['watermark: boundary row re-read (gte)', 'q.gt("_creationTime", a.after)', 'q.gte("_creationTime", a.after)'],
+  ['stall: running job counts as finished', 'if (w.state === "success" || w.state === "failed")', 'if (w.state !== "pending")'],
+  ['stall: vanished job keeps the stall open', 'else watchDone.push(w.id);', ''],
+  ['health: older outcome overwrites newer', 'if (row && s.lastAt < row.lastAt) continue;', ''],
+  ['health: quiet failing function never resolves', 'h.lastFailed && h.lastAt >= input.now - LOOKBACK_MS', 'h.lastFailed'],
+  ['host: 0.x HTTPS accepted', 'return a === 0 || a === 10', 'return a === 10'],
+  ['host: IPv4-mapped IPv6 accepted', ' || a.startsWith("::ffff:")', ''],
+  ['host: CGNAT 100.64/10 accepted', ' || (a === 100 && b >= 64 && b <= 127)', ''],
+  ['host: IPv6 link-local fe80 accepted', ' || /^fe[89ab]/.test(a)', ''],
+  ['host: .local names accepted', '/\\.(localhost|local|internal)$/', '/\\.(localhost|internal)$/'],
+  ['timing: scanned result timed by due time', 'at: r.completedTime ?? r.scheduledTime', 'at: r.scheduledTime'],
+  ['timing: watched result timed by due time', 'at: w.finishedAt ?? w.due', 'at: w.due'],
+  ['host: trailing dot not stripped', 'const host = raw.replace(/\\.+$/, "");', 'const host = raw;'],
+  ['host: IPv4-compatible IPv6 accepted', ' || /^::[0-9a-f]{1,4}:[0-9a-f]{1,4}$/.test(a)', ''],
+  ['host: NAT64 accepted', ' || a.startsWith("64:ff9b:")', ''],
+  ['host: IPv6 multicast accepted', ' || /^ff/.test(a)', ''],
+  ['host: 198.18/15 accepted', ' || (a === 198 && (b === 18 || b === 19))', ''],
+  ['host: multicast and broadcast accepted', ' || a >= 224;', ';'],
 ];
 const results = [];
 try {

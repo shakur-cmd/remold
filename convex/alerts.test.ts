@@ -70,6 +70,66 @@ it("flags work unfinished 15 minutes after it was due and keeps the alert open u
   expect(resolves(await allNotices(t), "stalled")).toHaveLength(1);
 });
 
+it("alerts on a job that fails long after it was due, timing the failure by when it finished", async () => {
+  const t = makeTest();
+  await schedule(t, false);
+  await later(t);
+  await later(t, 2 * 60 * 60_000);
+  await run(t);
+  await later(t);
+  expect(opens(await allNotices(t), "background-error")).toHaveLength(1);
+});
+
+it("treats a failure that finished after a later-due success as the latest result", async () => {
+  const t = makeTest();
+  const slowFailure = await schedule(t, false);
+  await schedule(t, true, 1000);
+  await run(t);
+  await t.run((ctx: any) => ctx.db.patch(slowFailure, { completedTime: start + 5000 }));
+  await later(t);
+  expect(opens(await allNotices(t), "background-error")).toHaveLength(1);
+});
+
+it("keeps a running job's stall open, and drops the stall when the job's record is gone", async () => {
+  const t = makeTest();
+  const jobId = await schedule(t, true);
+  await t.run((ctx: any) => ctx.db.patch(jobId, { state: { kind: "inProgress" } }));
+  await later(t, 16 * 60_000);
+  await later(t); await later(t);
+  expect(opens(await allNotices(t), "stalled")).toHaveLength(1);
+  expect(resolves(await allNotices(t))).toHaveLength(0);
+  await t.run((ctx: any) => ctx.db.delete(jobId));
+  await later(t);
+  expect(resolves(await allNotices(t), "stalled")).toHaveLength(1);
+});
+
+it("counts each failed run exactly once across page boundaries", async () => {
+  const t = makeTest();
+  await t.run(async (ctx: any) => { for (let i = 0; i < 1100; i++) await ctx.scheduler.runAfter(0, record, { minute: 0, route: "probe", status: 200, durationMs: 1, release: "unknown" }); });
+  await run(t);
+  await later(t);
+  expect(opens(await allNotices(t), "background-error").map((n) => n.payload.count)).toEqual([1100]);
+});
+
+it("resolves a failing function after an hour without further runs", async () => {
+  const t = makeTest();
+  await schedule(t, false); await run(t);
+  await later(t);
+  await later(t, 59 * 60_000);
+  expect(resolves(await allNotices(t))).toHaveLength(0);
+  await later(t, 2 * 60_000);
+  expect(resolves(await allNotices(t), "background-error")).toHaveLength(1);
+});
+
+it("never lets an older result overwrite a newer one for the same function", async () => {
+  const t = makeTest();
+  const apply = makeFunctionReference<"mutation">("alerts:apply");
+  const base = { watchAdd: [], watchDone: [], watchStalled: [], restErrors: 0, behind: false };
+  await t.mutation(apply, { ...base, from: null, through: start, functions: [{ fn: "crm:sync", lastAt: start - 1000, lastFailed: false, trailing: 0, sawSuccess: true }] });
+  await t.mutation(apply, { ...base, from: start, through: start + 1, functions: [{ fn: "crm:sync", lastAt: start - 5000, lastFailed: true, trailing: 1, sawSuccess: false }] });
+  expect(await allNotices(t)).toEqual([]);
+});
+
 it("measures a stall from when a job was due, including jobs scheduled far ahead", async () => {
   const t = makeTest();
   await schedule(t, true, 30 * 60_000);
@@ -146,9 +206,12 @@ it("deletes notices older than seven days, delivered or not", async () => {
 });
 
 it("accepts HTTPS to public hosts and plain HTTP only to exactly 127.0.0.1 or localhost", () => {
-  for (const good of ["https://hooks.example.com/x", "http://127.0.0.1:9/x", "http://localhost:9/x", "http://127.1:9/x"]) expect(channel(good), good).not.toBeNull();
+  for (const good of ["https://hooks.example.com/x", "https://hooks.example.com./x", "http://127.0.0.1:9/x", "http://localhost:9/x", "http://127.1:9/x", "https://100.128.0.1/x", "https://198.20.0.1/x", "https://[2001:db8::1]/x"]) expect(channel(good), good).not.toBeNull();
   for (const bad of ["http://0.0.0.0:9/x", "http://[::1]:9/x", "http://localhost.evil.test/x", "http://hooks.example.com/x", "ftp://127.0.0.1/x", "ftp://hooks.example.com/x", "file:///etc/passwd", "ws://hooks.example.com/x",
-    "https://169.254.169.254/latest", "https://10.0.0.1/x", "https://172.16.0.1/x", "https://192.168.1.1/x", "https://127.0.0.1/x", "https://localhost/x", "https://[::1]/x", "https://[fd00::1]/x", "https://metadata.internal/x", "", "not a url"]) expect(channel(bad), bad).toBeNull();
+    "https://169.254.169.254/latest", "https://10.0.0.1/x", "https://172.16.0.1/x", "https://192.168.1.1/x", "https://127.0.0.1/x", "https://localhost/x", "https://[::1]/x", "https://[fd00::1]/x", "https://metadata.internal/x", "", "not a url",
+    "https://0.1.2.3/x", "https://[::ffff:7f00:1]/x", "https://100.64.0.1/x", "https://[fe80::1]/x", "https://printer.local/x",
+    "https://localhost./x", "https://metadata.google.internal./x", "https://printer.local./x", "https://[::7f00:1]/x", "https://[64:ff9b::a00:1]/x",
+    "https://198.18.0.1/x", "https://198.19.255.1/x", "https://224.0.0.1/x", "https://239.1.1.1/x", "https://255.255.255.255/x", "https://[ff02::1]/x"]) expect(channel(bad), bad).toBeNull();
 });
 
 it("delivers each notice to the configured sink, retries failed deliveries, and never resends a delivered one", async () => {
