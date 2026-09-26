@@ -5,7 +5,7 @@ CONVEX_AGENT_MODE=anonymous mode is in beta, functionality may change in the fut
 - Preparing Convex functions...
 
 Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
-✔ 09:48:39 Convex functions ready! (730.93ms)
+✔ 10:48:06 Convex functions ready! (834.42ms)
 DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
             Install the buildx component to build images with BuildKit:
             https://docs.docker.com/go/buildx/
@@ -15,7 +15,11 @@ PASS missing cap means zero: no executor cap refuses before any reservation
 PASS concurrent reservations never exceed org or global hard caps
 PASS org kill switch stops the running sandbox within the bound, refuses queued work, leaves the other tenant running
 PASS cancel stops a running sandbox; a result reported after cancel is recorded as late and has no effect
-PASS a result reported after the org kill switch has no effect
+PASS an org kill landing just before the result is applied never applies it (8 tries)
+PASS a global kill landing just before the result is applied never applies it
+PASS revoking the agent grant mid-run stops the sandbox within the bound and applies nothing
+PASS a replayed result never applies or bills twice
+PASS a guest that under-reports usage is billed the executor meter, flagged, and not applied
 PASS global kill switch stops every running sandbox within the bound and refuses new runs
 PASS missing usage report fails closed for that tenant only
 PASS token overshoot and duration limits stop the sandbox and fail visibly

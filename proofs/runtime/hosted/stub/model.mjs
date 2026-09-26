@@ -66,7 +66,8 @@ for await (const line of lines) {
   }
   if (job.mode === 'hang') { out({ token: 't0' }); await wait(60000); break; }
   for (let i = 0; i < limit; i++) { await wait(job.intervalMs); out({ token: 't' + i }); }
-  out(job.mode === 'noUsage' ? { done: true, output: 'STUB_OK' } : { done: true, output: 'STUB_OK', usage: limit });
+  const usage = job.mode === 'noUsage' ? undefined : job.mode === 'underreport' ? 1 : limit;
+  out({ done: true, output: 'STUB_OK', usage });
   break;
 }
 process.exit(0);

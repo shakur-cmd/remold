@@ -22,90 +22,115 @@
 </head>
 <body>
 <h1>P6 deterministic slice: hosted sandbox isolation, hard caps, kill switch</h1>
-<div class="meta">2026-09-26 · scope: P6 deterministic part only · level: SERVICE control plane (local Convex, verbatim H0) / SIM model (stub) / local Docker sandbox · builder-run, awaiting independent verification</div>
+<div class="meta">2026-09-26 · revision 2 (fixes for the independent verification of 7023bb3) · level: SERVICE control plane (local Convex, verbatim H0) / SIM model (stub) / local Docker sandbox · builder-run, awaiting re-verification</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
   <li>None for this slice. It used no model, no API, no subscription and no money.</li>
-  <li>For root, Fable and Opus (not you): three H0 gaps found below. Each would need an H0 amendment before I-jobs rely on it.</li>
+  <li>For root, Fable and Opus (not you): the H0 amendments listed below. They are recorded here, not fixed.</li>
 </ul>
 </div>
 
 <div class="status">
 <h2>Done and proven (builder-run only)</h2>
 <ul>
-  <li>Each tenant's worker runs in its own Docker sandbox with no network, only its own workspace volume, a read-only root, a non-root user and no secrets in its environment. Tenant A cannot see tenant B's files or reach B's service, the host, the internet or a metadata address. Tenant B cannot see A's either.</li>
-  <li>A missing executor cap means zero. The run is refused before anything is reserved.</li>
-  <li>36 runs were launched in three concurrent waves, each asking for 4 units. Final spend stayed within the caps: tenant A 8 and B 4 against 10 each, 12 against the shared 15. No reservation leaked. At most one sandbox per tenant was dispatching at a time. Every run reports its full reservation as usage, so any over-reservation would have shown up as over-spend. Reserved amounts were not sampled mid-flight.</li>
-  <li>The org kill switch stopped a running sandbox 159 ms after it was set. The stated bound is 1,500 ms. Queued work for that org was refused, and the other tenant's run finished normally.</li>
-  <li>Cancelling one run stopped its sandbox in 99 ms. The executor-wide (global) kill stopped both tenants' sandboxes in 63 and 66 ms and refused new runs.</li>
-  <li>A result that came back after a cancel was recorded as late and billed, but its output was not applied. The same holds for a result that came back after the org kill switch. A replayed result with the wrong fence was refused.</li>
-  <li>A run with no usage report was not applied. It put the tenant into the H0 "usage unresolved" hold, which blocked that tenant's next run and left the other tenant working.</li>
-  <li>A model that ignored its token limit was stopped and marked as an overrun, and its tenant was held. A hung model was stopped at its 800 ms duration limit.</li>
-  <li>All 16 deliberate breakages ("mutants", one per guard) made their named check fail. The suite passed on the final run and in three repeat runs.</li>
+  <li><strong>IV defect 1 fixed: an org kill landing just before the result is applied.</strong> Before, 8 of 8 attempts were applied. Now 0 of 8, both in my suite and in the verifier's own attack harness. Applying output is now one Convex transaction: <code>convex/settle.ts</code> reads H0 status, reconciles usage and writes the output record together. So a cancel, org kill or revocation commits entirely before the apply or entirely after it. A global kill landing in the same spot is also refused, because the executor checks its hosted flag and sends the apply in one synchronous step.</li>
+  <li><strong>IV defect 2 fixed: a guest under-reporting its usage.</strong> Before, a run that streamed 4 tokens and reported 1 was billed 1 and applied. Now every finished run is billed the larger of the executor's own meter and the guest's report. A report below the meter flags a <code>usageUnderreport</code> anomaly, which holds the tenant, and the output is not applied. An honest run on the other tenant still applies.</li>
+  <li><strong>IV gap 3 closed: a dedicated mid-run revocation check.</strong> Revoking the agent's grant mid-run stopped the sandbox in 80 ms. The run was marked late, nothing was applied, and only the residual 2 tokens were billed.</li>
+  <li><strong>New: a replayed result never applies or bills twice.</strong> Replaying the settle for a finished run was refused, leaving exactly one output record and a bill of 4.</li>
+  <li><strong>Still holding from revision 1:</strong>
+    <ul>
+      <li><strong>Isolation:</strong> no network, only the tenant's own volume, read-only root, non-root user, no environment secrets.</li>
+      <li><strong>Missing cap:</strong> treated as zero.</li>
+      <li><strong>Concurrent caps:</strong> A 8, B 4 against 10 each; 12 against the shared 15; no leaked reservation.</li>
+      <li><strong>Kill timings:</strong> org kill 147 ms, cancel 95 ms, global 61 and 59 ms, all against the stated 1,500 ms bound.</li>
+      <li><strong>Missing usage:</strong> fails closed.</li>
+      <li><strong>Limits:</strong> token and duration limits stop the sandbox.</li>
+    </ul>
+  </li>
+  <li><strong>Results:</strong> 13 of 13 checks pass on the final run and in three repeat runs. All 19 mutants (one per guard) make their named check fail. The verifier's attack harness now passes all 6 of its normal checks. Its 2 "defect probe" checks, which pass only while a defect exists, now fail, which is the intended outcome.</li>
 </ul>
 </div>
 
 <h2>Before and after</h2>
 <table>
-<tr><th>Check</th><th>Before</th><th>After</th></tr>
-<tr><td>Hosted executor with tenant sandboxes</td><td>None in the repo. <code>proofs/runtime</code> only had the owner-local subscription CLI proof. The new suite cannot even start (<code>evidence/baseline-no-executor.log</code>, exit 1).</td><td><code>executor.mjs</code>. All 9 checks pass (<code>evidence/green.log</code>, exit 0).</td></tr>
-<tr><td>Can each check fail?</td><td>n/a</td><td>16 of 16 mutants caught (<code>evidence/mutants.json</code>, <code>evidence/mutants.log</code>)</td></tr>
+<tr><th>Check</th><th>Before (7023bb3 code, <code>evidence/before-iv-fixes.log</code>)</th><th>After (<code>evidence/green.log</code>)</th></tr>
+<tr><td>Org kill just before apply, 8 tries</td><td>FAIL: applied 8 of 8, <code>late: false</code></td><td>PASS: 0 of 8 applied, 0 output records, each still billed 4</td></tr>
+<tr><td>Global kill just before apply</td><td>FAIL: applied</td><td>PASS: not applied, still billed 4</td></tr>
+<tr><td>Under-reporting guest (4 streamed, reports 1)</td><td>FAIL: billed 1, applied</td><td>PASS: billed 4, anomaly <code>usageUnderreport</code>, not applied</td></tr>
+<tr><td>Mid-run grant revocation</td><td>PASS (behaviour existed but was untested)</td><td>PASS: killed in 80 ms, late, not applied</td></tr>
+<tr><td>Verifier attack harness, <code>evidence/iv-fix/attack-after.log</code></td><td>Both defect probes reproduced the defects</td><td>Both defect probes fail (org race applied 0 times; under-report billed 4 of 4). The other 6 attacks pass.</td></tr>
 </table>
-
-<h2>What each check tests, and the mutant that breaks it</h2>
-<table>
-<tr><th>Check</th><th>Guard broken by the mutant</th><th>What the mutant run showed</th></tr>
-<tr><td rowspan="5">Isolation (A and B probe each other)</td><td><code>--network none</code> changed to <code>bridge</code></td><td>A reached B's service at 172.17.0.2:8080, the VM gateway on port 22, and 1.1.1.1:443</td></tr>
-<tr><td>Volume chosen per tenant</td><td>B mounted A's volume and saw A's secret</td></tr>
-<tr><td>No environment passed in</td><td>A token variable appeared inside the sandbox</td></tr>
-<tr><td><code>--read-only</code> root</td><td>The write to <code>/var/tmp</code> succeeded</td></tr>
-<tr><td>Non-root user</td><td>The sandbox ran as uid 0</td></tr>
-<tr><td>Missing cap means zero</td><td>Executor default <code>?? 0</code></td><td>With <code>?? Infinity</code>, the uncapped tenant was claimed</td></tr>
-<tr><td rowspan="3">Concurrent caps</td><td>Undispatched claim released</td><td>A reservation leaked</td></tr>
-<tr><td>H0 org and global budget check (in a throwaway copy)</td><td>Tenant A spent 12 against a cap of 10</td></tr>
-<tr><td>H0 one dispatch per org (throwaway copy)</td><td>A had 2 dispatching at once, and 3 ran across both tenants</td></tr>
-<tr><td>Org kill</td><td>Watcher acts on H0 <code>adapterStatus.cancel</code></td><td>The killed run streamed all 8 tokens</td></tr>
-<tr><td>Global kill</td><td>Hosted flag kills running sandboxes</td><td>Both runs finished and were applied</td></tr>
-<tr><td>Late after cancel</td><td>Apply only if not <code>late</code></td><td>The late result was applied</td></tr>
-<tr><td>Late after org kill</td><td>Status is checked before reconcile</td><td>The result was applied after the org was killed</td></tr>
-<tr><td>Missing usage</td><td>Usage stays undefined</td><td>With fallback to the executor's meter, the output was applied and no hold was set</td></tr>
-<tr><td rowspan="2">Limits</td><td>Token limit</td><td>The overshoot was stopped by the duration timer, not the token limit</td></tr>
-<tr><td>Duration limit</td><td>The hang was stopped only by the H0 lease, not the duration limit</td></tr>
-</table>
-<p>The H0 guards that already had mutants in the H0 proof (fencing, the missing-usage hold, stale reconcile) are used here but were not mutated again. H0 guard mutants run on a throwaway copy. The real run first checks that <code>convex/*.ts</code> match <code>proofs/contract/convex</code> byte for byte, with the same hashes P1 recorded.</p>
-
-<h2>How it works</h2>
-<p>The trusted executor runs on the host and holds the adapter and agent session tokens. The sandbox never sees them. Each run starts a warm sandbox first. Only then does the executor call H0 in order: <code>claim</code> (atomic reservation), <code>permit</code>, <code>consume</code>. It hands the stub model its token limit over stdin, reads the streamed tokens and reports with <code>reconcile</code>.</p>
-<p>The sandbox has no network at all. Stdio to the executor is its only channel, so every model or tool call has to go through Remold's capability path. While a run is live, a watcher reads <code>adapterStatus</code> every 100 ms. It kills the sandbox on cancel, org kill, grant revocation or lease expiry. It also kills when the global hosted flag is off, the token count passes the permit, or the duration runs out.</p>
-<p>Output is applied only when all of these hold: the run was not killed, the model reported usage, no cancel or kill showed up before reconcile, and reconcile came back accepted, not late and not overrun. A killed run is billed from the executor's own token meter.</p>
-<p>Stated kill bound: 1,500 ms from trigger to sandbox exit. That is the 100 ms watch interval, plus one status read, plus <code>docker kill</code>. Measured: 159 ms (org), 99 ms (cancel), 63 and 66 ms (global).</p>
-
-<h2>H0 gaps found (for root, Fable and Opus)</h2>
+<p>To run the verifier's harness against the new code I made two small changes to a throwaway copy, saved as <code>evidence/iv-fix/attack-harness-patch.diff</code>:</p>
 <ul>
-  <li><strong>The org kill does not mark in-flight results late.</strong> <code>reconcile</code> ignores <code>readonly</code>, so a result that lands after the org kill is recorded <code>late: false</code>. The executor covers this by checking status just before reconcile. A kill that lands between that check and reconcile would still slip through. The durable fix is for the CRM write that applies the output to check <code>readonly</code> atomically, as <code>applyChange</code> does, or for H0 to treat <code>readonly</code> as late.</li>
-  <li><strong>Leases cannot be renewed.</strong> The H0 lease is 2 s from claim, and <code>adapterStatus</code> reports cancel once it expires. So any hosted run longer than about 2 s is killed. That is fine for the stub but not for real agent turns. It needs a fenced lease renewal.</li>
-  <li><strong>Overshoot past the reservation is possible.</strong> A model that ignores its limit can produce more before the kill lands. In the test it billed 9 units against a reservation of 4, within 64 ms. H0 flags it as an overrun and holds the org, so no new spend follows. The per-run hard cap is therefore "reservation plus whatever arrives within the kill bound". Real providers need their own max-tokens limit enforced as well.</li>
-  <li>The global kill is executor-local (one host). A kill across several hosts needs a control-plane flag. H0 has only the per-org <code>readonly</code>.</li>
+  <li>Route <code>call('settle')</code> to the new module.</li>
+  <li>Write the runner's done-file.</li>
+</ul>
+<p>Ports moved to 3950/3951 because the verifier's backend still held 3940. I did not stop it.</p>
+
+<h2>Mutants (19 of 19 caught, <code>evidence/mutants.json</code>)</h2>
+<p>The 16 from revision 1 still apply, except two. The old "late result gate" and "status checked before reconcile" mutants targeted code that no longer exists. They are replaced by these:</p>
+<table>
+<tr><th>Guard</th><th>Mutant</th><th>Check that fails</th></tr>
+<tr><td>Status re-checked inside the apply transaction</td><td>Drop <code>!cancelled</code> in <code>settle.ts</code></td><td>Org kill race (applied 8 of 8), cancel, replay</td></tr>
+<tr><td>Global kill checked when the apply is sent</td><td>Ignore the hosted flag</td><td>Global kill race</td></tr>
+<tr><td>H0 status treats lost authority as cancel (throwaway copy)</td><td>Swallow the <code>checked()</code> failure</td><td>Mid-run revocation</td></tr>
+<tr><td>Bill at least the executor meter</td><td>Bill the guest's report</td><td>Under-report</td></tr>
+<tr><td>Under-report flagged and not applied</td><td>Never flag</td><td>Under-report</td></tr>
+<tr><td>Missing usage stays missing</td><td>Fall back to the meter</td><td>Missing usage</td></tr>
+</table>
+<p>One mutant I tried survived, so I removed the guard instead of keeping a check that cannot fail: a "first receipt only" guard in <code>settle.ts</code>. A replay is already refused because the operation's status is terminal. The replay check still runs, and the status mutant above makes it fail.</p>
+
+<h2>How it works now</h2>
+<p>The executor runs the sandbox and meters every streamed token itself. It then sends one <code>settle</code> call with these fields:</p>
+<ul>
+  <li><code>meter</code>: the executor's own token count.</li>
+  <li><code>reported</code>: the usage the guest reported.</li>
+  <li><code>killed</code>: true if the run was killed, or if the global flag is off at send time.</li>
+  <li><code>output</code>: only if the run was not killed and the output is at most 64 KB.</li>
+</ul>
+<p>Inside one transaction, <code>settle</code> does four things in order:</p>
+<ol>
+  <li>Reads H0 <code>adapterStatus</code>, which covers cancel, org kill, revocation and lease.</li>
+  <li>Calls H0 <code>reconcile</code> to bill the usage.</li>
+  <li>Flags an under-report if the guest reported less than the meter.</li>
+  <li>Inserts the output as a <code>records</code> row only if nothing stopped it.</li>
+</ol>
+<p><code>settle.ts</code> is proof-owned. <code>contract.ts</code>, <code>harness.ts</code> and <code>schema.ts</code> are still byte-identical to <code>proofs/contract/convex</code> (<code>evidence/sha256.txt</code>), and <code>run.mjs</code> refuses to run otherwise. <code>disable()</code> returns only after any apply already sent has settled, so after it resolves nothing applies.</p>
+
+<h2>Needs an H0 amendment (recorded, not fixed)</h2>
+<ul>
+  <li><strong>Non-renewable 2 s lease.</strong> Any hosted run longer than about 2 s after claim is cancelled. Real agent turns need a fenced lease renewal.</li>
+  <li><strong>The global kill is per host.</strong> It is a flag in the executor process. A kill across several hosts needs a control-plane field. H0 has only the per-org <code>readonly</code>.</li>
+  <li><strong>The org kill is not "late" in H0 reconcile.</strong> P6 no longer depends on this, because of the atomic settle. The verifier found the same shape in I1 at <code>convex/integrations/outcomes.ts:36</code>, where it is an audit misclassification rather than a write bypass.</li>
+  <li><strong>Spend can overshoot before the kill lands.</strong> A model that ignores its limit billed 9 units against a reservation of 4. H0 then flags an overrun and holds the tenant. Real providers need their own token limit enforced; the executor kill alone is not a hard cap.</li>
+  <li><strong>Usage trust.</strong> The meter is now the floor, but it counts the stub's stdout lines. A real executor must meter at the trusted model runtime, not inside the tenant process.</li>
 </ul>
 
 <h2>What stays open in P6</h2>
 <ul>
-  <li><strong>Real hosted executor.</strong> This is a local proof harness on the <code>colima-remold-proof</code> VM, not a deployed service.</li>
-  <li><strong>OS-level isolation on the real host.</strong> Docker on a shared Linux kernel here. There is no gVisor or Firecracker boundary and no hostile escape testing. Egress policy, resource exhaustion across tenants and container-escape tests on the real host are all unproven.</li>
-  <li><strong>Real-model smoke and real usage reconciliation.</strong> The stub reports usage itself. Provider-origin usage, active stream cancellation with real billing, and step or tool-call limits from real agents are unproven. Real tools are not wired, and delegated descendants are not revoked here (that is H0 and P1 territory).</li>
-  <li><strong>Subscription route.</strong> Still only the owner-local CLI feasibility in <code>proofs/runtime/report.html</code>. No customer execution on Shakur's subscription.</li>
-  <li><strong>Funding gate.</strong> Unchanged. Live funding method, provider terms and a numeric spend cap are required. The default is zero.</li>
+  <li>A real hosted executor. This is a local proof harness on <code>colima-remold-proof</code>.</li>
+  <li>OS-level isolation on the real host. Docker on a shared kernel here, with no gVisor or Firecracker and no escape testing.</li>
+  <li>A real-model smoke test with provider-origin usage, active stream cancellation, and step or tool limits.</li>
+  <li>The subscription route, which is still owner-local only in <code>proofs/runtime/report.html</code>.</li>
+  <li>The funding gate: default zero, and it needs a live funding method, provider terms and a numeric cap.</li>
 </ul>
 
 <h2>Replay</h2>
 <pre>pnpm install
 cd proofs/runtime/hosted
-node run.mjs        # ~17 s, local Convex on 3810/3811, docker context colima-remold-proof
-node mutants.mjs    # ~4.5 min, 16 mutants, each must fail its named check</pre>
-<p>Requirements: the <code>colima-remold-proof</code> context running, and <code>node:22-alpine@sha256:0a7108bf...2e402</code> present (pulled once). The suite builds <code>remold-p6-stub</code>, creates labelled volumes and a canary container, and removes all of them at the end. Afterward 0 containers and 0 volumes labelled <code>remold-p6</code> remained.</p>
-<p>Files: <code>proofs/runtime/hosted/</code> (<code>executor.mjs</code>, <code>p6.mjs</code>, <code>stub/</code>, <code>run.mjs</code>, <code>mutants.mjs</code>, <code>convex/</code> verbatim H0). Evidence: <code>evidence/results.json</code>, <code>green.log</code>, <code>mutants.json</code>, <code>mutants.log</code>, <code>baseline-no-executor.log</code>, <code>sha256.txt</code>.</p>
-<p>Who checked: the builder only. An independent verification is still required before any of this counts as integrated.</p>
+node run.mjs        # ~25 s, local Convex on 3810/3811, docker context colima-remold-proof
+node mutants.mjs    # ~8 min, 19 mutants, each must fail its named check</pre>
+<p>Evidence is in <code>evidence/</code>:</p>
+<ul>
+  <li><code>green.log</code> and <code>results.json</code>: the final run.</li>
+  <li><code>before-iv-fixes.log</code>: the new checks run against the 7023bb3 code.</li>
+  <li><code>mutants.json</code> and <code>mutants.log</code>.</li>
+  <li><code>iv-fix/</code>: the verifier harness rerun and its patch.</li>
+  <li><code>sha256.txt</code>.</li>
+  <li><code>iv/</code>: the verifier's report, unchanged.</li>
+</ul>
+<p>Who checked: the builder only. Revision 1 was verified by the independent verifier (<code>evidence/iv/report.html</code>). These fixes still need re-verification before they count.</p>
 </body>
 </html>

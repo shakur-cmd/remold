@@ -11,7 +11,7 @@ import { createExecutor, docker, WATCH_INTERVAL_MS } from './executor.mjs';
 const url = readFileSync('.env.local', 'utf8').match(/^CONVEX_URL=(.+)$/m)?.[1];
 if (url !== 'http://127.0.0.1:3810') throw new Error('Proof refuses unexpected target');
 const client = new ConvexHttpClient(url, { logger: false });
-const call = (name, args) => client.mutation(api.harness[name], args);
+const call = (name, args) => client.mutation(name === 'settle' ? api.settle.settle : api.harness[name], args);
 const read = (name, args) => client.query(api.harness[name], args);
 const cli = (name, args) => JSON.parse(execFileSync(process.execPath, ['../../../node_modules/convex/bin/main.js', 'run', 'harness:' + name, JSON.stringify(args)], { encoding: 'utf8' }));
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -43,7 +43,7 @@ const dump = f => cli('dump', { orgs: [f.A.org, f.B.org] });
 const org = (f, t) => dump(f).orgs.find(o => o._id === f[t].org);
 const payload = account => ({ content: 'stub model task', audience: [], audienceVersion: 1, destination: account, schedule: 0, amountMinor: 0, currency: 'USD', workflowVersion: 1 });
 async function grantModel(f, t) {
-  await call('grant', { token: f[t].sessions.owner, target: f[t].actors.manager, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 8, maxSteps: 1 }, mode: 'direct', delegate: false, expires: Date.now() + 600000 });
+  f[t].modelGrant = await call('grant', { token: f[t].sessions.owner, target: f[t].actors.manager, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 8, maxSteps: 1 }, mode: 'direct', delegate: false, expires: Date.now() + 600000 });
 }
 const modelOp = (f, t, units) => call('propose', { token: f[t].sessions.manager, logical: randomUUID(), binding: f[t].binding, capability: 'model.call', payload: payload(f[t].key.account), reservationUnits: units, maxSteps: 1 });
 async function fixture(policy = { maxUnitsPerRun: 8, maxDurationMs: 5000 }) {
@@ -168,7 +168,6 @@ async function main() {
     assert.equal(held.killed, undefined);
     assert.equal(held.usage, 4);
     assert.equal(held.late, true, JSON.stringify(held));
-    assert.equal(held.cancelledBeforeReconcile, false, 'cancel landed after the final status check, so only the late flag can stop it');
     assert.equal(held.applied, false);
     assert(!ex.effects.some(e => e.id === id1 || e.id === id2), 'no output applied');
     const o = org(f, 'A');
@@ -179,15 +178,71 @@ async function main() {
     return { cancelLatencyMs: running.exitAt - cancelAt, running, held, replay, orgA: { spent: o.spent, reserved: o.reserved } };
   });
 
-  await test('a result reported after the org kill switch has no effect', async () => {
+  await test('an org kill landing just before the result is applied never applies it (8 tries)', async () => {
+    const tries = [];
+    for (let i = 0; i < 8; i++) {
+      const { f, ex } = await fixture();
+      const id = await modelOp(f, 'A', 4);
+      // Widest window the executor has: after the sandbox exits and every executor-side check, just before it reports.
+      const held = await ex.run('A', { id, units: 4, intervalMs: 10, hooks: { beforeReconcile: async () => { await call('control', { token: f.A.sessions.owner, readonly: true }); await wait(5); } } });
+      const d = dump(f);
+      tries.push({ applied: held.applied, late: held.late, spent: d.orgs.find(o => o._id === f.A.org).spent, outputs: d.records.filter(r => r.object === 'modelOutput').length });
+    }
+    assert.deepEqual(tries.filter(t => t.applied || t.outputs), [], `applied after org kill: ${JSON.stringify(tries)}`);
+    assert(tries.every(t => t.spent === 4), 'usage still billed ' + JSON.stringify(tries));
+    return { tries };
+  });
+
+  await test('a global kill landing just before the result is applied never applies it', async () => {
     const { f, ex } = await fixture();
     const id = await modelOp(f, 'A', 4);
-    const held = await ex.run('A', { id, units: 4, intervalMs: 10, hooks: { beforeCheck: () => call('control', { token: f.A.sessions.owner, readonly: true }) } });
-    assert.equal(held.killed, undefined);
-    assert.equal(held.cancelledBeforeReconcile, true);
+    const held = await ex.run('A', { id, units: 4, intervalMs: 10, hooks: { beforeReconcile: () => ex.disable() } });
     assert.equal(held.applied, false, JSON.stringify(held));
-    assert.equal(org(f, 'A').spent, 4, 'usage still recorded');
+    assert.equal(dump(f).records.filter(r => r.object === 'modelOutput').length, 0);
+    assert.equal(org(f, 'A').spent, 4, 'usage still billed');
     return { held };
+  });
+
+  await test('revoking the agent grant mid-run stops the sandbox within the bound and applies nothing', async () => {
+    const { f, ex } = await fixture();
+    const id = await modelOp(f, 'A', 8);
+    let revokedAt;
+    const onToken = box => { if (box.tokens === 2 && !revokedAt) { revokedAt = -1; call('revokeGrant', { token: f.A.sessions.owner, id: f.A.modelGrant }).then(() => { revokedAt = Date.now(); }); } };
+    const r = await ex.run('A', { id, units: 8, intervalMs: 150, hooks: { onToken } });
+    assert.equal(r.killed, 'cancel', JSON.stringify(r));
+    assert(r.exitAt - revokedAt <= KILL_BOUND_MS, `revocation kill latency ${r.exitAt - revokedAt}`);
+    assert(!r.applied && r.tokens < 8 && r.late, JSON.stringify(r));
+    const o = org(f, 'A');
+    assert.equal(o.spent, r.tokens, 'residual billed from the executor meter');
+    assert.equal(o.reserved, 0);
+    return { latencyMs: r.exitAt - revokedAt, run: r };
+  });
+
+  await test('a replayed result never applies or bills twice', async () => {
+    const { f, ex } = await fixture();
+    const r = await ex.run('A', { id: await modelOp(f, 'A', 4), units: 4, intervalMs: 10 });
+    assert.equal(r.applied, true, JSON.stringify(r));
+    const replay = await call('settle', { token: f.A.adapter, id: r.id, fence: r.fence, step: r.step, providerRef: r.providerRef, meter: 4, reported: 4, killed: false, output: 'REPLAYED' });
+    assert.equal(replay.applied, false, JSON.stringify(replay));
+    const d = dump(f);
+    assert.deepEqual(d.records.filter(x => x.object === 'modelOutput').map(x => x.public), ['STUB_OK']);
+    assert.equal(d.orgs.find(o => o._id === f.A.org).spent, 4);
+    return { first: r, replay };
+  });
+
+  await test('a guest that under-reports usage is billed the executor meter, flagged, and not applied', async () => {
+    const { f, ex } = await fixture();
+    const r = await ex.run('A', { id: await modelOp(f, 'A', 4), mode: 'underreport', units: 4, intervalMs: 10 });
+    assert.equal(r.tokens, 4);
+    assert.equal(r.usage, 4, 'billed max(meter, reported) ' + JSON.stringify(r));
+    assert.equal(r.applied, false);
+    const o = org(f, 'A');
+    assert.equal(o.spent, 4);
+    assert.equal(o.anomaly, 'usageUnderreport');
+    const control = await ex.run('B', { id: await modelOp(f, 'B', 4), units: 4, intervalMs: 10 });
+    assert.equal(control.applied, true, 'honest report still applies');
+    assert.equal(control.usage, 4);
+    return { underreport: r, control };
   });
 
   await test('global kill switch stops every running sandbox within the bound and refuses new runs', async () => {

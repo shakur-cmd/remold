@@ -5,6 +5,8 @@ import { createInterface } from 'node:readline';
 
 export const DOCKER_CONTEXT = 'colima-remold-proof';
 export const WATCH_INTERVAL_MS = 100;
+// Outputs larger than this are never applied (a Convex document is capped at 1 MB).
+const OUTPUT_LIMIT = 65536;
 const dockerEnv = { PATH: process.env.PATH, HOME: process.env.HOME };
 export const docker = (...args) => execFileSync('docker', ['--context', DOCKER_CONTEXT, ...args], { encoding: 'utf8', env: dockerEnv }).trim();
 
@@ -19,7 +21,7 @@ export function sandboxArgs(name, volume, image, label) {
 // tenants: { A: { agent, adapter, volume, policy: { maxUnitsPerRun?, maxDurationMs? } } }
 export function createExecutor({ call, read, image, runId, tenants }) {
   let hosted = true, count = 0;
-  const running = new Set(), active = {}, effects = [], peaks = { global: 0 };
+  const running = new Set(), inflight = new Set(), active = {}, effects = [], peaks = { global: 0 };
   const log = [];
 
   function start(tenant) {
@@ -102,21 +104,18 @@ export function createExecutor({ call, read, image, runId, tenants }) {
       record.tokens = box.tokens;
       record.killed = box.killed?.reason;
       record.killLatencyMs = box.killed ? record.exitAt - box.killed.at : undefined;
-      // A killed run has no provider report; the executor's own meter is the residual. A finished
-      // run must carry the provider's usage report or it stays missing and blocks further spend.
-      const usage = box.killed ? box.tokens : box.done?.usage;
-      record.usage = usage;
-      if (hooks.beforeCheck) await hooks.beforeCheck(record);
-      // The org kill switch does not mark the result late in H0, so check it before reconciling.
-      let cancelled;
-      try { cancelled = (await read('adapterStatus', { token: t.adapter, id, fence: p.fence, step: p.step })).cancel; } catch { cancelled = true; }
       if (hooks.beforeReconcile) await hooks.beforeReconcile(record);
-      const r = await call('reconcile', { token: t.adapter, id, fence: p.fence, step: p.step, providerRef: 'stub:' + box.name, usage });
-      Object.assign(record, { accepted: r.accepted, late: r.late, overrun: r.overrun, cancelledBeforeReconcile: cancelled });
-      if (!box.killed && box.done && usage !== undefined && !cancelled && r.accepted && !r.late && !r.overrun) {
-        record.applied = true;
-        effects.push({ tenant, id, output: box.done.output });
-      }
+      // Checking the local hosted flag and sending settle happen in one synchronous step, so a global
+      // kill is either seen here or lands after this apply was already sent (disable() waits for it).
+      const killed = !!box.killed || !hosted;
+      const output = box.done?.output;
+      record.providerRef = 'stub:' + box.name;
+      const settling = call('settle', { token: t.adapter, id, fence: p.fence, step: p.step, providerRef: record.providerRef,
+        meter: box.tokens, reported: box.done?.usage, killed, output: !killed && typeof output === 'string' && output.length <= OUTPUT_LIMIT ? output : undefined });
+      inflight.add(settling);
+      const r = await settling.finally(() => inflight.delete(settling));
+      Object.assign(record, { usage: r.usage, accepted: r.accepted, late: r.late, overrun: r.overrun, underreport: r.underreport, cancelledBeforeReconcile: r.cancelled, applied: r.applied });
+      if (r.applied) effects.push({ tenant, id, output });
       return record;
     } finally {
       running.delete(box);
@@ -124,9 +123,11 @@ export function createExecutor({ call, read, image, runId, tenants }) {
     }
   }
 
+  // Returns once every apply sent before the kill has settled; nothing applies after that.
   function disable() {
     hosted = false;
     for (const box of running) kill(box, 'global');
+    return Promise.allSettled([...inflight]);
   }
 
   return { run, disable, effects, peaks, log, running };
