@@ -1,0 +1,184 @@
+{
+ "run": "c465942b",
+ "capturedAt": "2026-09-26T12:28:05.062Z",
+ "tenant": "a",
+ "postStatuses": [
+  200,
+  200,
+  200,
+  200,
+  200,
+  200,
+  200,
+  200,
+  200,
+  200,
+  200,
+  200
+ ],
+ "reconcilers": [
+  {
+   "exit": 1,
+   "stderr": " const body=await r.json();if(body.status!=='success'){const e=Error('Raw capture '+path+' refused: '+(body.errorData?.code??body.errorMessage));e.code=body.errorData?.code;throw e;}",
+   "n": null
+  },
+  {
+   "exit": 0,
+   "stderr": "",
+   "n": 12
+  }
+ ],
+ "perEmail": [
+  {
+   "email": "iv-two-c465942b-0@example.invalid",
+   "contacts": [
+    {
+     "id": 282,
+     "firstname": "First 0"
+    },
+    {
+     "id": 283,
+     "firstname": "First 0"
+    }
+   ]
+  },
+  {
+   "email": "iv-two-c465942b-1@example.invalid",
+   "contacts": [
+    {
+     "id": 285,
+     "firstname": "First 1"
+    }
+   ]
+  },
+  {
+   "email": "iv-two-c465942b-2@example.invalid",
+   "contacts": [
+    {
+     "id": 284,
+     "firstname": "First 2"
+    }
+   ]
+  },
+  {
+   "email": "iv-two-c465942b-3@example.invalid",
+   "contacts": [
+    {
+     "id": 286,
+     "firstname": "First 3"
+    }
+   ]
+  },
+  {
+   "email": "iv-two-c465942b-4@example.invalid",
+   "contacts": [
+    {
+     "id": 287,
+     "firstname": "First 4"
+    }
+   ]
+  },
+  {
+   "email": "iv-two-c465942b-5@example.invalid",
+   "contacts": [
+    {
+     "id": 288,
+     "firstname": "Second 5"
+    }
+   ]
+  }
+ ],
+ "captures": [
+  [
+   "0@example.invalid",
+   "First 0",
+   "settled",
+   "created",
+   283
+  ],
+  [
+   "0@example.invalid",
+   "Second 0",
+   "settled",
+   "ambiguous",
+   null
+  ],
+  [
+   "2@example.invalid",
+   "First 2",
+   "settled",
+   "created",
+   284
+  ],
+  [
+   "1@example.invalid",
+   "First 1",
+   "settled",
+   "created",
+   285
+  ],
+  [
+   "2@example.invalid",
+   "Second 2",
+   "settled",
+   "existing",
+   284
+  ],
+  [
+   "3@example.invalid",
+   "First 3",
+   "settled",
+   "created",
+   286
+  ],
+  [
+   "1@example.invalid",
+   "Second 1",
+   "settled",
+   "existing",
+   285
+  ],
+  [
+   "3@example.invalid",
+   "Second 3",
+   "settled",
+   "existing",
+   286
+  ],
+  [
+   "4@example.invalid",
+   "First 4",
+   "settled",
+   "created",
+   287
+  ],
+  [
+   "4@example.invalid",
+   "Second 4",
+   "settled",
+   "existing",
+   287
+  ],
+  [
+   "5@example.invalid",
+   "Second 5",
+   "settled",
+   "created",
+   288
+  ],
+  [
+   "5@example.invalid",
+   "First 5",
+   "settled",
+   "existing",
+   288
+  ]
+ ],
+ "contactsAdded": 7,
+ "pendingLeft": 0,
+ "verdict": {
+  "oneContactPerEmail": false,
+  "allSettledOrRetryable": true,
+  "bothExit0": false
+ }
+}

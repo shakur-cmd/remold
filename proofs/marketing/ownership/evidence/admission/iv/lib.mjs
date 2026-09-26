@@ -36,7 +36,7 @@ export function inContainer(name,script,input){
 // Raw HTTP/1.1 requests over a socket from inside the tenant's public edge container to the deployed edge on 8080.
 export function rawRequests(t,requests,{port=8080,target='127.0.0.1',container=prefix+'-public-'+t}={}){
  const script=`let s='';for await(const c of process.stdin)s+=c;const a=JSON.parse(s);const net=await import('node:net');
-const one=raw=>new Promise(resolve=>{const sock=net.connect(a.port,a.target);let buf='';sock.setTimeout(20000,()=>{sock.destroy();resolve({error:'timeout',raw:buf});});sock.on('data',d=>buf+=d);sock.on('error',e=>resolve({error:e.code||e.message,raw:buf}));sock.on('close',()=>resolve({raw:buf}));sock.write(raw);});
+const one=raw=>new Promise(resolve=>{const sock=net.connect(a.port,a.target);let buf='';sock.setTimeout(20000,()=>{sock.destroy();resolve({error:'timeout',raw:buf});});sock.on('data',d=>buf+=d);sock.on('error',e=>resolve({error:e.code||e.message,raw:buf}));sock.on('close',()=>resolve({raw:buf}));sock.write(raw,'latin1');});
 const out=[];for(const r of a.requests){const x=await one(r);out.push({statuses:[...x.raw.matchAll(/^HTTP\\/1\\.[01] (\\d{3})/gm)].map(m=>Number(m[1])),bodies:x.raw.split('\\r\\n\\r\\n').slice(1).map(b=>b.slice(0,60)),error:x.error??null});}
 console.log(JSON.stringify(out));`;
  return inContainer(container,script,{requests,port,target});

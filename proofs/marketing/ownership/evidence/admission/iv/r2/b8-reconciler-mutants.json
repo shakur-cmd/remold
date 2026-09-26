@@ -1,0 +1,131 @@
+{
+ "run": "f123a373",
+ "capturedAt": "2026-09-26T12:31:21.459Z",
+ "drain": {
+  "exit": 0,
+  "log": 13,
+  "err": ""
+ },
+ "R1": {
+  "mutant": "case-insensitive match removed",
+  "exit": 0,
+  "err": "",
+  "outcomes": [
+   [
+    "created",
+    341
+   ]
+  ],
+  "ownerBefore": {
+   "id": 341,
+   "firstname": "IV owner r1case",
+   "lastname": "Stable r1case",
+   "email": "iv-own-f123a373-r1case@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "ownerAfter": {
+   "id": 341,
+   "firstname": "Upper-case public suggestion",
+   "lastname": "Stable r1case",
+   "email": "IV-OWN-F123A373-R1CASE@EXAMPLE.INVALID",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "contactsWithEmail": [
+   {
+    "id": 341,
+    "firstname": "Upper-case public suggestion"
+   }
+  ],
+  "killed": true
+ },
+ "R1control": {
+  "exit": 0,
+  "outcomes": [
+   [
+    "existing",
+    342
+   ]
+  ],
+  "ownerUnchanged": true,
+  "ownerId": 342
+ },
+ "R2": {
+  "mutant": "ambiguous branch removed",
+  "exit": 1,
+  "err": "AssertionError [ERR_ASSERTION]: Mautic API refused 422",
+  "ids": [
+   343,
+   344
+  ],
+  "killed": false
+ },
+ "R3": {
+  "mutant": "search-size guard removed",
+  "exit": 1,
+  "err": "AssertionError [ERR_ASSERTION]: Mautic API refused 400",
+  "contactsWithPoisonEmail": [],
+  "manualSettle": "settled"
+ },
+ "window": {
+  "exit": 0,
+  "err": "",
+  "outcomes": [
+   [
+    "created",
+    345
+   ]
+  ],
+  "adminId": 345,
+  "adminBefore": {
+   "id": 345,
+   "firstname": "Admin chose this",
+   "lastname": "Owner",
+   "email": "iv-window-f123a373@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "adminAfter": {
+   "id": 345,
+   "firstname": "Public suggestion in window",
+   "lastname": "Owner",
+   "email": "iv-window-f123a373@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "contactsWithEmail": [
+   {
+    "id": 345,
+    "firstname": "Public suggestion in window"
+   }
+  ],
+  "adminOverwritten": true,
+  "dncKept": true
+ },
+ "pendingLeft": 0
+}

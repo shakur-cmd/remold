@@ -1,0 +1,195 @@
+{
+ "run": "a4fd40c3",
+ "capturedAt": "2026-09-26T12:32:15.501Z",
+ "results": [
+  {
+   "mutant": "C0 deployed original (control)",
+   "deploy": "already deployed",
+   "probes": {
+    "conflict": [
+     200,
+     409
+    ],
+    "edgeReadsPending": {
+     "refused": "credential"
+    },
+    "aSettlesB": {
+     "refused": "scope",
+     "bCapture": "j57321mhe3pk39mzzma97hq4gh8f53h4"
+    },
+    "resettle": {
+     "refused": "conflict"
+    },
+    "afterResettleContactId": 1,
+    "junkDirect": {
+     "refused": "invalid"
+    }
+   },
+   "harm": []
+  },
+  {
+   "mutant": "C1 role check removed",
+   "deploy": "deployed",
+   "probes": {
+    "conflict": [
+     200,
+     409
+    ],
+    "edgeReadsPending": {
+     "ok": 1
+    },
+    "aSettlesB": {
+     "refused": "scope",
+     "bCapture": "j57a8xcyw96xbvhc33fw72wss58f57d7"
+    },
+    "resettle": {
+     "refused": "conflict"
+    },
+    "afterResettleContactId": 1,
+    "junkDirect": {
+     "refused": "invalid"
+    }
+   },
+   "harm": [
+    "edge key reads pending captures"
+   ]
+  },
+  {
+   "mutant": "C2 payload conflict removed",
+   "deploy": "deployed",
+   "probes": {
+    "conflict": [
+     200,
+     200
+    ],
+    "edgeReadsPending": {
+     "refused": "credential"
+    },
+    "aSettlesB": {
+     "refused": "scope",
+     "bCapture": "j57ac4a3smzmexht9m6p7v9yrx8f5k8e"
+    },
+    "resettle": {
+     "refused": "conflict"
+    },
+    "afterResettleContactId": 1,
+    "junkDirect": {
+     "refused": "invalid"
+    }
+   },
+   "harm": [
+    "changed values acknowledged"
+   ]
+  },
+  {
+   "mutant": "C3 settle tenant scope removed",
+   "deploy": "deployed",
+   "probes": {
+    "conflict": [
+     200,
+     409
+    ],
+    "edgeReadsPending": {
+     "refused": "credential"
+    },
+    "aSettlesB": {
+     "ok": "settled",
+     "bCapture": "j57adt348hbn9scdbs638g3mf18f4zh1"
+    },
+    "resettle": {
+     "refused": "conflict"
+    },
+    "afterResettleContactId": 1,
+    "junkDirect": {
+     "refused": "invalid"
+    }
+   },
+   "harm": [
+    "tenant A settled a tenant B capture"
+   ]
+  },
+  {
+   "mutant": "C4 settled rows can be re-settled",
+   "deploy": "deployed",
+   "probes": {
+    "conflict": [
+     200,
+     409
+    ],
+    "edgeReadsPending": {
+     "refused": "credential"
+    },
+    "aSettlesB": {
+     "refused": "scope",
+     "bCapture": "j573e8em8jt7be1bfhdw1ka8p98f5ywv"
+    },
+    "resettle": {
+     "ok": "settled"
+    },
+    "afterResettleContactId": 2,
+    "junkDirect": {
+     "refused": "invalid"
+    }
+   },
+   "harm": [
+    "settled capture rewritten"
+   ]
+  },
+  {
+   "mutant": "C5 capture input validation removed",
+   "deploy": "deployed",
+   "probes": {
+    "conflict": [
+     200,
+     409
+    ],
+    "edgeReadsPending": {
+     "refused": "credential"
+    },
+    "aSettlesB": {
+     "refused": "scope",
+     "bCapture": "j57e45aw70b5a6kwj3rf99ys318f5efk"
+    },
+    "resettle": {
+     "refused": "conflict"
+    },
+    "afterResettleContactId": 1,
+    "junkDirect": {
+     "ok": {
+      "duplicate": false,
+      "id": "j579sb0mcqpfzcjk6mj4s8vkrh8f4mcp"
+     }
+    }
+   },
+   "harm": [
+    "invalid capture stored"
+   ]
+  },
+  {
+   "mutant": "restored original",
+   "deploy": "deployed",
+   "probes": {
+    "conflict": [
+     200,
+     409
+    ],
+    "edgeReadsPending": {
+     "refused": "credential"
+    },
+    "aSettlesB": {
+     "refused": "scope",
+     "bCapture": "j5711t8qdax0nyvmef0kr4ha1x8f52dv"
+    },
+    "resettle": {
+     "refused": "conflict"
+    },
+    "afterResettleContactId": 1,
+    "junkDirect": {
+     "refused": "invalid"
+    }
+   },
+   "ok": true,
+   "note": "ok was the last truthy value of an && chain (\"invalid\"); every restored probe matched the control"
+  }
+ ]
+}
