@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P4 durable callback ingestion, local SERVICE/SIM proof</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+  .fail { color: #a00; font-weight: 600; } .pass { color: #070; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>P4 durable callback ingestion, local SERVICE/SIM proof</h1>
+<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion · evidence level: SERVICE/SIM, builder-run · status: awaiting independent verification</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Events for a connected account we have not bound are now refused (HTTP 400), so the provider retries them. The alternative is to accept and park them. Refusing means an account that stays unbound for days will show as failing deliveries on the provider dashboard. I chose refuse; say if you want parking instead.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven (builder run only)</h2>
+<ul>
+  <li>This is a builder-run SERVICE/SIM proof. Nobody independent has checked it yet. Actual provider ingestion (real Stripe deliveries into a durable endpoint) remains open.</li>
+  <li>No Stripe API calls, no sandbox writes, no provider activity. The signing secret is synthetic and random per run. Provider state is an in-process stub. Spent sandbox latches and private journals were not touched.</li>
+  <li>Before: the existing code passed 5 of 6 cases and <span class="fail">failed substitution</span>. It acknowledged events for unbound or missing accounts with 200 and dropped them, and a refused event stopped the reconciliation loop, leaving the receipt stuck.</li>
+  <li>After: <span class="pass">6 of 6 cases pass</span>. Each case produces exactly one durable receipt and one reconciliation, or a refusal, bound to the claimed merchant.</li>
+  <li>Mutations: removing the dedupe key, the signature check, or the account binding each makes at least one case fail.</li>
+  <li>None of the 54 frozen payment source files changed. Typecheck passes.</li>
+</ul>
+</div>
+
+<h2>What was built</h2>
+<p>The existing pieces stay as they were: <code>verifyStripe</code> in <code>webhooks.mjs</code>, the Convex <code>ingest</code>, <code>pendingEvents</code> and <code>ackEvent</code> functions and the <code>payIncoming</code> table, and the account-scoped pull in <code>adapter.mjs</code>. The work added three files around them.</p>
+<table>
+<tr><th>File</th><th>What it does</th></tr>
+<tr><td><code>proofs/payments/callback-ingestion.mjs</code></td><td>Receiver: verify the signature, bind the event to exactly one merchant by its claimed connected account, store the receipt, and only then return 200. It refuses unbound or missing accounts. Drain loop: for each pending receipt, run a fresh account-scoped provider read, then acknowledge. Final refusals are recorded and closed. Transient errors stay pending, and one bad receipt no longer blocks the rest.</td></tr>
+<tr><td><code>proofs/payments/convex/callbackIngestion.ts</code></td><td>Additive. <code>receipts</code> lists a binding's receipts for measurement. <code>refuse</code> closes a refused receipt and writes an attributed <code>payment.callback.refused</code> event. Both check adapter account scope.</td></tr>
+<tr><td><code>proofs/payments/callback-ingestion-replay.mjs</code></td><td>The fixture. It runs an isolated local Convex on ports 3620/3621 in a fresh private copy, a loopback receiver on 3622, two seeded merchants A and B, and the cases below. <code>--all</code> runs the baseline, the after run and three mutants, then writes <code>summary.json</code>.</td></tr>
+</table>
+
+<h2>Before and after</h2>
+<p>Baseline is the existing code composed as <code>sandbox-replay.mjs</code> uses it: the <code>listen()</code> handler body, its route-by-account callback, and a pull followed by an ack for each pending receipt. There was no general drain loop before, so the baseline loop stops at the first error, the way the existing inline code throws.</p>
+<table>
+<tr><th>Case</th><th>Before (baseline)</th><th>After</th></tr>
+<tr><td>Bad signature: wrong secret, tampered body, timestamp 10 minutes old</td><td class="pass">PASS: 400, 400, 400; no receipt</td><td class="pass">PASS: same</td></tr>
+<tr><td>Crash after the durable receipt, before ack and reconciliation; backend restart; provider redelivers</td><td class="pass">PASS: receipt survived restart (1, pending); redelivery 200; 1 receipt, 1 observation, invoice open</td><td class="pass">PASS: same</td></tr>
+<tr><td>Exact replay (same bytes, same header)</td><td class="pass">PASS: 200, still 1 receipt, 0 new observations</td><td class="pass">PASS: same</td></tr>
+<tr><td>Out of order: newer paid event, then an older update arrives late</td><td class="pass">PASS: paid 100 after both, no regression</td><td class="pass">PASS: same</td></tr>
+<tr><td>Substitution: unbound account C; no account; valid event claiming B for A's invoice</td><td class="fail">FAIL: 200, 200, 200. The C and no-account events were acknowledged and dropped. B's receipt stayed stuck: the loop stopped on "unbound provider document"</td><td class="pass">PASS: 400, 400, 200. B's receipt was refused and closed with 1 refusal event on B. A's invoice and observations unchanged</td></tr>
+<tr><td>Tenant B financial state unchanged at all 6 checkpoints</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+</table>
+
+<h2>Mutation evidence</h2>
+<p>Each mutant removes one guard from the real source in a private copy. Each anchor must match exactly once.</p>
+<table>
+<tr><th>Removed</th><th>Where</th><th>Cases that failed</th></tr>
+<tr><td>Dedupe key</td><td><code>convex/payments.ts</code> <code>ingest</code>: the existing-row check</td><td class="fail">crash-and-restart (2 receipts, 2 observations); exact replay (2 receipts)</td></tr>
+<tr><td>Signature check</td><td><code>webhooks.mjs</code> <code>verifyStripe</code>: the HMAC comparison</td><td class="fail">bad signature (wrong secret and tampered body accepted with 200; 2 receipts)</td></tr>
+<tr><td>Account binding</td><td><code>callback-ingestion.mjs</code>: <code>m.account===event.account</code> replaced by always-true</td><td class="fail">substitution (all three accepted and applied to A; 3 foreign receipts under A)</td></tr>
+</table>
+
+<h2>Findings to know about</h2>
+<ul>
+  <li><b>A crash after the ledger write but before the ack</b> is an extra probe, not a required case. It causes one more idempotent provider read after restart. The ledger is unchanged and the receipt drains once, but a second <code>payment.observed</code> audit row is written. This happens both before and after the change. Removing it would need the ack and the ledger write in one transaction.</li>
+  <li><b>The substituted event claiming B</b> leaves one closed receipt and one refusal event on B, because it names B. B's financial export (quotes and documents) never changed.</li>
+  <li><b>The fixture covers one-time invoice events only.</b> Renewal invoices created by the provider (the <code>observeRenewal</code> path) are not routed by this drain and would be refused as unbound.</li>
+  <li><b>Tenant B had no events of its own</b>, so the account mutant was caught by the substitution case, not by the B check.</li>
+</ul>
+
+<h2>What remains open</h2>
+<ul>
+  <li>Independent verification of this slice.</li>
+  <li>Actual provider ingestion: real Stripe deliveries, including Connect events, into a deployed durable endpoint with a real signing secret.</li>
+  <li>Renewal and subscription event routing, and a hosted drain schedule.</li>
+  <li>Full P4, I1/I7 and live financial gates are unchanged by this work.</li>
+</ul>
+
+<h2>How to check it</h2>
+<pre>cd proofs/payments
+pnpm install            # from the repo root, if node_modules is missing
+node callback-ingestion-replay.mjs --all      # baseline, after, 3 mutants; exit 0 only if every expectation holds
+node callback-ingestion-replay.mjs --mode=baseline
+node callback-ingestion-replay.mjs --mode=after
+node callback-ingestion-replay.mjs --mode=after --mutant=dedupe|signature|account
+../../node_modules/.bin/tsc --noEmit -p tsconfig.json</pre>
+<p>Ports 3620, 3621 and 3622 must be free; the script checks this first. Each run creates a fresh private directory under <code>proofs/payments/private/</code> (gitignored), where the backend log is kept.</p>
+
+<h2>Suite log (summary)</h2>
+<pre>baseline/none: expected fail, failed cases [substituted account refused or bound only to the claimed merchant, no effect on A] -> OK
+after/none: expected pass, failed cases [] -> OK
+after/dedupe: expected fail, failed cases [crash between durable receipt and reconciliation, then restart, exact replay produces no second effect] -> OK
+after/signature: expected fail, failed cases [bad signature refused with no durable effect] -> OK
+after/account: expected fail, failed cases [substituted account refused or bound only to the claimed merchant, no effect on A] -> OK
+exit 0</pre>
+
+<h2>Evidence files</h2>
+<table>
+<tr><th>File</th><th>Content</th></tr>
+<tr><td><code>baseline-first.json</code></td><td>First baseline capture, taken before the after run</td></tr>
+<tr><td><code>after-first.txt</code></td><td>First after run console output</td></tr>
+<tr><td><code>suite.txt</code>, <code>summary.json</code></td><td>Full <code>--all</code> run log and expectations</td></tr>
+<tr><td><code>baseline.json</code>, <code>after.json</code>, <code>mutant-*.json</code></td><td>Per-run deliveries, HTTP statuses, drain outcomes, case details, provider read counts by account</td></tr>
+<tr><td><code>typecheck.txt</code>, <code>frozen-source-check.txt</code></td><td>Typecheck exit 0; 54 frozen files, 0 changed</td></tr>
+</table>
+<p>Source SHA256: <code>callback-ingestion.mjs</code> 5fa4b98dd870b8f89d542f3c14a368633f50ef5b5ec69ac84a9c218092d1a17a, <code>callback-ingestion-replay.mjs</code> 015f72b0bc21c8ced1976d92319c4dc5f2a355271a5f116791e7320dae4dc1aa, <code>convex/callbackIngestion.ts</code> 032db4a20f420127066c8e732c561db25e699acbc5b5a974ff3298bdd6aadc17.</p>
+</body>
+</html>
