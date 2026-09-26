@@ -1,0 +1,114 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv
+
+stdout | convex/alerts.iv.test.ts > channel rule: which URLs are accepted
+IV channel table {
+ "https://hooks.example.com/x": "https://hooks.example.com/x",
+ "http://127.0.0.1:9/x": "http://127.0.0.1:9/x",
+ "http://localhost:9/x": "http://localhost:9/x",
+ "http://127.1:9/x": "http://127.0.0.1:9/x",
+ "http://2130706433:9/x": "http://127.0.0.1:9/x",
+ "http://user:pw@127.0.0.1:9/x": "http://user:pw@127.0.0.1:9/x",
+ "http://localhost.:9/x": null,
+ "http://[::1]:9/x": null,
+ "http://0.0.0.0:9/x": null,
+ "http://127.0.0.1.nip.io/x": null,
+ "http://localhost.evil.test/x": null,
+ "http://127.0.0.1@evil.test/x": null,
+ "http://evil.test#@127.0.0.1/x": null,
+ "https://169.254.169.254/latest": "https://169.254.169.254/latest",
+ "https://10.0.0.1/x": "https://10.0.0.1/x",
+ "ftp://127.0.0.1/x": null,
+ "file:///etc/passwd": null,
+ "javascript:alert(1)": null,
+ "": null,
+ "not a url": null
+}
+
+stderr | convex/alerts.iv.test.ts > flapping fault: every open and every resolve queues a notice, with no hysteresis
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/convex/telemetry.ts:16:228)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithGlobalOverrides (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+
+stderr | convex/alerts.iv.test.ts > flapping fault: every open and every resolve queues a notice, with no hysteresis
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/convex/telemetry.ts:16:228)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithGlobalOverrides (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+
+stderr | convex/alerts.iv.test.ts > flapping fault: every open and every resolve queues a notice, with no hysteresis
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/convex/telemetry.ts:16:228)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithGlobalOverrides (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+
+stderr | convex/alerts.iv.test.ts > flapping fault: every open and every resolve queues a notice, with no hysteresis
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/convex/telemetry.ts:16:228)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithGlobalOverrides (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+
+stderr | convex/alerts.iv.test.ts > flapping fault: every open and every resolve queues a notice, with no hysteresis
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/convex/telemetry.ts:16:228)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithGlobalOverrides (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+
+stdout | convex/alerts.iv.test.ts > DEFECT (low): a slow sink lets an overlapping check resend a notice after the 60s claim lapses
+IV slow-sink sends [
+  '0000000000000000010002opsNotices',
+  '0000000000000000010002opsNotices',
+  '0000000000000000010003opsNotices',
+  '0000000000000000010003opsNotices'
+]
+
+ ✓ convex/alerts.iv.test.ts > channel rule: which URLs are accepted 2ms
+ ✓ convex/alerts.iv.test.ts > fetch follows redirects by default, so the loopback-only rule does not bind the final destination 19ms
+ ✓ convex/alerts.iv.test.ts > concurrent evaluations never create a second alert row or a second open notice 3ms
+ ✓ convex/alerts.iv.test.ts > flapping fault: every open and every resolve queues a notice, with no hysteresis 9ms
+ ✓ convex/alerts.iv.test.ts > undelivered notices with no channel are kept 7 days and then deleted (bounded by age, not count) 1ms
+ ✓ convex/alerts.iv.test.ts > DEFECT: a stall still pending past the 60 minute lookback is reported as resolved 1ms
+ ✓ convex/alerts.iv.test.ts > DEFECT (latent): a job scheduled more than ~45 minutes ahead is never seen as stalled 0ms
+ ✓ convex/alerts.iv.test.ts > DEFECT (low): a slow sink lets an overlapping check resend a notice after the 60s claim lapses 2ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  10:05:31
+   Duration  166ms (transform 49%, tests 33%, import 16%, worker 1%)
+

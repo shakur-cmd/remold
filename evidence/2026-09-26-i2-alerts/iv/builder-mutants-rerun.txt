@@ -1,0 +1,16 @@
+$ node ops/telemetry/alerts-mutants.mjs
+KILLED  scrub: error text forwarded (1 failing tests)
+KILLED  scrub: arguments forwarded (3 failing tests)
+KILLED  dedupe: open alert re-notifies (5 failing tests)
+KILLED  trigger: background failure ignored (2 failing tests)
+KILLED  trigger: caught REST 500 ignored (4 failing tests)
+KILLED  trigger: 503 migration pause alerts (1 failing tests)
+KILLED  trigger: stall ignored (2 failing tests)
+KILLED  trigger: truncated scan silent (1 failing tests)
+KILLED  resolve: background never recovers on success (1 failing tests)
+KILLED  resolve: alerts never resolve (3 failing tests)
+KILLED  delivery: overlapping checks both send (1 failing tests)
+KILLED  delivery: failed send marked delivered (1 failing tests)
+KILLED  channel: non-loopback plain HTTP accepted (1 failing tests)
+{"mutants":13,"killed":13,"restoredSourceGreen":true}
+exit 0

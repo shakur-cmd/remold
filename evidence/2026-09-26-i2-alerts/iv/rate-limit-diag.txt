@@ -1,0 +1,5 @@
+IV diagnostic copy of ops/rehearsal/rate-limit.mjs (scripts/iv-rate-limit-diag.mjs; prints statuses, no evidence write).
+a173192 (IV worktree):          {"elapsedMs":198,"allowed":0,"limited":0,"statuses":"503 x50"}  -> AssertionError: Concurrent writes exceeded token budget
+d66eb0b + local-core.mjs fix:   {"elapsedMs":201,"allowed":0,"limited":0,"statuses":"503 x50"}  -> same assertion
+convex/http.ts:13 maps AUTHORITY_MIGRATING to 503. The rate fixture seeds pre-I1 data with no authority migration state, so every write is paused.
+Pre-existing since I1; not caused by the alert slice.

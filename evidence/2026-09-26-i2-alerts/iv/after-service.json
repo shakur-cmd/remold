@@ -1,0 +1,255 @@
+{
+  "status": "PASS",
+  "level": "SERVICE disposable local Convex, synthetic faults, local HTTP sink (not the owner channel)",
+  "steps": {
+    "background": {
+      "deliveredByCronAfterMs": 41046,
+      "open": [
+        {
+          "id": "nd7asp30s4pqbn3r61sm8wkzds8f4703",
+          "at": "2026-09-26T14:07:23.017Z",
+          "count": 1,
+          "event": "open",
+          "key": "background-error:alertFixture:job",
+          "kind": "background-error",
+          "source": "remold",
+          "summary": "Background function alertFixture:job is failing (1 seen)."
+        }
+      ]
+    },
+    "rest": {
+      "open": [
+        {
+          "id": "nd79tnxny6kyffsgyr88qv8d4h8f40aw",
+          "at": "2026-09-26T14:07:24.216Z",
+          "count": 1,
+          "event": "open",
+          "key": "rest-500",
+          "kind": "rest-500",
+          "source": "remold",
+          "summary": "REST API is returning internal errors (500) (1 seen)."
+        }
+      ]
+    },
+    "stalled": {
+      "open": [
+        {
+          "id": "nd7bef0y5470ppjx56g1c9h7bh8f5kfq",
+          "at": "2026-09-26T14:07:30.057Z",
+          "count": 1,
+          "event": "open",
+          "key": "stalled:alertFixture:slow",
+          "kind": "stalled",
+          "source": "remold",
+          "summary": "Scheduled function alertFixture:slow is stalled (1 seen)."
+        }
+      ]
+    }
+  },
+  "earlyResolves": [
+    "background-error",
+    "stalled"
+  ],
+  "resolves": [
+    {
+      "id": "nd7bf6wn34bbn3ygm5e6nc5pc58f560n",
+      "at": "2026-09-26T14:07:52.446Z",
+      "count": 2,
+      "event": "resolve",
+      "key": "background-error:alertFixture:job",
+      "kind": "background-error",
+      "source": "remold",
+      "summary": "Resolved: Background function alertFixture:job was failing."
+    },
+    {
+      "id": "nd78ytvs6x4n8d5g4nhgf8sqth8f58sj",
+      "at": "2026-09-26T14:07:52.446Z",
+      "count": 1,
+      "event": "resolve",
+      "key": "stalled:alertFixture:slow",
+      "kind": "stalled",
+      "source": "remold",
+      "summary": "Resolved: Scheduled function alertFixture:slow was stalled."
+    },
+    {
+      "id": "nd7ccqm7sb5sxpbxgy5f8kbprh8f5yym",
+      "at": "2026-09-26T14:09:00.421Z",
+      "count": 2,
+      "event": "resolve",
+      "key": "rest-500",
+      "kind": "rest-500",
+      "source": "remold",
+      "summary": "Resolved: REST API was returning internal errors (500)."
+    }
+  ],
+  "finalStatus": {
+    "channel": "configured",
+    "open": [],
+    "undelivered": 0
+  },
+  "deliveredCount": 6,
+  "forbiddenChecked": [
+    "private.person@example.invalid",
+    "sk_live_synthetic_must_not_leave_0123456789",
+    "must-not-persist",
+    "Synthetic background failure",
+    "Synthetic REST failure",
+    "private=",
+    "Bearer",
+    "example.invalid"
+  ],
+  "leaks": [],
+  "checks": [
+    {
+      "started": 1790431643629,
+      "ended": 1790431643836,
+      "channel": "configured",
+      "delivered": 0,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431643836,
+      "ended": 1790431644030,
+      "channel": "configured",
+      "delivered": 0,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431644044,
+      "ended": 1790431644244,
+      "channel": "configured",
+      "delivered": 1,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431644444,
+      "ended": 1790431644648,
+      "channel": "configured",
+      "delivered": 0,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431649848,
+      "ended": 1790431650090,
+      "channel": "configured",
+      "delivered": 1,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431650090,
+      "ended": 1790431650287,
+      "channel": "configured",
+      "delivered": 0,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431672271,
+      "ended": 1790431672481,
+      "channel": "configured",
+      "delivered": 2,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431740184,
+      "ended": 1790431740455,
+      "channel": "configured",
+      "delivered": 1,
+      "undelivered": 0
+    },
+    {
+      "started": 1790431740455,
+      "ended": 1790431740656,
+      "channel": "configured",
+      "delivered": 0,
+      "undelivered": 0
+    }
+  ],
+  "sink": [
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nd7asp30s4pqbn3r61sm8wkzds8f4703",
+        "at": "2026-09-26T14:07:23.017Z",
+        "count": 1,
+        "event": "open",
+        "key": "background-error:alertFixture:job",
+        "kind": "background-error",
+        "source": "remold",
+        "summary": "Background function alertFixture:job is failing (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nd79tnxny6kyffsgyr88qv8d4h8f40aw",
+        "at": "2026-09-26T14:07:24.216Z",
+        "count": 1,
+        "event": "open",
+        "key": "rest-500",
+        "kind": "rest-500",
+        "source": "remold",
+        "summary": "REST API is returning internal errors (500) (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nd7bef0y5470ppjx56g1c9h7bh8f5kfq",
+        "at": "2026-09-26T14:07:30.057Z",
+        "count": 1,
+        "event": "open",
+        "key": "stalled:alertFixture:slow",
+        "kind": "stalled",
+        "source": "remold",
+        "summary": "Scheduled function alertFixture:slow is stalled (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nd7bf6wn34bbn3ygm5e6nc5pc58f560n",
+        "at": "2026-09-26T14:07:52.446Z",
+        "count": 2,
+        "event": "resolve",
+        "key": "background-error:alertFixture:job",
+        "kind": "background-error",
+        "source": "remold",
+        "summary": "Resolved: Background function alertFixture:job was failing."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nd78ytvs6x4n8d5g4nhgf8sqth8f58sj",
+        "at": "2026-09-26T14:07:52.446Z",
+        "count": 1,
+        "event": "resolve",
+        "key": "stalled:alertFixture:slow",
+        "kind": "stalled",
+        "source": "remold",
+        "summary": "Resolved: Scheduled function alertFixture:slow was stalled."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nd7ccqm7sb5sxpbxgy5f8kbprh8f5yym",
+        "at": "2026-09-26T14:09:00.421Z",
+        "count": 2,
+        "event": "resolve",
+        "key": "rest-500",
+        "kind": "rest-500",
+        "source": "remold",
+        "summary": "Resolved: REST API was returning internal errors (500)."
+      }
+    }
+  ],
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-f5T5fE"
+}
