@@ -1,0 +1,215 @@
+[
+  {
+    "id": "R1 shape: Object.hasOwn back to `in`",
+    "file": "convex/lib/shape.ts",
+    "diff": [
+      "-      if (Object.keys(record).some(key => !Object.hasOwn(fields, key))) return false;",
+      "+      if (Object.keys(record).some(key => !(key in fields))) return false;"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × refuses extra body keys even when they share a name with an Object.prototype member 6ms |  FAIL  ops/authority/shape.test.ts > refuses extra body keys even when they share a name with an Object.prototype member | AssertionError: constructor: expected [] to be null"
+  },
+  {
+    "id": "R2 helper: stop after limit rows scanned",
+    "file": "convex/authority/reads.ts",
+    "diff": [
+      "-  for await (const row of rows) { const kept = await keep(row); if (kept) out.push(kept); if (out.length >= limit || ++scanned >= scanCap) break; }",
+      "+  for await (const row of rows) { const kept = await keep(row); if (kept) out.push(kept); if (++scanned >= limit) break; }"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 151ms |    × name matching still finds a readable record when many unreadable near-matches outrank it 19ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing | AssertionError: expected { text: [], textInObject: [], …(3) } to deeply equal { text: ["
+  },
+  {
+    "id": "R2 helper: drop the scan cap entirely (widening reads, not a leak)",
+    "file": "convex/authority/reads.ts",
+    "diff": [
+      "-  for await (const row of rows) { const kept = await keep(row); if (kept) out.push(kept); if (out.length >= limit || ++scanned >= scanCap) break; }",
+      "+  for await (const row of rows) { const kept = await keep(row); if (kept) out.push(kept); if (out.length >= limit) break; }"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R3 events.forRecord: drop the read check",
+    "file": "convex/events.ts",
+    "diff": [
+      "-  if (!record || !object || !canReadRecord(principal, object, record)) fail(\"NOT_FOUND\", \"Record not found\");",
+      "+  if (!record || !object) fail(\"NOT_FOUND\", \"Record not found\");"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × a record ID the member cannot read gets the same answer as a deleted record 22ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record | AssertionError: expected { ok: true, value: [] } to deeply equal { ok: false, error: { …(2) } }"
+  },
+  {
+    "id": "R3 records.related: drop the target read check",
+    "file": "convex/records.ts",
+    "diff": [
+      "-  if (!target || !targetObject || !canReadRecord(principal, targetObject, target) || !field || field.orgId !== args.orgId) fail(\"NOT_FOUND\", \"Record or field not found\");",
+      "+  if (!target || !targetObject || !field || field.orgId !== args.orgId) fail(\"NOT_FOUND\", \"Record or field not found\");"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × a record ID the member cannot read gets the same answer as a deleted record 30ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record | AssertionError: expected { ok: true, value: { …(5) } } to deeply equal { ok: false, error: { …(2) } }"
+  },
+  {
+    "id": "R4 floor: drop the ancestry clause",
+    "file": "ops/release/release.mjs",
+    "diff": [
+      "-  return spawnSync('git', ['merge-base', '--is-ancestor', floorSha, targetSha], { cwd }).status === 0",
+      "-    && AUTHORITY_CORE.every(path => spawnSync('git', ['cat-file', '-e', `${targetSha}:${path}`], { cwd }).status === 0);",
+      "+  return AUTHORITY_CORE.every(path => spawnSync('git', ['cat-file', '-e', `${targetSha}:${path}`], { cwd }).status === 0);"
+    ],
+    "result": "CAUGHT by release",
+    "detail": "✔ preflight refuses a receipt for any snapshot other than the expected backup (46.436375ms) | ✖ after the I1 freeze, rollback to code that predates I1 authority is refused (308.928917ms) | ✖ failing tests: | ✖ after the I1 freeze, rollback to code that predates I1 authority is refused (308.928917ms)"
+  },
+  {
+    "id": "D6 guard: ignore the own check in the map test",
+    "file": "ops/authority/h0-parity.test.ts",
+    "diff": [
+      "-    if (!own.test(covered)) gaps.push(`${row.h0}: no mapped test does its own check /${row.exercises}/`);",
+      "+    if (false) gaps.push(`${row.h0}: no mapped test does its own check /${row.exercises}/`);"
+    ],
+    "result": "MISSED (unit green)",
+    "detail": ""
+  },
+  {
+    "id": "D6 guard: MAX_SHARED 6 -> 60",
+    "file": "ops/authority/h0-parity.test.ts",
+    "diff": [
+      "-const MAX_SHARED = 6;",
+      "+const MAX_SHARED = 60;"
+    ],
+    "result": "MISSED (unit green)",
+    "detail": ""
+  },
+  {
+    "id": "D6 data: row 12 own check replaced by row 10 pattern",
+    "file": "ops/authority/h0-parity.json",
+    "diff": [
+      "-    \"exercises\": \"Per-run budget\",",
+      "+    \"exercises\": \"Unresolved usage\","
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × every frozen H0 replay group maps to production tests that exercise its operations 22ms |  FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations | AssertionError: expected [ Array(1) ] to deeply equal []"
+  },
+  {
+    "id": "D6 data: row 38 own check swapped for generic \"assert\\.equal\"",
+    "file": "ops/authority/h0-parity.json",
+    "diff": [
+      "-    \"exercises\": \"second\\\\.maxUnits, 3\",",
+      "+    \"exercises\": \"assert\\\\.equal\","
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × every frozen H0 replay group maps to production tests that exercise its operations 19ms |    × no single production test can stand in for more than five groups 221ms |  FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations | AssertionError: expected [ Array(1) ] to deeply equal []"
+  },
+  {
+    "id": "R2 site take-then-filter: records.search",
+    "file": "convex/records.ts",
+    "diff": [
+      "-  return records ? firstVisible(records, limit, async (record) => {",
+      "+  return records ? firstVisible(await (records).take(limit), limit, async (record) => {"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 40ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing | AssertionError: expected { text: [], textInObject: [], …(3) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }"
+  },
+  {
+    "id": "R2 site take-then-filter: agent search",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const search = internalQuery({ args: { keyHash, q: v.string(), object: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHa",
+      "+export const search = internalQuery({ args: { keyHash, q: v.string(), object: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHa"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 72ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing | AssertionError: expected { text: [ 'Alpha Mine' ], …(4) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }"
+  },
+  {
+    "id": "R2 site take-then-filter: agent related links",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, pr",
+      "+export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, pr"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent related lookup",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), now = new Date(), midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMont",
+      "+export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), now = new Date(), midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMont"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent today tasks",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const listSuggestions = internalQuery({ args: { keyHash, status: v.optional(status) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"suggestions\").w",
+      "+export const listSuggestions = internalQuery({ args: { keyHash, status: v.optional(status) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"suggestions\").w"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent today quiet",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const inbox = internalQuery({ args: { keyHash, status: v.optional(inboxStatus) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"agentInbox\").withInd",
+      "+export const inbox = internalQuery({ args: { keyHash, status: v.optional(inboxStatus) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"agentInbox\").withInd"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent listSuggestions",
+    "result": "NOT APPLIED: no call 5"
+  },
+  {
+    "id": "R2 site take-then-filter: agent inbox",
+    "result": "NOT APPLIED: no call 6"
+  },
+  {
+    "id": "R2 site take-then-filter: inbox.list",
+    "file": "convex/inbox.ts",
+    "diff": [
+      "-  return firstVisible(rows, 100, row => visibleInbox(ctx, principal, row));",
+      "+  return firstVisible(await (rows).take(100), 100, row => visibleInbox(ctx, principal, row));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: suggestions.list",
+    "file": "convex/suggestions.ts",
+    "diff": [
+      "-  return firstVisible(rows, 200, (suggestion) => row(ctx, principal, suggestion));",
+      "+  return firstVisible(await (rows).take(200), 200, (suggestion) => row(ctx, principal, suggestion));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: today tasks",
+    "file": "convex/today.ts",
+    "diff": [
+      "-    quiet.push(...await firstVisible(rows, 20, row => {",
+      "+    quiet.push(...await firstVisible(await (rows).take(20), 20, row => {"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: today quiet",
+    "result": "NOT APPLIED: no call 1"
+  },
+  {
+    "id": "R2 site take-then-filter: findReadableByTitle",
+    "file": "convex/lib/find.ts",
+    "diff": [
+      "-  const readable = await firstVisible(hits, 20, (record) => canReadRecord(principal, object, record) ? record : null);",
+      "+  const readable = await firstVisible(await (hits).take(20), 20, (record) => canReadRecord(principal, object, record) ? record : null);"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × name matching still finds a readable record when many unreadable near-matches outrank it 52ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches outrank it | AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true, value: { …(2) } }"
+  }
+]

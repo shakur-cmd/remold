@@ -1,0 +1,122 @@
+FAIL R3-P1 records.list (member, recent-first, 5 per page): adding unreadable rows does not change what the member sees 
+    short pages reveal unreadable rows: {"before":[{"n":1,"done":true}],"after":[{"n":0,"done":false},{"n":1,"done":true}],"inferredHidden":5}
++ actual - expected
+
+  [
+    {
++     done: false,
++     n: 0
++   },
++   {
+      done: true,
+      n: 1
+    }
+  ]
+
+FAIL R3-P2 records.list filtered on amount (member, 1 per page): a value held only by unreadable deals looks the same as a value nobody holds 
+    value oracle: {"hiddenValue":[{"n":0,"done":false},{"n":0,"done":false},{"n":0,"done":false},{"n":0,"done":true}],"missingValue":[{"n":0,"done":true}],"beforeHiddenAdded":[{"n":0,"done":true}],"pagesCountHiddenDeals":3}
++ actual - expected
+
+  [
+    {
++     done: false,
++     n: 0
++   },
++   {
++     done: false,
++     n: 0
++   },
++   {
++     done: false,
++     n: 0
++   },
++   {
+      done: true,
+      n: 0
+    }
+  ]
+
+FAIL R3-P3 Agent REST /records filtered on amount (limit 1): hidden value vs missing value give the same body 
+    value oracle: {"hiddenValue":{"status":200,"records":0,"cursor":"present"},"missingValue":{"status":200,"records":0,"cursor":null},"before":{"records":0,"cursor":null},"followUpPagesForHiddenValue":3}
++ actual - expected
+
+  {
++   cursor: 'present',
+-   cursor: null,
+    records: 0,
+    status: 200
+  }
+
+FAIL R3-P4 records.related (member, lookup opportunity.company -> readable Acme, 5 per page): unreadable linked deals do not change the pages 
+    short pages reveal unreadable linked rows: {"before":[{"n":1,"done":true}],"after":[{"n":1,"done":false},{"n":0,"done":true}],"agentRelatedCount":1}
++ actual - expected
+
+  [
+    {
++     done: false,
+-     done: true,
+      n: 1
+    },
++   {
++     done: true,
++     n: 0
++   }
+  ]
+
+FAIL R3-P5 events.forOrg (member, first page of 5): events of unreadable records do not change the page 
+    short page reveals hidden activity: {"beforeLen":2,"afterLen":0,"afterDone":false}
+
+0 !== 2
+
+PASS R3-P7 Pagination cursors are opaque: a cursor that ends on an unreadable row does not contain its id, amount or title
+FAIL R3-P6 CSV exportPage (member, 200 raw rows per page): unreadable rows do not change rows/done 
+    export pages reveal hidden row count to within 200: {"before":[{"rows":1,"done":true}],"after":[{"rows":1,"done":false},{"rows":0,"done":false},{"rows":0,"done":false},{"rows":0,"done":false},{"rows":0,"done":false},{"rows":0,"done":true}]}
++ actual - expected
+
+  [
+    {
++     done: false,
+-     done: true,
+      rows: 1
+    },
++   {
++     done: false,
++     rows: 0
++   },
++   {
++     done: false,
++     rows: 0
++   },
++   {
++     done: false,
++     rows: 0
++   },
++   {
++     done: false,
++     rows: 0
++   },
++   {
++     done: true,
++     rows: 0
++   }
+  ]
+
+FAIL R3-F1 firstVisible scan cap: the member/agent recent-first search result does not depend on whether 999 or 1000 unreadable rows are newer than their own 
+    cap oracle: {"with999Hidden":{"member":["Mine Deal"],"agent":["Mine Deal"]},"with1000Hidden":{"member":[],"agent":[]}}
++ actual - expected
+
+  {
++   agent: [],
++   member: []
+-   agent: [
+-     'Mine Deal'
+-   ],
+-   member: [
+-     'Mine Deal'
+-   ]
+  }
+
+PASS R3-F2 Timing: recent-first search (limit 1) returns the same single row in about the same time with 0 and 999 unreadable newer rows (median of 21, <5 ms and <2x)
+PASS R3-F3 Text search over many unreadable matches (agent, no object filter, and member) returns normally, never a platform-limit error that only unreadable rows could cause
+R3 SUMMARY 3 PASS / 7 FAIL
+exit 0

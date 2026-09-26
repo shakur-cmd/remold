@@ -1,0 +1,25 @@
+CAUGHT R1 shape: Object.hasOwn back to `in` <- unit:    × refuses extra body keys even when they share a name with an Object.prototype member 6ms |  FAIL  ops/authority/shape.test.ts > refuses extra body keys even when they share a name with an Object.p
+CAUGHT R2 helper: stop after limit rows scanned <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 151ms |    × name matching still finds a readable record when many unreadable near-matches outrank it 19ms |  FAIL  
+MISSED R2 helper: drop the scan cap entirely (widening reads, not a leak) 
+CAUGHT R3 events.forRecord: drop the read check <- unit:    × a record ID the member cannot read gets the same answer as a deleted record 22ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted reco
+CAUGHT R3 records.related: drop the target read check <- unit:    × a record ID the member cannot read gets the same answer as a deleted record 30ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted reco
+CAUGHT R4 floor: drop the ancestry clause <- release: ✔ preflight refuses a receipt for any snapshot other than the expected backup (46.436375ms) | ✖ after the I1 freeze, rollback to code that predates I1 authority is refused (308.928917ms) | ✖ failing t
+MISSED D6 guard: ignore the own check in the map test 
+MISSED D6 guard: MAX_SHARED 6 -> 60 
+CAUGHT D6 data: row 12 own check replaced by row 10 pattern <- unit:    × every frozen H0 replay group maps to production tests that exercise its operations 22ms |  FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exerc
+CAUGHT D6 data: row 38 own check swapped for generic "assert\.equal" <- unit:    × every frozen H0 replay group maps to production tests that exercise its operations 19ms |    × no single production test can stand in for more than five groups 221ms |  FAIL  ops/authority/h0-par
+CAUGHT R2 site take-then-filter: records.search <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 40ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change
+CAUGHT R2 site take-then-filter: agent search <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 72ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change
+MISSED R2 site take-then-filter: agent related links 
+MISSED R2 site take-then-filter: agent related lookup 
+MISSED R2 site take-then-filter: agent today tasks 
+MISSED R2 site take-then-filter: agent today quiet 
+NOT APPLIED R2 site take-then-filter: agent listSuggestions no call 5
+NOT APPLIED R2 site take-then-filter: agent inbox no call 6
+MISSED R2 site take-then-filter: inbox.list 
+MISSED R2 site take-then-filter: suggestions.list 
+MISSED R2 site take-then-filter: today tasks 
+NOT APPLIED R2 site take-then-filter: today quiet no call 1
+CAUGHT R2 site take-then-filter: findReadableByTitle <- unit:    × name matching still finds a readable record when many unreadable near-matches outrank it 52ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unread
+clean tree after breaks: M ops/authority/local.mjs
+?? ops/authority/fixture-iv.ts

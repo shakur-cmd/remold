@@ -1,0 +1,132 @@
+[
+  {
+    "id": "R2 site take-then-filter: records.search",
+    "file": "convex/records.ts",
+    "diff": [
+      "-  return records ? firstVisible(records, limit, async (record) => {",
+      "+  return records ? firstVisible(await (records).take(limit), limit, async (record) => {"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 44ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing | AssertionError: expected { text: [], textInObject: [], …(3) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }"
+  },
+  {
+    "id": "R2 site take-then-filter: agent search",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const search = internalQuery({ args: { keyHash, q: v.string(), object: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHa",
+      "+export const search = internalQuery({ args: { keyHash, q: v.string(), object: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHa"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × search fills its limit with readable matches, so hidden matches change nothing 40ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing | AssertionError: expected { text: [ 'Alpha Mine' ], …(4) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }"
+  },
+  {
+    "id": "R2 site take-then-filter: agent related links",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, pr",
+      "+export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, pr"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent related lookup",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, pr",
+      "+export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, pr"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent today tasks",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), now = new Date(), midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMont",
+      "+export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), now = new Date(), midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMont"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent today quiet",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), now = new Date(), midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMont",
+      "+export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), now = new Date(), midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMont"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent listSuggestions",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const listSuggestions = internalQuery({ args: { keyHash, status: v.optional(status) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"suggestions\").w",
+      "+export const listSuggestions = internalQuery({ args: { keyHash, status: v.optional(status) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"suggestions\").w"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: agent inbox",
+    "file": "convex/agentApi.ts",
+    "diff": [
+      "-export const inbox = internalQuery({ args: { keyHash, status: v.optional(inboxStatus) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"agentInbox\").withInd",
+      "+export const inbox = internalQuery({ args: { keyHash, status: v.optional(inboxStatus) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), rows = ctx.db.query(\"agentInbox\").withInd"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: inbox.list",
+    "file": "convex/inbox.ts",
+    "diff": [
+      "-  return firstVisible(rows, 100, row => visibleInbox(ctx, principal, row));",
+      "+  return firstVisible(await (rows).take(100), 100, row => visibleInbox(ctx, principal, row));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: suggestions.list",
+    "file": "convex/suggestions.ts",
+    "diff": [
+      "-  return firstVisible(rows, 200, (suggestion) => row(ctx, principal, suggestion));",
+      "+  return firstVisible(await (rows).take(200), 200, (suggestion) => row(ctx, principal, suggestion));"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: today tasks",
+    "file": "convex/today.ts",
+    "diff": [
+      "-    tasks.push(...await firstVisible<Doc<\"records\">, Doc<\"records\">>(rows, 50, row => canReadRecord(principal, task.object, row) && canReadField(principal, task.object, due, row._id) && (!done || (canReadField(principal",
+      "+    tasks.push(...await firstVisible<Doc<\"records\">, Doc<\"records\">>(await (rows).take(50), 50, row => canReadRecord(principal, task.object, row) && canReadField(principal, task.object, due, row._id) && (!done || (canRe"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: today quiet",
+    "file": "convex/today.ts",
+    "diff": [
+      "-    quiet.push(...await firstVisible(rows, 20, row => {",
+      "+    quiet.push(...await firstVisible(await (rows).take(20), 20, row => {"
+    ],
+    "result": "MISSED (unit+app green)",
+    "detail": ""
+  },
+  {
+    "id": "R2 site take-then-filter: findReadableByTitle",
+    "file": "convex/lib/find.ts",
+    "diff": [
+      "-  const readable = await firstVisible(hits, 20, (record) => canReadRecord(principal, object, record) ? record : null);",
+      "+  const readable = await firstVisible(await (hits).take(20), 20, (record) => canReadRecord(principal, object, record) ? record : null);"
+    ],
+    "result": "CAUGHT by unit",
+    "detail": "   × name matching still finds a readable record when many unreadable near-matches outrank it 46ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches outrank it | AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true, value: { …(2) } }"
+  }
+]

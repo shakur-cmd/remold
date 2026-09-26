@@ -1,0 +1,15 @@
+CAUGHT R2 site take-then-filter: records.search <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 44ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change
+CAUGHT R2 site take-then-filter: agent search <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 40ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change
+MISSED R2 site take-then-filter: agent related links 
+MISSED R2 site take-then-filter: agent related lookup 
+MISSED R2 site take-then-filter: agent today tasks 
+MISSED R2 site take-then-filter: agent today quiet 
+MISSED R2 site take-then-filter: agent listSuggestions 
+MISSED R2 site take-then-filter: agent inbox 
+MISSED R2 site take-then-filter: inbox.list 
+MISSED R2 site take-then-filter: suggestions.list 
+MISSED R2 site take-then-filter: today tasks 
+MISSED R2 site take-then-filter: today quiet 
+CAUGHT R2 site take-then-filter: findReadableByTitle <- unit:    × name matching still finds a readable record when many unreadable near-matches outrank it 46ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unread
+clean tree after breaks: M ops/authority/local.mjs
+?? ops/authority/fixture-iv.ts

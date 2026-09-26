@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I1 independent verification, round 3: revise</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>I1 independent verification, round 3: revise</h1>
+<div class="meta">2026-09-26 · target: <code>wip/i1-authority</code> at <code>babeb42</code> (builder revision 2) · verifier: fresh Opus 5.5, own worktree, not the builder · level: SERVICE on an isolated local Convex (127.0.0.1:3560/3561), synthetic JWTs and data, no providers, spend or sends · status: verdict REVISE, not certified</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Paginated lists leak more than a count.</b> The builder offered "accept short pages as a count-only leak". On a real backend a member who can read one deal can count how many unreadable deals have an exact amount (or stage). That is a hidden-value oracle. I recommend fixing it before certification: serve record-scoped callers from their explicit record list. Accept or fix?</li>
+  <li><b>Rollback floor pin.</b> A squash merge of I1 makes every later rollback target refused (fail closed, confirmed). Pick one: merge I1 with a merge commit (recommended, no code change), or update the pin at merge time.</li>
+  <li><b>How low should the floor sit?</b> It accepts any commit from 7299ee9 on, including d2c8744, whose record-scope oracles round 1 found. Keep "not pre-I1" (the recorded decision) or raise the pin to the certified I1 commit once there is one.</li>
+  <li><b>Timing and the 1000-row scan cap.</b> The revision-2 search fix introduced a timing signal and a 1000-row cliff (below). Both are small and go away with the same fix as the first item. Accept as low residuals, or fold them into that fix.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Reproduced the builder's local checks on babeb42: typecheck passes, app tests 73/73, authority unit tests 71/71, release tests 18/18, build passes, MCP build plus 2/2, builder SERVICE replay 64/64, migration replay PASS.</li>
+  <li>Round-1 suite <code>iv-service.mjs</code> 24/24 and round-2 suite <code>iv-r2.mjs</code> 14/14, both copied from 8f9e362. Open subscription drops a newly hidden field in 12.8 ms and a newly out-of-scope record in 10.7 ms (target 2 s).</li>
+  <li>All four round-2 defects are closed. R1: five more prototype names (<code>__defineGetter__</code>, <code>__lookupSetter__</code>, <code>isPrototypeOf</code>, <code>propertyIsEnumerable</code>, <code>toLocaleString</code>) on 5 routes gave 25/25 refusals, with no body and no key hash in the backend log. R2: the same-rank search oracle is gone. R3: unreadable and deleted IDs give the same answer. R4: stubs on pre-I1 code and tree SHAs are now refused.</li>
+  <li>Round-3 attack suite <code>iv-r3.mjs</code>: 3 PASS, 7 FAIL. The failures are paginated short pages (5 surfaces), the 1000-row scan cap, and a timing signal measured on uncached calls.</li>
+  <li>Deliberate breaks: every revision-2 fix fails a test when broken (R1, R2 helper, R3 events, R3 related, R4, and 2/2 bad D6 map rows). Only 3 of the 13 <code>firstVisible</code> call sites have their own test. Reverting any of the other 10 keeps every suite green.</li>
+  <li>D6 own-check audit of all 43 rows: 21 right, 19 weak, 3 wrong (rows 5, 8, 38).</li>
+</ul>
+</div>
+
+<h2>Verdict per I1 check (docs/unified-launch/jobs.json)</h2>
+<table>
+<tr><th>#</th><th>Check</th><th>Verdict</th><th>Why</th></tr>
+<tr><td>1</td><td>All H0 adversarial cases pass on production</td><td>PASS with mapping gaps</td><td>Builder SERVICE 64/64 reproduced. The H0 map guard holds against generic or borrowed patterns, but 3 own checks point at the wrong assertion (rows 5, 8, 38) and 19 are weak. Row 5 is the one with real missing coverage: no mapped test reads after the manager is fired.</td></tr>
+<tr><td>2</td><td>Old clients keep exactly their operations; no wildcard widening through migration or rollback</td><td>PASS</td><td>Migration replay PASS; round-1 C1/C2 checks 11/11. The floor refuses pre-I1 code, stubs on pre-I1 code, tree SHAs, squash merges and shallow clones (the last three fail closed). It accepts an I1 descendant that restores pre-I1 code plus empty marker files. Ancestry cannot see that; it is the same class as "I1 code with a check switched off", which round 2 accepted as a limit.</td></tr>
+<tr><td>3</td><td>No path bypasses readonly, field masks or external-action authorization; subscription within 2 s</td><td><b>FAIL</b></td><td>Record-scope read masks leak through paginated reads. Unreadable rows leave short pages and an early "not done" signal. That reveals how many exist and, with a filter, their field values (repro below). The 1000-row scan cap and the timing signal are smaller leaks of the same kind. Readonly, field masks on readable rows and the subscription timing all hold.</td></tr>
+<tr><td>4</td><td>Invalid provider/secret reference fails closed; logs reveal no secrets</td><td>PASS</td><td>Round-1 C4 checks and builder secrets suite pass. D8 is closed, including the 5 new prototype names.</td></tr>
+</table>
+<p><b>Overall: REVISE.</b> The open items are the paginated short pages, and they do leak. The fix is narrow and the builder already proposed it.</p>
+
+<h2>Defects</h2>
+<table>
+<tr><th>ID</th><th>Severity</th><th>What</th></tr>
+<tr><td>P (P1 to P6)</td><td>medium</td><td>Paginated reads leak the count of unreadable rows and, through filters, their field values. This affects <code>records.list</code>, agent <code>GET /records</code>, <code>records.related</code> (lookup and links), <code>events.forOrg</code> and <code>csv.exportPage</code>. It is not new in revision 2 (<code>lib/list.ts</code> is unchanged), but the builder's note that a hidden-value filter "gives the same empty page and the same done flag" has no committed evidence, and it is false on a real backend.</td></tr>
+<tr><td>F1</td><td>low</td><td><code>firstVisible</code> scan cap: with 999 unreadable newer rows the member's and agent's recent-first search (limit 1) returns their own deal. With 1000 it returns nothing. That tells them at least 1000 hidden rows exist ahead of theirs.</td></tr>
+<tr><td>F2</td><td>low</td><td>Timing signal introduced by revision 2. Median uncached latency of that same search, which always returns the same one row, rose from 5.3 ms (member) and 9.6 ms (agent) with about 50 unreadable newer rows to 67.8 ms and 60.2 ms with about 950. Before revision 2, <code>take(limit)</code> made latency independent of hidden rows. About 0.06 ms per hidden row.</td></tr>
+<tr><td>T</td><td>low</td><td>10 of 13 <code>firstVisible</code> call sites have no own test: agent related (links and lookup), agent today (2), agent suggestions, agent inbox, <code>inbox.list</code>, <code>suggestions.list</code>, <code>today.get</code> (2). Reverting any of them to take-then-filter keeps all suites green. The builder disclosed this. There are 13 sites in 10 functions, not 11.</td></tr>
+<tr><td>D6</td><td>low</td><td>Own-check patterns for rows 5, 8 and 38 key the wrong assertion (detail below). Also, the guard's own-check line and <code>MAX_SHARED</code> can be removed or raised to 60 with the suite still green, because today's data already comply. Bad data is caught (2/2 data mutants).</td></tr>
+</table>
+
+<h2>Repro for P (real local backend)</h2>
+<p>One workspace. The member's scope is opportunity records <code>[Mine Deal]</code> (amount 100) and every other object in full. The scoped agent has a read grant on the same record. The owner then creates 3 opportunities with amount 777777 and 4 ordinary ones. None of them is readable to the member or the agent.</p>
+<pre>member: records.list {objectId: opportunity, filter: {amount: 777777}, numItems: 1}, following continueCursor
+  hidden value : [{n:0,done:false},{n:0,done:false},{n:0,done:false},{n:0,done:true}]   -> 3 hidden deals at 777777
+  missing value: [{n:0,done:true}]                                                    (888888)
+agent: GET /api/v1/records?object=opportunity&amp;filter=amount&amp;value=777777&amp;limit=1
+  hidden value : 200 {records: [], cursor: "&lt;present&gt;"}, 3 follow-up pages
+  missing value: 200 {records: [], cursor: null}
+member: records.list recent-first, numItems 5   before [{1,done}]  after 7 hidden [{0,not done},{1,done}]
+member: records.related Acme / opportunity.company   before [{1,done}]  after [{1,not done},{0,done}]
+member: events.forOrg first page of 5   before 2 events   after 0 events, isDone false
+member: csv.exportPage (200 raw rows a page)   before [{1 row, done}]   after 999 hidden: [{1,not done},{0,not done} x4,{0,done}]</pre>
+<p>The cursor itself is opaque: 384 characters, containing none of the hidden ID, amount or title, in raw, base64 or base64url form (R3-P7 PASS). The leak is page length and <code>isDone</code>/<code>cursor</code>. The same mechanism works for a select filter such as stage = won. Sorting by a visible field would also place hidden rows between readable neighbours; I did not run that separately.</p>
+<p>Suggested fix, the builder's own: when a caller's scope for the object is an explicit record list, answer from that list (fetch by ID, then filter and sort in memory, bounded by the list size) instead of paging the object index. Callers with <code>records: 'all'</code> never meet hidden rows in a per-object index, so their path is unchanged. For <code>events.forOrg</code>, and for text search without an object, restrict to readable objects and records first. This also removes F1 and F2 for record-scoped callers. Unreadable objects in cross-object text search would still need a per-object query.</p>
+
+<h2>D6 own-check audit (all 43 rows)</h2>
+<p>Read by a separate verifier sub-agent against <code>proofs/contract/replay.mjs</code> and the mapped production tests. I spot-checked rows 5, 8 and 38 myself (<code>service-agents.mjs</code> lines 17 to 43, <code>service-faults.mjs</code> lines 19 to 24, replay lines 133 and 736).</p>
+<ul>
+  <li><b>Row 5, wrong:</b> H0 fires the manager (<code>fire(f)</code>). The pattern <code>childRead\(|held\.fence &gt; c\.fence</code> lands on a grant revoke (row 29's point) and on the retry fence (row 16's point). No mapped test reads after a fire.</li>
+  <li><b>Row 8, wrong:</b> <code>revoked agent key</code> is the fired agent's own key being refused. The actual before-permit refusal (<code>service-agents.mjs:23</code>) is <code>assert.rejects</code> with no reason, so any error passes it.</li>
+  <li><b>Row 38, wrong:</b> <code>second\.maxUnits, 3</code> is row 25's per-call exposure assertion. The mapped test does exhaust the continuation (<code>service-faults.mjs:22-23</code>), but the pattern ignores that and no test asserts <code>continuationRefused</code> on the exhausted step.</li>
+  <li><b>Weak (19):</b> rows 1, 4, 6, 11, 12, 13, 14, 15, 22, 25, 27, 29, 30, 31, 32, 37, 39, 42, 43. Typical causes: the pattern matches setup lines or only the test name (row 22 matches only the title "cancelled late"). The guard strips variant words, so 30/31/32, 36/37, 42/43 each resolve to one H0 body. Row 29's mapped test revokes <code>parent</code> but asserts refusal of an operation made under <code>modelParent</code>. Row 37's missing-usage variant never asserts the <code>usageOverrun</code> anomaly.</li>
+  <li>Right (21): rows 2, 3, 7, 9, 10, 16, 17, 18, 19, 20, 21, 23, 24, 26, 28, 33, 34, 35, 36, 40, 41. Variant pairs 34/35 and 40/41 are both exercised by a loop in the mapped test.</li>
+</ul>
+
+<h2>Rollback floor probe (throwaway clone, nothing pushed)</h2>
+<table>
+<tr><th>Target</th><th>Floor</th><th>Expected</th></tr>
+<tr><td>pre-I1 3339517; origin/main today</td><td>refused</td><td>refuse</td></tr>
+<tr><td>7299ee9; d2c8744 (known round-1 oracles); babeb42; merge commit of I1 into main</td><td>accepted</td><td>accept</td></tr>
+<tr><td>squash merge of I1 into main, and a later commit on it</td><td>refused</td><td>fail closed (documented)</td></tr>
+<tr><td>shallow clone (depth 1), target = its own tip babeb42</td><td>refused</td><td>fail closed; the message wrongly says "predates the I1 authority core"</td></tr>
+<tr><td>clone without the pinned commit</td><td>refused</td><td>fail closed</td></tr>
+<tr><td>tree SHA</td><td>refused</td><td>refuse</td></tr>
+<tr><td><b>descendant of I1 whose tree is pre-I1 code plus empty marker files</b></td><td><b>accepted</b></td><td>refuse; content, not history (known limit)</td></tr>
+<tr><td>git revert of the whole I1 range</td><td colspan="2">not run: the range contains merge commits</td></tr>
+</table>
+
+<h2>Deliberate breaks</h2>
+<table>
+<tr><th>Break (one edit, restored after)</th><th>Result</th></tr>
+<tr><td>R1 <code>Object.hasOwn</code> back to <code>in</code></td><td>caught (shape.test.ts)</td></tr>
+<tr><td>R2 helper stops after <code>limit</code> rows scanned</td><td>caught (oracles.test.ts, 2 tests)</td></tr>
+<tr><td>R2 helper with no scan cap</td><td>missed (unbounded read, not a leak)</td></tr>
+<tr><td>R3 <code>events.forRecord</code> without read check</td><td>caught</td></tr>
+<tr><td>R3 <code>records.related</code> without target read check</td><td>caught</td></tr>
+<tr><td>R4 floor without ancestry clause</td><td>caught (release test)</td></tr>
+<tr><td>D6 row 12 given row 10's pattern; row 38 given <code>assert\.equal</code></td><td>both caught</td></tr>
+<tr><td>D6 guard: own-check line disabled; <code>MAX_SHARED</code> 6 to 60</td><td>both missed (data currently compliant)</td></tr>
+<tr><td>Take-then-filter at each of 13 <code>firstVisible</code> sites</td><td>3 caught (records.search, agent search, findReadableByTitle), 10 missed</td></tr>
+</table>
+
+<h2>Not checked</h2>
+<ul>
+  <li>Hosted Convex (only local). Timing on hosted infrastructure will differ. The signal was about 13x locally.</li>
+  <li>The 1000-row cap on non-search sites (inbox, suggestions, today, related) on a real backend. They use the same helper, which I read but did not plant 1000 rows against.</li>
+  <li>Sort-based placement leaks, and <code>git revert</code> of the whole I1 range.</li>
+  <li>Unreadable lookup IDs still show on readable records. Deletes clear them, so an ID's presence confirms the linked record exists. Titles are masked. This is unchanged from round 2, where it was optional.</li>
+</ul>
+
+<h2>How to reproduce</h2>
+<pre>git worktree add --detach ../remold-i1-iv3 babeb42 &amp;&amp; cd ../remold-i1-iv3
+git apply evidence/2026-09-25-i1/iv-r3/local-ports.patch        # 3560/3561
+git checkout origin/i1/iv-r2-2026-09-26 -- evidence/2026-09-25-i1/iv evidence/2026-09-25-i1/iv-r2
+cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts ops/authority/
+pnpm install &amp;&amp; pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm verify:release &amp;&amp; pnpm build
+(cd packages/mcp &amp;&amp; pnpm build &amp;&amp; pnpm test)
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/service.mjs ; I1_EVIDENCE_DIR=/tmp/m node ops/authority/migration-service.mjs
+I1_EVIDENCE_DIR=/tmp/r1 node evidence/2026-09-25-i1/iv/iv-service.mjs ; I1_EVIDENCE_DIR=/tmp/r2 node evidence/2026-09-25-i1/iv-r2/iv-r2.mjs
+I1_EVIDENCE_DIR=/tmp/r3 node evidence/2026-09-25-i1/iv-r3/iv-r3.mjs            # 3 PASS / 7 FAIL
+I1_EVIDENCE_DIR=/tmp/r3 node evidence/2026-09-25-i1/iv-r3/iv-r3-timing.mjs
+IV_ONLY=R2-D8a I1_EVIDENCE_DIR=/tmp/d8 node evidence/2026-09-25-i1/iv-r3/iv-r3-d8.mjs
+node evidence/2026-09-25-i1/iv-r3/iv-r3-floor.mjs "$PWD/../remold" /tmp/floor
+node evidence/2026-09-25-i1/iv-r3/iv-r3-breaks.mjs /tmp/breaks</pre>
+<p>Files: <code>logs/</code> (every run), <code>data/</code> (JSON results, including reruns of the round-1 and round-2 suites), <code>breaks/</code> (per-break diffs and outcomes). The fixture zips were not committed. No plaintext agent or adapter keys appear in the committed files.</p>
+</body>
+</html>

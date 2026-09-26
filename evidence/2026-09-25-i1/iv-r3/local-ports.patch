@@ -1,0 +1,31 @@
+diff --git a/ops/authority/local.mjs b/ops/authority/local.mjs
+index 5688d44..c7323e9 100644
+--- a/ops/authority/local.mjs
++++ b/ops/authority/local.mjs
+@@ -42,7 +42,7 @@ export async function withAuthority(check, { safetySim = false, safetyHang = fal
+   writeFileSync(join(scratch, 'package.json'), JSON.stringify({ name: 'remold-authority-proof', private: true, type: 'module', dependencies: { convex: '1.46.0', '@convex-dev/rate-limiter': '0.4.0' } }));
+   symlinkSync(join(root, 'node_modules'), join(scratch, 'node_modules'), 'dir');
+   let logs = '';
+-  const backend = spawn(process.execPath, [cli, 'dev', '--typecheck', 'disable', '--tail-logs', 'always', '--local-cloud-port', '3480', '--local-site-port', '3481'], { cwd: scratch, env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
++  const backend = spawn(process.execPath, [cli, 'dev', '--typecheck', 'disable', '--tail-logs', 'always', '--local-cloud-port', '3560', '--local-site-port', '3561'], { cwd: scratch, env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+   backend.stdout.on('data', b => { logs += b; }); backend.stderr.on('data', b => { logs += b; });
+   const run = (fn, args = {}) => {
+     const output = execFileSync(process.execPath, [cli, 'run', fn, JSON.stringify(args)], { cwd: scratch, env, encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'pipe'] }); return output.trim() ? JSON.parse(output) : null;
+@@ -59,7 +59,7 @@ export async function withAuthority(check, { safetySim = false, safetyHang = fal
+       await new Promise(r => setTimeout(r, 200));
+     }
+     const config = readFileSync(join(scratch, '.env.local'), 'utf8'), url = /^(?:VITE_)?CONVEX_URL=(.+)$/m.exec(config)?.[1];
+-    assert.equal(url, 'http://127.0.0.1:3480');
++    assert.equal(url, 'http://127.0.0.1:3560');
+     const client = (subject, extra) => { const c = new ConvexHttpClient(url, { logger: false }); c.setAuth(token(subject, extra)); return c; };
+     const sourceManifest = () => { const manifest = {}; for (const dir of ['convex', 'packages/contracts']) for (const file of readdirSync(join(scratch, dir), { recursive: true }).filter(p => p.endsWith('.ts') || p.endsWith('.json'))) manifest[dir + '/' + file] = sha(readFileSync(join(scratch, dir, file))); return manifest; };
+     const manifest = sourceManifest();
+@@ -72,7 +72,7 @@ export async function withAuthority(check, { safetySim = false, safetyHang = fal
+       }
+       return logs.slice(offset);
+     };
+-    const result = await check({ scratch, root, run, client, token, url, site: 'http://127.0.0.1:3481', sha, exportFixture, reload, logs: () => logs });
++    const result = await check({ scratch, root, run, client, token, url, site: 'http://127.0.0.1:3561', sha, exportFixture, reload, logs: () => logs });
+     return { ...result, sourceManifest: manifest, finalSourceManifest: sourceManifest(), safetyAdapter: { level: safetySim ? 'SIM scratch-only' : 'unimplemented production registry', productionHash: productionSafetyHash, effectiveHash: existsSync(safetyRegistry) ? sha(readFileSync(safetyRegistry)) : null } };
+   } finally {
+     writeFileSync(join(scratch, 'backend.log'), logs);
