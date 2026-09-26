@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>I2 alerts: builder handover, revision 2</title>
+<title>I2 alerts: builder handover, revision 3</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -21,8 +21,8 @@
 </style>
 </head>
 <body>
-<h1>I2 alerts: builder handover, revision 2</h1>
-<div class="meta">2026-09-26 · scope: I2 alert row, repairs after independent REVISE on a173192 · level: SERVICE, builder-run · status: awaiting independent verification</div>
+<h1>I2 alerts: builder handover, revision 3</h1>
+<div class="meta">2026-09-26 · scope: I2 alert row; round 3 fixes after independent round 2 (PASS at SERVICE with one medium defect) on 117917d · level: SERVICE, builder-run · status: awaiting independent verification</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
@@ -34,7 +34,17 @@
 </div>
 
 <div class="status">
-<h2>Done and proven (builder only)</h2>
+<h2>Round 3: done and proven (builder only, commit d9c798e)</h2>
+<ul>
+  <li><b>D1 (medium), late failures:</b> before, a job that failed 2 hours after its due time raised no alert, because results were timed by due time against the 60 minute lookback. The test was red on the 117917d source (<code>r3/unit-before.txt</code>). Now scanned and watched results are timed by when the job finished, and the test passes (<code>r3/unit-after.txt</code>). A failure that finishes after a later-due success now counts as the latest result.</li>
+  <li><b>D2 (low), host rules:</b> before, <code>https://localhost./x</code> was accepted (red in <code>r3/unit-before.txt</code>). Now trailing dots are stripped before host checks. Also refused: IPv4-compatible IPv6 (<code>[::7f00:1]</code>), NAT64 <code>64:ff9b::</code>, <code>198.18.0.0/15</code>, IPv4 224 and above (multicast, reserved, broadcast) and IPv6 multicast. Public neighbors such as <code>100.128.0.1</code>, <code>198.20.0.1</code> and <code>[2001:db8::1]</code> are still accepted.</li>
+  <li><b>Test gaps:</b> the IV's 10 surviving mutants now die: watermark <code>gte</code>, running job counted as finished, vanished job keeping a stall open, older result overwriting newer, lookback removed, and five host rules. Each new rule also has its own mutant, 43 of 43 killed in total (<code>r3/mutants.txt</code>).</li>
+  <li><b>Unchanged:</b> the schema did not change, so <code>566abac</code> stays the rollback target. The sealed artifact for <code>d9c798e</code> passes preflight against it with a fresh synthetic restore receipt, and is refused against <code>bb8e3ed</code> and <code>a173192</code> (<code>r3/release/</code>).</li>
+  <li><b>Service rehearsal:</b> PASS. Three alerts opened and resolved, the load phases passed with no check errors, 0 leaks (<code>r3/service.json</code>).</li>
+  <li><b>Suites:</b> typecheck, app tests 93/93 (20 alert tests), authority tests 97/97, release tests 19/19 and build all pass. The release build reran them on <code>d9c798e</code>.</li>
+  <li><b>Test method:</b> two of the new tests set scheduled-function system rows directly in convex-test, to force a running job, a vanished job and a late finish time. That fixture shortcut is not possible on real Convex.</li>
+</ul>
+<h2>Round 2: done and proven (builder only)</h2>
 <ul>
   <li><b>D1, load (high):</b> a173192 threw "Too many reads (limit: 4096)" after 5100 REST requests (<code>r2/attacks-before.json</code>). Now no check threw while racing 5100 and 15000 REST requests, 5000 scheduled rows of 4 KB arguments, and a real 25000-job scheduler backlog. The slowest check took 30 s. A burst larger than one check can read raised the coverage alert and resolved it once checks caught up; the real backlog kept coverage open. The IV's own attack script now completes with 0 leaks and 0 duplicate ids (<code>r2/attacks-after.json</code>).</li>
   <li><b>D2, long stalls (medium):</b> before, all 8 IV unit attacks passed, including "pending at 61 min is reported Resolved" and "job due 50 min ahead never checked" (<code>r2/iv-unit-attacks-before.txt</code>). Now a stall is measured from the due time, stays open at 61 minutes and at 3 hours, and resolves only when the job runs. A job due 50 minutes ahead is flagged when 20 minutes overdue. A job due 30 minutes ahead is not flagged at 20 minutes.</li>
