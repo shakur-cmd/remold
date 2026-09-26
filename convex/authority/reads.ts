@@ -12,6 +12,15 @@ export function scopes(principal: Principal, object: Doc<'objects'>): RecordScop
   const granted: RecordScope[] = (principal.capabilities ?? []).filter(g => g.capability === 'read' && g.scope.kind === 'records' && g.scope.objectId === object._id).flatMap(g => g.scope.kind === 'records' ? [{ objectId: g.scope.objectId, records: g.scope.records, fields: g.scope.fields }] : []);
   return [...(allowed ? [{ objectId: object._id, records: 'all' as const, fields: 'all' as const }] : []), ...granted];
 }
+// Filters while collecting. Taking the first N rows and filtering afterwards lets
+// hidden rows push a caller's own matches out of the result, which reveals that
+// the hidden rows exist. scanCap bounds the reads.
+export async function firstVisible<T, R>(rows: AsyncIterable<T>, limit: number, keep: (row: T) => Promise<R | null | undefined | false> | R | null | undefined | false, scanCap = 1000): Promise<R[]> {
+  const out: R[] = []; let scanned = 0;
+  if (limit <= 0) return out;
+  for await (const row of rows) { const kept = await keep(row); if (kept) out.push(kept); if (out.length >= limit || ++scanned >= scanCap) break; }
+  return out;
+}
 export function canReadObject(principal: Principal, object: Doc<'objects'>) { return scopes(principal, object).length > 0; }
 export function canReadRecordId(principal: Principal, object: Doc<'objects'>, recordId?: Id<'records'>) {
   return scopes(principal, object).some(s => s.records === 'all' || (recordId !== undefined && s.records.includes(recordId)));

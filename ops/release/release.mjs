@@ -88,10 +88,15 @@ export function preflight(manifest, targetSha, targetSchemaDigest, snapshotRecei
 }
 // The I1 authority core (masks, record scopes, frozen legacy grants). Code without it reads
 // I1-era data as if every agent and member were unrestricted, so it is never a rollback target.
+// The target must also descend from the commit that introduced the core, so empty stub
+// files on pre-I1 code or a bare tree SHA do not pass. A squash-merged I1 would refuse
+// every target (fail closed) until this pin is updated.
 const AUTHORITY_CORE = ['convex/authority/migration.ts', 'convex/authority/reads.ts'];
-export function authorityFloor(cwd, targetSha) {
+export const FIRST_I1_COMMIT = '7299ee98d05c39480e5ad8018e0d81ac119062d8';
+export function authorityFloor(cwd, targetSha, floorSha = FIRST_I1_COMMIT) {
   requireSha(targetSha);
-  return AUTHORITY_CORE.every(path => spawnSync('git', ['cat-file', '-e', `${targetSha}:${path}`], { cwd }).status === 0);
+  return spawnSync('git', ['merge-base', '--is-ancestor', floorSha, targetSha], { cwd }).status === 0
+    && AUTHORITY_CORE.every(path => spawnSync('git', ['cat-file', '-e', `${targetSha}:${path}`], { cwd }).status === 0);
 }
 function git(cwd, ...args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();

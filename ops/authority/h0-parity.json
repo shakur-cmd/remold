@@ -1,6 +1,7 @@
 [
   {
     "h0": "A/B known-ID isolation, server-derived actors and full binding tuple collision",
+    "exercises": "shared-external-id|Account already bound",
     "production": [
       "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple",
       "H0#1 foreign owners cannot mutate known IDs and actor injection is rejected",
@@ -10,6 +11,7 @@
   },
   {
     "h0": "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation",
+    "exercises": "currency: 'EUR'|bindings: \\[other\\.bindingId\\]",
     "production": [
       "H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor",
       "Propose-mode external authority still requires human approval; currency and binding scopes cannot widen"
@@ -17,6 +19,7 @@
   },
   {
     "h0": "Explicit manage lists cannot authorize firing or regranting an ancestor",
+    "exercises": "'authority/fire'",
     "production": [
       "H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor",
       "Delegation revocation changes actual REST read projection while independent human grants survive"
@@ -24,6 +27,7 @@
   },
   {
     "h0": "Direct mode executes without human approval; propose mode and invalidated direct grant refuse",
+    "exercises": "/Approval/|held\\.fence > c\\.fence",
     "production": [
       "Propose-mode external authority still requires human approval; currency and binding scopes cannot widen",
       "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
@@ -31,6 +35,7 @@
   },
   {
     "h0": "Delegation ancestry revokes queued/read/model paths while independent human grant survives",
+    "exercises": "childRead\\(|held\\.fence > c\\.fence",
     "production": [
       "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives",
       "Delegation revocation changes actual REST read projection while independent human grants survive"
@@ -38,6 +43,7 @@
   },
   {
     "h0": "Read scopes restrict object/records/fields and every SIM surface has a leakable shape",
+    "exercises": "MASKED_|leaked a hidden field value",
     "production": [
       "Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks",
       "Hidden field value never appears in any human query or agent REST read",
@@ -47,6 +53,7 @@
   },
   {
     "h0": "Final permit rechecks expired authority without a sweep and honors schedule",
+    "exercises": "pause\\(1600\\); await refuse\\(t\\.adapter\\('permit'|Dispatch bounds",
     "production": [
       "H0#7 expired grant denies final permit without a lifecycle sweep",
       "Payload edits invalidate immutable approval; destination and schedule are enforced"
@@ -54,12 +61,14 @@
   },
   {
     "h0": "Before-permit fire refuses; after-permit fire preserves one late outcome",
+    "exercises": "revoked agent key",
     "production": [
       "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail"
     ]
   },
   {
     "h0": "Scoped adapter cannot permit, consume, reconcile, callback or provision in B",
+    "exercises": "\\[403, 404\\]\\.includes",
     "production": [
       "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple",
       "Same external ID under different provider instances stays isolated per connection"
@@ -67,6 +76,7 @@
   },
   {
     "h0": "Lost acceptance response reconciles once; missing usage blocks cheaper new spend",
+    "exercises": "Unresolved usage",
     "production": [
       "Missing usage pauses cheaper work until authoritative usage settles exactly once",
       "Provisional absence permits only same-key retry and old-fence truthful settlement"
@@ -74,6 +84,7 @@
   },
   {
     "h0": "Concurrent logical calls/claims and org budget reservations serialize on real backend",
+    "exercises": "allSettled",
     "production": [
       "SERVICE transaction races reserve organization budget and concurrency once",
       "Concurrent duplicate logical proposals and claims yield one operation and reservation"
@@ -81,12 +92,14 @@
   },
   {
     "h0": "Per-run/global spend and global concurrency caps bound both tenants",
+    "exercises": "Per-run budget",
     "production": [
       "Global spend, concurrency and per-run ceilings serialize across distinct tenants"
     ]
   },
   {
     "h0": "Model continuation rechecks authority, step/fence and remaining exposure",
+    "exercises": "second\\.step, 2|held\\.step, c\\.step \\+ 1",
     "production": [
       "Continuation reduces per-call exposure and old fence cannot consume the next step",
       "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
@@ -94,6 +107,7 @@
   },
   {
     "h0": "Expired unconsumed permits retry safely; consumed crash becomes unknown",
+    "exercises": "spent permit",
     "production": [
       "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty",
       "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
@@ -101,12 +115,14 @@
   },
   {
     "h0": "Unknown authoritative absence never resends after firing; terminal rejection releases reservation",
+    "exercises": "Operation stopped",
     "production": [
       "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
     ]
   },
   {
     "h0": "Authoritative absence and retryable rejection preserve logical key and revalidate new permits",
+    "exercises": "firstSend\\.key, secondSend\\.key",
     "production": [
       "Provisional absence permits only same-key retry and old-fence truthful settlement",
       "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives"
@@ -114,6 +130,7 @@
   },
   {
     "h0": "Material edits, audience, currency and approval expiry invalidate immutable snapshot",
+    "exercises": "Approval changed",
     "production": [
       "Every approval material field invalidates the reviewed version",
       "Payload edits invalidate immutable approval; destination and schedule are enforced",
@@ -122,6 +139,7 @@
   },
   {
     "h0": "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly",
+    "exercises": "'applied', 'duplicate'",
     "production": [
       "Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose",
       "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
@@ -129,6 +147,7 @@
   },
   {
     "h0": "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship",
+    "exercises": "adoptedFrom|commands\\.adopt",
     "production": [
       "Readonly between claim and permit stops sends but permits truthful receipt settlement",
       "Human adoption creates a new attributed command while preserving the fired agent original",
@@ -137,12 +156,14 @@
   },
   {
     "h0": "Provisioning durable intents preserve delete-before/create-before races",
+    "exercises": "cleanupRequired: true",
     "production": [
       "Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient"
     ]
   },
   {
     "h0": "Partial traversal commits only full checkpoints and later traversal resumes without regression",
+    "exercises": "traversal: 'second'",
     "production": [
       "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal",
       "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
@@ -150,6 +171,7 @@
   },
   {
     "h0": "Durable cancellation survives rejection, absence, expiry and model continuation",
+    "exercises": "cancelled late|t\\.cancel\\(id\\); await t\\.adapter\\('fail'",
     "production": [
       "Durable cancellation survives rejection and absence",
       "Production dispatch records cancelled late acceptance exactly once",
@@ -158,6 +180,7 @@
   },
   {
     "h0": "Scoped adapter sees cancellation signal and records one late accepted tail",
+    "exercises": "\\)\\)\\.cancel, true",
     "production": [
       "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail",
       "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
@@ -165,6 +188,7 @@
   },
   {
     "h0": "Late consumed outcome settles once after provisional or final absent lookup",
+    "exercises": "acceptedAfterFinalAbsence",
     "production": [
       "Final absence targets only the current unresolved logical step, then late truth is held as anomaly",
       "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
@@ -172,6 +196,7 @@
   },
   {
     "h0": "Per-call remaining exposure, missing usage and actual overruns fence final dispatch",
+    "exercises": "usageOverrun|anomaly hold",
     "production": [
       "Continuation reduces per-call exposure and old fence cannot consume the next step",
       "Final permit rechecks missing usage discovered after a different operation was claimed",
@@ -181,12 +206,14 @@
   },
   {
     "h0": "Conflicting provider reference refuses durably and holds spend without rolling back anomaly",
+    "exercises": "providerResultCollision",
     "production": [
       "Receipt collisions persist a durable anomaly instead of rolling it back with an exception"
     ]
   },
   {
     "h0": "Per-recipient and per-purpose suppression never changes another contact or tenant",
+    "exercises": "recipient-B|dump\\(\\)\\.consent, before",
     "production": [
       "Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose",
       "H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced"
@@ -194,12 +221,14 @@
   },
   {
     "h0": "Server scheduler recovers adapter crashes without a callback or manual expiry call",
+    "exercises": "pause\\(2300\\); assert\\.equal\\(\\(await t\\.get\\(id\\)\\)\\.state, 'outcomeUnknown'\\)",
     "production": [
       "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
     ]
   },
   {
     "h0": "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives",
+    "exercises": "childRead\\(|held\\.fence > c\\.fence",
     "production": [
       "H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives",
       "Delegation revocation changes actual REST read projection while independent human grants survive"
@@ -207,6 +236,7 @@
   },
   {
     "h0": "Unresolved consumed attempt survives sweep and holds global exposure",
+    "exercises": "Budget or concurrency cap|budget\\(\\)\\.active, 1\\)",
     "production": [
       "Unresolved prior consumed attempt survives",
       "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles",
@@ -215,6 +245,7 @@
   },
   {
     "h0": "Unresolved consumed attempt survives expiry and holds global exposure",
+    "exercises": "Budget or concurrency cap|budget\\(\\)\\.active, 1\\)",
     "production": [
       "Unresolved prior consumed attempt survives",
       "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles",
@@ -223,6 +254,7 @@
   },
   {
     "h0": "Unresolved consumed attempt survives failure and holds global exposure",
+    "exercises": "Budget or concurrency cap|budget\\(\\)\\.active, 1\\)",
     "production": [
       "Unresolved prior consumed attempt survives",
       "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles",
@@ -231,6 +263,7 @@
   },
   {
     "h0": "Cancellation cannot release confirmed work with missing usage",
+    "exercises": "t\\.cancel\\(id\\); assert\\.equal\\(t\\.budget\\(\\)\\.reserved, 2\\)",
     "production": [
       "Single-step overrun remains confirmed and retained missing usage cannot be cancelled away",
       "H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles"
@@ -238,18 +271,21 @@
   },
   {
     "h0": "Unconsumed unknown is ignored and scheduler recovers false",
+    "exercises": "cancelled \\? 'cancelled' : 'queued'",
     "production": [
       "Unconsumed unknown does not manufacture provider uncertainty; expiry recovers"
     ]
   },
   {
     "h0": "Unconsumed unknown is ignored and scheduler recovers true",
+    "exercises": "cancelled \\? 'cancelled' : 'queued'",
     "production": [
       "Unconsumed unknown does not manufacture provider uncertainty; expiry recovers"
     ]
   },
   {
     "h0": "Single-step accepted overrun remains confirmed false",
+    "exercises": "usageOverrun|providerRef: 'accepted', usage: 3",
     "production": [
       "Single-step overrun remains confirmed and retained missing usage cannot be cancelled away",
       "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
@@ -257,6 +293,7 @@
   },
   {
     "h0": "Single-step accepted overrun remains confirmed true",
+    "exercises": "usageOverrun|providerRef: 'accepted', usage: 3",
     "production": [
       "Single-step overrun remains confirmed and retained missing usage cannot be cancelled away",
       "H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly"
@@ -264,36 +301,42 @@
   },
   {
     "h0": "Exhausted successful continuation settles and releases its slot",
+    "exercises": "second\\.maxUnits, 3",
     "production": [
       "Continuation reduces per-call exposure and old fence cannot consume the next step"
     ]
   },
   {
     "h0": "Suppression without an existing purpose/channel row is durable",
+    "exercises": "consent\\.map",
     "production": [
       "Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose"
     ]
   },
   {
     "h0": "Settled-step provisional absence cannot settle a later unresolved step",
+    "exercises": "current unknow",
     "production": [
       "Final absence targets only the current unresolved logical step, then late truth is held as anomaly"
     ]
   },
   {
     "h0": "Settled-step final absence cannot settle a later unresolved step",
+    "exercises": "current unknow",
     "production": [
       "Final absence targets only the current unresolved logical step, then late truth is held as anomaly"
     ]
   },
   {
     "h0": "Old consumed fence for the same unresolved step still supports provisional absence",
+    "exercises": "first\\.step, second\\.step",
     "production": [
       "H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence"
     ]
   },
   {
     "h0": "Old consumed fence for the same unresolved step still supports final absence",
+    "exercises": "first\\.step, second\\.step",
     "production": [
       "Provisional absence permits only same-key retry and old-fence truthful settlement",
       "H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence"

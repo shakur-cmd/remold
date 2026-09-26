@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>I1 builder handover, revision 1: production authority and integration core</title>
+<title>I1 builder handover, revision 2: production authority and integration core</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 920px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -21,20 +21,120 @@
 </style>
 </head>
 <body>
-<h1>I1 builder handover, revision 1</h1>
-<div class="meta">2026-09-25 · branch <code>wip/i1-authority</code> · evidence source revision <code>f1de7010c28d28578882497f295e5cd2eb938549</code> · replies to the independent verification on <code>i1/iv-2026-09-25</code> (960d7ef, verdict: revise) · status: <b>awaiting independent re-verification</b>. The builder has not certified I1.</div>
+<h1>I1 builder handover, revision 2</h1>
+<div class="meta">2026-09-26 · branch <code>wip/i1-authority</code> · replies to independent verification round 2 on <code>i1/iv-r2-2026-09-26</code> (8f9e362, verdict: revise) · level: SERVICE on an isolated local Convex (127.0.0.1:3480/3481), synthetic JWTs and data, no providers, spend or sends · status: <b>awaiting independent re-verification</b>. Builder-run, not certified.</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
-  <li><b>Readonly tail (from the IV).</b> A permit issued just before readonly can still be consumed once, within the 1-second permit window. This matches the H0 contract, and the IV's own check C3-R1 still shows it. Confirm this is acceptable, or ask for consume to recheck readonly. That change would turn an in-flight send into an unknown outcome.</li>
-  <li><b>Operator overrides under readonly.</b> <code>ops:setFlag</code> (it lifts readonly) and <code>budgets:clearAnomaly</code> stay available to operators while a workspace is readonly. Migration freeze and backfill also stay available, because they only narrow authority. Every other operator write to a workspace is now refused. Confirm.</li>
-  <li><b>Who re-verifies.</b> Recommend the same independent verifier reruns their 24-check suite (it now passes 24/24 on this code) and tries the attack list below.</li>
+<li><b>Paginated lists (new, not fixed).</b> Search and every fixed-size list now fill their limit with readable rows only. Paginated queries (records list, records related, events for the org, CSV export) still read a page and then drop unreadable rows, so a page can come back shorter than asked. Convex allows one paginated read per query, so the take-and-keep-going fix does not apply. I checked one case in the unit test backend: a filter on a hidden value gives the same empty page and the same "done" flag as a missing value. I did not check it on a real backend. Your call: accept short pages as a count-only leak for now, or open a follow-up to serve record-scoped callers from their explicit record list.</li>
+<li><b>Rollback floor pin.</b> The floor now also requires the target to descend from <code>7299ee98d05c</code>, the commit that added the authority core. If I1 is ever squash-merged, every rollback target is refused until the pin is updated. That is the safe direction. Confirm, or ask for a merge-commit rule for I1.</li>
+<li><b>Who re-verifies.</b> I recommend the same verifier reruns <code>iv-r2.mjs</code> (now 14/14 here) and reads the new own-check column in the H0 map below.</li>
 </ul>
 </div>
 
 <div class="status">
-<h2>Done and proven by the builder (not independent)</h2>
+<h2>Revision 2: done and proven by the builder (not independent)</h2>
+<ul>
+<li><b>All four IV round-2 defects fixed, plus the D6 guard.</b> Each fix was first reproduced with the IV's own check, then fixed, then rerun green. Each has a builder regression test that fails when the fix is reverted (table below).</li>
+<li><b>IV suites on this code.</b> Round 2 <code>iv-r2.mjs</code>: <b>14/14 PASS</b>, up from 11/14. Round 1 <code>iv-service.mjs</code>: <b>24/24 PASS</b>. IV floor probe: fooled by one case instead of three (see R4).</li>
+<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 71/71 (was 66). Release tests 18/18. <code>pnpm build</code> passes. MCP build plus 2/2.</li>
+<li><b>SERVICE replay 64/64 PASS</b> (hidden field leaves an open subscription in 15.11 ms). <b>Migration replay PASS.</b></li>
+<li>No real providers, production, spend or sends. Red logs have 64-character hashes replaced with <code>&lt;sha256&gt;</code>.</li>
+</ul>
+</div>
+
+<h2>Revision 2 fixes: before and after</h2>
+<table><tr><th>#</th><th>Fix</th><th>Before</th><th>After</th><th>Regression test, and what reverting the fix does</th></tr>
+<tr><td>R1 (D8 bypass)</td><td><code>convex/lib/shape.ts</code>: the extra-key check uses <code>Object.hasOwn(fields, key)</code> instead of <code>key in fields</code>. That was the only place the pattern checked user keys; other <code>in</code> uses test server IDs or literal names.</td><td>IV R2-D8a FAIL: <code>{"text":"x","constructor":"..."}</code> reached Convex, which logged the body and key hash (<code>reds/iv-r2-before-fix-11of14.log</code>)</td><td>R2-D8a PASS (<code>reds/iv-r2-after-fix-targeted.log</code>)</td><td>New <code>ops/authority/shape.test.ts</code> and four inherited-name bodies added to the SERVICE secrets test. Reverting shape.ts fails both: <code>reds/r1-shape.log</code>, and <code>reds/r1-shape-service.log</code> ("backend/function log contains the forwarded body field: Object: {constructor: ...}").</td></tr>
+<tr><td>R2 (search oracle)</td><td>New <code>firstVisible()</code> in <code>convex/authority/reads.ts</code> filters while reading and stops at the limit or 1000 scanned rows. Used by records.search and agent search (text and recent-first), plus every other take-then-filter list: agent related, agent and member today, agent and member suggestion lists, agent and member inbox lists, and name matching (<code>findReadableByTitle</code> now takes the first 20 readable candidates).</td><td>IV R2-O5 FAIL: with limit 1, an unreadable match pushed the caller's own match out (member 0 vs 1, agent 0 vs 1)</td><td>R2-O5 PASS</td><td>Two new tests in <code>oracles.test.ts</code>. Reverting records.ts, agentApi.ts or find.ts, or making the helper stop after <i>limit</i> rows, fails them: <code>reds/r2-records.log</code>, <code>r2-agentApi.log</code>, <code>r2-find.log</code>, <code>r2-helper-take-then-filter.log</code>.</td></tr>
+<tr><td>R3</td><td>events.forRecord and records.related check readability in the same step as existence, so an unreadable ID gets the same NOT_FOUND message as a deleted one. Unreadable lookup IDs shown on readable records are not masked (optional in the IV report; not done).</td><td>IV R2-O2 FAIL: events gave [] vs NOT_FOUND; related gave "Record not found" vs "Record or field not found"</td><td>R2-O2 PASS</td><td>New test in <code>oracles.test.ts</code>. Reverting events.ts or records.ts fails it: <code>reds/r3-events.log</code>, <code>reds/r2-records.log</code>.</td></tr>
+<tr><td>R4 (floor)</td><td><code>authorityFloor</code> also requires <code>git merge-base --is-ancestor 7299ee98d05c39480e5ad8018e0d81ac119062d8 &lt;target&gt;</code>, the first commit that added migration.ts and reads.ts. The path check stays.</td><td>IV floor probe fooled by empty stubs on pre-I1 code, a tree SHA, and I1 code with a check switched off (<code>reds/floor-iv-probe-before.log</code>)</td><td>Fooled only by I1 code with a check switched off, which ancestry cannot see, as the IV noted. 3339517 refused; d2c8744, f1de701, 4cb4671, 7299ee9 accepted (<code>reds/floor-iv-probe-after.log</code>)</td><td>The release test now also refuses a stub commit, a tree SHA and a descendant that deleted reads.ts. The old floor fails it: <code>reds/r4-floor.log</code>.</td></tr>
+<tr><td>D6 guard</td><td>Each row of <code>h0-parity.json</code> now names the group's own check as a pattern. The guard requires a mapped test to contain it, and the pattern may appear in at most 6 production tests, so it cannot be a generic step. A new test caps how many groups any one production test can satisfy at 5. The harness was not changed.</td><td>IV: one test satisfied the guard for 25 of 43 groups. The old guard, rerun here, accepts 24 groups for it (19 gaps: <code>reds/d6-old-guard-one-test-map.log</code>).</td><td>The most any single test satisfies is 5 of 43, which is the five groups that test was written for (<code>reds/d6-parity-power-after.log</code>)</td><td>The one-test map fails with 38 missing own checks (<code>reds/d6-new-guard-one-test-map.log</code>). A generic own pattern fails, because it appears in 35 tests (<code>d6-generic-own-pattern.log</code>). Dropping the own check from the guard fails the cap test (<code>d6-guard-ignores-own-check.log</code>).</td></tr>
+</table>
+
+<h2>Not done or not proven</h2>
+<ul>
+<li>Paginated lists can return short pages (see Your calls). Not fixed.</li>
+<li>R3's optional step, masking unreadable lookup IDs on readable records, was not done. The ID alone now gives the same answers as a deleted ID on the paths the IV checked.</li>
+<li>Only search, name matching, related, events-by-record and records.related have direct regression tests. The other lists that now use <code>firstVisible</code> (today, suggestion and inbox lists) are covered only through the shared helper's tests, not by their own.</li>
+<li>The D6 own-check patterns were chosen by the builder from the mapped test bodies. The guard proves each pattern is present and specific. It does not prove the pattern is the right one, so a verifier should still read the table below.</li>
+<li>Carried from revision 1: the readonly tail (one send within the 1-second permit window), the SIM financial finality adapter, and unchecked hosted log sinks.</li>
+</ul>
+
+<h2>How to reproduce</h2>
+<pre>git checkout wip/i1-authority   # this commit
+pnpm install &amp;&amp; (cd packages/mcp &amp;&amp; pnpm install &amp;&amp; pnpm build &amp;&amp; pnpm test)
+pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm build &amp;&amp; pnpm verify:release
+# Isolated local backend on 127.0.0.1:3480/3481, synthetic data only.
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/service.mjs            # 64 PASS
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/migration-service.mjs  # PASS
+# IV suites: git checkout 8f9e362 -- evidence/2026-09-25-i1/iv evidence/2026-09-25-i1/iv-r2
+# cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts ops/authority/   (remove it before the builder suites)
+I1_EVIDENCE_DIR=/tmp/iv node evidence/2026-09-25-i1/iv/iv-service.mjs   # 24/24
+I1_EVIDENCE_DIR=/tmp/r2 node evidence/2026-09-25-i1/iv-r2/iv-r2.mjs     # 14/14
+node evidence/2026-09-25-i1/iv-r2/iv-floor.mjs "$PWD" /tmp/floor</pre>
+<p>Evidence for this revision is in <code>evidence/2026-09-25-i1/revision-2/</code>. The IV scripts were run from untracked copies and are not committed here as builder tests.</p>
+
+<h2>Attack cases for the re-verifier</h2>
+<ul>
+<li>Any list or search with a caller-chosen limit: plant unreadable rows that sort or rank ahead of a readable one, and compare with a workspace that lacks them.</li>
+<li>Paginated lists with a filter on a hidden value, on the real backend: compare <code>page</code>, <code>isDone</code> and the next page with a missing value.</li>
+<li>Bodies with other inherited names (<code>__defineGetter__</code>, <code>isPrototypeOf</code>, <code>propertyIsEnumerable</code>) on every POST route, grepping the backend log for the body and key hashes.</li>
+<li>Rollback targets: merge commits that bring I1 in, and a branch that reverts I1 files after descending from it.</li>
+</ul>
+
+<h2>H0 group to production test mapping (guarded by operations and each group's own check)</h2>
+<table><tr><th>#</th><th>H0 group (proofs/contract/replay.mjs)</th><th>Own check (pattern a mapped test must contain)</th><th>Production test(s)</th></tr>
+<tr><td>1</td><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td><code>shared-external-id|Account already bound</code></td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>H0#1 foreign owners cannot mutate known IDs and actor injection is rejected<br>Same external ID under different provider instances stays isolated per connection<br>SERVICE cross-tenant collision leaves the losing account and organization unchanged</td></tr>
+<tr><td>2</td><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td><code>currency: &#x27;EUR&#x27;|bindings: \[other\.bindingId\]</code></td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor<br>Propose-mode external authority still requires human approval; currency and binding scopes cannot widen</td></tr>
+<tr><td>3</td><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td><code>&#x27;authority/fire&#x27;</code></td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
+<tr><td>4</td><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td><code>/Approval/|held\.fence &gt; c\.fence</code></td><td>Propose-mode external authority still requires human approval; currency and binding scopes cannot widen<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>5</td><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td><code>childRead\(|held\.fence &gt; c\.fence</code></td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
+<tr><td>6</td><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td><code>MASKED_|leaked a hidden field value</code></td><td>Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks<br>Hidden field value never appears in any human query or agent REST read<br>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit<br>a manager cannot escalate fields, manage peers, or fire its grant ancestor</td></tr>
+<tr><td>7</td><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td><code>pause\(1600\); await refuse\(t\.adapter\(&#x27;permit&#x27;|Dispatch bounds</code></td><td>H0#7 expired grant denies final permit without a lifecycle sweep<br>Payload edits invalidate immutable approval; destination and schedule are enforced</td></tr>
+<tr><td>8</td><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td><code>revoked agent key</code></td><td>External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail</td></tr>
+<tr><td>9</td><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td><code>\[403, 404\]\.includes</code></td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>Same external ID under different provider instances stays isolated per connection</td></tr>
+<tr><td>10</td><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td><code>Unresolved usage</code></td><td>Missing usage pauses cheaper work until authoritative usage settles exactly once<br>Provisional absence permits only same-key retry and old-fence truthful settlement</td></tr>
+<tr><td>11</td><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td><code>allSettled</code></td><td>SERVICE transaction races reserve organization budget and concurrency once<br>Concurrent duplicate logical proposals and claims yield one operation and reservation</td></tr>
+<tr><td>12</td><td>Per-run/global spend and global concurrency caps bound both tenants</td><td><code>Per-run budget</code></td><td>Global spend, concurrency and per-run ceilings serialize across distinct tenants</td></tr>
+<tr><td>13</td><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td><code>second\.step, 2|held\.step, c\.step \+ 1</code></td><td>Continuation reduces per-call exposure and old fence cannot consume the next step<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>14</td><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td><code>spent permit</code></td><td>One-use expiring permit and server scheduled crash recovery retain consumed uncertainty<br>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>15</td><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td><code>Operation stopped</code></td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>16</td><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td><code>firstSend\.key, secondSend\.key</code></td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>17</td><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td><code>Approval changed</code></td><td>Every approval material field invalidates the reviewed version<br>Payload edits invalidate immutable approval; destination and schedule are enforced<br>Final permit refuses expired approval without relying on asynchronous sweeps</td></tr>
+<tr><td>18</td><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td><code>&#x27;applied&#x27;, &#x27;duplicate&#x27;</code></td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose<br>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>19</td><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td><code>adoptedFrom|commands\.adopt</code></td><td>Readonly between claim and permit stops sends but permits truthful receipt settlement<br>Human adoption creates a new attributed command while preserving the fired agent original<br>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>20</td><td>Provisioning durable intents preserve delete-before/create-before races</td><td><code>cleanupRequired: true</code></td><td>Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient</td></tr>
+<tr><td>21</td><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td><code>traversal: &#x27;second&#x27;</code></td><td>Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>22</td><td>Durable cancellation survives rejection, absence, expiry and model continuation</td><td><code>cancelled late|t\.cancel\(id\); await t\.adapter\(&#x27;fail&#x27;</code></td><td>Durable cancellation survives rejection and absence<br>Production dispatch records cancelled late acceptance exactly once<br>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
+<tr><td>23</td><td>Scoped adapter sees cancellation signal and records one late accepted tail</td><td><code>\)\)\.cancel, true</code></td><td>External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>24</td><td>Late consumed outcome settles once after provisional or final absent lookup</td><td><code>acceptedAfterFinalAbsence</code></td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>25</td><td>Per-call remaining exposure, missing usage and actual overruns fence final dispatch</td><td><code>usageOverrun|anomaly hold</code></td><td>Continuation reduces per-call exposure and old fence cannot consume the next step<br>Final permit rechecks missing usage discovered after a different operation was claimed<br>Actual overrun records the full cost and blocks continuation and new spending<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>26</td><td>Conflicting provider reference refuses durably and holds spend without rolling back anomaly</td><td><code>providerResultCollision</code></td><td>Receipt collisions persist a durable anomaly instead of rolling it back with an exception</td></tr>
+<tr><td>27</td><td>Per-recipient and per-purpose suppression never changes another contact or tenant</td><td><code>recipient-B|dump\(\)\.consent, before</code></td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>28</td><td>Server scheduler recovers adapter crashes without a callback or manual expiry call</td><td><code>pause\(2300\); assert\.equal\(\(await t\.get\(id\)\)\.state, &#x27;outcomeUnknown&#x27;\)</code></td><td>One-use expiring permit and server scheduled crash recovery retain consumed uncertainty</td></tr>
+<tr><td>29</td><td>Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives</td><td><code>childRead\(|held\.fence &gt; c\.fence</code></td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
+<tr><td>30</td><td>Unresolved consumed attempt survives sweep and holds global exposure</td><td><code>Budget or concurrency cap|budget\(\)\.active, 1\)</code></td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>31</td><td>Unresolved consumed attempt survives expiry and holds global exposure</td><td><code>Budget or concurrency cap|budget\(\)\.active, 1\)</code></td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>32</td><td>Unresolved consumed attempt survives failure and holds global exposure</td><td><code>Budget or concurrency cap|budget\(\)\.active, 1\)</code></td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>33</td><td>Cancellation cannot release confirmed work with missing usage</td><td><code>t\.cancel\(id\); assert\.equal\(t\.budget\(\)\.reserved, 2\)</code></td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>34</td><td>Unconsumed unknown is ignored and scheduler recovers false</td><td><code>cancelled \? &#x27;cancelled&#x27; : &#x27;queued&#x27;</code></td><td>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
+<tr><td>35</td><td>Unconsumed unknown is ignored and scheduler recovers true</td><td><code>cancelled \? &#x27;cancelled&#x27; : &#x27;queued&#x27;</code></td><td>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
+<tr><td>36</td><td>Single-step accepted overrun remains confirmed false</td><td><code>usageOverrun|providerRef: &#x27;accepted&#x27;, usage: 3</code></td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>37</td><td>Single-step accepted overrun remains confirmed true</td><td><code>usageOverrun|providerRef: &#x27;accepted&#x27;, usage: 3</code></td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>38</td><td>Exhausted successful continuation settles and releases its slot</td><td><code>second\.maxUnits, 3</code></td><td>Continuation reduces per-call exposure and old fence cannot consume the next step</td></tr>
+<tr><td>39</td><td>Suppression without an existing purpose/channel row is durable</td><td><code>consent\.map</code></td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose</td></tr>
+<tr><td>40</td><td>Settled-step provisional absence cannot settle a later unresolved step</td><td><code>current unknow</code></td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly</td></tr>
+<tr><td>41</td><td>Settled-step final absence cannot settle a later unresolved step</td><td><code>current unknow</code></td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly</td></tr>
+<tr><td>42</td><td>Old consumed fence for the same unresolved step still supports provisional absence</td><td><code>first\.step, second\.step</code></td><td>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
+<tr><td>43</td><td>Old consumed fence for the same unresolved step still supports final absence</td><td><code>first\.step, second\.step</code></td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
+</table>
+
+<h2>Revision 1 record</h2>
+<p>Revision 1 (evidence source <code>f1de7010c28d</code>) replied to IV round 1. Its evidence is in <code>evidence/2026-09-25-i1/revision-1/</code>. IV round 2 closed D1 to D5 and D7 and found the gaps fixed above.</p>
+
+<h3>Revision 1: done and proven by the builder</h3>
 <ul>
   <li><b>Rollback floor (decided).</b> Release preflight now fails closed unless the rollback target contains the I1 authority core. The release tests refuse a pre-I1 commit and accept an I1 commit (18/18). On the real repo, <code>3339517</code> is refused and <code>7299ee9</code> and HEAD are accepted.</li>
   <li><b>All seven IV defects fixed</b> (D1 to D8; the IV report has no D9). Each fix has a test that failed before it and passes after; red to green is in the table below. D7 was fixed rather than documented.</li>
@@ -46,9 +146,7 @@
   <li><b>Deliberate breaks:</b> all 8 unit-level and all 14 SERVICE-level breaks were caught, each by its intended assertion. <code>convex/</code> was restored after every run.</li>
   <li><b>No real providers, production, spend or sends.</b> Evidence secret scans are clean.</li>
 </ul>
-</div>
-
-<h2>Defects: red to green</h2>
+<h3>Defects: red to green</h3>
 <table>
 <tr><th>#</th><th>Fix</th><th>Red (before)</th><th>Green (after)</th></tr>
 <tr><td>D1</td><td>CSV import duplicate and lookup matching only match records the member can read (<code>findReadableByTitle</code>). An unreadable name is treated exactly like a missing one.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/oracles-red.log</code>: "expected 2 to be 1" (hidden title skipped); lookup column gave "Record not found" vs a different error for a missing name</td><td><code>ops/authority/oracles.test.ts</code> 4/4 (<code>evidence/2026-09-25-i1/revision-1/reds/oracles-green.log</code>); IV C3-M4 PASS</td></tr>
@@ -62,7 +160,7 @@
 <tr><td>Floor</td><td><code>authorityFloor()</code> plus a required argument to <code>preflight()</code>. The release CLI computes it from the rollback target's tree.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/floor-red.log</code>: "Missing expected exception"</td><td><code>evidence/2026-09-25-i1/revision-1/reds/floor-green.log</code> 18/18; <code>evidence/2026-09-25-i1/revision-1/reds/floor-real-repo.log</code></td></tr>
 </table>
 
-<h2>Corrected claims from the first handover</h2>
+<h3>Corrected claims from the first handover</h3>
 <ul>
   <li><b>"Refused after rollback" was overstated.</b> The old "compatible-enforcing-rollback" phase restored the expanded schema and kept running the I1 code; no code was rolled back. The IV showed that a real code rollback to <code>3339517</code> brings hidden fields back and widens scoped reads. The release gate now refuses such a target. The replay's rollback phase still only proves a schema rollback on I1-or-later code.</li>
   <li><b>"All 43 H0 groups are mapped to named production tests" was a string match only.</b> 18 rows were wrong. The guard now checks that each mapped test actually performs the group's operations. The guard's limit: it checks which operations are performed, not assertion meaning, so a verifier should still read the mapped tests.</li>
@@ -71,7 +169,7 @@
   <li><b>Internal inventory labels are now swept, not just declared,</b> for every operator write that touches a workspace, and for the adapter settlement routes checked in the internal sweep (bind, page and callback). The remaining internal functions sit behind swept routes.</li>
 </ul>
 
-<h2>Known limits</h2>
+<h3>Known limits</h3>
 <ul>
   <li>Workspaces frozen before this revision have no recorded frozen keys, so they fall back to current keys (the D7 behaviour). Nothing with I1 has been deployed, so no workspace is affected.</li>
   <li>Readonly tail: one send can still be consumed within the 1-second permit window (see Your calls).</li>
@@ -79,7 +177,7 @@
   <li>The financial finality adapter is still SIM. Hosted log sinks were not checked.</li>
 </ul>
 
-<h2>How to reproduce</h2>
+<h3>How to reproduce</h3>
 <pre>git clone https://github.com/shakur-cmd/remold &amp;&amp; cd remold &amp;&amp; git checkout f1de7010c28d28578882497f295e5cd2eb938549
 pnpm install &amp;&amp; (cd packages/mcp &amp;&amp; pnpm install &amp;&amp; pnpm build &amp;&amp; pnpm test)
 pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm build &amp;&amp; node --test ops/release/release.test.mjs
@@ -91,7 +189,7 @@ I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutants-service.mjs    # 14 CAUGHT, n
 # IV suite: checkout i1/iv-2026-09-25 -- evidence/2026-09-25-i1/iv, copy fixture-iv.ts to ops/authority/,
 # then node evidence/2026-09-25-i1/iv/iv-service.mjs  (24/24 here; needs ports 3480/3481 free, or apply its port patch)</pre>
 
-<h2>Attack cases for the re-verifier</h2>
+<h3>Attack cases for the re-verifier</h3>
 <p>This is authorized defensive testing of the owner's own app. Run it on an isolated local backend with synthetic data only.</p>
 <ol>
   <li><b>Existence oracles.</b> Probe every name- and code-based resolution path with a record the caller can't read versus a name that doesn't exist, and compare outcomes byte for byte:
@@ -108,52 +206,6 @@ I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutants-service.mjs    # 14 CAUGHT, n
   <li><b>Everything from the first handover:</b> old wildcard agent writing a newly added object, role downgrade, stale approval, a hidden field in an open subscription, an invalid secret reference, and the same ID under a different provider instance.</li>
 </ol>
 
-<h2>H0 group to production test mapping (guarded by operation matching)</h2>
-<table><tr><th>#</th><th>H0 group (proofs/contract/replay.mjs)</th><th>Production test(s)</th></tr>
-<tr><td>1</td><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>H0#1 foreign owners cannot mutate known IDs and actor injection is rejected<br>Same external ID under different provider instances stays isolated per connection<br>SERVICE cross-tenant collision leaves the losing account and organization unchanged</td></tr>
-<tr><td>2</td><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor<br>Propose-mode external authority still requires human approval; currency and binding scopes cannot widen</td></tr>
-<tr><td>3</td><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
-<tr><td>4</td><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td>Propose-mode external authority still requires human approval; currency and binding scopes cannot widen<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
-<tr><td>5</td><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
-<tr><td>6</td><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td>Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks<br>Hidden field value never appears in any human query or agent REST read<br>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit<br>a manager cannot escalate fields, manage peers, or fire its grant ancestor</td></tr>
-<tr><td>7</td><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td>H0#7 expired grant denies final permit without a lifecycle sweep<br>Payload edits invalidate immutable approval; destination and schedule are enforced</td></tr>
-<tr><td>8</td><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td>External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail</td></tr>
-<tr><td>9</td><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>Same external ID under different provider instances stays isolated per connection</td></tr>
-<tr><td>10</td><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td>Missing usage pauses cheaper work until authoritative usage settles exactly once<br>Provisional absence permits only same-key retry and old-fence truthful settlement</td></tr>
-<tr><td>11</td><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td>SERVICE transaction races reserve organization budget and concurrency once<br>Concurrent duplicate logical proposals and claims yield one operation and reservation</td></tr>
-<tr><td>12</td><td>Per-run/global spend and global concurrency caps bound both tenants</td><td>Global spend, concurrency and per-run ceilings serialize across distinct tenants</td></tr>
-<tr><td>13</td><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td>Continuation reduces per-call exposure and old fence cannot consume the next step<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
-<tr><td>14</td><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td>One-use expiring permit and server scheduled crash recovery retain consumed uncertainty<br>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
-<tr><td>15</td><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>16</td><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
-<tr><td>17</td><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td>Every approval material field invalidates the reviewed version<br>Payload edits invalidate immutable approval; destination and schedule are enforced<br>Final permit refuses expired approval without relying on asynchronous sweeps</td></tr>
-<tr><td>18</td><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose<br>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
-<tr><td>19</td><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td>Readonly between claim and permit stops sends but permits truthful receipt settlement<br>Human adoption creates a new attributed command while preserving the fired agent original<br>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
-<tr><td>20</td><td>Provisioning durable intents preserve delete-before/create-before races</td><td>Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient</td></tr>
-<tr><td>21</td><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td>Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
-<tr><td>22</td><td>Durable cancellation survives rejection, absence, expiry and model continuation</td><td>Durable cancellation survives rejection and absence<br>Production dispatch records cancelled late acceptance exactly once<br>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
-<tr><td>23</td><td>Scoped adapter sees cancellation signal and records one late accepted tail</td><td>External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
-<tr><td>24</td><td>Late consumed outcome settles once after provisional or final absent lookup</td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>25</td><td>Per-call remaining exposure, missing usage and actual overruns fence final dispatch</td><td>Continuation reduces per-call exposure and old fence cannot consume the next step<br>Final permit rechecks missing usage discovered after a different operation was claimed<br>Actual overrun records the full cost and blocks continuation and new spending<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>26</td><td>Conflicting provider reference refuses durably and holds spend without rolling back anomaly</td><td>Receipt collisions persist a durable anomaly instead of rolling it back with an exception</td></tr>
-<tr><td>27</td><td>Per-recipient and per-purpose suppression never changes another contact or tenant</td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
-<tr><td>28</td><td>Server scheduler recovers adapter crashes without a callback or manual expiry call</td><td>One-use expiring permit and server scheduled crash recovery retain consumed uncertainty</td></tr>
-<tr><td>29</td><td>Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives</td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
-<tr><td>30</td><td>Unresolved consumed attempt survives sweep and holds global exposure</td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>31</td><td>Unresolved consumed attempt survives expiry and holds global exposure</td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>32</td><td>Unresolved consumed attempt survives failure and holds global exposure</td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>33</td><td>Cancellation cannot release confirmed work with missing usage</td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
-<tr><td>34</td><td>Unconsumed unknown is ignored and scheduler recovers false</td><td>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
-<tr><td>35</td><td>Unconsumed unknown is ignored and scheduler recovers true</td><td>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
-<tr><td>36</td><td>Single-step accepted overrun remains confirmed false</td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>37</td><td>Single-step accepted overrun remains confirmed true</td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
-<tr><td>38</td><td>Exhausted successful continuation settles and releases its slot</td><td>Continuation reduces per-call exposure and old fence cannot consume the next step</td></tr>
-<tr><td>39</td><td>Suppression without an existing purpose/channel row is durable</td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose</td></tr>
-<tr><td>40</td><td>Settled-step provisional absence cannot settle a later unresolved step</td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly</td></tr>
-<tr><td>41</td><td>Settled-step final absence cannot settle a later unresolved step</td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly</td></tr>
-<tr><td>42</td><td>Old consumed fence for the same unresolved step still supports provisional absence</td><td>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
-<tr><td>43</td><td>Old consumed fence for the same unresolved step still supports final absence</td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
-</table>
 
 <h2>First handover, for reference</h2>
 <p>This session's first-round evidence is in <code>evidence/2026-09-25-i1/</code> (service, migration, service-mutants, unit-mutants). Revision-1 evidence is in <code>evidence/2026-09-25-i1/revision-1/</code>.</p>

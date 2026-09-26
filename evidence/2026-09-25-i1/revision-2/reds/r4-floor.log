@@ -1,0 +1,51 @@
+$ node --test ops/release/release.test.mjs
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.530166ms)
+✔ changed, missing and injected artifact bytes are refused (1.426542ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (52.113333ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.124167ms)
+✔ version metadata must name the artifact commit (0.717209ms)
+✔ symlink artifacts are refused instead of reading files outside the build (1.045667ms)
+✔ failed real process halts checks before a later process can run (20.153125ms)
+✔ successful real processes run in order (40.392791ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.231083ms)
+✔ missing metadata and destructive contraction are refused (0.105333ms)
+✔ a rollback to a schema without the expanded fields is refused (0.111542ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.420708ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (43.407917ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.042084ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (24.7455ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (19.812792ms)
+✔ PR changes use their common ancestor when the target branch advances independently (216.206667ms)
+✖ after the I1 freeze, rollback to code that predates I1 authority is refused (252.968708ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 17
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 712.9015
+
+✖ failing tests:
+
+test at ops/release/release.test.mjs:202:1
+✖ after the I1 freeze, rollback to code that predates I1 authority is refused (252.968708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/release/release.test.mjs:222:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+[ELIFECYCLE] Command failed with exit code 1.

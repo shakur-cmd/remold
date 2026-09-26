@@ -73,6 +73,11 @@ export async function replaySecrets({ runtime, tenant, test }) {
     texts.push((await response(runtime, '/api/v1/changes', agent.key, { action: 'create', object: 'company', values: { name: 'x' }, reason: 'hygiene', apiKey: forwarded })).text);
     texts.push((await response(runtime, '/api/v1/suggestions', agent.key, { bogus: forwarded })).text);
     texts.push((await response(runtime, '/api/v1/operations', agent.key, { logical: forwarded, bindingId: forwarded })).text);
+    // Keys named after Object.prototype members are still extra keys (IV round 2, R1).
+    for (const key of ['constructor', 'toString', 'hasOwnProperty', 'valueOf']) {
+      texts.push((await response(runtime, '/api/v1/inbox', agent.key, { text: 'x', [key]: forwarded })).text);
+      await adapter('/api/integrations/v1/callback', connection.adapterKey, { bindingId, eventId: 'proto-' + key, body: '{}', [key]: forwarded });
+    }
     await new Promise(resolve => setTimeout(resolve, 1500));
     const sha256 = value => createHash('sha256').update(value).digest('hex');
     for (const [label, value] of [['forwarded body field', forwarded], ['adapter key SHA-256', sha256(connection.adapterKey)], ['agent key SHA-256', sha256(agent.key)]]) {

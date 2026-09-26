@@ -3,7 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireMember } from "./identity";
-import { canReadObject, canReadRecord, canReadField, projectRecord } from "./authority/reads";
+import { canReadObject, canReadRecord, canReadField, projectRecord, firstVisible } from "./authority/reads";
 
 const DAY = 24 * 60 * 60 * 1000;
 const QUIET_DAYS = 14;
@@ -26,23 +26,21 @@ export const get = query({ args: { orgId: v.id("orgs"), today: v.number() }, han
   const task = await standard(ctx, args.orgId, "task");
   const due = task?.byKey.get("dueDate"), done = task?.byKey.get("done");
   if (task && canReadObject(principal, task.object) && due?.slot && !due.retired && canReadField(principal, task.object, due) && (!done || canReadField(principal, task.object, done))) {
-    const rows: Doc<"records">[] = await (ctx.db.query("records") as any)
-      .withIndex(`by_${slotName(due)}`, (q: any) => q.eq("orgId", args.orgId).eq("objectId", task.object._id).gt(slotName(due), 0).lt(slotName(due), args.today + 8 * DAY))
-      .take(200);
-    for (const row of rows) if (canReadRecord(principal, task.object, row) && canReadField(principal, task.object, due, row._id) && (!done || (canReadField(principal, task.object, done, row._id) && row.values[done._id] !== true))) tasks.push(row);
+    const rows = (ctx.db.query("records") as any)
+      .withIndex(`by_${slotName(due)}`, (q: any) => q.eq("orgId", args.orgId).eq("objectId", task.object._id).gt(slotName(due), 0).lt(slotName(due), args.today + 8 * DAY));
+    tasks.push(...await firstVisible<Doc<"records">, Doc<"records">>(rows, 50, row => canReadRecord(principal, task.object, row) && canReadField(principal, task.object, due, row._id) && (!done || (canReadField(principal, task.object, done, row._id) && row.values[done._id] !== true)) ? row : null));
   }
 
   const quiet: Doc<"records">[] = [];
   const deal = await standard(ctx, args.orgId, "opportunity");
   const stage = deal?.byKey.get("stage");
   if (deal && canReadObject(principal, deal.object) && (!stage || canReadField(principal, deal.object, stage))) {
-    const rows = await ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", args.orgId).eq("objectId", deal.object._id).lt("updatedAt", Date.now() - QUIET_DAYS * DAY)).take(200);
-    for (const row of rows) {
-      if (!canReadRecord(principal, deal.object, row) || (stage && !canReadField(principal, deal.object, stage, row._id))) continue;
+    const rows = ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", args.orgId).eq("objectId", deal.object._id).lt("updatedAt", Date.now() - QUIET_DAYS * DAY));
+    quiet.push(...await firstVisible(rows, 20, row => {
+      if (!canReadRecord(principal, deal.object, row) || (stage && !canReadField(principal, deal.object, stage, row._id))) return null;
       const value = stage ? row.values[stage._id] : undefined;
-      if (value !== "won" && value !== "lost") quiet.push(row);
-      if (quiet.length === 20) break;
-    }
+      return value !== "won" && value !== "lost" ? row : null;
+    }));
   }
   return {
     task: task && due && canReadObject(principal, task.object) && canReadField(principal, task.object, due) ? { objectKey: task.object.key, dueFieldId: due._id, doneFieldId: done?._id ?? null } : null,

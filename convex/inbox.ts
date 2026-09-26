@@ -3,13 +3,14 @@ import { v } from "convex/values";
 import { requireWriter, requireMember } from "./identity";
 import { fail } from "./errors";
 import { unrestrictedHuman, canSeeInbox, visibleInbox } from './authority/inbox';
+import { firstVisible } from './authority/reads';
 
 export const audience = query({ args: { orgId: v.id('orgs') }, handler: async (ctx, args) => ({ canShare: unrestrictedHuman(await requireMember(ctx, args.orgId)) }) });
 
 export const list = query({ args: { orgId: v.id("orgs"), status: v.optional(v.union(v.literal("pending"), v.literal("resolved"))) }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId);
-  const rows = await ctx.db.query("agentInbox").withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", args.status ?? "pending")).order("asc").take(100);
-  return (await Promise.all(rows.map(row => visibleInbox(ctx, principal, row)))).filter((row): row is NonNullable<typeof row> => row !== null);
+  const rows = ctx.db.query("agentInbox").withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", args.status ?? "pending")).order("asc");
+  return firstVisible(rows, 100, row => visibleInbox(ctx, principal, row));
 } });
 
 export const add = mutation({ args: { orgId: v.id("orgs"), text: v.string(), source: v.optional(v.string()), shareWithAgents: v.optional(v.boolean()) }, handler: async (ctx, args) => {

@@ -209,10 +209,23 @@ test('after the I1 freeze, rollback to code that predates I1 authority is refuse
   const preI1 = run('rev-parse', 'HEAD');
   for (const file of ['migration.ts', 'reads.ts']) writeFileSync(join(repo, 'convex/authority', file), '// authority core');
   run('add', '-A'); run('commit', '-qm', 'I1'); const withI1 = run('rev-parse', 'HEAD');
-  assert.equal(authorityFloor(repo, preI1), false);
-  assert.equal(authorityFloor(repo, withI1), true);
+  run('commit', '-q', '--allow-empty', '-m', 'after I1'); const afterI1 = run('rev-parse', 'HEAD');
+  // Pre-I1 code with the two paths stubbed in, on a branch that never had I1.
+  run('checkout', '-q', '-b', 'stubbed', preI1); mkdirSync(join(repo, 'convex/authority'), { recursive: true });
+  for (const file of ['migration.ts', 'reads.ts']) writeFileSync(join(repo, 'convex/authority', file), '');
+  run('add', '-A'); run('commit', '-qm', 'stubs'); const stubbed = run('rev-parse', 'HEAD');
+  const tree = run('rev-parse', `${withI1}^{tree}`);
+  // Descends from I1 but the core was removed.
+  run('checkout', '-q', '-b', 'removed', withI1); run('rm', '-q', 'convex/authority/reads.ts'); run('commit', '-qm', 'drop core'); const removed = run('rev-parse', 'HEAD');
+  const floor = (target) => authorityFloor(repo, target, withI1);
+  assert.equal(floor(preI1), false);
+  assert.equal(floor(stubbed), false);
+  assert.equal(floor(tree), false);
+  assert.equal(floor(removed), false);
+  assert.equal(floor(withI1), true);
+  assert.equal(floor(afterI1), true);
   const manifest = target => ({ schemaSha256: schema, release: { class: 'ui-only', rollbackTarget: target } });
-  assert.throws(() => preflight(manifest(preI1), preI1, schema, undefined, undefined, undefined, authorityFloor(repo, preI1)), /predates the I1 authority core/);
+  assert.throws(() => preflight(manifest(preI1), preI1, schema, undefined, undefined, undefined, floor(preI1)), /predates the I1 authority core/);
   assert.throws(() => preflight(manifest(preI1), preI1, schema), /predates the I1 authority core/);
-  assert.deepEqual(preflight(manifest(withI1), withI1, schema, undefined, undefined, undefined, authorityFloor(repo, withI1)), { snapshot: 'not-required', deploymentAuthorized: false });
+  assert.deepEqual(preflight(manifest(withI1), withI1, schema, undefined, undefined, undefined, floor(withI1)), { snapshot: 'not-required', deploymentAuthorized: false });
 });

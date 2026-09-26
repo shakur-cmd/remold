@@ -5,7 +5,7 @@ import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { listRecords } from "./lib/list";
-import { canReadObject, canReadField, projectRecord, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle } from "./authority/reads";
+import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, visibleTitle, firstVisible } from "./authority/reads";
 
 const values = v.record(v.string(), v.any());
 const direction = v.union(v.literal("asc"), v.literal("desc"));
@@ -15,8 +15,11 @@ const slotName = (kind: string, index: number) => `${kind}${index}` as const;
 export const list = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), sort: v.optional(v.object({ fieldId: v.id("fields"), direction })), filter: v.optional(v.object({ fieldId: v.id("fields"), value: v.any() })), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); return listRecords(ctx, args.orgId, args.objectId, args.paginationOpts, args.sort, args.filter, principal); } });
 export const get = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const record = await ctx.db.get(args.recordId); if (!record || record.orgId !== args.orgId) return null; const object = await ctx.db.get(record.objectId); if (!object) return null; const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect(); const masked = await projectRecord(ctx, principal, record); return masked ? { record: masked, object, fields: fields.filter(f => canReadField(principal, object, f, record._id)) } : null; } });
 export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), fieldId: v.id("fields"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {
-  const principal = await requireMember(ctx, args.orgId); const target = await ctx.db.get(args.recordId); const field = await ctx.db.get(args.fieldId); if (!target || target.orgId !== args.orgId || !field || field.orgId !== args.orgId) fail("NOT_FOUND", "Record or field not found");
-  const targetObject = await ctx.db.get(target.objectId), sourceObject = await ctx.db.get(field.objectId); if (!targetObject || !sourceObject) fail("NOT_FOUND"); requireRecordRead(principal, targetObject, target); requireObjectRead(principal, sourceObject); requireQueryField(principal, sourceObject, field);
+  const principal = await requireMember(ctx, args.orgId); const target = await ctx.db.get(args.recordId); const field = await ctx.db.get(args.fieldId);
+  // An unreadable target gets the same answer as a deleted one.
+  const targetObject = target && target.orgId === args.orgId ? await ctx.db.get(target.objectId) : null;
+  if (!target || !targetObject || !canReadRecord(principal, targetObject, target) || !field || field.orgId !== args.orgId) fail("NOT_FOUND", "Record or field not found");
+  const sourceObject = await ctx.db.get(field.objectId); if (!sourceObject) fail("NOT_FOUND"); requireObjectRead(principal, sourceObject); requireQueryField(principal, sourceObject, field);
   if (field.type === "links") { const links = await ctx.db.query("links").withIndex("by_to", (q) => q.eq("orgId", args.orgId).eq("fieldId", args.fieldId).eq("toRecordId", args.recordId)).paginate(args.paginationOpts); const page = []; for (const row of links.page) { const record = await ctx.db.get(row.fromRecordId); if (record) { const masked = await projectRecord(ctx, principal, record); if (masked) page.push(masked); } } return { ...links, page }; }
   if (field.type !== "lookup" || (field.targetObjectId && field.targetObjectId !== target.objectId) || !field.slot) fail("NOT_FOUND", "Field does not relate to record");
   const index = `by_${slotName(field.slot.kind, field.slot.index)}` as any;
@@ -43,16 +46,14 @@ export const search = query({ args: { orgId: v.id("orgs"), objectId: v.optional(
   const limit = Math.min(args.limit ?? 10, 50), text = args.text.trim();
   if (args.objectId) { const object = await ctx.db.get(args.objectId); if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); }
   const records = text
-    ? await ctx.db.query("records").withSearchIndex("search_title", (q) => { const base = q.search("title", text).eq("orgId", args.orgId); return args.objectId ? base.eq("objectId", args.objectId) : base; }).take(limit)
+    ? ctx.db.query("records").withSearchIndex("search_title", (q) => { const base = q.search("title", text).eq("orgId", args.orgId); return args.objectId ? base.eq("objectId", args.objectId) : base; })
     : args.objectId
-      ? await ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId!)).order("desc").take(limit)
-      : [];
+      ? ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId!)).order("desc")
+      : null;
   const objects = new Map<string, { key: string; label: string }>();
-  const result = [];
-  for (const record of records) {
+  return records ? firstVisible(records, limit, async (record) => {
     if (!objects.has(record.objectId)) { const object = await ctx.db.get(record.objectId); if (object) objects.set(record.objectId, { key: object.key, label: object.label }); }
     const object = objects.get(record.objectId), masked = await projectRecord(ctx, principal, record);
-    if (object && masked && (!text || await visibleTitle(ctx, principal, record))) result.push({ _id: record._id, title: masked.title, ref: record.ref, objectKey: object.key, objectLabel: object.label });
-  }
-  return result;
+    return object && masked && (!text || await visibleTitle(ctx, principal, record)) ? { _id: record._id, title: masked.title, ref: record.ref, objectKey: object.key, objectLabel: object.label } : null;
+  }) : [];
 } });

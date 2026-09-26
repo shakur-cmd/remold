@@ -47,6 +47,20 @@ const operations: [string, RegExp, RegExp][] = [
   ['consume a permit', /\bconsume\(|call\('consume'/, /consume|\.start\(/],
 ];
 
+// Every test body in the production suites, for measuring how specific a pattern is.
+const allBodies = [...new Set([...production.matchAll(/\b(?:test|it)\((['`])([^'`]{10,})\1/g)].map(m => m[2]!))].map(name => {
+  const prefix = name.replace(/ (?:false|true|provisional|final|sweep|expiry|failure)(?= |$).*$/, '').slice(0, 40);
+  return [...production.matchAll(/\b(?:test|it)\((['`])/g)].filter(m => production.startsWith(prefix, m.index! + m[0].length)).length === 1 ? body(production, name) : null;
+}).filter((b): b is string => b !== null);
+// The shared operation table is coarse (claim, permit, consume...), so each row also
+// names the group's own check: a pattern that must appear in a mapped test and in
+// at most MAX_SHARED production tests, so it cannot be a generic step (IV round 2).
+const MAX_SHARED = 6;
+const accepts = (row: typeof parity[number], covered: string) => {
+  const h0 = body(replay, row.h0);
+  return operations.every(([, inH0, inProduction]) => !inH0.test(h0) || inProduction.test(covered)) && new RegExp(row.exercises).test(covered);
+};
+
 test('every frozen H0 replay group maps to production tests that exercise its operations', () => {
   expect(parity).toHaveLength(43);
   expect(new Set(parity.map(row => row.h0)).size).toBe(43);
@@ -57,12 +71,22 @@ test('every frozen H0 replay group maps to production tests that exercise its op
     const covered = row.production.map(name => body(production, name)).join('\n');
     const missing = operations.filter(([, inH0, inProduction]) => inH0.test(h0) && !inProduction.test(covered)).map(([label]) => label);
     if (missing.length) gaps.push(`${row.h0}: mapped tests never ${missing.join(', ')}`);
+    const own = new RegExp(row.exercises), shared = allBodies.filter(b => own.test(b)).length;
+    if (!own.test(covered)) gaps.push(`${row.h0}: no mapped test does its own check /${row.exercises}/`);
+    if (shared > MAX_SHARED) gaps.push(`${row.h0}: /${row.exercises}/ appears in ${shared} tests, too generic to identify this group`);
   }
   expect(gaps).toEqual([]);
 });
 
+test('no single production test can stand in for more than five groups', () => {
+  // The largest multi-group production test covers five groups by design (H0#15 H0#24 H0#25 H0#36 H0#37).
+  const widest = Math.max(...allBodies.map(b => parity.filter(row => accepts(row, b)).length));
+  expect(allBodies.length).toBeGreaterThan(100);
+  expect(widest).toBeLessThanOrEqual(5);
+});
+
 test('the guard rejects a map that points every group at one unrelated test', () => {
   const unrelated = 'Real JWT verification derives human identity and rejects invalid audience and expired tokens';
-  const failing = parity.filter(row => { const h0 = body(replay, row.h0), covered = body(production, unrelated); return operations.some(([, inH0, inProduction]) => inH0.test(h0) && !inProduction.test(covered)); });
-  expect(failing).toHaveLength(43);
+  const covered = body(production, unrelated);
+  expect(parity.filter(row => !accepts(row, covered))).toHaveLength(43);
 });

@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { requireWriter, requireMember, type Principal } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
-import { canReadRecordId, canReadField, requireObjectRead, requireRecordRead, visibleTitle } from "./authority/reads";
+import { canReadRecordId, canReadField, requireObjectRead, requireRecordRead, visibleTitle, firstVisible } from "./authority/reads";
 
 const same = (left: unknown, right: unknown) => JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
 
@@ -19,8 +19,8 @@ async function row(ctx: QueryCtx, principal: Principal, suggestion: Doc<"suggest
 
 export const list = query({ args: { orgId: v.id("orgs"), status: v.optional(v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("conflicted"))) }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId);
-  const rows = await ctx.db.query("suggestions").withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", args.status ?? "pending")).order("desc").take(200);
-  return (await Promise.all(rows.map((suggestion) => row(ctx, principal, suggestion)))).filter((value): value is NonNullable<typeof value> => value !== null);
+  const rows = ctx.db.query("suggestions").withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", args.status ?? "pending")).order("desc");
+  return firstVisible(rows, 200, (suggestion) => row(ctx, principal, suggestion));
 } });
 
 export const forRecord = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => {

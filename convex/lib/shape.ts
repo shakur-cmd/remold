@@ -23,7 +23,8 @@ function conforms(shape: Json, value: unknown, ids: Ids): boolean {
     case "object": {
       if (!value || typeof value !== "object" || Array.isArray(value)) return false;
       const fields = shape.value, record = value as Record<string, unknown>;
-      if (Object.keys(record).some(key => !(key in fields))) return false;
+      // Object.hasOwn: `in` also sees Object.prototype, so a key named constructor or toString would pass.
+      if (Object.keys(record).some(key => !Object.hasOwn(fields, key))) return false;
       return Object.entries(fields).every(([key, field]) => record[key] === undefined ? field.optional : conforms(field.fieldType as Json, record[key], ids));
     }
   }

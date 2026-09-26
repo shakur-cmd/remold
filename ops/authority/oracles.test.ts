@@ -56,3 +56,52 @@ it('agent proposals check proposal scope before resolving a lookup by name', asy
   expect(secret.status).toBe(400); expect(secret).toEqual(await propose(MISSING));
   expect((await propose('My Co')).status).toBe(201);
 });
+
+// IV round 2, R2: a result limit must count only what the caller can read, or a
+// hidden match pushes their own match out and so reveals that it exists.
+it('search fills its limit with readable matches, so hidden matches change nothing', async () => {
+  const run = async (withSecret: boolean) => {
+    const f = await scopedWorkspace();
+    const create = async (name: string) => (await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: f.company.object._id, values: { [f.company.fields.name._id]: name } })).recordId;
+    if (withSecret) for (const name of ['Alpha Bravo Charlie', 'Alpha Bravo Delta', 'Alpha Charlie Delta']) await create(name);
+    // convex-test ranks search hits by age and recent lists by update time, so hidden rows come first either way.
+    f.mine = await create('Alpha Mine');
+    if (withSecret) await create('Alpha Newest');
+    await restrictToMine(f);
+    const search = (args: any) => f.client.query(api.records.search, { orgId: f.orgId, limit: 1, ...args }).then((r: any[]) => r.map(x => x.title));
+    const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: 'searcher', origin: 'external' });
+    await f.client.mutation(anyApi['authority/grants'].grant, { orgId: f.orgId, target: agent.agentId, capability: 'read', scope: { kind: 'records', objectId: f.company.object._id, records: [f.mine], fields: Object.values(f.company.fields).map((x: any) => x._id) }, mode: 'direct', delegate: false, expiresAt: Date.now() + 600000 });
+    const call = rest(f.t, agent.key), agentSearch = async (query: string) => ((await call('GET', '/api/v1/search?' + query + '&limit=1')).json as any[]).map(x => x.values?.name ?? x.title);
+    return {
+      text: await search({ text: 'Alpha Bravo Charlie Delta' }),
+      textInObject: await search({ text: 'Alpha Bravo Charlie Delta', objectId: f.company.object._id }),
+      recent: await search({ text: '', objectId: f.company.object._id }),
+      agentText: await agentSearch('q=' + encodeURIComponent('Alpha Bravo Charlie Delta')),
+      agentRecent: await agentSearch('object=company'),
+    };
+  };
+  const hidden = await run(true);
+  expect(hidden).toEqual(await run(false));
+  expect(Object.values(hidden)).toEqual(Array(5).fill(['Alpha Mine']));
+});
+
+// IV round 2, R3: by ID, an unreadable record answers exactly like a deleted one.
+it('a record ID the member cannot read gets the same answer as a deleted record', async () => {
+  const f = await scopedWorkspace(), person = await objectFields(f.client, f.orgId, 'person');
+  const secret = await f.t.run(async ctx => (await ctx.db.query('records').collect()).find(r => r.title === SECRET)!._id);
+  const gone = (await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: f.company.object._id, values: { [f.company.fields.name._id]: 'Gone' } })).recordId;
+  await f.client.mutation(api.records.remove, { orgId: f.orgId, recordId: gone });
+  await restrictToMine(f, [{ objectId: person.object._id, records: 'all', fields: 'all' }]);
+  const events = (recordId: any) => outcome(() => f.client.query(api.events.forRecord, { orgId: f.orgId, recordId }));
+  const related = (recordId: any) => outcome(() => f.client.query(api.records.related, { orgId: f.orgId, recordId, fieldId: person.fields.company._id, paginationOpts: { numItems: 5, cursor: null } }));
+  expect(await events(secret)).toEqual(await events(gone));
+  expect(await related(secret)).toEqual(await related(gone));
+  expect((await events(f.mine)).ok).toBe(true);
+});
+
+it('name matching still finds a readable record when many unreadable near-matches outrank it', async () => {
+  const f = await scopedWorkspace(), create = async (name: string) => (await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: f.company.object._id, values: { [f.company.fields.name._id]: name } })).recordId;
+  for (let i = 0; i < 25; i++) await create(`Our Firm ${i}`);
+  f.mine = await create('Our Firm'); await restrictToMine(f);
+  expect(await outcome(() => f.client.mutation(api.capture.save, { orgId: f.orgId, kind: 'company', name: 'Our Firm' }))).toMatchObject({ ok: true, value: { companyCreated: false, recordId: f.mine } });
+});
