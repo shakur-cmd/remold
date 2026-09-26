@@ -1,0 +1,16 @@
+KILLED   sandbox network -> A reached [{"host":"172.17.0.2","port":8080},{"host":"172.17.0.1","port":22},{"host":"1.1.1.1","port":443}]
+KILLED   sandbox volume selection -> B sees only its own secret file
+KILLED   sandbox environment -> A env HOME,HOSTNAME,NODE_VERSION,PATH,REMOLD_ADAPTER_TOKEN,YARN_VERSION
+KILLED   read-only root filesystem -> Expected values to be strictly equal:
+KILLED   non-root user -> Expected values to be strictly equal:
+KILLED   missing cap means zero -> Expected values to be strictly equal:
+KILLED   release undispatched claim -> A leaked reservation
+KILLED   H0 org and global budget cap -> A spent 12 + reserved 0 exceeds cap 10
+KILLED   H0 one dispatch per org -> peaks {"global":3,"A":2,"B":1}
+KILLED   kill watcher -> {"tenant":"A","id":"jh733mt7rtkqjfr94qtzqf91ms8f4dhq","mode":"normal","units":8,"applied":false,"fence":1,"step":1,"maxUnits":8,"exitAt":1790430405997,"tokens":8,"usage":8,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":true}
+KILLED   global kill switch -> {"tenant":"A","id":"jh774cc073hj52fatvjayrmbjd8f5r42","mode":"normal","units":8,"applied":true,"fence":1,"step":1,"maxUnits":8,"exitAt":1790430426150,"tokens":8,"usage":8,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":false}
+KILLED   late result gate -> Expected values to be strictly equal:
+KILLED   kill state checked before applying a result -> {"tenant":"A","id":"jh77d4mzj86qqb5zc4ymajddhd8f5d4s","mode":"normal","units":4,"applied":true,"fence":1,"step":1,"maxUnits":4,"exitAt":1790430456662,"tokens":4,"usage":4,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":true}
+KILLED   missing usage stays missing -> {"tenant":"A","id":"jh7b0f6svq3yfgb3g64b1xawax8f5y97","mode":"noUsage","units":2,"applied":true,"fence":1,"step":1,"maxUnits":2,"exitAt":1790430473669,"tokens":2,"usage":2,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":false}
+KILLED   token limit -> {"tenant":"A","id":"jh7eq564w3151ps8gj4q62574n8f5c6y","mode":"overshoot","units":4,"applied":false,"fence":1,"step":1,"maxUnits":4,"exitAt":1790430490394,"tokens":9,"killed":"duration","killLatencyMs":66,"usage":9,"accepted":true,"late":false,"overrun":true,"cancelledBeforeReconcile":false}
+KILLED   duration limit -> {"tenant":"B","id":"jh74978303qajtpzp4mzryp4cx8f4rv1","mode":"hang","units":4,"applied":false,"fence":1,"step":1,"maxUnits":4,"exitAt":1790430506998,"tokens":1,"killed":"cancel","killLatencyMs":89,"usage":1,"accepted":true,"late":false,"overrun":false,"cancelledBeforeReconcile":true}
