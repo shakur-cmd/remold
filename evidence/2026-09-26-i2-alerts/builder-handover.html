@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>I2 alerts: builder handover</title>
+<title>I2 alerts: builder handover, revision 2</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -21,70 +21,87 @@
 </style>
 </head>
 <body>
-<h1>I2 alerts: builder handover</h1>
-<div class="meta">2026-09-26 · scope: I2 alert row (background error, caught REST 500, stalled operation) · level: SERVICE, builder-run · status: awaiting independent verification</div>
+<h1>I2 alerts: builder handover, revision 2</h1>
+<div class="meta">2026-09-26 · scope: I2 alert row, repairs after independent REVISE on a173192 · level: SERVICE, builder-run · status: awaiting independent verification</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
-  <li>Pick the alert channel and account (for example a Slack incoming webhook, an email relay, or a paging service). Until you do, alerts queue up and nobody gets them. Any HTTPS webhook URL works with no code change: set <code>REMOLD_ALERT_WEBHOOK_URL</code>.</li>
-  <li>Confirm the defaults: stalled means not finished 15 minutes after its start time; REST alert window is 5 minutes. Both can be changed by env var.</li>
+  <li>Pick the alert channel and account. Until then alerts queue and nobody receives them. Any public HTTPS webhook works through <code>REMOLD_ALERT_WEBHOOK_URL</code>.</li>
+  <li>Confirm the defaults: a job counts as stalled 15 minutes after it was due; the REST window is 5 minutes.</li>
+  <li>Something outside Remold should watch the watcher. If the alert cron stops or its final write fails, nothing inside Remold can say so. The channel you pick may offer a "no message in N minutes" check.</li>
 </ul>
 </div>
 
 <div class="status">
-<h2>Done and proven (builder only, not yet independently checked)</h2>
+<h2>Done and proven (builder only)</h2>
 <ul>
-  <li><b>Before:</b> the same three injected faults produced 0 notifications in 75 seconds. The facts existed (a failed scheduled row, a REST 500 metric, a long-running action) but nothing told anyone. <code>baseline.json</code></li>
-  <li><b>After:</b> a failed background function, a caught REST 500 and a stalled scheduled action each produced their own alert at a local HTTP sink. Repeat faults and repeat checks sent nothing new. Each alert sent one "resolved" notice after recovery. The sink got 6 notices in total, all with unique ids. <code>service.json</code></li>
-  <li>The first alert arrived through the minute cron alone, with no manual trigger (11.6 s after the failure).</li>
-  <li>Scrubbing: no email, secret, record text, error text, URL query or auth header reached the sink. The scan checked every raw byte the sink received against 8 forbidden strings.</li>
-  <li>13 of 13 unit mutants were killed (scrubbing x2, dedupe, each trigger, resolve x2, delivery x2, channel). One service mutant that forwarded the real Convex error text was caught by the scrub check with <code>['Synthetic background failure']</code>.</li>
-  <li>Typecheck passes. App tests 80/80 (7 new). Authority tests 97/97. Release tests 19/19. Build passes.</li>
+  <li><b>D1, load (high):</b> a173192 threw "Too many reads (limit: 4096)" after 5100 REST requests (<code>r2/attacks-before.json</code>). Now no check threw while racing 5100 and 15000 REST requests, 5000 scheduled rows of 4 KB arguments, and a real 25000-job scheduler backlog. The slowest check took 30 s. A burst larger than one check can read raised the coverage alert and resolved it once checks caught up; the real backlog kept coverage open. The IV's own attack script now completes with 0 leaks and 0 duplicate ids (<code>r2/attacks-after.json</code>).</li>
+  <li><b>D2, long stalls (medium):</b> before, all 8 IV unit attacks passed, including "pending at 61 min is reported Resolved" and "job due 50 min ahead never checked" (<code>r2/iv-unit-attacks-before.txt</code>). Now a stall is measured from the due time, stays open at 61 minutes and at 3 hours, and resolves only when the job runs. A job due 50 minutes ahead is flagged when 20 minutes overdue. A job due 30 minutes ahead is not flagged at 20 minutes.</li>
+  <li><b>D3, release:</b> the new rollback target is <code>566abac</code>. The sealed artifact for <code>b4dcdef</code> passed preflight with a fresh restore receipt from a synthetic backup. The same artifact is refused against <code>bb8e3ed</code> and <code>a173192</code> ("Rollback schema differs"). <code>deploymentAuthorized</code> stays false.</li>
+  <li><b>D4, redirects and hosts (low):</b> the IV's 307 no longer reaches <code>[::1]</code>. Sends refuse redirects. Plain HTTP is accepted only to exactly <code>127.0.0.1</code> or <code>localhost</code>. HTTPS to loopback, private, link-local, <code>.internal</code> or <code>.local</code> hosts is refused.</li>
+  <li><b>D5, slow sink (low):</b> each notice has its own 5-minute claim, far longer than the 10 s send timeout. The IV's 70 s slow-sink scenario now sends each id exactly once.</li>
+  <li><b>D6, mutants:</b> 25 of 25 unit mutants killed, including the IV's six survivors: 0.0.0.0, the "localhost" prefix, non-HTTP schemes, stall measured from creation, the coverage flag never set, and retention removed. The service mutant that forwards Convex error text is caught by the sink scrub check.</li>
+  <li><b>D7, rehearsals:</b> <code>proof:rate-limit</code> failed before with 503 x50. It now runs the real authority freeze and agent migration first, then passes (13 allowed, 37 limited). <code>proof:flags</code> and the telemetry rehearsal pass. <code>proof:snapshot</code> also failed after I1 for the same missing-package reason; that is fixed and it passes.</li>
+  <li>Main rehearsal: 3 separate alerts opened and resolved, the first one sent by the cron alone after 10.6 s, with 0 leaks.</li>
+  <li>Suites: typecheck, app tests 87/87, authority tests 97/97, release tests 19/19 and build all pass. The release build of <code>b4dcdef</code> reran them on the exact commit.</li>
 </ul>
 </div>
 
-<h2>What this does not prove</h2>
+<h2>How it works now</h2>
+<p>A cron runs <code>alerts:check</code> every minute. The check does its reading in small queries. Queries never conflict with <code>telemetry:record</code>, which rewrites the metrics rows and scheduled-function rows the old version read inside a mutation.</p>
+<ol>
+  <li><b>Scan.</b> It reads <code>_scheduled_functions</code> from a saved watermark, stopping 10 s short of now so it does not read rows still committing. It reads 1000 rows a page, up to 10 pages, within 30 s. Finished runs update a small per-function health row. Unfinished jobs are added to a watch list by job id.</li>
+  <li><b>Watch.</b> Jobs 15 or more minutes past their due time are all read. If that cannot finish, the check is behind. Recently due jobs are read only to record their results; leaving some for the next check is ordinary lag. A job still unfinished past the threshold is marked stalled on its watch row. Its alert resolves only when that row goes, which happens when the job finishes, is canceled or disappears.</li>
+  <li><b>REST.</b> The check counts caught 500s in the last 5 minutes. The 503 migration pause is excluded. If the window cannot be read, the REST alert is held as it is.</li>
+  <li><b>Apply.</b> One mutation writes only alert tables. It compare-and-sets the watermark, so of two overlapping checks only one applies. It opens and resolves alerts and queues one notice per open and per resolve. Anything the check could not read raises the <code>coverage</code> alert.</li>
+  <li><b>Send.</b> The check claims one notice, sends it without following redirects, and marks it delivered on a 2xx. After a failure it stops and leaves the rest for the next check. Delivery is at-least-once, so receivers should dedupe by <code>id</code>. Notices are deleted after 7 days.</li>
+</ol>
+<p>The schema adds five tables: <code>opsAlerts</code>, <code>opsNotices</code>, <code>opsAlertScan</code>, <code>opsAlertWatch</code> and <code>opsAlertFunctions</code>. No existing table or field changed.</p>
+
+<h2>The rollback target (D3), and why</h2>
+<p>Preflight requires the rollback target's <code>convex/schema.ts</code> to match the candidate byte for byte, and to descend from the certified I1 floor <code>bb8e3ed</code>. I made <code>566abac</code> the schema-only step. It is the base code plus the five tables, with the alert module, cron, inventory rows and alert scripts removed. On that tree I checked typecheck, app tests 73/73, authority tests 97/97, release tests 19/19 and build.</p>
+<p>Rolling back to it stops alerting and leaves the tables and their data untouched, which is the expand discipline. The next commit, <code>069ce33</code>, restores the alert code and names <code>566abac</code> in <code>ops/release/notes.json</code>. <code>b4dcdef</code> only repairs the release snapshot scripts.</p>
+<p>The receipt comes from a synthetic seeded backup. A real release still needs the operator to name the real production backup.</p>
+
+<h2>Found on the way</h2>
 <ul>
-  <li>Delivery to the channel you choose. The only receiver so far was a local loopback sink, so the contract's "delivered alerts" check stays <b>open, owner-gated</b>.</li>
-  <li>Hosted behavior. Everything ran in a disposable local anonymous Convex on ports 3830/3831 with the sink on 3832. There were no provider accounts, no cloud deploys and only synthetic data.</li>
-  <li>Watching the watcher. If the alert cron itself stops, nothing reports it. That needs an outside heartbeat on the chosen channel.</li>
-  <li>Cron-invoked function failures. Convex does not write cron runs to <code>_scheduled_functions</code>, so only work started through <code>ctx.scheduler</code> is covered. Stuck integration effects (<code>integrationOps</code> leases) belong to the later I13 alert row and are not covered here.</li>
-  <li>Platform function logs were not inspected. The alert code writes no logs, and the REST 500 path is caught with a generic message.</li>
+  <li><b>Scheduler backlog under REST load.</b> After 5100 REST requests at about 280 per second, the newest 3000 <code>telemetry:record</code> jobs were still pending more than 30 s later. My untested guess is that every request in a minute writes the same metrics row and those mutations retry against each other. It is telemetry behavior, not alert behavior. With the 15-minute default it only alerts if the backlog lasts that long. Worth a look before production traffic.</li>
+  <li><b>Snapshot drill broken since I1.</b> <code>ops/release/snapshot.mjs</code> and <code>snapshot-drill.mjs</code> did not copy <code>packages/contracts</code>, so no persisted release could get a passing receipt. Before: <code>r2/snapshot-seed-before.txt</code>. After: <code>r2/snapshot-drill.txt</code>.</li>
+  <li><b>Kept failed runs.</b> Three failed service runs are kept as evidence. <code>service-run-burst-no-catchup.txt</code>: the watch-add cap was too small. <code>service-run-backlog-no-catchup.txt</code>: a real 25000-job backlog does not drain in 10 minutes locally. <code>service-run-watch-lag-as-behind.txt</code>: recently due jobs were wrongly counted as behind, fixed by the two-pass watch.</li>
+  <li><b>Edited IV script.</b> To rerun the IV attack script, I wrapped its own diagnostic <code>ivFixture:counts</code> query, which reads 4000 system rows and timed out under load. The edited copy is <code>r2/iv-alerts-attacks-counts-wrapped.mjs</code>. Nothing else changed.</li>
+  <li><b>Evidence files restored.</b> The rehearsals rewrite shared evidence files (<code>evidence/2026-09-24-unified-build/*-service.json</code>, <code>ops/telemetry/evidence/service.json</code>, <code>convex/_generated/api.d.ts</code>). I restored those and kept the new outputs under <code>r2/</code>.</li>
 </ul>
 
-<h2>How it works</h2>
-<p>A cron runs <code>alerts:check</code> every minute. It reads three things: scheduled functions from the last 60 minutes (at most 5000 rows), REST metric rows with status 500, and the list of open alerts. It then works out which conditions hold:</p>
-<table>
-<tr><th>Alert</th><th>Opens when</th><th>Resolves when</th></tr>
-<tr><td><code>background-error:&lt;function&gt;</code></td><td>the latest finished run of that function failed</td><td>a later run succeeds, or no failure is left in the 60 minute lookback</td></tr>
-<tr><td><code>rest-500</code></td><td>any caught 500 in the window (default: the previous 5 minutes plus the current one). The deliberate 503 migration pause is excluded</td><td>the window has no 500s</td></tr>
-<tr><td><code>stalled:&lt;function&gt;</code></td><td>scheduled work is still pending or running 15 minutes after its start time</td><td>it finishes</td></tr>
-<tr><td><code>coverage</code></td><td>the scan hit its 5000-row cap, so some work went unchecked</td><td>the scan fits again</td></tr>
-</table>
-<p>One alert row exists per key. A notice is queued only when the key opens or resolves, which is where dedupe happens. Notices are built only from the kind, a code-defined function name, counts and a timestamp. Error text and arguments are never read into them. Delivery claims a notice for 60 seconds, POSTs JSON with the notice id, marks it delivered on a 2xx response, and retries otherwise. Plain HTTP is accepted only for loopback. With no channel set, notices wait and <code>alerts:status</code> shows the count. Delivery is at-least-once, so a receiver should dedupe by <code>id</code>. Notices are kept for 7 days.</p>
-
-<h2>What went wrong on the way (kept as evidence)</h2>
+<h2>Still not proven</h2>
 <ul>
-  <li>Local-core rehearsals were broken on the current branch: <code>ops/rehearsal/local-core.mjs</code> did not copy <code>packages/contracts</code>, which the I1 schema now imports. I added one line. This also affects <code>proof:rate-limit</code>, <code>proof:flags</code> and the telemetry rehearsal, which I did not re-run.</li>
-  <li>The first service run sent the same REST notice twice. The cron and a manual check overlapped, and both sent the same queued notice. The fix is a claim before sending. A new unit test covers it, and its mutant is killed.</li>
-  <li>After that, the same id still arrived twice. The cause was my harness, not the product: the sink runs in the rehearsal's own Node process, and a synchronous CLI call blocked it past the backend's 10 s send timeout, so the product correctly retried. The harness now calls checks asynchronously. See <code>service-run-blocked-sink-failure.txt</code>. It is also a live example of why receivers should dedupe by id.</li>
+  <li>Delivery to the owner channel. That check stays open and owner-gated.</li>
+  <li>Hosted Convex limits and timing. All runs used a local anonymous backend.</li>
+  <li>A check that fails entirely, for example its final mutation, raises nothing.</li>
+  <li>An HTTPS name that resolves to a private address is not detected. The check is on the URL text.</li>
+  <li>On first activation the scan looks back 60 minutes, so older unfinished jobs are not watched.</li>
+  <li>A failing function that never runs again resolves after 60 quiet minutes.</li>
+  <li>Stuck integration effects (I13) and cron-run failures, which do not appear in <code>_scheduled_functions</code>, are not covered.</li>
 </ul>
 
 <h2>Changed files</h2>
 <ul>
-  <li>New: <code>convex/alerts.ts</code>, <code>convex/alerts.test.ts</code>, <code>ops/telemetry/alerts.mjs</code> (service rehearsal, <code>--baseline</code> mode), <code>ops/telemetry/alerts-mutants.mjs</code>.</li>
-  <li>Additive convex changes (outside the I2 allowed paths, kept minimal): two new tables, <code>opsAlerts</code> and <code>opsNotices</code>, in <code>convex/schema.ts</code>; one cron line in <code>convex/crons.ts</code>; two lines in <code>convex/_generated/api.d.ts</code>, matching codegen output for <code>alerts</code>. No existing table or field changed.</li>
-  <li>Authority inventory (outside the I2 allowed paths): 5 new rows in <code>ops/authority/inventory.json</code> and the new cron name added to the hard-coded cron list in <code>ops/authority/inventory.test.ts</code>. The existing guard correctly failed until these were added.</li>
-  <li><code>ops/rehearsal/local-core.mjs</code> (one line, above) and <code>package.json</code> (<code>proof:alerts</code>, <code>proof:alerts-mutants</code>).</li>
+  <li><code>convex/alerts.ts</code> (rewritten), <code>convex/alerts.test.ts</code> (14 tests), <code>convex/schema.ts</code> (three more additive tables).</li>
+  <li><code>ops/authority/inventory.json</code> (rows for the new internal functions).</li>
+  <li><code>ops/release/notes.json</code>, <code>ops/release/snapshot.mjs</code>, <code>ops/release/snapshot-drill.mjs</code>.</li>
+  <li><code>ops/rehearsal/rate-limit.mjs</code>, <code>ops/rehearsal/rate-fixture.ts</code>.</li>
+  <li><code>ops/telemetry/alerts.mjs</code> (load phases), <code>ops/telemetry/alerts-mutants.mjs</code>.</li>
 </ul>
 
 <h2>How to re-check</h2>
 <pre>pnpm install --frozen-lockfile
-node ops/telemetry/alerts.mjs --baseline --out=/tmp/baseline.json   # before behavior: expect 0 delivered (run on base d66eb0b)
-pnpm proof:alerts                # after: PASS, 3 opens + 3 resolves, leaks []
-pnpm proof:alerts-mutants        # 13/13 killed, restored source green
+pnpm proof:alerts           # PASS: 3 alerts, load phases, coverage open and resolve, leaks []
+pnpm proof:alerts-mutants   # 25/25 killed, source restored green
+node ops/rehearsal/rate-limit.mjs &amp;&amp; node ops/rehearsal/flags.mjs &amp;&amp; node ops/telemetry/rehearse.mjs
+pnpm proof:snapshot /tmp/drill.json
+bash evidence/2026-09-26-i2-alerts/r2/release/release-flow.sh "$PWD" b4dcdef7a5bb11115c32854b31ac73a2a5be1a21 d66eb0b1f8d5aac7aca63d9c964a6850f1e2584c /tmp/i2-release
 pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm verify:release &amp;&amp; pnpm build</pre>
-<p>Base: <code>d66eb0b</code> on <code>build/unified-remold-2026-09-24</code>. Branch: <code>i2/alerts-2026-09-26</code>. Evidence files are in <code>evidence/2026-09-26-i2-alerts/</code>. Checked by: the builder only. Independent verification is pending.</p>
+<p>Note: the rehearsals rewrite some tracked evidence files and <code>convex/_generated/api.d.ts</code>; restore them with <code>git checkout</code> afterwards.</p>
+<p>Branch <code>i2/alerts-2026-09-26</code>: <code>566abac</code> (schema step), <code>069ce33</code> (alerts), <code>b4dcdef</code> (snapshot scripts), then an evidence-only commit. Revision 1 (a173192) evidence stays in this folder. The IV report is on <code>i2/alerts-iv-2026-09-26</code> (<code>c1522a2</code>). Checked by: the builder only.</p>
 </body>
 </html>
