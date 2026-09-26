@@ -1,0 +1,164 @@
+{
+ "section": "probe",
+ "label": "iv-r4-c5",
+ "at": "2026-09-26T13:39:18.461Z",
+ "status": "FAIL",
+ "failed": [
+  "store refuses email \"iv%pct@example.invalid\"",
+  "store refuses email \"%@%.%\"",
+  "store refuses email \"a*b@example.invalid\"",
+  "store refuses email \"a b@example.invalid\"",
+  "store refuses email \"a@b\"",
+  "store refuses email \"a@@example.invalid\"",
+  "store refuses email \".a@example.invalid\"",
+  "store refuses email \"a..b@example.invalid\"",
+  "store refuses email \"a@-x.invalid\"",
+  "store refuses email \"x@example.invalid\\n\"",
+  "store refuses email \"o'neil@example.invalid\"",
+  "store refuses email \"a&b@example.invalid\"",
+  "store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+  "store refuses email \"a@dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.invalid\"",
+  "store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+  "store refuses control char in first name",
+  "store refuses 65-char first name",
+  "store refuses short nonce",
+  "no refused input was stored"
+ ],
+ "checks": [
+  {
+   "ok": false,
+   "name": "store refuses email \"iv%pct@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"%@%.%\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a*b@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a b@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a@b\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a@@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \".a@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a..b@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a@-x.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"x@example.invalid\\n\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"o'neil@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a&b@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"a@dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses control char in first name",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses 65-char first name",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "store refuses short nonce",
+   "detail": null
+  },
+  {
+   "ok": false,
+   "name": "no refused input was stored",
+   "detail": [
+    1072,
+    1089
+   ]
+  },
+  {
+   "ok": true,
+   "name": "first reconciler acquires the lease"
+  },
+  {
+   "ok": true,
+   "name": "second reconciler is refused while the lease is live"
+  },
+  {
+   "ok": true,
+   "name": "tenant B lease is independent of A"
+  },
+  {
+   "ok": true,
+   "name": "a foreign token cannot renew"
+  },
+  {
+   "ok": true,
+   "name": "a settled capture cannot be re-settled differently, even by the lease holder",
+   "detail": "j575pjr9bk1ft169y0wa7ynqr98f5xhz"
+  },
+  {
+   "ok": true,
+   "name": "settle with a stale lease token is refused"
+  },
+  {
+   "ok": true,
+   "name": "after release the lease can be taken"
+  },
+  {
+   "ok": true,
+   "name": "settle with an expired lease is refused"
+  },
+  {
+   "ok": true,
+   "name": "an expired lease can be taken over"
+  }
+ ]
+}

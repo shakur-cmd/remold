@@ -60,4 +60,4 @@ for(const t of ['a']){
 }
 out.crossTenant={sharedNonce:shared,a:(await L.inventory('a')).filter(c=>c.idempotencyKey===shared).map(c=>c.firstname),bReadOnly:(await L.inventory('b')).filter(c=>c.idempotencyKey===shared).length};
 console.log('shared nonce',JSON.stringify(out.crossTenant));
-L.save3('c1-edge-attacks-a',out);
+L.save3('c1-edge-attacks-a'+(process.env.IV_LABEL?'-'+process.env.IV_LABEL:''),out);

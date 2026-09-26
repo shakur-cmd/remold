@@ -24,4 +24,4 @@ for(const [i,t] of ['a'].entries()){
   verdict:{distinctAll200:distinctStatuses.every(s=>s===200),distinctStored:added.length===N+2,sameAll200OneRow:sameStatuses.every(s=>s===200)&&sameRows.length===1,diffOneWinner:diffRows.length===1&&diffStatuses.filter(s=>s===200).length===1&&diffStatuses.filter(s=>s===409).length===7&&diffStatuses[winnerIdx]===200,mauticUnchanged:JSON.stringify(P.m0)===JSON.stringify(m1),ownerUnchanged:JSON.stringify(P.p0)===JSON.stringify(p1)}};
  console.log(t,JSON.stringify(out.tenants[t].verdict),'distinct',distinctStatuses.join(''),'same',sameStatuses.join(','),'diff',diffStatuses.join(','),'maxms',out.tenants[t].maxMs,'wall',wall);
 }
-L.save3('c2-concurrency-a-'+N,out);
+L.save3('c2-concurrency-a-'+N+(process.env.IV_LABEL?'-'+process.env.IV_LABEL:''),out);

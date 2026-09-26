@@ -1,0 +1,78 @@
+{
+ "section": "stall",
+ "label": "iv-r4m-7798f3-4",
+ "at": "2026-09-26T13:39:01.110Z",
+ "status": "FAIL",
+ "failed": [
+  "no Mautic contact written under a lapsed lease; capture still pending",
+  "the next reconciler creates it exactly once"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "a reconciler whose lease lapsed stops before creating",
+   "detail": "Raw capture capture:settle refused: stale"
+  },
+  {
+   "ok": false,
+   "name": "no Mautic contact written under a lapsed lease; capture still pending",
+   "detail": {
+    "during": [
+     {
+      "id": 830,
+      "firstname": "Stalled"
+     }
+    ],
+    "row": {
+     "contactId": null,
+     "email": "stall-e2c59c68@example.invalid",
+     "firstname": "Stalled",
+     "id": "j573zqa03w0tts0fe1wpxf7tb58f48ym",
+     "idempotencyKey": "c03c75c96f21175e5927d950f25f028a",
+     "outcome": null,
+     "reason": null,
+     "status": "pending",
+     "tenant": "a"
+    }
+   }
+  },
+  {
+   "ok": false,
+   "name": "the next reconciler creates it exactly once",
+   "detail": {
+    "contactId": 830,
+    "email": "stall-e2c59c68@example.invalid",
+    "firstname": "Stalled",
+    "id": "j573zqa03w0tts0fe1wpxf7tb58f48ym",
+    "idempotencyKey": "c03c75c96f21175e5927d950f25f028a",
+    "outcome": "existing",
+    "reason": null,
+    "status": "settled",
+    "tenant": "a"
+   }
+  }
+ ],
+ "out": {
+  "first": {
+   "exit": 1,
+   "err": "Raw capture capture:settle refused: stale"
+  },
+  "during": [
+   {
+    "id": 830,
+    "firstname": "Stalled"
+   }
+  ],
+  "after": {
+   "contactId": 830,
+   "email": "stall-e2c59c68@example.invalid",
+   "firstname": "Stalled",
+   "id": "j573zqa03w0tts0fe1wpxf7tb58f48ym",
+   "idempotencyKey": "c03c75c96f21175e5927d950f25f028a",
+   "outcome": "existing",
+   "reason": null,
+   "status": "settled",
+   "tenant": "a"
+  }
+ }
+}
