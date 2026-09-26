@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P4 callback ingestion: independent verification, round 3</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>P4 callback ingestion: independent verification, round 3</h1>
+<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion-iv · target: 13e0971 on p4/callback-ingestion-2026-09-26 · evidence level: SERVICE/SIM · verifier: Opus 5.5 (independent, not the builder) · verdict: PASS, no open defects at SERVICE/SIM · supersedes <code>iv/r2/report.html</code> for the current code</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Mark the callback slice closed at SERVICE/SIM?</b> My recommendation is yes. Every claim holds under my attacks, and every one of my 29 mutants is caught. What remains open cannot be proven at this level: real Stripe deliveries, a hosted schedule running drain and sweep, and an index on the incomplete flag for the sweep. Refund, dispute and subscription re-reads, and renewal routing, are separate work.</li>
+  <li><b>The hosted schedule must run the drain one at a time per deployment.</b> Two drains running concurrently on the same invoice make each other retry. That spends attempts (R3-8 and R3-6 show this), but the sweep still repairs the result. This goes on the list for whoever builds the schedule.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>Builder suite <code>--all</code> rerun on my ports 3770/3771/3772: exit 0, and all 16 runs meet expectation (<code>rerun/summary.json</code>, <code>logs/rerun.log</code>).</li>
+  <li>My script, with production-style error hiding on ports 3760 to 3763: round 1 and round 2 attacks, plus 12 new round 3 attacks. 40 of 40 checks pass, with R3-12 as a recorded observation. The same result holds with hiding off (40 of 40, <code>attacks-plain/</code>) and with the 1001-receipt scan (41 of 41, <code>attacks-scan/</code>).</li>
+  <li>R2-4 was updated per the coordinator's ruling. I agree with the ruling: with Connect, a 401 is Stripe's AuthenticationError, which is about the platform key, while a revoked or invalid connected account comes back as a 403 PermissionError. This rests on my knowledge of Stripe's error classes; I did not re-check it against Stripe's docs this session. The 401 and 429 receipts both stay open with no attempt counted. After the key recovers, the 429 receipt is deferred as <code>provider_429</code>. After the rate limit clears, both apply.</li>
+  <li>29 verifier mutants: my round 2 set adapted to the new code, plus 11 new ones for pause, sweep, watermark and throwable. All 29 are caught. <code>item-isolation</code> and <code>pause-to-final</code> abort the run (exit 1). <code>watermark-stall</code> survives the default run but is caught by the scan attack R2-11 (<code>logs/m-watermark-stall-scan.log</code>).</li>
+  <li>Frozen files: 13e0971 differs from base 4fbe55f by additions only. All 392 base files under <code>proofs/payments</code> are byte-identical, and <code>proofs/payments/convex/</code> has zero diff (<code>frozen-hash-13e0971.txt</code>). <code>tsc</code> exits 0 and the builder source hashes match.</li>
+  <li>No provider activity: all reads went to an in-process stub. I checked this by reading the code, not with a network monitor.</li>
+</ul>
+</div>
+
+<h2>Verdict per claim (round 3)</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>401 pauses every merchant; 403 pauses that merchant; receipts stay open; no attempt counted</td><td>PASS</td><td>R3-1: 403 on B, with B listed first. B pauses, and A applies in the same pass. Exactly one probe read per drain over 3 drains. B's receipts stay open with 0 attempts, and both apply after recovery. There are no refused or failed rows. R3-2: on a 401, B is never read. A 401 followed by a 403 moves from platform scope to merchant scope correctly. R2-4 (ruling) and R2-4b pass. The pause-to-final, pause-no-break, platform-no-break and pause-as-401 mutants are all caught.</td></tr>
+<tr><td>Alert row per episode, resolved on recovery</td><td>PASS</td><td>R3-1 and R3-2: one row per scope, and it goes inactive after the first successful read. R3-3, flapping 401 over 6 drains: 2 episodes are counted, the row is resolved at the end, and every receipt applies once. Repeated paused drains in one episode do not increase the count. The resume-noop and pause-count-every mutants are caught.</td></tr>
+<tr><td>sweep() re-reads incomplete invoices per merchant with a rotating cursor</td><td>PASS</td><td>R3-4: the swept merchant's account is the only one read, and B's token cannot list A's invoices (<code>adapter_denied</code>). R3-5: 5 permanently failing invoices sort ahead of a recoverable one; with batch size 2, the recoverable one is reached in pass 5. R3-7: the sweep honours pause scope. R3-10 and R3-11: after a receipt is closed by the attempt cap or by a final assertion, the sweep completes the invoice once the provider recovers. The sweep-cursor, sweep-no-flag and sweep-platform-no-break mutants are caught.</td></tr>
+<tr><td>Sweep racing drain</td><td>PASS</td><td>R3-6, 5 rounds run in parallel: each round one side gets a stale-generation retry and the other completes. The run converges with the invoice complete, all receipts closed, and no new refused or failed rows.</td></tr>
+<tr><td>Due selection by next-due index with a per-merchant watermark</td><td>PASS</td><td>R2-11: with 1001 receipts backing off, a newer receipt applies at the same clock (it starved in round 2). R3-9: a newer receipt behind 250 new ones is reached in 3 drains, oldest first. R3-8: 300 parallel deliveries arrive while 8 drains run concurrently. Afterwards no open receipt sits behind the watermark without a schedule row (0 stranded), and all drain to zero. R3-10: a backward clock jump does not make a backed-off receipt due. The due-range and watermark-stall mutants are caught.</td></tr>
+<tr><td>Non-Error throws become retryable internal_error</td><td>PASS</td><td>R2-3c passes for a thrown string, number and null. The throwable mutant is caught.</td></tr>
+<tr><td>Earlier claims (receiver, dedupe, signature, binding, parking, typed codes, tenant B)</td><td>PASS</td><td>All round 1 and round 2 attacks still pass with error hiding on.</td></tr>
+<tr><td>Frozen files; convex/ equals base</td><td>PASS</td><td>Hash comparison above.</td></tr>
+</table>
+
+<h2>Does any path still close a receipt that a later recovery could have completed?</h2>
+<ul>
+  <li><b>Closed after a provider read</b> (attempt cap on 5xx or network errors, a final 4xx, or an assertion failure): yes, the receipt closes. But the invoice was already flagged incomplete before the read, and the sweep completes it after recovery (R3-10, R3-11). The effect is recovered; only the trigger is lost.</li>
+  <li><b>401/403:</b> never closed (R2-4b, R3-1, R3-2, R3-3).</li>
+  <li><b>Refused before any read, with <code>unbound_document</code></b>, when an event arrives before <code>attachProvider</code> has recorded the invoice id (R3-12, observation). The invoice is not flagged, so the sweep never sees it. In the current flow that event can only be <code>invoice.created</code> or <code>invoice.finalized</code> during the adapter's own create call. The adapter reconciles itself right after, so there is no money gap. It is worth knowing if invoices are ever created outside the adapter.</li>
+  <li><b>Refused with <code>unsupported_event_type</code></b> (refunds, disputes, credit notes, subscriptions): closed without a re-read. The builder disclosed this and it is outside this slice.</li>
+</ul>
+
+<h2>Observations (no defect at this level)</h2>
+<ul>
+  <li><b>Concurrent drains spend attempts.</b> In R3-8, drains running in parallel made 198 receipts back off with <code>retryable_error</code> (stale adjustment generation), all later applied. Run the drain one at a time.</li>
+  <li><b>The clock is supplied by the caller.</b> Forward jumps can use up all 5 attempts within seconds (R3-10: attempts 1 to 5 across five jumps, then closed). The sweep repairs this. A hosted schedule must pass a real clock.</li>
+  <li><b>The sweep scans without an index on the incomplete flag.</b> The builder disclosed this. With very many complete invoices per binding, the scan could hit Convex read limits and turn into a <code>merchant_error</code> for that merchant's sweep. Not tested at that volume.</li>
+  <li><b>An alert only resolves on a successful read.</b> In every case I tested, the paused receipts remain due, so the next drain probes and resolves it.</li>
+</ul>
+
+<h2>Test corrections I made during this round</h2>
+<ul>
+  <li>R3-3 (first run): after recovery there were no due receipts, so a later 401 had nothing to probe and correctly opened no new episode. I changed the test to deliver a receipt before each drain.</li>
+  <li>R3-6 (first run): the check counted a failed row from R2-5 that was written earlier in the same run. I changed it to count only new rows.</li>
+  <li>R3-8 (first run): 98 receipts were still open, because they were backing off after the concurrent-drain stale-generation retries; none were stranded. I added a diagnostic (scheduled, stranded, codes) and quiesced with advancing clocks. The unedited first-run logs were overwritten; the diagnosis is recorded here.</li>
+  <li>The run was reorganised so that <code>attacks/watermark-stall.json</code> comes from the <code>--scan</code> run, where R2-11 catches that mutant.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>A real production Convex deployment. Error hiding was simulated with the builder's client hook, and R2-0 confirms it is active.</li>
+  <li>Real Stripe status codes for revoked Connect access (I relied on Stripe's documented error classes), and real Stripe deliveries.</li>
+  <li>A Convex <code>_creationTime</code> ordering race against the watermark cursor. R3-8 found 0 stranded receipts under 300 concurrent deliveries, but a stress test cannot prove the race is impossible.</li>
+  <li>Sweep behaviour at more than about 16k documents per binding.</li>
+  <li>Network-level proof of zero provider traffic.</li>
+</ul>
+
+<h2>Files</h2>
+<p>All under <code>proofs/payments/evidence/callback-ingestion/iv/r3/</code>: <code>report.html</code>, <code>iv-r3.mjs</code> (SHA256 6faa08daf70cc8ccdc9b5ec47181d1c9e72b38f0ce7d2357e4fa2274ac8974ee), <code>attacks/</code>, <code>attacks-plain/</code>, <code>attacks-scan/</code>, <code>rerun/</code>, <code>logs/</code> and <code>frozen-hash-13e0971.txt</code>. To rerun, copy <code>iv-r3.mjs</code> into <code>proofs/payments/</code> at 13e0971 and run <code>IV_REDACT=1 node iv-r3.mjs [--scan] [--mutant=NAME]</code>. Ports 3760 to 3763 must be free.</p>
+</body>
+</html>

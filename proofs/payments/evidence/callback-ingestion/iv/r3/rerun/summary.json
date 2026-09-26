@@ -1,0 +1,170 @@
+[
+ {
+  "mode": "baseline",
+  "mutant": "none",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "unbound account parked, no account refused, substituted account refused on the claimed merchant with a typed code",
+   "refund, dispute, credit note and subscription events refused with reason unsupported_event_type",
+   "failing merchant is isolated; later merchants still drain",
+   "provider 404 closes the receipt as refused, decided by error type",
+   "stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts",
+   "401 pauses all merchants and 403 pauses one; receipts stay open, one alert row, resume when a read succeeds",
+   "a thrown string is retried as internal_error and counts attempts; a 429 is deferred",
+   "sweep re-reads incomplete invoices in bounded batches and completes one whose trigger was lost"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "none",
+  "expected": "pass",
+  "exit": 0,
+  "failedCases": [],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "dedupe",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "crash between durable receipt and reconciliation, then restart",
+   "exact replay produces no second effect"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "signature",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "bad signature refused with no durable effect"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "account",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "unbound account parked, no account refused, substituted account refused on the claimed merchant with a typed code",
+   "401 pauses all merchants and 403 pauses one; receipts stay open, one alert row, resume when a read succeeds"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "isolation",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "failing merchant is isolated; later merchants still drain"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "classify",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "provider 404 closes the receipt as refused, decided by error type",
+   "stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "backoff",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "pause",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "401 pauses all merchants and 403 pauses one; receipts stay open, one alert row, resume when a read succeeds"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "watermark",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "sweep",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "sweep re-reads incomplete invoices in bounded batches and completes one whose trigger was lost"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "throwable",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "a thrown string is retried as internal_error and counts attempts; a 429 is deferred"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "attempt-cap",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "typed-refusal",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "unbound account parked, no account refused, substituted account refused on the claimed merchant with a typed code"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "unsupported",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "refund, dispute, credit note and subscription events refused with reason unsupported_event_type"
+  ],
+  "meetsExpectation": true
+ },
+ {
+  "mode": "after",
+  "mutant": "park",
+  "expected": "fail",
+  "exit": 1,
+  "failedCases": [
+   "unbound account parked, no account refused, substituted account refused on the claimed merchant with a typed code"
+  ],
+  "meetsExpectation": true
+ }
+]
