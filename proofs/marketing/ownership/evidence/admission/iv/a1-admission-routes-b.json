@@ -1,0 +1,902 @@
+{
+ "run": "e9a1cd4e",
+ "capturedAt": "2026-09-26T11:51:39.340Z",
+ "tenant": "b",
+ "variants": [
+  {
+   "kind": "hidden-field",
+   "formId": 34,
+   "admitted": false,
+   "refused": "Form 34 on tenant b refused: fields are not exactly email and firstname",
+   "countersUnchangedByAdmission": true
+  },
+  {
+   "kind": "freetext-display",
+   "formId": 35,
+   "admitted": false,
+   "refused": "Form 35 on tenant b refused: fields are not exactly email and firstname",
+   "countersUnchangedByAdmission": true
+  },
+  {
+   "kind": "select-extra",
+   "formId": 36,
+   "admitted": false,
+   "refused": "Form 36 on tenant b refused: fields are not exactly email and firstname",
+   "countersUnchangedByAdmission": true
+  },
+  {
+   "kind": "alias-case",
+   "formId": 37,
+   "admitted": true,
+   "admission": {
+    "formId": 37,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:50:49.767Z",
+    "formSha256": "a73f79a510589373f2d05cd01aab97c080b35ed847ccdac78933abf310750f3f"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 55,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 78,
+      "lead": null
+     },
+     {
+      "id": 79,
+      "lead": null
+     }
+    ],
+    "storedResults": "78\t37\tiv-own-e9a1cd4e-alias-case@example.invalid\tHostile existing alias-case\n79\t37\tiv-new-e9a1cd4e-alias-case@example.invalid\tHostile new alias-case",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 55,
+     "firstname": "IV owner alias-case",
+     "lastname": "Stable alias-case",
+     "email": "iv-own-e9a1cd4e-alias-case@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 55,
+     "firstname": "IV owner alias-case",
+     "lastname": "Stable alias-case",
+     "email": "iv-own-e9a1cd4e-alias-case@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 48,
+     "anonymousContacts": 23,
+     "maxLeadId": 55,
+     "dnc": 12,
+     "submissions": 74,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 48,
+     "anonymousContacts": 23,
+     "maxLeadId": 55,
+     "dnc": 12,
+     "submissions": 76,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "swapped-types",
+   "formId": 38,
+   "admitted": false,
+   "refused": "Form 38 on tenant b refused: fields are not exactly email and firstname",
+   "countersUnchangedByAdmission": true
+  },
+  {
+   "kind": "company-mapped",
+   "formId": 39,
+   "admitted": false,
+   "refused": "Form 39 on tenant b refused: mapped field firstname",
+   "countersUnchangedByAdmission": true
+  },
+  {
+   "kind": "button-mapped",
+   "formId": 40,
+   "admitted": true,
+   "admission": {
+    "formId": 40,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:50:56.522Z",
+    "formSha256": "8f9cfeecc6479ac6ca62b47f65fffdd206d262e999320c8a0d2c52db920c372c"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 56,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 80,
+      "lead": null
+     },
+     {
+      "id": 81,
+      "lead": null
+     }
+    ],
+    "storedResults": "80\t40\tiv-own-e9a1cd4e-button-mapped@example.invalid\tHostile existing button-mapped\n81\t40\tiv-new-e9a1cd4e-button-mapped@example.invalid\tHostile new button-mapped",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 56,
+     "firstname": "IV owner button-mapped",
+     "lastname": "Stable button-mapped",
+     "email": "iv-own-e9a1cd4e-button-mapped@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 56,
+     "firstname": "IV owner button-mapped",
+     "lastname": "Stable button-mapped",
+     "email": "iv-own-e9a1cd4e-button-mapped@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 49,
+     "anonymousContacts": 23,
+     "maxLeadId": 56,
+     "dnc": 13,
+     "submissions": 76,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 49,
+     "anonymousContacts": 23,
+     "maxLeadId": 56,
+     "dnc": 13,
+     "submissions": 78,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "email-not-saved",
+   "formId": 41,
+   "admitted": true,
+   "admission": {
+    "formId": 41,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:01.111Z",
+    "formSha256": "c2c99085e9bbdf78c9618db513e13e11bc49ca411c1c640fbaba1e424792d473"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 57,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 82,
+      "lead": null
+     },
+     {
+      "id": 83,
+      "lead": null
+     }
+    ],
+    "storedResults": "82\t41\tNULL\tNULL\n83\t41\tNULL\tNULL",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 57,
+     "firstname": "IV owner email-not-saved",
+     "lastname": "Stable email-not-saved",
+     "email": "iv-own-e9a1cd4e-email-not-saved@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 57,
+     "firstname": "IV owner email-not-saved",
+     "lastname": "Stable email-not-saved",
+     "email": "iv-own-e9a1cd4e-email-not-saved@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 50,
+     "anonymousContacts": 23,
+     "maxLeadId": 57,
+     "dnc": 14,
+     "submissions": 78,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 50,
+     "anonymousContacts": 23,
+     "maxLeadId": 57,
+     "dnc": 14,
+     "submissions": 80,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "autofill-default",
+   "formId": 42,
+   "admitted": true,
+   "admission": {
+    "formId": 42,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:05.728Z",
+    "formSha256": "0cebbf523d7411adec96f6601ed93f8ad838b99c1e33a8fe94c33941171756d2"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 58,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 84,
+      "lead": null
+     },
+     {
+      "id": 85,
+      "lead": null
+     }
+    ],
+    "storedResults": "84\t42\tiv-own-e9a1cd4e-autofill-default@example.invalid\tHostile existing autofill-default\n85\t42\tiv-new-e9a1cd4e-autofill-default@example.invalid\tHostile new autofill-default",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 58,
+     "firstname": "IV owner autofill-default",
+     "lastname": "Stable autofill-default",
+     "email": "iv-own-e9a1cd4e-autofill-default@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 58,
+     "firstname": "IV owner autofill-default",
+     "lastname": "Stable autofill-default",
+     "email": "iv-own-e9a1cd4e-autofill-default@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 51,
+     "anonymousContacts": 23,
+     "maxLeadId": 58,
+     "dnc": 15,
+     "submissions": 80,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 51,
+     "anonymousContacts": 23,
+     "maxLeadId": 58,
+     "dnc": 15,
+     "submissions": 82,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "post-action-redirect",
+   "formId": 43,
+   "admitted": true,
+   "admission": {
+    "formId": 43,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:10.296Z",
+    "formSha256": "510b06cba09c67a83fd66db69cc3bb770a1e752782bd78b3a966e59eeba9d236"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 59,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 86,
+      "lead": null
+     },
+     {
+      "id": 87,
+      "lead": null
+     }
+    ],
+    "storedResults": "86\t43\tiv-own-e9a1cd4e-post-action-redirect@example.invalid\tHostile existing post-action-redirect\n87\t43\tiv-new-e9a1cd4e-post-action-redirect@example.invalid\tHostile new post-action-redirect",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 59,
+     "firstname": "IV owner post-action-redirect",
+     "lastname": "Stable post-action-redirect",
+     "email": "iv-own-e9a1cd4e-post-action-redirect@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 59,
+     "firstname": "IV owner post-action-redirect",
+     "lastname": "Stable post-action-redirect",
+     "email": "iv-own-e9a1cd4e-post-action-redirect@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 52,
+     "anonymousContacts": 23,
+     "maxLeadId": 59,
+     "dnc": 16,
+     "submissions": 82,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 52,
+     "anonymousContacts": 23,
+     "maxLeadId": 59,
+     "dnc": 16,
+     "submissions": 84,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "publish-down-past",
+   "formId": 44,
+   "admitted": true,
+   "admission": {
+    "formId": 44,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:14.871Z",
+    "formSha256": "7dc2f9ee3060a5e9ba197c9caf440428e1979b2805ebc77d842978221aee99d1"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 60,
+    "responses": [
+     502,
+     502
+    ],
+    "submissions": [],
+    "storedResults": "",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 60,
+     "firstname": "IV owner publish-down-past",
+     "lastname": "Stable publish-down-past",
+     "email": "iv-own-e9a1cd4e-publish-down-past@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 60,
+     "firstname": "IV owner publish-down-past",
+     "lastname": "Stable publish-down-past",
+     "email": "iv-own-e9a1cd4e-publish-down-past@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 53,
+     "anonymousContacts": 23,
+     "maxLeadId": 60,
+     "dnc": 17,
+     "submissions": 84,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 53,
+     "anonymousContacts": 23,
+     "maxLeadId": 60,
+     "dnc": 17,
+     "submissions": 84,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "kiosk-mode",
+   "formId": 45,
+   "admitted": true,
+   "admission": {
+    "formId": 45,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:19.879Z",
+    "formSha256": "31320f03da8664368e7d3038fca5d7de72b45cdbcea0a7b5203aadc2a27ab89b"
+   },
+   "countersUnchangedByAdmission": true,
+   "probe": {
+    "ownerId": 61,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 88,
+      "lead": null
+     },
+     {
+      "id": 89,
+      "lead": null
+     }
+    ],
+    "storedResults": "88\t45\tiv-own-e9a1cd4e-kiosk-mode@example.invalid\tHostile existing kiosk-mode\n89\t45\tiv-new-e9a1cd4e-kiosk-mode@example.invalid\tHostile new kiosk-mode",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 61,
+     "firstname": "IV owner kiosk-mode",
+     "lastname": "Stable kiosk-mode",
+     "email": "iv-own-e9a1cd4e-kiosk-mode@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 61,
+     "firstname": "IV owner kiosk-mode",
+     "lastname": "Stable kiosk-mode",
+     "email": "iv-own-e9a1cd4e-kiosk-mode@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 54,
+     "anonymousContacts": 23,
+     "maxLeadId": 61,
+     "dnc": 18,
+     "submissions": 84,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 54,
+     "anonymousContacts": 23,
+     "maxLeadId": 61,
+     "dnc": 18,
+     "submissions": 86,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "kind": "campaign-decision",
+   "formId": 46,
+   "admitted": true,
+   "admission": {
+    "formId": 46,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:25.971Z",
+    "formSha256": "1aee74cf4142a497bd5949566b89eeb09ef0e162c87565887cba096fbd0924f7"
+   },
+   "countersUnchangedByAdmission": true,
+   "segmentId": 1,
+   "campaignId": 8,
+   "campaignFormXref": 0,
+   "campaignEvents": "8\tform.submit\tdecision\ta:1:{s:5:\"forms\";a:1:{i:0;i:46;}}\n9\tlead.changepoints\taction\ta:1:{s:6:\"points\";i:7;}",
+   "probe": {
+    "ownerId": 62,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 90,
+      "lead": null
+     },
+     {
+      "id": 91,
+      "lead": null
+     }
+    ],
+    "storedResults": "90\t46\tiv-own-e9a1cd4e-campaign-decision@example.invalid\tHostile existing campaign-decision\n91\t46\tiv-new-e9a1cd4e-campaign-decision@example.invalid\tHostile new campaign-decision",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 62,
+     "firstname": "IV owner campaign-decision",
+     "lastname": "Stable campaign-decision",
+     "email": "iv-own-e9a1cd4e-campaign-decision@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 62,
+     "firstname": "IV owner campaign-decision",
+     "lastname": "Stable campaign-decision",
+     "email": "iv-own-e9a1cd4e-campaign-decision@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 55,
+     "anonymousContacts": 23,
+     "maxLeadId": 62,
+     "dnc": 19,
+     "submissions": 86,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 55,
+     "anonymousContacts": 23,
+     "maxLeadId": 62,
+     "dnc": 19,
+     "submissions": 88,
+     "campaignLeads": 0,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   },
+   "memberRound": {
+    "ownerId": 63,
+    "edgeResponses": [
+     200
+    ],
+    "ownerBefore": {
+     "id": 63,
+     "firstname": "IV owner decision-member",
+     "lastname": "Stable decision-member",
+     "email": "iv-own-e9a1cd4e-decision-member@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfterEdge": {
+     "id": 63,
+     "firstname": "IV owner decision-member",
+     "lastname": "Stable decision-member",
+     "email": "iv-own-e9a1cd4e-decision-member@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 56,
+     "anonymousContacts": 23,
+     "maxLeadId": 63,
+     "dnc": 20,
+     "submissions": 88,
+     "campaignLeads": 1,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfterEdge": {
+     "contacts": 56,
+     "anonymousContacts": 23,
+     "maxLeadId": 63,
+     "dnc": 20,
+     "submissions": 89,
+     "campaignLeads": 1,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "control": {
+     "status": 200,
+     "body": "{\"success\":1,\"results\":{\"email\":\"iv-own-e9a1cd4e-decision-member@example.invalid\",\"firstname\":\"Member direct\"},\"formName\":\"iv_admissi\"}"
+    },
+    "ownerAfterDirectControl": {
+     "id": 63,
+     "firstname": "IV owner decision-member",
+     "lastname": "Stable decision-member",
+     "email": "iv-own-e9a1cd4e-decision-member@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersAfterControl": {
+     "contacts": 57,
+     "anonymousContacts": 24,
+     "maxLeadId": 64,
+     "dnc": 20,
+     "submissions": 90,
+     "campaignLeads": 1,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "submissions": [
+     {
+      "id": 90,
+      "lead": null
+     },
+     {
+      "id": 91,
+      "lead": null
+     },
+     {
+      "id": 92,
+      "lead": null
+     },
+     {
+      "id": 93,
+      "lead": 64
+     }
+    ],
+    "campaignLog": ""
+   }
+  },
+  {
+   "kind": "point-action",
+   "formId": 47,
+   "admitted": true,
+   "admission": {
+    "formId": 47,
+    "policy": "raw-capture/blocked-tracking-v1",
+    "campaignLinks": 0,
+    "admittedAt": "2026-09-26T11:51:36.165Z",
+    "formSha256": "f1e95ad006047de7ce7e690cff1284a4e9a38065bfd2f9fc2759ed752844445e"
+   },
+   "countersUnchangedByAdmission": true,
+   "pointCreate": 201,
+   "pointId": 1,
+   "probe": {
+    "ownerId": 65,
+    "responses": [
+     200,
+     200
+    ],
+    "submissions": [
+     {
+      "id": 94,
+      "lead": null
+     },
+     {
+      "id": 95,
+      "lead": null
+     }
+    ],
+    "storedResults": "94\t47\tiv-own-e9a1cd4e-point-action@example.invalid\tHostile existing point-action\n95\t47\tiv-new-e9a1cd4e-point-action@example.invalid\tHostile new point-action",
+    "ownerUnchanged": true,
+    "ownerBefore": {
+     "id": 65,
+     "firstname": "IV owner point-action",
+     "lastname": "Stable point-action",
+     "email": "iv-own-e9a1cd4e-point-action@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "ownerAfter": {
+     "id": 65,
+     "firstname": "IV owner point-action",
+     "lastname": "Stable point-action",
+     "email": "iv-own-e9a1cd4e-point-action@example.invalid",
+     "points": 0,
+     "tags": [],
+     "doNotContact": [
+      {
+       "channel": "email",
+       "reason": 3
+      }
+     ]
+    },
+    "countersBefore": {
+     "contacts": 58,
+     "anonymousContacts": 24,
+     "maxLeadId": 65,
+     "dnc": 21,
+     "submissions": 90,
+     "campaignLeads": 1,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "countersAfter": {
+     "contacts": 58,
+     "anonymousContacts": 24,
+     "maxLeadId": 65,
+     "dnc": 21,
+     "submissions": 92,
+     "campaignLeads": 1,
+     "campaignEventLog": 0,
+     "pointActionLog": 0,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  }
+ ]
+}

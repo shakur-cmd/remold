@@ -1,0 +1,11 @@
+import * as L from '/Users/urkel/Documents/CodeMyVibe/Projects/remold-p2-iv/proofs/marketing/ownership/evidence/admission/iv/lib.mjs';
+import {readFileSync,writeFileSync} from 'node:fs';
+const p='/Users/urkel/Documents/CodeMyVibe/Projects/remold-p2-iv/proofs/marketing/ownership/evidence/admission/iv/a1b-decision-control-a.json';
+const e=JSON.parse(readFileSync(p));const t='a';
+const M=L.ok(L.api(t,'/forms/'+e.mappedFormId)).form;const email=e.control.ownerAfter.email;
+const c0=L.counts(t);
+const r=L.inContainer(L.prefix+'-public-'+t,`let s='';for await(const c of process.stdin)s+=c;const a=JSON.parse(s);const r=await fetch(a.url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({'mauticform[formId]':String(a.form),'mauticform[formName]':a.alias,'mauticform[return]':'','mauticform[email]':a.email,'mauticform[firstname]':'Mapped control untracked-block'})});console.log(JSON.stringify({status:r.status,body:(await r.text()).slice(0,200)}));`,{url:'http://'+L.prefix+'-web-'+t+'/form/submit?formId='+M.id+'&ajax=1',form:M.id,alias:M.alias,email});
+const c1=L.counts(t),subs=L.submissionsFor(t,M.id),log=L.sql(t,'SELECT lead_id,event_id FROM campaign_lead_event_log WHERE campaign_id='+e.campaignId),plog=L.sql(t,'SELECT lead_id,point_id FROM point_lead_action_log WHERE point_id='+e.pointId);
+const owner=L.sql(t,"SELECT id,points,firstname FROM leads WHERE email='"+email+"'");
+e.controlWithoutTrackingBlock={response:r,countersBefore:c0,countersAfter:c1,submissions:subs,campaignLog:log,pointLog:plog,leadsWithOwnerEmail:owner};
+writeFileSync(p,JSON.stringify(e,null,1)+'\n');console.log(JSON.stringify(e.controlWithoutTrackingBlock));

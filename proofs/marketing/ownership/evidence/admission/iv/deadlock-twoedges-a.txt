@@ -1,0 +1,175 @@
+LATEST DETECTED DEADLOCK
+------------------------
+2026-09-26 11:47:53 265278017236736
+*** (1) TRANSACTION:
+TRANSACTION 15646, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 7 lock struct(s), heap size 1128, 3 row lock(s), undo log entries 1
+MySQL thread id 3008, OS thread handle 265277988519680, query id 39644 172.19.0.5 mautic_a updating
+UPDATE forms SET submission_count = submission_count + 1 WHERE id = 38
+
+*** (1) HOLDS THE LOCK(S):
+RECORD LOCKS space id 45 page no 15 n bits 72 index PRIMARY of table `mautic_a`.`forms` trx id 15646 lock mode S locks rec but not gap
+Record lock, heap no 5 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+ 0: len 4; hex 00000026; asc    &;;
+ 1: len 6; hex 000000003d15; asc     = ;;
+ 2: len 7; hex 0100000182156c; asc       l;;
+ 3: SQL NULL;
+ 4: len 1; hex 81; asc  ;;
+ 5: len 5; hex 99baf4b9ba; asc      ;;
+ 6: len 4; hex 80000001; asc     ;;
+ 7: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 8: len 5; hex 99baf4b9ba; asc      ;;
+ 9: len 4; hex 80000001; asc     ;;
+ 10: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 11: SQL NULL;
+ 12: SQL NULL;
+ 13: SQL NULL;
+ 14: len 30; hex 52656d6f6c642061646d697474656420696e74616b652038303834393034; asc Remold admitted intake 8084904; (total 61 bytes);
+ 15: SQL NULL;
+ 16: len 10; hex 72656d6f6c645f61646d; asc remold_adm;;
+ 17: SQL NULL;
+ 18: SQL NULL;
+ 19: len 30; hex 0a0a3c7374796c6520747970653d22746578742f637373222073636f7065; asc   <style type="text/css" scope; (total 3400 bytes);
+ 20: len 6; hex 72657475726e; asc return;;
+ 21: len 25; hex 53796e74686574696320696e74616b65207265636569766564; asc Synthetic intake received;;
+ 22: SQL NULL;
+ 23: SQL NULL;
+ 24: SQL NULL;
+ 25: len 1; hex 80; asc  ;;
+ 26: len 1; hex 80; asc  ;;
+ 27: SQL NULL;
+ 28: SQL NULL;
+ 29: len 4; hex 80000020; asc     ;;
+ 30: len 10; hex 7374616e64616c6f6e65; asc standalone;;
+ 31: len 1; hex 81; asc  ;;
+ 32: SQL NULL;
+ 33: len 30; hex 61626132333837642d323638642d346436652d623165382d643531643463; asc aba2387d-268d-4d6e-b1e8-d51d4c; (total 36 bytes);
+
+
+*** (1) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 45 page no 15 n bits 72 index PRIMARY of table `mautic_a`.`forms` trx id 15646 lock_mode X locks rec but not gap waiting
+Record lock, heap no 5 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+ 0: len 4; hex 00000026; asc    &;;
+ 1: len 6; hex 000000003d15; asc     = ;;
+ 2: len 7; hex 0100000182156c; asc       l;;
+ 3: SQL NULL;
+ 4: len 1; hex 81; asc  ;;
+ 5: len 5; hex 99baf4b9ba; asc      ;;
+ 6: len 4; hex 80000001; asc     ;;
+ 7: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 8: len 5; hex 99baf4b9ba; asc      ;;
+ 9: len 4; hex 80000001; asc     ;;
+ 10: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 11: SQL NULL;
+ 12: SQL NULL;
+ 13: SQL NULL;
+ 14: len 30; hex 52656d6f6c642061646d697474656420696e74616b652038303834393034; asc Remold admitted intake 8084904; (total 61 bytes);
+ 15: SQL NULL;
+ 16: len 10; hex 72656d6f6c645f61646d; asc remold_adm;;
+ 17: SQL NULL;
+ 18: SQL NULL;
+ 19: len 30; hex 0a0a3c7374796c6520747970653d22746578742f637373222073636f7065; asc   <style type="text/css" scope; (total 3400 bytes);
+ 20: len 6; hex 72657475726e; asc return;;
+ 21: len 25; hex 53796e74686574696320696e74616b65207265636569766564; asc Synthetic intake received;;
+ 22: SQL NULL;
+ 23: SQL NULL;
+ 24: SQL NULL;
+ 25: len 1; hex 80; asc  ;;
+ 26: len 1; hex 80; asc  ;;
+ 27: SQL NULL;
+ 28: SQL NULL;
+ 29: len 4; hex 80000020; asc     ;;
+ 30: len 10; hex 7374616e64616c6f6e65; asc standalone;;
+ 31: len 1; hex 81; asc  ;;
+ 32: SQL NULL;
+ 33: len 30; hex 61626132333837642d323638642d346436652d623165382d643531643463; asc aba2387d-268d-4d6e-b1e8-d51d4c; (total 36 bytes);
+
+
+*** (2) TRANSACTION:
+TRANSACTION 15647, ACTIVE 0 sec starting index read
+mysql tables in use 1, locked 1
+LOCK WAIT 7 lock struct(s), heap size 1128, 3 row lock(s), undo log entries 1
+MySQL thread id 3009, OS thread handle 265277989637888, query id 39645 172.19.0.5 mautic_a updating
+UPDATE forms SET submission_count = submission_count + 1 WHERE id = 38
+
+*** (2) HOLDS THE LOCK(S):
+RECORD LOCKS space id 45 page no 15 n bits 72 index PRIMARY of table `mautic_a`.`forms` trx id 15647 lock mode S locks rec but not gap
+Record lock, heap no 5 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+ 0: len 4; hex 00000026; asc    &;;
+ 1: len 6; hex 000000003d15; asc     = ;;
+ 2: len 7; hex 0100000182156c; asc       l;;
+ 3: SQL NULL;
+ 4: len 1; hex 81; asc  ;;
+ 5: len 5; hex 99baf4b9ba; asc      ;;
+ 6: len 4; hex 80000001; asc     ;;
+ 7: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 8: len 5; hex 99baf4b9ba; asc      ;;
+ 9: len 4; hex 80000001; asc     ;;
+ 10: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 11: SQL NULL;
+ 12: SQL NULL;
+ 13: SQL NULL;
+ 14: len 30; hex 52656d6f6c642061646d697474656420696e74616b652038303834393034; asc Remold admitted intake 8084904; (total 61 bytes);
+ 15: SQL NULL;
+ 16: len 10; hex 72656d6f6c645f61646d; asc remold_adm;;
+ 17: SQL NULL;
+ 18: SQL NULL;
+ 19: len 30; hex 0a0a3c7374796c6520747970653d22746578742f637373222073636f7065; asc   <style type="text/css" scope; (total 3400 bytes);
+ 20: len 6; hex 72657475726e; asc return;;
+ 21: len 25; hex 53796e74686574696320696e74616b65207265636569766564; asc Synthetic intake received;;
+ 22: SQL NULL;
+ 23: SQL NULL;
+ 24: SQL NULL;
+ 25: len 1; hex 80; asc  ;;
+ 26: len 1; hex 80; asc  ;;
+ 27: SQL NULL;
+ 28: SQL NULL;
+ 29: len 4; hex 80000020; asc     ;;
+ 30: len 10; hex 7374616e64616c6f6e65; asc standalone;;
+ 31: len 1; hex 81; asc  ;;
+ 32: SQL NULL;
+ 33: len 30; hex 61626132333837642d323638642d346436652d623165382d643531643463; asc aba2387d-268d-4d6e-b1e8-d51d4c; (total 36 bytes);
+
+
+*** (2) WAITING FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 45 page no 15 n bits 72 index PRIMARY of table `mautic_a`.`forms` trx id 15647 lock_mode X locks rec but not gap waiting
+Record lock, heap no 5 PHYSICAL RECORD: n_fields 34; compact format; info bits 0
+ 0: len 4; hex 00000026; asc    &;;
+ 1: len 6; hex 000000003d15; asc     = ;;
+ 2: len 7; hex 0100000182156c; asc       l;;
+ 3: SQL NULL;
+ 4: len 1; hex 81; asc  ;;
+ 5: len 5; hex 99baf4b9ba; asc      ;;
+ 6: len 4; hex 80000001; asc     ;;
+ 7: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 8: len 5; hex 99baf4b9ba; asc      ;;
+ 9: len 4; hex 80000001; asc     ;;
+ 10: len 19; hex 53796e746865746963204d61726b6574696e67; asc Synthetic Marketing;;
+ 11: SQL NULL;
+ 12: SQL NULL;
+ 13: SQL NULL;
+ 14: len 30; hex 52656d6f6c642061646d697474656420696e74616b652038303834393034; asc Remold admitted intake 8084904; (total 61 bytes);
+ 15: SQL NULL;
+ 16: len 10; hex 72656d6f6c645f61646d; asc remold_adm;;
+ 17: SQL NULL;
+ 18: SQL NULL;
+ 19: len 30; hex 0a0a3c7374796c6520747970653d22746578742f637373222073636f7065; asc   <style type="text/css" scope; (total 3400 bytes);
+ 20: len 6; hex 72657475726e; asc return;;
+ 21: len 25; hex 53796e74686574696320696e74616b65207265636569766564; asc Synthetic intake received;;
+ 22: SQL NULL;
+ 23: SQL NULL;
+ 24: SQL NULL;
+ 25: len 1; hex 80; asc  ;;
+ 26: len 1; hex 80; asc  ;;
+ 27: SQL NULL;
+ 28: SQL NULL;
+ 29: len 4; hex 80000020; asc     ;;
+ 30: len 10; hex 7374616e64616c6f6e65; asc standalone;;
+ 31: len 1; hex 81; asc  ;;
+ 32: SQL NULL;
+ 33: len 30; hex 61626132333837642d323638642d346436652d623165382d643531643463; asc aba2387d-268d-4d6e-b1e8-d51d4c; (total 36 bytes);
+
+*** WE ROLL BACK TRANSACTION (2)
+------------
+TRANSACTIONS

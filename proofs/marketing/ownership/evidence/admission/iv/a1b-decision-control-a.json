@@ -1,0 +1,165 @@
+{
+ "run": "7a8f185f",
+ "capturedAt": "2026-09-26T11:45:10.996Z",
+ "tenant": "a",
+ "rawFormId": 66,
+ "mappedFormId": 67,
+ "mappedAdmissionRefused": "Form 67 on tenant a refused: mapped field email",
+ "rawAdmissionFormSha": "6da81f6cd8527a2a4825fabdc88e31db9ae49fb54fdc4d193f24652c1353ce45",
+ "campaignId": 146,
+ "segmentId": 139,
+ "pointId": 2,
+ "ownerId": 221,
+ "edge": {
+  "responses": [
+   200,
+   200
+  ],
+  "submissions": [
+   {
+    "id": 97,
+    "lead": null
+   },
+   {
+    "id": 98,
+    "lead": null
+   }
+  ],
+  "ownerBefore": {
+   "id": 221,
+   "firstname": "IV owner control",
+   "lastname": "Stable control",
+   "email": "iv-own-7a8f185f-control@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "ownerAfter": {
+   "id": 221,
+   "firstname": "IV owner control",
+   "lastname": "Stable control",
+   "email": "iv-own-7a8f185f-control@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "countersBefore": {
+   "contacts": 216,
+   "anonymousContacts": 30,
+   "maxLeadId": 221,
+   "dnc": 29,
+   "submissions": 92,
+   "campaignLeads": 137,
+   "campaignEventLog": 168,
+   "pointActionLog": 0,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "countersAfter": {
+   "contacts": 216,
+   "anonymousContacts": 30,
+   "maxLeadId": 221,
+   "dnc": 29,
+   "submissions": 94,
+   "campaignLeads": 137,
+   "campaignEventLog": 168,
+   "pointActionLog": 0,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "campaignLogRows": 0
+ },
+ "control": {
+  "response": {
+   "status": 200,
+   "body": "{\"success\":1,\"results\":{\"email\":\"iv-own-7a8f185f-control@example.invalid\",\"firstname\":\"Mapped control\"},\"formName\":\"iv_control\"}"
+  },
+  "submissions": [
+   {
+    "id": 99,
+    "lead": 221
+   }
+  ],
+  "ownerAfter": {
+   "id": 221,
+   "firstname": "IV owner control",
+   "lastname": "Stable control",
+   "email": "iv-own-7a8f185f-control@example.invalid",
+   "points": 0,
+   "tags": [],
+   "doNotContact": [
+    {
+     "channel": "email",
+     "reason": 3
+    }
+   ]
+  },
+  "countersAfter": {
+   "contacts": 216,
+   "anonymousContacts": 30,
+   "maxLeadId": 221,
+   "dnc": 29,
+   "submissions": 95,
+   "campaignLeads": 137,
+   "campaignEventLog": 168,
+   "pointActionLog": 0,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "campaignLog": "",
+  "pointLog": ""
+ },
+ "controlWithoutTrackingBlock": {
+  "response": {
+   "status": 200,
+   "body": "{\"success\":1,\"results\":{\"email\":\"iv-own-7a8f185f-control@example.invalid\",\"firstname\":\"Mapped control untracked-block\"},\"formName\":\"iv_control\"}"
+  },
+  "countersBefore": {
+   "contacts": 216,
+   "anonymousContacts": 30,
+   "maxLeadId": 221,
+   "dnc": 29,
+   "submissions": 95,
+   "campaignLeads": 137,
+   "campaignEventLog": 168,
+   "pointActionLog": 0,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "countersAfter": {
+   "contacts": 216,
+   "anonymousContacts": 30,
+   "maxLeadId": 221,
+   "dnc": 29,
+   "submissions": 96,
+   "campaignLeads": 137,
+   "campaignEventLog": 169,
+   "pointActionLog": 2,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "submissions": [
+   {
+    "id": 99,
+    "lead": 221
+   },
+   {
+    "id": 100,
+    "lead": 221
+   }
+  ],
+  "campaignLog": "221\t294",
+  "pointLog": "221\t2",
+  "leadsWithOwnerEmail": "221\t18\tIV owner control"
+ }
+}
