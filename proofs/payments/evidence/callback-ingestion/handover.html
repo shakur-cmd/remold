@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>P4 durable callback ingestion, local SERVICE/SIM proof</title>
+<title>P4 durable callback ingestion, local SERVICE/SIM proof (round 2)</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -22,101 +22,117 @@
 </style>
 </head>
 <body>
-<h1>P4 durable callback ingestion, local SERVICE/SIM proof</h1>
-<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion · evidence level: SERVICE/SIM, builder-run · status: awaiting independent verification</div>
+<h1>P4 durable callback ingestion, local SERVICE/SIM proof (round 2)</h1>
+<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion · evidence level: SERVICE/SIM, builder-run · status: awaiting independent verification of the round 2 fixes</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
-  <li>Events for a connected account we have not bound are now refused (HTTP 400), so the provider retries them. The alternative is to accept and park them. Refusing means an account that stays unbound for days will show as failing deliveries on the provider dashboard. I chose refuse; say if you want parking instead.</li>
+  <li>None open. The coordinator decided unbound accounts: accept with 200 and park, with no effect. That replaces my round 1 choice of 400.</li>
+  <li>Refund, dispute, credit note and subscription notifications are refused explicitly with a recorded reason. They are not yet turned into re-reads (see below). Say if you want that built next.</li>
 </ul>
 </div>
 
 <div class="status">
 <h2>Done and proven (builder run only)</h2>
 <ul>
-  <li>This is a builder-run SERVICE/SIM proof. Nobody independent has checked it yet. Actual provider ingestion (real Stripe deliveries into a durable endpoint) remains open.</li>
-  <li>No Stripe API calls, no sandbox writes, no provider activity. The signing secret is synthetic and random per run. Provider state is an in-process stub. Spent sandbox latches and private journals were not touched.</li>
-  <li>Before: the existing code passed 5 of 6 cases and <span class="fail">failed substitution</span>. It acknowledged events for unbound or missing accounts with 200 and dropped them, and a refused event stopped the reconciliation loop, leaving the receipt stuck.</li>
-  <li>After: <span class="pass">6 of 6 cases pass</span>. Each case produces exactly one durable receipt and one reconciliation, or a refusal, bound to the claimed merchant.</li>
-  <li>Mutations: removing the dedupe key, the signature check, or the account binding each makes at least one case fail.</li>
-  <li>None of the 54 frozen payment source files changed. Typecheck passes.</li>
+  <li>This is a builder-run SERVICE/SIM proof. Nobody independent has checked the round 2 fixes yet. Actual provider ingestion is still open.</li>
+  <li>No Stripe API calls, no sandbox writes, no provider activity. The signing secret is synthetic. Provider state is an in-process stub. Spent sandbox latches and private journals were not touched.</li>
+  <li>The independent verifier's attacks, rerun by me, show the change. Before: attacks 12 and 13 fail. With production-style error hiding, attack 6 also fails. After: all 13 attacks pass, both with and without error hiding.</li>
+  <li>My suite now has 10 checks. Before: 6 fail. After: 10 of 10 pass.</li>
+  <li>11 mutants, 3 from round 1 and 8 new ones: each makes at least one check fail. <code>--all</code> exits 0.</li>
+  <li>None of the 54 frozen payment files changed. <code>proofs/payments/convex/</code> is now byte-identical to base again: the Convex callback code moved to <code>callback/</code>. Typecheck passes.</li>
 </ul>
 </div>
 
-<h2>What was built</h2>
-<p>The existing pieces stay as they were: <code>verifyStripe</code> in <code>webhooks.mjs</code>, the Convex <code>ingest</code>, <code>pendingEvents</code> and <code>ackEvent</code> functions and the <code>payIncoming</code> table, and the account-scoped pull in <code>adapter.mjs</code>. The work added three files around them.</p>
+<h2>What each fix does</h2>
 <table>
-<tr><th>File</th><th>What it does</th></tr>
-<tr><td><code>proofs/payments/callback-ingestion.mjs</code></td><td>Receiver: verify the signature, bind the event to exactly one merchant by its claimed connected account, store the receipt, and only then return 200. It refuses unbound or missing accounts. Drain loop: for each pending receipt, run a fresh account-scoped provider read, then acknowledge. Final refusals are recorded and closed. Transient errors stay pending, and one bad receipt no longer blocks the rest.</td></tr>
-<tr><td><code>proofs/payments/convex/callbackIngestion.ts</code></td><td>Additive. <code>receipts</code> lists a binding's receipts for measurement. <code>refuse</code> closes a refused receipt and writes an attributed <code>payment.callback.refused</code> event. Both check adapter account scope.</td></tr>
-<tr><td><code>proofs/payments/callback-ingestion-replay.mjs</code></td><td>The fixture. It runs an isolated local Convex on ports 3620/3621 in a fresh private copy, a loopback receiver on 3622, two seeded merchants A and B, and the cases below. <code>--all</code> runs the baseline, the after run and three mutants, then writes <code>summary.json</code>.</td></tr>
+<tr><th>#</th><th>Problem found by the verifier</th><th>Fix</th></tr>
+<tr><td>1</td><td>One merchant with revoked access stopped the drain for every merchant after it.</td><td><code>drain()</code> catches failures per merchant and per receipt. A failing merchant is reported as <code>merchant_error</code> and the rest carry on.</td></tr>
+<tr><td>2</td><td>Only the stub's error text counted as final. A real provider 404 retried forever, and 100 stuck receipts hid every newer one. The receipts query threw above 100 rows.</td><td>Classification uses the error's type and fields, not its text. A <code>StripeFailure</code> with a 4xx status other than 408, 409 or 429 is final. So is a <code>node:assert</code> failure such as "Live response refused". Anything else can be retried: it backs off exponentially and is skipped until due. After 5 attempts it is closed as failed with a <code>payment.callback.failed</code> audit row. The due query skips receipts that are waiting, so they cannot hide newer ones. The receipts query returns the newest rows, or one event's rows, and never throws on volume.</td></tr>
+<tr><td>3</td><td>Refusals were found by matching Convex error text, which production Convex hides.</td><td>A typed <code>prepare</code> query decides before any provider read and returns <code>{action:'refuse', code}</code>. The new Convex functions throw <code>ConvexError({code})</code>. Every run of the suite now hides error text the way production does (<code>callback/redact-hook.mjs</code>).</td></tr>
+<tr><td>4</td><td><code>charge.refunded</code>, <code>charge.dispute.created</code>, <code>credit_note.created</code> and <code>customer.subscription.*</code> were accepted and then closed silently as "unbound".</td><td><b>Refused explicitly</b> with code <code>unsupported_event_type</code> and an audit row. I did not choose the re-read route. The existing adapter can only re-read by invoice id. Mapping a charge, dispute or subscription to its invoice would need provider read paths nobody has tested against real shapes. The invoice's own events and pulls still pick up refunds and credit notes.</td></tr>
+<tr><td>5</td><td>Coordinator decision: unbound accounts should not get 400.</td><td>A signed event for a well-formed account with no binding gets 200. It is parked in <code>callbackParked</code>, keyed by (account, event id) and capped at 500 rows. A per-account alert row in <code>callbackAlerts</code> counts arrivals, and overflow gets its own alert kind. Nothing reads parked rows back as effects. Parking needs an ingress token, and it refuses an account that is actually bound. A missing or malformed account, a bad signature or a malformed body still gets 400.</td></tr>
 </table>
 
-<h2>Before and after</h2>
-<p>Baseline is the existing code composed as <code>sandbox-replay.mjs</code> uses it: the <code>listen()</code> handler body, its route-by-account callback, and a pull followed by an ack for each pending receipt. There was no general drain loop before, so the baseline loop stops at the first error, the way the existing inline code throws.</p>
+<h2>Before and after: the verifier's attack script</h2>
+<p>Before is the verifier's script, unmodified, on 0f55484. After uses a copy that only changes the setup wiring, never an attack or its checks (<code>fix/iv-after-wiring.diff</code>). That copy imports the new schema files, passes <code>park</code> to the receiver, uses the new drain dependencies, and sets backoff to 0 because attack 10 expects an immediate retry. "Hidden" means the client sees production-style error hiding.</p>
 <table>
-<tr><th>Case</th><th>Before (baseline)</th><th>After</th></tr>
-<tr><td>Bad signature: wrong secret, tampered body, timestamp 10 minutes old</td><td class="pass">PASS: 400, 400, 400; no receipt</td><td class="pass">PASS: same</td></tr>
-<tr><td>Crash after the durable receipt, before ack and reconciliation; backend restart; provider redelivers</td><td class="pass">PASS: receipt survived restart (1, pending); redelivery 200; 1 receipt, 1 observation, invoice open</td><td class="pass">PASS: same</td></tr>
-<tr><td>Exact replay (same bytes, same header)</td><td class="pass">PASS: 200, still 1 receipt, 0 new observations</td><td class="pass">PASS: same</td></tr>
-<tr><td>Out of order: newer paid event, then an older update arrives late</td><td class="pass">PASS: paid 100 after both, no regression</td><td class="pass">PASS: same</td></tr>
-<tr><td>Substitution: unbound account C; no account; valid event claiming B for A's invoice</td><td class="fail">FAIL: 200, 200, 200. The C and no-account events were acknowledged and dropped. B's receipt stayed stuck: the loop stopped on "unbound provider document"</td><td class="pass">PASS: 400, 400, 200. B's receipt was refused and closed with 1 refusal event on B. A's invoice and observations unchanged</td></tr>
-<tr><td>Tenant B financial state unchanged at all 6 checkpoints</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+<tr><th>Attack</th><th>Before</th><th>Before, hidden</th><th>After</th><th>After, hidden</th></tr>
+<tr><td>1 to 5, 7 to 11, B check</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><td>6 A event naming B's invoice</td><td class="pass">pass</td><td class="fail">FAIL: retried forever</td><td class="pass">pass (<code>unbound_document</code>)</td><td class="pass">pass</td></tr>
+<tr><td>12 failing merchant isolation</td><td class="fail">FAIL: drain threw</td><td class="fail">FAIL</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><td>13 liveness with 100 provider 404s</td><td class="fail">FAIL: 100 retry, newer receipt starved</td><td class="fail">FAIL</td><td class="pass">pass: 100 refused, newer applied</td><td class="pass">pass</td></tr>
+<tr><td>14 observation: <code>charge.refunded</code></td><td>closed as "unbound provider document"</td><td>retried forever</td><td>refused, <code>unsupported_event_type</code></td><td>same</td></tr>
+</table>
+
+<h2>Before and after: my suite</h2>
+<p>Baseline is the existing code composed as <code>sandbox-replay.mjs</code> uses it. All runs hide error text the way production does.</p>
+<table>
+<tr><th>Check</th><th>Before (baseline)</th><th>After</th></tr>
+<tr><td>Bad signature, tampered body, stale timestamp: 400 and no receipt</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><td>Crash after durable receipt, restart, redelivery: one receipt, one reconciliation</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><td>Exact replay: no second effect</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><td>Out of order: converges to paid, no going backwards</td><td class="pass">pass</td><td class="pass">pass</td></tr>
+<tr><td>Unbound account parked once (200, redelivery still one row, alert count 1); no account 400; event claiming B for A's invoice refused on B with <code>unbound_document</code></td><td class="fail">FAIL: all 200, nothing parked, no-account accepted, B receipt stuck</td><td class="pass">pass</td></tr>
+<tr><td>Refund, dispute, credit note, subscription: refused with <code>unsupported_event_type</code></td><td class="fail">FAIL: drain stopped</td><td class="pass">pass</td></tr>
+<tr><td>Revoked merchant listed first; A still drains</td><td class="fail">FAIL</td><td class="pass">pass</td></tr>
+<tr><td>Provider 404 (real <code>StripeFailure</code>) closed as <code>provider_404_resource_missing</code></td><td class="fail">FAIL</td><td class="pass">pass</td></tr>
+<tr><td>100 receipts failing with 503. A newer valid receipt drains at the same clock. The 100 retry at attempts 2, 3 and 4, then close as failed at attempt 5 with 100 audit rows. The receipts query works above 100 rows.</td><td class="fail">FAIL</td><td class="pass">pass</td></tr>
+<tr><td>Tenant B financial state unchanged at all 10 checkpoints</td><td class="pass">pass</td><td class="pass">pass</td></tr>
 </table>
 
 <h2>Mutation evidence</h2>
-<p>Each mutant removes one guard from the real source in a private copy. Each anchor must match exactly once.</p>
+<p>Each mutant removes one guard in a private copy. Each anchor must match exactly once.</p>
 <table>
-<tr><th>Removed</th><th>Where</th><th>Cases that failed</th></tr>
-<tr><td>Dedupe key</td><td><code>convex/payments.ts</code> <code>ingest</code>: the existing-row check</td><td class="fail">crash-and-restart (2 receipts, 2 observations); exact replay (2 receipts)</td></tr>
-<tr><td>Signature check</td><td><code>webhooks.mjs</code> <code>verifyStripe</code>: the HMAC comparison</td><td class="fail">bad signature (wrong secret and tampered body accepted with 200; 2 receipts)</td></tr>
-<tr><td>Account binding</td><td><code>callback-ingestion.mjs</code>: <code>m.account===event.account</code> replaced by always-true</td><td class="fail">substitution (all three accepted and applied to A; 3 foreign receipts under A)</td></tr>
+<tr><th>Mutant</th><th>What is removed</th><th>Checks that fail</th></tr>
+<tr><td>dedupe</td><td>existing-row check in frozen <code>payments.ts</code> <code>ingest</code></td><td class="fail">crash/restart, exact replay</td></tr>
+<tr><td>signature</td><td>HMAC comparison in frozen <code>verifyStripe</code></td><td class="fail">bad signature</td></tr>
+<tr><td>account</td><td>receiver's account match</td><td class="fail">substitution/parking</td></tr>
+<tr><td>isolation (fix 1)</td><td>per-merchant catch in <code>drain()</code></td><td class="fail">failing merchant</td></tr>
+<tr><td>classify (fix 2)</td><td>provider 4xx treated as final</td><td class="fail">provider 404; bounded retries</td></tr>
+<tr><td>backoff (fix 2)</td><td>due query skipping receipts that are waiting</td><td class="fail">bounded retries (newer receipt starved)</td></tr>
+<tr><td>attempt-cap (fix 2)</td><td>5-attempt limit</td><td class="fail">bounded retries (never closed)</td></tr>
+<tr><td>typed-refusal (fix 3)</td><td><code>unbound_document</code> decision in <code>prepare</code></td><td class="fail">substitution (retried after hidden error)</td></tr>
+<tr><td>unsupported (fix 4)</td><td>invoice-only type check in <code>prepare</code></td><td class="fail">non-invoice types</td></tr>
+<tr><td>park (fix 5)</td><td>the park call in the receiver</td><td class="fail">substitution/parking</td></tr>
 </table>
 
-<h2>Findings to know about</h2>
+<h2>Things to know</h2>
 <ul>
-  <li><b>A crash after the ledger write but before the ack</b> is an extra probe, not a required case. It causes one more idempotent provider read after restart. The ledger is unchanged and the receipt drains once, but a second <code>payment.observed</code> audit row is written. This happens both before and after the change. Removing it would need the ack and the ledger write in one transaction.</li>
-  <li><b>The substituted event claiming B</b> leaves one closed receipt and one refusal event on B, because it names B. B's financial export (quotes and documents) never changed.</li>
-  <li><b>The fixture covers one-time invoice events only.</b> Renewal invoices created by the provider (the <code>observeRenewal</code> path) are not routed by this drain and would be refused as unbound.</li>
-  <li><b>Tenant B had no events of its own</b>, so the account mutant was caught by the substitution case, not by the B check.</li>
+  <li><b>The new tables are added the way <code>recurring/</code> does it.</b> <code>callback/schema.ts</code> imports the frozen payment schema unchanged and adds four tables, and the runtime copy uses it. A real deployment would need the same additive schema change reviewed.</li>
+  <li><b>A <code>node:assert</code> failure counts as final.</b> That includes a traversal race such as "Invoice changed during traversal". The receipt closes, and the document stays marked incomplete until the next event or pull. That is safe, but it is not a retry.</li>
+  <li><b>Plain errors from the frozen payment mutations (currency or total mismatch) are hidden in production.</b> So they are retried and then closed as failed after 5 attempts, not refused on the first try.</li>
+  <li><b>A backlog of more than 1000 receipts all waiting at once</b> could still delay newer ones, because the due query scans at most 1000 open receipts. The 5-attempt limit means that delay ends.</li>
+  <li><b>The ack-loss probe is unchanged.</b> One extra read after restart writes a second <code>payment.observed</code> row. The ledger is unchanged.</li>
+  <li><b>Not rerun against the new code:</b> the verifier's own 6 mutants. Their anchors target round 1 text. My 11 mutants cover the new guards.</li>
 </ul>
 
 <h2>What remains open</h2>
 <ul>
-  <li>Independent verification of this slice.</li>
-  <li>Actual provider ingestion: real Stripe deliveries, including Connect events, into a deployed durable endpoint with a real signing secret.</li>
-  <li>Renewal and subscription event routing, and a hosted drain schedule.</li>
-  <li>Full P4, I1/I7 and live financial gates are unchanged by this work.</li>
+  <li>Independent verification of these round 2 fixes.</li>
+  <li>Actual provider ingestion: real Stripe deliveries and Connect event shapes into a deployed endpoint.</li>
+  <li>Re-reads triggered by refund, dispute, credit note and subscription events. Routing for renewal invoices.</li>
+  <li>A hosted drain schedule, and review of the additive schema. Full P4, I1/I7 and the live gates are unchanged.</li>
 </ul>
 
 <h2>How to check it</h2>
 <pre>cd proofs/payments
-pnpm install            # from the repo root, if node_modules is missing
-node callback-ingestion-replay.mjs --all      # baseline, after, 3 mutants; exit 0 only if every expectation holds
-node callback-ingestion-replay.mjs --mode=baseline
-node callback-ingestion-replay.mjs --mode=after
-node callback-ingestion-replay.mjs --mode=after --mutant=dedupe|signature|account
-../../node_modules/.bin/tsc --noEmit -p tsconfig.json</pre>
-<p>Ports 3620, 3621 and 3622 must be free; the script checks this first. Each run creates a fresh private directory under <code>proofs/payments/private/</code> (gitignored), where the backend log is kept.</p>
+node callback-ingestion-replay.mjs --all        # baseline, after, 11 mutants; ports 3620-3622; exit 0 only if every expectation holds
+IV_OUT=iv-before node iv-attacks-copy.mjs       # verifier script as written, run against 0f55484 code
+IV_OUT=iv-after node iv-attacks-after.mjs       # same attacks, new wiring; ports 3730-3732
+IV_OUT=iv-after-redacted node --import ./callback/redact-hook.mjs iv-attacks-after.mjs</pre>
 
-<h2>Suite log (summary)</h2>
-<pre>baseline/none: expected fail, failed cases [substituted account refused or bound only to the claimed merchant, no effect on A] -> OK
-after/none: expected pass, failed cases [] -> OK
-after/dedupe: expected fail, failed cases [crash between durable receipt and reconciliation, then restart, exact replay produces no second effect] -> OK
-after/signature: expected fail, failed cases [bad signature refused with no durable effect] -> OK
-after/account: expected fail, failed cases [substituted account refused or bound only to the claimed merchant, no effect on A] -> OK
-exit 0</pre>
-
-<h2>Evidence files</h2>
+<h2>Evidence files (<code>evidence/callback-ingestion/fix/</code>)</h2>
 <table>
 <tr><th>File</th><th>Content</th></tr>
-<tr><td><code>baseline-first.json</code></td><td>First baseline capture, taken before the after run</td></tr>
-<tr><td><code>after-first.txt</code></td><td>First after run console output</td></tr>
-<tr><td><code>suite.txt</code>, <code>summary.json</code></td><td>Full <code>--all</code> run log and expectations</td></tr>
-<tr><td><code>baseline.json</code>, <code>after.json</code>, <code>mutant-*.json</code></td><td>Per-run deliveries, HTTP statuses, drain outcomes, case details, provider read counts by account</td></tr>
-<tr><td><code>typecheck.txt</code>, <code>frozen-source-check.txt</code></td><td>Typecheck exit 0; 54 frozen files, 0 changed</td></tr>
+<tr><td><code>iv-before.log</code>, <code>iv-before-redacted.log</code>, <code>iv-before*/none.json</code></td><td>Verifier attacks on the round 1 code</td></tr>
+<tr><td><code>iv-after.log</code>, <code>iv-after-redacted.log</code>, <code>iv-after*/none.json</code></td><td>Verifier attacks on the round 2 code</td></tr>
+<tr><td><code>iv-after-wiring.diff</code></td><td>The only differences between the two attack copies</td></tr>
+<tr><td><code>suite.txt</code>, <code>suite/*.json</code>, <code>suite/summary.json</code></td><td>Full suite run: baseline, after, 11 mutants</td></tr>
+<tr><td><code>typecheck.txt</code>, <code>frozen-source-check.txt</code></td><td>Both typechecks exit 0; 54 frozen files, 0 changed</td></tr>
 </table>
-<p>Source SHA256: <code>callback-ingestion.mjs</code> 5fa4b98dd870b8f89d542f3c14a368633f50ef5b5ec69ac84a9c218092d1a17a, <code>callback-ingestion-replay.mjs</code> 015f72b0bc21c8ced1976d92319c4dc5f2a355271a5f116791e7320dae4dc1aa, <code>convex/callbackIngestion.ts</code> 032db4a20f420127066c8e732c561db25e699acbc5b5a974ff3298bdd6aadc17.</p>
+<p>Round 1 evidence stays in <code>evidence/callback-ingestion/</code> (<code>baseline*.json</code>, <code>after*.json</code>, <code>mutant-*.json</code>, <code>suite.txt</code>). The verifier's report is in <code>iv/</code>.</p>
+<p>Source SHA256: <code>callback-ingestion.mjs</code> 482cae7b138f6cc898ef036261ef1375bd569a9e315c75fc9c14428ec9d32200, <code>callback/callbackIngestion.ts</code> 888923e2bd71bf51236acdcd2d687a34df5fae95d73655c790ddd1a06beace8d, <code>callback/schema.ts</code> 18671409ac23a3a4dbd5cf2c1215d461f050d538a8f8f930e3826ddfe49de1a6, <code>callback/redact-hook.mjs</code> 90d11f4d937f8700b78166ea8d123fbd170ad8cdb70bf811b40d994a7a85a52d, <code>callback-ingestion-replay.mjs</code> 02ff270bd2df79df74f4457b9d32a92614bf88d5197640ab8c0c2a0cc179950c.</p>
 </body>
 </html>
