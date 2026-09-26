@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 1 failed) 848ms
+   × member suggestion list fills its limit with readable suggestions 18ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:41
+   Duration  1.11s (tests 75%, transform 16%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member suggestion list fills its limit with readable suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:88:114
+     86| it('member suggestion list fills its limit with readable suggestions',…
+     87|   const w = await suggestionWorld(200); await restrictMember(w.f, [{ o…
+     88|   expect((await w.f.client.query(api.suggestions.list, { orgId: w.f.or…
+       |                                                                                                                  ^
+     89| }, 30000);
+     90| it('agent suggestion list fills its limit with readable suggestions', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

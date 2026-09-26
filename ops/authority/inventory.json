@@ -1,0 +1,1869 @@
+[
+  {
+    "id": "agentApi:me",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:objects",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:listRecords",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:getRecord",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:search",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:related",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:today",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:propose",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agentApi:change",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agentApi:listSuggestions",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:inbox",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:inboxAdd",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agentApi:inboxResolve",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agents:create",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:insert",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:createAs",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "agents:setGrants",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:revoke",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:setSharedInbox",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:createScoped",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "authority/grants:grant",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "authority/grants:grantAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "authority/grants:revoke",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "authority/grants:revokeAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Delegation revocation changes actual REST read projection while independent human grants survive",
+    "reason": "removes a delegated grant"
+  },
+  {
+    "id": "authority/grants:fireAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail",
+    "reason": "fires a managed agent"
+  },
+  {
+    "id": "authority/migration:freeze",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "migration, retained old MCP/REST transcript",
+    "reason": "freezes legacy wildcard authority at current objects"
+  },
+  {
+    "id": "authority/migration:migrateAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "migration, retained old MCP/REST transcript",
+    "reason": "replaces a legacy wildcard with concrete pre-freeze objects"
+  },
+  {
+    "id": "authority/policies:setMember",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "authority/policies:setAgentMasks",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "capture:save",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "csv:importRows",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "csv:exportPage",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "events:forRecord",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "events:forOrg",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "fields:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "fields:create",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "fields:update",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "fields:retire",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "inbox:audience",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "inbox:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "inbox:add",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "inbox:remove",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/bindings:provision",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/bindings:bind",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient"
+  },
+  {
+    "id": "integrations/budgets:configure",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "integrations/budgets:clearAnomaly",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "operator-override",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operator releases a spending hold; readonly still refuses claims and permits"
+  },
+  {
+    "id": "integrations/callbacks:callback",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+  },
+  {
+    "id": "integrations/callbacks:receive",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+  },
+  {
+    "id": "integrations/callbacks:page",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "integrations/commands:proposeHuman",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:proposeAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:editHuman",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:editAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:approve",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:claimHuman",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:claimAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:cancelHuman",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:cancelAgent",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write",
+    "reason": "stops the agent's own work"
+  },
+  {
+    "id": "integrations/commands:adopt",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/commands:getHuman",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "integrations/commands:getAgent",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+  },
+  {
+    "id": "integrations/connections:registerProvider",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "global provider registry, not workspace data"
+  },
+  {
+    "id": "integrations/connections:registerSecret",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "integrations/connections:connect",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/connections:insert",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Invalid provider and secret references fail closed"
+  },
+  {
+    "id": "integrations/connections:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "integrations/connections:disconnect",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/dispatch:permit",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
+  },
+  {
+    "id": "integrations/dispatch:consume",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
+  },
+  {
+    "id": "integrations/dispatch:status",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
+  },
+  {
+    "id": "integrations/http:route",
+    "kind": "httpaction",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
+  },
+  {
+    "id": "integrations/lifecycle:expire",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
+  },
+  {
+    "id": "integrations/lifecycle:sweep",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Unresolved prior consumed attempt survives ' + path + ' and releases only after final current-step absence"
+  },
+  {
+    "id": "integrations/lookups:pages",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "integrations/lookups:seal",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "integrations/lookups:record",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "integrations/outcomes:unknown",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "integrations/outcomes:reconcile",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
+  },
+  {
+    "id": "integrations/outcomes:fail",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "integrations/outcomes:resolveUnknown",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "integrations/outcomes:operatorResolveUnknown",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/receipts:observe",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/receipts:acknowledge",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safety:beginTarget",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safety:completeTarget",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safety:prepare",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/safety:consume",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "integrations/safety:request",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safety:send",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safety:unknown",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safety:sendSettled",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "integrations/safetyFinality:inspect",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
+  },
+  {
+    "id": "integrations/safetyFinality:resolve",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
+  },
+  {
+    "id": "integrations/safetyFinality:settle",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "n/a",
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
+  },
+  {
+    "id": "invites:create",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "invites:get",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "invites:accept",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "objects:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "objects:get",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "objects:create",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "ops:setFlag",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "operator-override",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "sets or lifts the readonly flag itself; must stay available"
+  },
+  {
+    "id": "orgs:create",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "Real JWT verification derives human identity and rejects invalid audience and expired tokens"
+  },
+  {
+    "id": "orgs:mine",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "orgs:get",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "orgs:rename",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "orgs:members",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "orgs:setRole",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "orgs:removeMember",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "orgs:leave",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "rateLimit:take",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "limits writes per key without starving reads or other agents",
+    "reason": "per-key rate counter, no workspace data"
+  },
+  {
+    "id": "records:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:get",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:related",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:reverseFields",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:create",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "records:update",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "records:remove",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "records:byRef",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:search",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "seed:demo",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "seed:demoAs",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "seed:ensureStandard",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "seed:backfillRefs",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "seed:releaseStandardSlots",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "suggestions:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "suggestions:forRecord",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "suggestions:apply",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "suggestions:dismiss",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "suggestions:adopt",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "telemetry:record",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "schedules only bounded operational fields and survives scheduler failure",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "telemetry:recordProbe",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "schedules only bounded operational fields and survives scheduler failure",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "telemetry:probe",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "telemetry:purge",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "telemetry:report",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "today:get",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "users:store",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "Real JWT verification derives human identity and rejects invalid audience and expired tokens"
+  },
+  {
+    "id": "users:me",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "scheduled integrations/lifecycle:expire",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
+  },
+  {
+    "id": "scheduled integrations/lifecycle:sweep",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Unresolved prior consumed attempt survives ' + path + ' and releases only after final current-step absence"
+  },
+  {
+    "id": "scheduled integrations/safety:send",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "scheduled integrations/safety:unknown",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "scheduled telemetry:record",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "schedules only bounded operational fields and survives scheduler failure",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "cron REST telemetry probe",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "cron Expire operational metrics",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "HTTP GET /api/v1/_probe",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "GAP"
+  },
+  {
+    "id": "HTTP GET /api/v1/operations/:id",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations/:id/edit",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations/:id/claim",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/operations/:id/cancel",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/authority/grant",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/authority/revoke",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "Delegation revocation changes actual REST read projection while independent human grants survive"
+  },
+  {
+    "id": "HTTP POST /api/v1/authority/fire",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail"
+  },
+  {
+    "id": "HTTP GET /api/v1/me",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/objects",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records/:id",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records/:id/events",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/records/:id/related",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/search",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/today",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/suggestions",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP POST /api/v1/suggestions",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/changes",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP GET /api/v1/inbox",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP POST /api/v1/inbox",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/inbox/:id/resolve",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/permit",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/consume",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "One-use expiring permit and server scheduled crash recovery retain consumed uncertainty"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/unknown",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/reconcile",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly between claim and permit stops sends but permits truthful receipt settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/fail",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-begin",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-complete",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-receipt",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/resolve-unknown",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provisional absence permits only same-key retry and old-fence truthful settlement"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/bind",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/safety-resolve-unknown",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Only capability-specific finality with a complete post-consume lookup releases an unknown refund"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/lookup",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/callback",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "H0#18 H0#19 readonly accepts suppression and adoption after a fired agent"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/status",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "H0#1 H0#9 cross-connection adapters cannot touch another connection tuple"
+  },
+  {
+    "id": "HTTP POST /api/integrations/v1/page",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "adapter",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal"
+  },
+  {
+    "id": "scheduled telemetry:purge",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
+    "reason": "operational metrics only"
+  },
+  {
+    "id": "lib/shape:idsBelong",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Callback, adapter, REST and ops logs reveal no secrets"
+  }
+]

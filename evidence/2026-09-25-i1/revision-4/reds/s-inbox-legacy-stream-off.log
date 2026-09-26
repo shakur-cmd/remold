@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/inbox.test.ts (5 tests | 1 failed) 383ms
+   × old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes 12ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:20
+   Duration  1.24s (tests 76%, transform 14%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/inbox.test.ts > old inbox compatibility is bounded to pre-freeze agents and rows, including absent audience on rollback writes
+AssertionError: expected [] to deeply equal [ '0000000000000000010050agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000010050agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/inbox.test.ts:53:75
+     51|   });
+     52|   await f.t.run(ctx => ctx.db.insert('agentInbox', { orgId: f.orgId, t…
+     53|   expect((await call('GET', '/api/v1/inbox')).json.map((r: any) => r.i…
+       |                                                                           ^
+     54|   await f.t.mutation(anyApi['authority/migration'].migrateAgent, { age…
+     55|   expect((await call('GET', '/api/v1/inbox')).json.map((r: any) => r.i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

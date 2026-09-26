@@ -1,0 +1,44 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (8 tests | 1 failed) 411ms
+   × records.related: hidden deals linked to a readable company do not change the pages 18ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:15
+   Duration  1.05s (tests 73%, transform 16%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages
+AssertionError: expected [ { n: 1, done: false }, …(1) ] to deeply equal [ { n: 1, done: true } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "done": true,
++     "done": false,
+      "n": 1,
++   },
++   {
++     "done": true,
++     "n": 0,
+    },
+  ]
+
+ ❯ ops/authority/pagination.test.ts:54:54
+     52|   const before = await w.walk(api.records.related, args, 5);
+     53|   await w.hide(7);
+     54|   expect(await w.walk(api.records.related, args, 5)).toEqual(before);
+       |                                                      ^
+     55| });
+     56| it('events.forOrg: activity on hidden deals does not change the member…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

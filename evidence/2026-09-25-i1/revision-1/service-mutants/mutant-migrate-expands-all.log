@@ -1,0 +1,22 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: migrated create
+
+200 !== 403
+
+    at assertFutureRefused (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/migration-service.mjs:60:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withAuthority.sourceRevision (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/migration-service.mjs:97:5)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/migration-service.mjs:9:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 200,
+  expected: 403,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

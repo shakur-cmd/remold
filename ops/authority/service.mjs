@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict';
+import { anyApi } from 'convex/server';
+import { writeFileSync } from 'node:fs';
+import { withAuthority, evidencePath } from './local.mjs';
+import { tenant } from './service-fixture.mjs';
+import { replayReads } from './service-reads.mjs';
+import { replayAuthorityBoundaries } from './service-authority-boundaries.mjs';
+import { replayConnections } from './service-connections.mjs';
+import { replayFaults } from './service-faults.mjs';
+import { replayAgents } from './service-agents.mjs';
+import { replaySafety } from './service-safety.mjs';
+import { replayOperations } from './service-operations.mjs';
+import { replayInstances } from './service-instances.mjs';
+import { replaySecrets } from './service-secrets.mjs';
+import { replayH0Parity } from './service-h0.mjs';
+import { replaySweeps } from './service-sweeps.mjs';
+const report = await withAuthority(async f => {
+  const results = [], fixtures = [];
+  // I1_ONLY=<regex> skips non-matching tests inside the selected suites (setup still runs).
+  const only = process.env.I1_ONLY ? new RegExp(process.env.I1_ONLY) : null;
+  const test = async (name, fn) => { if (only && !only.test(name)) return; await fn(); results.push({ name, status: 'PASS', level: 'SERVICE local backend and verified synthetic JWT / SIM provider' }); console.log('PASS', name); };
+  const a = f.client('owner-A'), b = f.client('owner-B');
+  const userA = await a.mutation(anyApi.users.store, {}), userB = await b.mutation(anyApi.users.store, {});
+  const orgA = await a.mutation(anyApi.orgs.create, { name: 'Synthetic A' }), orgB = await b.mutation(anyApi.orgs.create, { name: 'Synthetic B' });
+  fixtures.push({ orgA, orgB, userA, userB });
+  await test('Real JWT verification derives human identity and rejects invalid audience and expired tokens', async () => {
+    assert.equal((await a.query(anyApi.users.me, {}))._id, userA);
+    await assert.rejects(f.client('owner-A', { aud: 'wrong' }).query(anyApi.users.me, {}));
+    await assert.rejects(f.client('owner-A', { exp: 1 }).query(anyApi.users.me, {}));
+    await assert.rejects(b.query(anyApi.orgs.get, { orgId: orgA }));
+  });
+  f.run('integrations/connections:registerProvider', { provider: 'fake', enabled: true });
+  for (const orgId of [undefined, orgA, orgB]) f.run('integrations/budgets:configure', { ...(orgId ? { orgId } : {}), cap: 10, maxConcurrent: 3, maxPerRun: 8, maxSteps: 3, maxRecipients: 10 });
+  const secretReferenceId = f.run('integrations/connections:registerSecret', { orgId: orgA, provider: 'fake', environment: 'test', account: 'A', handle: 'vault:00000000-0000-0000-0000-000000000001' });
+  const connection = await a.action(anyApi['integrations/connections'].connect, { orgId: orgA, secretReferenceId });
+  const intentId = await a.mutation(anyApi['integrations/bindings'].provision, { orgId: orgA, connectionId: connection.connectionId, logical: 'model', kind: 'model', remove: false });
+  const adapter = async (name, body) => { const response = await fetch(f.site + '/api/integrations/v1/' + name, { method: 'POST', headers: { authorization: 'Bearer ' + connection.adapterKey, 'content-type': 'application/json' }, body: JSON.stringify(body) }); const result = await response.json(); if (!response.ok) throw new Error(JSON.stringify(result)); return result; };
+  const { bindingId } = await adapter('bind', { intentId, externalId: 'model-A' });
+  const commands = anyApi['integrations/commands'];
+  const payload = { content: 'synthetic', audience: [], audienceVersion: 1, destination: 'A', schedule: 0, amountMinor: 0, currency: 'USD', workflowVersion: 1 };
+  const propose = async (logical, units = 5, maxSteps = 2) => { const id = await a.mutation(commands.proposeHuman, { orgId: orgA, logical, bindingId, capability: 'model.call', payload, reservationUnits: units, maxSteps }); await a.mutation(commands.approve, { orgId: orgA, id, expiresAt: Date.now() + 60000 }); return id; };
+  const claim = id => a.mutation(commands.claimHuman, { orgId: orgA, id, worker: 'worker' });
+  const start = async id => { const c = await claim(id), p = await adapter('permit', { id, ...c, worker: 'worker' }); const { expires, maxUnits, maxRecipients, ...args } = p; await adapter('consume', args); return { id, ...c }; };
+  const snapshot = () => f.run('authorityFixture:dump', { orgId: orgA });
+  await test('Production dispatch records cancelled late acceptance exactly once', async () => {
+    const id = await propose('cancel'), target = await start(id);
+    await a.mutation(commands.cancelHuman, { orgId: orgA, id }); await adapter('fail', { ...target, retryable: true }); await assert.rejects(claim(id));
+    const response = await adapter('reconcile', { ...target, providerRef: 'late', usage: 2, continue: true }); assert.equal(response.late, true); assert.equal(response.continuationRefused, true);
+    await adapter('reconcile', { ...target, providerRef: 'late', usage: 2 });
+    assert.deepEqual(snapshot().budgets.filter(x => x.key === orgA).map(x => [x.reserved, x.active, x.spent]), [[0, 0, 2]]);
+  });
+  f.run('integrations/budgets:configure', { cap: 10000, maxConcurrent: 1000, maxPerRun: 1000, maxSteps: 5, maxRecipients: 100 });
+  // I1_SUITES=instances,secrets runs a subset (used by SERVICE mutants); default runs every suite.
+  const suites = { operations: replayOperations, safety: replaySafety, authorityBoundaries: replayAuthorityBoundaries, connections: replayConnections, instances: replayInstances, reads: replayReads, agents: replayAgents, faults: replayFaults, secrets: replaySecrets, h0: replayH0Parity, sweeps: replaySweeps };
+  const selected = process.env.I1_SUITES ? process.env.I1_SUITES.split(',') : Object.keys(suites);
+  for (const name of selected) { assert.ok(suites[name], 'Unknown suite ' + name); await suites[name]({ runtime: f, tenant: (label, limits) => tenant(f, label, limits), test }); }
+  const exportedFixture = f.exportFixture();
+  return { exportedFixture, status: process.env.I1_SUITES ? 'SUBSET ' + selected.join(',') : 'FULL SERVICE REPLAY', suites: selected, results, fixtures, snapshot: snapshot(), scratch: f.scratch };
+}, { safetySim: true });
+writeFileSync(evidencePath('service.json'), JSON.stringify(report, null, 2) + '\n');

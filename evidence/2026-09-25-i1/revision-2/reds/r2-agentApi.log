@@ -1,0 +1,48 @@
+$ vitest run --config ops/authority/vitest.config.ts
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/oracles.test.ts (7 tests | 1 failed) 306ms
+   × search fills its limit with readable matches, so hidden matches change nothing 44ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+AssertionError: expected { text: [ 'Alpha Mine' ], …(4) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }
+
+- Expected
++ Received
+
+@@ -1,12 +1,8 @@
+  {
+-   "agentRecent": [
+-     "Alpha Mine",
+-   ],
+-   "agentText": [
+-     "Alpha Mine",
+-   ],
++   "agentRecent": [],
++   "agentText": [],
+    "recent": [
+      "Alpha Mine",
+    ],
+    "text": [
+      "Alpha Mine",
+
+ ❯ ops/authority/oracles.test.ts:84:18
+     82|   };
+     83|   const hidden = await run(true);
+     84|   expect(hidden).toEqual(await run(false));
+       |                  ^
+     85|   expect(Object.values(hidden)).toEqual(Array(5).fill(['Alpha Mine']));
+     86| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  1 failed | 69 passed (70)
+   Start at  07:40:36
+   Duration  717ms (tests 69%, transform 20%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.

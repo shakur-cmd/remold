@@ -1,0 +1,22 @@
+{"timeline":"consume; read while send hangs; watchdog; seal; finality request","refused":false,"state":"refused","held":0}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+    at withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/finality-race-service.mjs:19:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/local.mjs:68:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/finality-race-service.mjs:5:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

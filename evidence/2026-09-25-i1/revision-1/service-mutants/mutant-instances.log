@@ -1,0 +1,24 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok([403, 404].includes((await c1.request('callback', { bindingId: foreign.bindingId, eventId: 'foreign', body: JSON.stringify({ version: 1, state: 'suppressed', channel: 'email', purpose: 'marketing' }) })).status))
+
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-instances.mjs:25:52
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:21:76)
+    at async Object.replayInstances [as instances] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service-instances.mjs:5:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:56:84)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/local.mjs:75:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold-i1/ops/authority/service.mjs:17:16 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

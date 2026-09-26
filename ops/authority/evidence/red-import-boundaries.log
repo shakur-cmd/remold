@@ -1,0 +1,52 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/import-boundaries.test.ts (1 test | 1 failed) 79ms
+   × capture and CSV duplicate detection cannot reveal a hidden title by matching it 78ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/import-boundaries.test.ts > capture and CSV duplicate detection cannot reveal a hidden title by matching it
+AssertionError: promise resolved "{ companyCreated: false, …(2) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "companyCreated": false,
++   "objectKey": "company",
++   "recordId": "0000000000000000000010048records",
+  }
+
+ ❯ ops/authority/import-boundaries.test.ts:9:123
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/import-boundaries.test.ts > capture and CSV duplicate detection cannot reveal a hidden title by matching it
+AssertionError: promise resolved "{ created: +0, errors: [], skipped: 1 }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "created": 0,
++   "errors": [],
++   "skipped": 1,
+  }
+
+ ❯ ops/authority/import-boundaries.test.ts:10:235
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  17:11:23
+   Duration  214ms (tests 52%, transform 35%, import 12%, worker 1%)
+

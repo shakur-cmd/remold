@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/safety.test.ts (14 tests | 1 failed) 608ms
+   × a pending recurring cancellation blocks a second command until an authoritative terminal receipt 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/safety.test.ts > a pending recurring cancellation blocks a second command until an authoritative terminal receipt
+AssertionError: promise resolved "{ consumed: true, duplicate: false }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "consumed": true,
++   "duplicate": false,
+  }
+
+ ❯ ops/authority/safety.test.ts:143:36
+    141|   await f.pull([receipt]);
+    142|   const two = await f.prepare('two', 0);
+    143|   await expect.soft(f.consume(two)).rejects.toMatchObject({ data: { co…
+       |                                    ^
+    144|   await f.pull([{ ...receipt, status: 'failed' }]);
+    145|   await f.consume(two);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  17:27:08
+   Duration  921ms (tests 75%, transform 19%, import 5%)
+

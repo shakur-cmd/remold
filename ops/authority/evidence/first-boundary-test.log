@@ -1,0 +1,33 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/baseline.test.ts (3 tests | 1 failed) 128ms
+   × an existing wildcard does not authorize writes to a future object 100ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/baseline.test.ts > an existing wildcard does not authorize writes to a future object
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ ops/authority/baseline.test.ts:10:151
+      8|   expect((await call('POST', '/api/v1/changes', { action: 'create', ob…
+      9|   await client.mutation(api.objects.create, { orgId, key: 'future', la…
+     10|   expect((await call('POST', '/api/v1/changes', { action: 'create', ob…
+       |                                                                                                                                                       ^
+     11| });
+     12|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  15:29:08
+   Duration  266ms (tests 62%, transform 26%, import 11%, worker 1%)
+

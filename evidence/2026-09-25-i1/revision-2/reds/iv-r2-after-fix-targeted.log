@@ -1,0 +1,5 @@
+PASS R2-D8a Inherited-property keys (constructor, toString, hasOwnProperty, __proto__) cannot slip an extra field past the shape check into Convex argument logging
+PASS R2-O2 Record-scoped member: search, byRef, get, events, suggestions and related-list queries do not distinguish an unreadable record from a missing or deleted one
+PASS R2-O5 Search ranking oracle: with limit 1, a query that also matches an unreadable record does not push the member/agent's own readable match out of the result
+
+R2 SUMMARY 3 PASS / 0 FAIL

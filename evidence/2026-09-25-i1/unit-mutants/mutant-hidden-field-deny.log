@@ -1,0 +1,197 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90m/private/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-authority-mutations-epsvTM[39m
+
+ [31m❯[39m ops/authority/masks.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 137[2mms[22m[39m
+[31m   [31m×[31m a hidden field is removed from user records, history, suggestions and exports[39m[32m 118[2mms[22m[39m
+[31m   [31m×[31m the same masks cover legacy REST/MCP reads, proposals, changes and lookup titles[39m[32m 12[2mms[22m[39m
+[31m   [31m×[31m record-bounded human scope cannot create outside it or delete hidden fields[39m[32m 6[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:15:59
+[2m   Duration [22m 271ms[2m (tests 63%, transform 27%, import 9%, worker 1%)[22m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22ma hidden field is removed from user records, history, suggestions and exports
+[31m[1mAssertionError[22m: expected '{"fields":[{"_creationTime":179034575…' not to match /Private Title|Hidden City/[39m
+
+[32m- Expected:[39m
+/Private Title|Hidden City/
+
+[31m+ Received:[39m
+"{\"fields\":[{\"_creationTime\":1790345759570.0088,\"_id\":\"00000000000000000000010010fields\",\"encoding\":1,\"key\":\"name\",\"label\":\"Name\",\"objectId\":\"0000000000000000000010003objects\",\"order\":0,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":true,\"retired\":false,\"slot\":{\"index\":0,\"kind\":\"s\"},\"type\":\"text\"},{\"_creationTime\":1790345759571,\"_id\":\"00000000000000000000010011fields\",\"encoding\":1,\"key\":\"domain\",\"label\":\"Domain\",\"objectId\":\"0000000000000000000010003objects\",\"order\":1,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"slot\":{\"index\":1,\"kind\":\"s\"},\"type\":\"text\"},{\"_creationTime\":1790345759571.001,\"_id\":\"00000000000000000000010012fields\",\"encoding\":1,\"key\":\"city\",\"label\":\"City\",\"objectId\":\"0000000000000000000010003objects\",\"order\":2,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"slot\":{\"index\":2,\"kind\":\"s\"},\"type\":\"text\"},{\"_creationTime\":1790345759571.002,\"_id\":\"00000000000000000000010013fields\",\"encoding\":1,\"key\":\"notes\",\"label\":\"Notes\",\"objectId\":\"0000000000000000000010003objects\",\"order\":3,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"type\":\"text\"},{\"_creationTime\":1790345759571.003,\"_id\":\"00000000000000000000010014fields\",\"encoding\":1,\"key\":\"street\",\"label\":\"Street\",\"objectId\":\"0000000000000000000010003objects\",\"order\":4,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"type\":\"text\"},{\"_creationTime\":1790345759571.004,\"_id\":\"00000000000000000000010015fields\",\"encoding\":1,\"key\":\"state\",\"label\":\"State\",\"objectId\":\"0000000000000000000010003objects\",\"order\":5,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"type\":\"text\"},{\"_creationTime\":1790345759571.005,\"_id\":\"00000000000000000000010016fields\",\"encoding\":1,\"key\":\"postalCode\",\"label\":\"Postal Code\",\"objectId\":\"0000000000000000000010003objects\",\"order\":6,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"type\":\"text\"},{\"_creationTime\":1790345759571.0059,\"_id\":\"00000000000000000000010017fields\",\"encoding\":1,\"key\":\"country\",\"label\":\"Country\",\"objectId\":\"0000000000000000000010003objects\",\"order\":7,\"orgId\":\"0000000000000000000000010001orgs\",\"required\":false,\"retired\":false,\"type\":\"text\"}],\"object\":{\"_creationTime\":1790345759570.002,\"_id\":\"0000000000000000000010003objects\",\"isStandard\":true,\"key\":\"company\",\"label\":\"Company\",\"labelPlural\":\"Companies\",\"order\":0,\"orgId\":\"0000000000000000000000010001orgs\",\"titleFieldId\":\"00000000000000000000010010fields\"},\"record\":{\"_creationTime\":1790345759591,\"_id\":\"0000000000000000000010048records\",\"createdBy\":\"000000000000000000000010000users\",\"objectId\":\"0000000000000000000010003objects\",\"orgId\":\"0000000000000000000000010001orgs\",\"ref\":\"arrow-mesa-berry\",\"title\":\"Private Title\",\"updatedAt\":1790345759591,\"values\":{\"00000000000000000000010010fields\":\"Private Title\",\"00000000000000000000010012fields\":\"Hidden City\"}}}"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m14:43[22m[39m
+    [90m 12|[39m   await client.mutation(anyApi['authority/policies'].setMember, { orgI…
+    [90m 13|[39m   const record = await client.query(api.records.get, { orgId, recordId…
+    [90m 14|[39m   expect.soft(JSON.stringify(record)).not.toMatch(/Private Title|Hidde…
+    [90m   |[39m                                           [31m^[39m
+    [90m 15|[39m   expect.soft(JSON.stringify(await client.query(api.events.forRecord, …
+    [90m 16|[39m   expect.soft(JSON.stringify(await client.query(api.suggestions.list, …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22ma hidden field is removed from user records, history, suggestions and exports
+[31m[1mAssertionError[22m: expected '[{"_creationTime":1790345759591.001,"…' not to match /Private Title|Hidden City/[39m
+
+[32m- Expected:[39m
+/Private Title|Hidden City/
+
+[31m+ Received:[39m
+"[{\"_creationTime\":1790345759591.001,\"_id\":\"00000000000000000000010049events\",\"action\":\"create\",\"actor\":{\"id\":\"000000000000000000000010000users\",\"kind\":\"user\"},\"actorName\":\"A\",\"after\":{\"00000000000000000000010010fields\":\"Private Title\",\"00000000000000000000010012fields\":\"Hidden City\"},\"appliedByName\":null,\"before\":null,\"objectId\":\"0000000000000000000010003objects\",\"orgId\":\"0000000000000000000000010001orgs\",\"recordId\":\"0000000000000000000010048records\"}]"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m15:98[22m[39m
+    [90m 13|[39m   const record = await client.query(api.records.get, { orgId, recordId…
+    [90m 14|[39m   expect.soft(JSON.stringify(record)).not.toMatch(/Private Title|Hidde…
+    [90m 15|[39m   expect.soft(JSON.stringify(await client.query(api.events.forRecord, …
+    [90m   |[39m                                                                                                  [31m^[39m
+    [90m 16|[39m   expect.soft(JSON.stringify(await client.query(api.suggestions.list, …
+    [90m 17|[39m   expect.soft(JSON.stringify(await client.query(api.csv.exportPage, { …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22ma hidden field is removed from user records, history, suggestions and exports
+[31m[1mAssertionError[22m: expected '[{"agentName":"writer","objectKey":"c…' not to match /Hidden City|Future Secret/[39m
+
+[32m- Expected:[39m
+/Hidden City|Future Secret/
+
+[31m+ Received:[39m
+"[{\"agentName\":\"writer\",\"objectKey\":\"company\",\"objectLabel\":\"Company\",\"paused\":false,\"recordRef\":\"arrow-mesa-berry\",\"recordTitle\":\"Private Title\",\"suggestion\":{\"_creationTime\":1790345759631,\"_id\":\"000000000000000010052suggestions\",\"agentId\":\"00000000000000000000010050agents\",\"authorityEpoch\":0,\"before\":{\"00000000000000000000010012fields\":\"Hidden City\"},\"change\":{\"action\":\"update\",\"objectId\":\"0000000000000000000010003objects\",\"recordId\":\"0000000000000000000010048records\",\"values\":{\"00000000000000000000010012fields\":\"Future Secret\"}},\"orgId\":\"0000000000000000000000010001orgs\",\"reason\":\"Hidden City in free text\",\"recordId\":\"0000000000000000000010048records\",\"status\":\"pending\"}}]"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m16:88[22m[39m
+    [90m 14|[39m   expect.soft(JSON.stringify(record)).not.toMatch(/Private Title|Hidde…
+    [90m 15|[39m   expect.soft(JSON.stringify(await client.query(api.events.forRecord, …
+    [90m 16|[39m   expect.soft(JSON.stringify(await client.query(api.suggestions.list, …
+    [90m   |[39m                                                                                        [31m^[39m
+    [90m 17|[39m   expect.soft(JSON.stringify(await client.query(api.csv.exportPage, { …
+    [90m 18|[39m   expect(await client.query(api.records.search, { orgId, text: 'Privat…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22ma hidden field is removed from user records, history, suggestions and exports
+[31m[1mAssertionError[22m: expected '{"cursor":"_end_cursor","done":true,"…' not to match /Private Title|Hidden City/[39m
+
+[32m- Expected:[39m
+/Private Title|Hidden City/
+
+[31m+ Received:[39m
+"{\"cursor\":\"_end_cursor\",\"done\":true,\"header\":[\"Code\",\"Name\",\"Domain\",\"City\",\"Notes\",\"Street\",\"State\",\"Postal Code\",\"Country\"],\"rows\":[[\"arrow-mesa-berry\",\"Private Title\",\"\",\"Hidden City\",\"\",\"\",\"\",\"\",\"\"]]}"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m17:130[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22ma hidden field is removed from user records, history, suggestions and exports
+[31m[1mAssertionError[22m: expected [ { …(5) } ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   {[39m
+[31m+     "_id": "0000000000000000000010048records",[39m
+[31m+     "objectKey": "company",[39m
+[31m+     "objectLabel": "Company",[39m
+[31m+     "ref": "arrow-mesa-berry",[39m
+[31m+     "title": "Private Title",[39m
+[31m+   },[39m
+[31m+ ][39m
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m18:78[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22mthe same masks cover legacy REST/MCP reads, proposals, changes and lookup titles
+[31m[1mAssertionError[22m: expected '{"events":[{"action":"create","actor"…' not to match /SecretName|SecretCity/[39m
+
+[32m- Expected:[39m
+/SecretName|SecretCity/
+
+[31m+ Received:[39m
+"{\"events\":[{\"action\":\"create\",\"actor\":{\"kind\":\"user\",\"name\":\"A\"},\"after\":{\"city\":\"SecretCity\",\"name\":\"SecretName\"},\"at\":1790345759655.001,\"before\":null,\"reason\":null}],\"record\":{\"createdAt\":1790345759655,\"id\":\"0000000000000000000010048records\",\"object\":\"company\",\"ref\":\"walnut-keen-apple\",\"title\":\"SecretName\",\"updatedAt\":1790345759655,\"values\":{\"city\":\"SecretCity\",\"name\":\"SecretName\"}}}"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m29:225[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22mthe same masks cover legacy REST/MCP reads, proposals, changes and lookup titles
+[31m[1mAssertionError[22m: expected '{"events":[{"action":"create","actor"…' not to match /SecretName|SecretCity/[39m
+
+[32m- Expected:[39m
+/SecretName|SecretCity/
+
+[31m+ Received:[39m
+"{\"events\":[{\"action\":\"create\",\"actor\":{\"kind\":\"user\",\"name\":\"A\"},\"after\":{\"company\":\"0000000000000000000010048records\",\"name\":\"PublicName\"},\"at\":1790345759655.003,\"before\":null,\"reason\":null}],\"record\":{\"createdAt\":1790345759655.002,\"id\":\"0000000000000000000010050records\",\"object\":\"person\",\"ref\":\"dune-granite-timber\",\"title\":\"PublicName\",\"updatedAt\":1790345759655,\"values\":{\"company\":{\"id\":\"0000000000000000000010048records\",\"ref\":\"walnut-keen-apple\",\"title\":\"SecretName\"},\"name\":\"PublicName\"}}}"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m29:225[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22mthe same masks cover legacy REST/MCP reads, proposals, changes and lookup titles
+[31m[1mAssertionError[22m: expected '{"cursor":null,"records":[{"createdAt…' not to match /SecretName|SecretCity/[39m
+
+[32m- Expected:[39m
+/SecretName|SecretCity/
+
+[31m+ Received:[39m
+"{\"cursor\":null,\"records\":[{\"createdAt\":1790345759655,\"id\":\"0000000000000000000010048records\",\"object\":\"company\",\"ref\":\"walnut-keen-apple\",\"title\":\"SecretName\",\"updatedAt\":1790345759655,\"values\":{\"city\":\"SecretCity\",\"name\":\"SecretName\"}}]}"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m29:225[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22mthe same masks cover legacy REST/MCP reads, proposals, changes and lookup titles
+[31m[1mAssertionError[22m: expected '[{"createdAt":1790345759655,"id":"000…' not to match /SecretName|SecretCity/[39m
+
+[32m- Expected:[39m
+/SecretName|SecretCity/
+
+[31m+ Received:[39m
+"[{\"createdAt\":1790345759655,\"id\":\"0000000000000000000010048records\",\"object\":\"company\",\"ref\":\"walnut-keen-apple\",\"title\":\"SecretName\",\"updatedAt\":1790345759655,\"values\":{\"city\":\"SecretCity\",\"name\":\"SecretName\"}}]"
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m29:225[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22mthe same masks cover legacy REST/MCP reads, proposals, changes and lookup titles
+[31m[1mAssertionError[22m: expected 201 to be 400 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 400[39m
+[31m+ 201[39m
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m30:147[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m ops/authority/masks.test.ts[2m > [22mrecord-bounded human scope cannot create outside it or delete hidden fields
+[31m[1mAssertionError[22m: promise resolved "{ …(2) }" instead of rejecting[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Error {[39m
+[32m-   "message": "rejected promise",[39m
+[31m+ {[39m
+[31m+   "eventId": "00000000000000000000010052events",[39m
+[31m+   "recordId": "0000000000000000000010048records",[39m
+[2m  }[22m
+
+[36m [2m❯[22m ops/authority/masks.test.ts:[2m40:106[22m[39m
+
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯[22m[39m
+

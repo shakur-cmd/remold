@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (10 tests | 1 failed) 882ms
+   × agent inbox list fills its limit with items the agent may see 15ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 90 passed (91)
+   Start at  08:23:38
+   Duration  1.13s (tests 75%, transform 15%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > agent inbox list fills its limit with items the agent may see
+AssertionError: expected [] to deeply equal [ '0000000000000000010151agentInbox' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000010151agentInbox",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:111:95
+    109|   const f = await inboxWorld(), agent = await f.client.action(api.agen…
+    110|   const own = (await rest(f.t, agent.key)('POST', '/api/v1/inbox', { t…
+    111|   expect(((await rest(f.t, agent.key)('GET', '/api/v1/inbox')).json as…
+       |                                                                                               ^
+    112| }, 30000);
+    113|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

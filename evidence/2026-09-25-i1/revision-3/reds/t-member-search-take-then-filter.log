@@ -1,0 +1,76 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/masks.test.ts (3 tests | 1 failed) 356ms
+   × a hidden field is removed from user records, history, suggestions and exports 308ms
+ ❯ ops/authority/oracles.test.ts (7 tests | 1 failed) 425ms
+   × search fills its limit with readable matches, so hidden matches change nothing 49ms
+
+ Test Files  2 failed | 15 passed (17)
+      Tests  2 failed | 89 passed (91)
+   Start at  08:23:25
+   Duration  1.30s (tests 76%, transform 13%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/masks.test.ts > a hidden field is removed from user records, history, suggestions and exports
+AssertionError: expected [ { …(5) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "_id": "0000000000000000000010048records",
++     "objectKey": "company",
++     "objectLabel": "Company",
++     "ref": "cobalt-breeze-glad",
++     "title": "",
++   },
++ ]
+
+ ❯ ops/authority/masks.test.ts:18:78
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+AssertionError: expected { text: [], textInObject: [], …(3) } to deeply equal { text: [ 'Alpha Mine' ], …(4) }
+
+- Expected
++ Received
+
+@@ -3,15 +3,9 @@
+      "Alpha Mine",
+    ],
+    "agentText": [
+      "Alpha Mine",
+    ],
+-   "recent": [
+-     "Alpha Mine",
+-   ],
+-   "text": [
+-     "Alpha Mine",
+-   ],
+-   "textInObject": [
+-     "Alpha Mine",
+-   ],
++   "recent": [],
++   "text": [],
++   "textInObject": [],
+  }
+
+ ❯ ops/authority/oracles.test.ts:84:18
+     82|   };
+     83|   const hidden = await run(true);
+     84|   expect(hidden).toEqual(await run(false));
+       |                  ^
+     85|   expect(Object.values(hidden)).toEqual(Array(5).fill(['Alpha Mine']));
+     86| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

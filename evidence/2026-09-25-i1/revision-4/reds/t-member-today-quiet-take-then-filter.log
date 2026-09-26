@@ -1,0 +1,59 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 2 failed) 1105ms
+   × member today: quiet deals fill the list with readable deals 273ms
+   × quiet deals ignore any number of hidden deals untouched for longer 66ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  2 failed | 95 passed (97)
+   Start at  08:54:57
+   Duration  1.50s (tests 75%, transform 16%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member today: quiet deals fill the list with readable deals
+AssertionError: expected [] to deeply equal [ '0000000000000000000010448records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010448records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:44:121
+     42| it('member today: quiet deals fill the list with readable deals', asyn…
+     43|   const w = await dealWorld(200); await restrictMember(w.f, [{ objectI…
+     44|   expect((await w.f.client.query(api.today.get, { orgId: w.f.orgId, to…
+       |                                                                                                                         ^
+     45| }, 60000);
+     46| it('agent today: quiet deals fill the list with readable deals', async…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer
+AssertionError: expected [] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010048records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:152:117
+    150|   });
+    151|   await restrictMember(f, [{ objectId: deal.object._id, records: [mine…
+    152|   expect((await f.client.query(api.today.get, { orgId: f.orgId, today:…
+       |                                                                                                                     ^
+    153|   const agent = await f.client.action(api.agents.createScoped, { orgId…
+    154|   await grant(f, agent.agentId, deal.object._id, [mine], Object.values…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

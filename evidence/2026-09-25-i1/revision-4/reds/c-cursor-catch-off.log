@@ -1,0 +1,36 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 1 failed) 843ms
+   × a cursor from the other path is refused cleanly, not with a server error 10ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:35
+   Duration  1.60s (tests 79%, transform 13%, import 7%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > a cursor from the other path is refused cleanly, not with a server error
+AssertionError: expected Error: Unexpected token 'o', "not a curso… to match object { data: { code: 'VALIDATION', …(1) } }
+
+- Expected
++ Received
+
+- {
+-   "data": {
+-     "code": "VALIDATION",
+-     "message": "Invalid cursor",
+-   },
++ Error {
++   "message": "Unexpected token 'o', \"not a cursor\" is not valid JSON",
+  }
+
+ ❯ ops/authority/pagination.test.ts:110:37
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

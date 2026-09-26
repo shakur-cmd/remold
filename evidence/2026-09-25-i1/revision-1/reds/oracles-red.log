@@ -1,0 +1,91 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/oracles.test.ts (4 tests | 4 failed) 134ms
+   × CSV import skips only readable duplicates; an unreadable existing name looks like a new one 71ms
+   × CSV lookup columns treat an unreadable linked name like a missing one 7ms
+   × browser capture treats an unreadable existing company like a missing one 8ms
+   × agent proposals check proposal scope before resolving a lookup by name 47ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/oracles.test.ts > CSV import skips only readable duplicates; an unreadable existing name looks like a new one
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ ops/authority/oracles.test.ts:24:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  ops/authority/oracles.test.ts > CSV lookup columns treat an unreadable linked name like a missing one
+AssertionError: expected [ 'Record not found' ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "Company: no Company named \"<name>\"",
++   "Record not found",
+  ]
+
+ ❯ ops/authority/oracles.test.ts:32:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  ops/authority/oracles.test.ts > browser capture treats an unreadable existing company like a missing one
+AssertionError: expected { ok: false, error: { …(2) } } to deeply equal { ok: false, error: { …(2) } }
+
+- Expected
++ Received
+
+  {
+    "error": {
+-     "code": "FORBIDDEN",
+-     "message": "Record scope does not authorize new records",
++     "code": "NOT_FOUND",
++     "message": "Record not found",
+    },
+    "ok": false,
+  }
+
+ ❯ ops/authority/oracles.test.ts:38:30
+     36|   const f = await scopedWorkspace(); await restrictToMine(f);
+     37|   const save = (name: string) => outcome(() => f.client.mutation(api.c…
+     38|   expect(await save(SECRET)).toEqual(await save(MISSING));
+       |                              ^
+     39|   expect(await save('My Co')).toMatchObject({ ok: true, value: { compa…
+     40| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  ops/authority/oracles.test.ts > agent proposals check proposal scope before resolving a lookup by name
+AssertionError: expected { status: 404, …(1) } to deeply equal { status: 403, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "body": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Proposal scope required\"}}",
+-   "status": 403,
++   "body": "{\"error\":{\"code\":\"NOT_FOUND\",\"message\":\"Record not found\"}}",
++   "status": 404,
+  }
+
+ ❯ ops/authority/oracles.test.ts:51:33
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  10:46:12
+   Duration  268ms (tests 61%, transform 30%, import 8%, worker 1%)
+

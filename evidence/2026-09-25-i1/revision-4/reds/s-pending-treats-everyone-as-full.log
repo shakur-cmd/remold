@@ -1,0 +1,81 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 3 failed) 1208ms
+   × member suggestion list fills its limit with readable suggestions 18ms
+   × agent suggestion list fills its limit with readable suggestions 11ms
+   × suggestion lists and the agent summary ignore any number of hidden pending suggestions 28ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  3 failed | 94 passed (97)
+   Start at  08:55:17
+   Duration  1.46s (tests 81%, transform 11%, import 7%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > member suggestion list fills its limit with readable suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:88:114
+     86| it('member suggestion list fills its limit with readable suggestions',…
+     87|   const w = await suggestionWorld(200); await restrictMember(w.f, [{ o…
+     88|   expect((await w.f.client.query(api.suggestions.list, { orgId: w.f.or…
+       |                                                                                                                  ^
+     89| }, 30000);
+     90| it('agent suggestion list fills its limit with readable suggestions', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  ops/authority/limits.test.ts > agent suggestion list fills its limit with readable suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:93:103
+     91|   const w = await suggestionWorld(100), agent = await w.f.client.actio…
+     92|   await grant(w.f, agent.agentId, w.company.object._id, [w.mine], Obje…
+     93|   expect(((await rest(w.f.t, agent.key)('GET', '/api/v1/suggestions'))…
+       |                                                                                                       ^
+     94| }, 30000);
+     95|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  ops/authority/limits.test.ts > suggestion lists and the agent summary ignore any number of hidden pending suggestions
+AssertionError: expected [] to deeply equal [ '000000000000000010054suggestions' ]
+
+- Expected
++ Received
+
+- [
+-   "000000000000000010054suggestions",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:126:110
+    124|   await f.t.run(async (ctx: any) => { for (let i = 0; i < MANY; i++) a…
+    125|   await restrictMember(f, [{ objectId: company.object._id, records: [m…
+    126|   expect((await f.client.query(api.suggestions.list, { orgId: f.orgId …
+       |                                                                                                              ^
+    127|   const agent = await f.client.action(api.agents.createScoped, { orgId…
+    128|   await grant(f, agent.agentId, company.object._id, [mine], Object.val…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

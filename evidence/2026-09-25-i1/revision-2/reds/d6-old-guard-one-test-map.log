@@ -1,0 +1,52 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/h0-parity.test.ts (2 tests | 1 failed) 17ms
+   × every frozen H0 replay group maps to production tests that exercise its operations 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/h0-parity.test.ts > every frozen H0 replay group maps to production tests that exercise its operations
+AssertionError: expected [ …(18) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation: mapped tests never attempt an out-of-scope grant",
++   "Explicit manage lists cannot authorize firing or regranting an ancestor: mapped tests never attempt an out-of-scope grant",
++   "Direct mode executes without human approval; propose mode and invalidated direct grant refuse: mapped tests never revoke a grant",
++   "Read scopes restrict object/records/fields and every SIM surface has a leakable shape: mapped tests never attempt an out-of-scope grant",
++   "Material edits, audience, currency and approval expiry invalidate immutable snapshot: mapped tests never edit a payload",
++   "Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly: mapped tests never cancel, deliver a callback, set readonly",
++   "Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship: mapped tests never cancel, set readonly",
++   "Partial traversal commits only full checkpoints and later traversal resumes without regression: mapped tests never page a traversal",
++   "Durable cancellation survives rejection, absence, expiry and model continuation: mapped tests never cancel",
++   "Scoped adapter sees cancellation signal and records one late accepted tail: mapped tests never cancel",
++   "Per-recipient and per-purpose suppression never changes another contact or tenant: mapped tests never deliver a callback",
++   "Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives: mapped tests never revoke a grant",
++   "Cancellation cannot release confirmed work with missing usage: mapped tests never cancel",
++   "Unconsumed unknown is ignored and scheduler recovers false: mapped tests never cancel",
++   "Unconsumed unknown is ignored and scheduler recovers true: mapped tests never cancel",
++   "Suppression without an existing purpose/channel row is durable: mapped tests never deliver a callback",
++   "Old consumed fence for the same unresolved step still supports provisional absence: mapped tests never cancel",
++   "Old consumed fence for the same unresolved step still supports final absence: mapped tests never cancel",
++ ]
+
+ ❯ ops/authority/h0-parity.test.ts:61:16
+     59|     if (missing.length) gaps.push(`${row.h0}: mapped tests never ${mis…
+     60|   }
+     61|   expect(gaps).toEqual([]);
+       |                ^
+     62| });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  07:43:25
+   Duration  101ms (tests 43%, transform 36%, import 17%, worker 4%)
+

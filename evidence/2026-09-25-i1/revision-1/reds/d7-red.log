@@ -1,0 +1,33 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/migration.test.ts (7 tests | 1 failed) 230ms
+   × an explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7) 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/migration.test.ts > an explicit legacy grant stays on the object that had its key at freeze, even after an operator rename (IV D7)
+AssertionError: expected 200 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 200
+
+ ❯ ops/authority/migration.test.ts:88:35
+     86|   await f.t.run(ctx => ctx.db.patch(campaign.object._id, { key: 'vendo…
+     87|   const update = () => f.call('POST', '/api/v1/changes', { action: 'up…
+     88|   expect((await update()).status).toBe(403);
+       |                                   ^
+     89|   const migrated = await f.t.mutation(migration.migrateAgent, { agentI…
+     90|   expect(migrated.dropped).toEqual(['update:vendor']);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  11:02:39
+   Duration  403ms (tests 69%, transform 22%, import 9%, worker 1%)
+

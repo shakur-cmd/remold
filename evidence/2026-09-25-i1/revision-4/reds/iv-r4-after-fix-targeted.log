@@ -1,0 +1,5 @@
+PASS R4-C3 Explicit-list path returns exactly the rows and order the Convex index path gives for the same query, restricted to readable rows (member records.list and agent GET /records)
+PASS R4-C1 Forged, out-of-range, malformed and foreign cursors (list and events) behave the same with and without unreadable rows and never return an unreadable row
+PASS R4-C2 Scope switch mid-paging: a list cursor on the index path, and an index cursor on the list path, are refused (fail closed) and reveal nothing
+PASS R4-S Residual (disclosed): suggestion and inbox lists. Measures the 1000-row cap and uncached timing against pending items the caller cannot see
+R4 SUMMARY 4 PASS / 0 FAIL

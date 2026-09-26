@@ -21,6 +21,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
   const agents = useQuery(api.agents.list, { orgId });
   const create = useAction(api.agents.create);
   const setGrants = useMutation(api.agents.setGrants);
+  const setSharedInbox = useMutation(api.agents.setSharedInbox);
   const revoke = useMutation(api.agents.revoke);
   const [name, setName] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -43,7 +44,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
     <Card>
       <CardHeader>
         <CardTitle>Agents</CardTitle>
-        <CardDescription>An agent is a team member with a key. It reads everything a member can and proposes changes; you apply them. Grant an action and it lands without asking.</CardDescription>
+        <CardDescription>New keys read the current workspace objects and propose changes. Future objects need new permission. Grant an action to allow direct changes. Shared notes need the separate inbox permission.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         {agents && agents.length > 0 && (
@@ -53,9 +54,12 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
                 <span className={agent.revokedAt ? "text-muted-foreground line-through" : "font-medium"}>{agent.name}</span>
                 <code className="text-xs text-muted-foreground">{agent.keyPrefix}…</code>
                 <Badge variant="outline">{agent.role}</Badge>
-                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "anything" : g.objectKey}`).join(", ")}` : "proposes only"}</span>
+                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "all pre-migration objects" : g.objectKey}`).join(", ")}` : "proposes only"}</span>
                 {admin && !agent.revokedAt && (
                   <span className="ml-auto flex gap-1">
+                    <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => attempt(() => setSharedInbox({ orgId, agentId: agent._id, enabled: !agent.sharedInbox }), agent.sharedInbox ? "Shared inbox disabled" : "Shared inbox enabled for eligible reads")}>
+                      {agent.sharedInbox ? "Disable shared inbox" : "Allow shared inbox"}
+                    </Button>
                     {agent.grants.length > 0 && (
                       <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => attempt(() => setGrants({ orgId, agentId: agent._id, grants: [] }), "Now proposes only")}>
                         Remove grants
@@ -114,7 +118,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
                   </tr>
                 </thead>
                 <tbody>
-                  {[{ key: "*", label: "Everything" }, ...objects.map((o) => ({ key: o.key, label: o.labelPlural }))].map((o) => (
+                  {[{ key: "*", label: "All current objects" }, ...objects.map((o) => ({ key: o.key, label: o.labelPlural }))].map((o) => (
                     <tr key={o.key} className="border-t">
                       <td className="py-1.5">{o.label}</td>
                       {ACTIONS.map((action) => (

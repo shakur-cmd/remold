@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/limits.test.ts (14 tests | 1 failed) 968ms
+   × quiet deals ignore any number of hidden deals untouched for longer 69ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:31
+   Duration  1.21s (tests 75%, transform 14%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/limits.test.ts > quiet deals ignore any number of hidden deals untouched for longer
+AssertionError: expected [] to deeply equal [ '0000000000000000000010048records' ]
+
+- Expected
++ Received
+
+- [
+-   "0000000000000000000010048records",
+- ]
++ []
+
+ ❯ ops/authority/limits.test.ts:152:117
+    150|   });
+    151|   await restrictMember(f, [{ objectId: deal.object._id, records: [mine…
+    152|   expect((await f.client.query(api.today.get, { orgId: f.orgId, today:…
+       |                                                                                                                     ^
+    153|   const agent = await f.client.action(api.agents.createScoped, { orgId…
+    154|   await grant(f, agent.agentId, deal.object._id, [mine], Object.values…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

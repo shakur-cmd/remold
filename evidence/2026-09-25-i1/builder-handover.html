@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I1 builder handover, revision 4: production authority and integration core</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 920px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 13px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>I1 builder handover, revision 4</h1>
+<div class="meta">2026-09-26 · branch <code>wip/i1-authority</code> · replies to independent verification round 4 on <code>i1/iv-r4-2026-09-26</code> (6b1e2d2: certify except residual S) · level: SERVICE on an isolated local Convex (127.0.0.1:3480/3481), synthetic JWTs and data, no providers, spend or sends · status: <b>awaiting independent re-verification</b>. Builder-run, not certified.</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+<li><b>Three more additive indexes.</b> <code>suggestions.by_object_status</code>, <code>agentInbox.by_org_status_from</code> and <code>agentInbox.by_org_status_audience</code>. Nothing is removed, and older code ignores them. The IV's rollback script (babeb42 and back, on non-empty data) was rerun on this code: PASS. Rolling back dropped the new indexes, the old code read the data, and rolling forward rebuilt them with the member feed matching the owner's view (<code>revision-4/iv-r4-rollback.log</code>). Confirm.</li>
+<li>Residual S is closed rather than accepted, per the coordinator's decision, so no leak acceptance is needed from you for I1.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Revision 4: done and proven by the builder (not independent)</h2>
+<ul>
+<li><b>IV suites on this code.</b> Round 4 <code>iv-r4.mjs</code>: <b>7/7 PASS</b> (was 6/7). Its S measurement no longer depends on hidden items (numbers below). Round 3: 10/10. Round 2: 14/14. Round 1: 24/24. <code>iv-r4-timing.mjs</code>: after 1000 hidden deals in workspace A only, A and B match within noise, including the new agent /me row (6.23 vs 5.82 ms).</li>
+<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 97/97 (was 91). Release tests 19/19. <code>pnpm build</code> passes. MCP build plus 2/2.</li>
+<li><b>SERVICE replay 65/65 PASS. Migration replay PASS.</b></li>
+<li><b>Deliberate breaks: 33 of 33 caught</b> by <code>revision-4/mutants.py</code>. That is the 18 still-applicable round-3 breaks plus 15 new ones (<code>reds/mutants-run.log</code>, <code>reds/mutants.json</code>). The four round-3 suggestion and inbox breaks were replaced, because those code paths no longer exist.</li>
+<li>No real providers, production, spend or sends. Evidence secret scan: no raw agent or adapter keys in logs or fixture zips.</li>
+</ul>
+</div>
+
+<h2>Revision 4 fixes: before and after</h2>
+<table><tr><th>#</th><th>Fix</th><th>Before (IV check, this code's parent 87d4c10)</th><th>After</th><th>Regression test and the break it catches</th></tr>
+<tr><td>S (suggestion and inbox lists)</td><td>New <code>convex/authority/pending.ts</code>. Suggestions come newest first from one stream per fully readable object (new <code>by_object_status</code> index) plus one per listed record (existing <code>by_record</code>). Only a caller who covers everything reads the org-wide index. Inbox items come oldest first from the caller's own items (new <code>by_org_status_from</code>), plus shared items (new <code>by_org_status_audience</code>, including legacy pre-freeze rows) when the caller may read the shared inbox. Unrestricted humans keep the org index. Used by the member and agent suggestion lists, the member and agent inbox lists, and agent GET /me counts. Nothing hidden is read, so there is no scan cap and no timing slope.</td><td>R4-S: member 9.2 ms at 80 hidden vs 74.4 ms at 980; agent 11.5 vs 61.0 ms. Own suggestion listed at 999 hidden, gone at 1000. Inbox: own note listed after 998, gone after 1001 (<code>reds/iv-r4-before-6of7.log</code>)</td><td>R4-S: own suggestion listed at 999 and at 1000 hidden (member and agent), and own inbox note listed after 998 and after 1001. Timing at 80 vs 980 hidden: member 2.00 vs 2.18 ms, agent 6.09 vs 7.32 ms. That is single-workspace early vs late, so it includes backend drift; before it was a 50 to 65 ms rise.</td><td>New tests with 1100 hidden items. Suggestions (member, agent, /me count), inbox (agent, /me count, member) and quiet deals. Caught: each list reverted to the scanning version (4), treating every caller as fully covered, and turning off the shared or legacy inbox stream. The last two are caught by the existing inbox tests.</td></tr>
+<tr><td>Sort parity</td><td>The list path compares values with Convex's own <code>compareValues</code> (from <code>convex/values</code>). Strings go by UTF-8 bytes, and -0 is distinct from 0, exactly like the index.</td><td>R4-C3 FAIL: nameAsc and nameDesc swapped U+FFFD and the emoji; amount = -0 matched a 0 row</td><td>R4-C3 PASS</td><td>New test "the list path sorts and filters exactly like the index path". It covers 9 cases: recent, amount and name in both directions, a filter plus descending, amount 5 with three ties, -0 and empty, against the index path restricted to readable rows. The scope lists records in reverse, so a lost tie-break shows. Caught: UTF-16 comparator, -0 equal to 0, filter ignored, descending ignored, tie-break dropped.</td></tr>
+<tr><td>Test gaps</td><td>Same test as above, plus a quiet-deals test with 1100 hidden deals untouched for longer. There is also a daily-list test with 60 done tasks ahead of an open one, which makes the helper's scan logic observable again.</td><td>IV: filter, descending, tie-break and quiet-deals list path could be broken with builder suites green</td><td>All four caught</td><td><code>g-list-ignores-filter</code>, <code>g-list-ignores-descending</code>, <code>g-list-drops-tiebreak</code>, <code>g-quiet-list-path-off</code>, <code>t-helper-stops-after-limit-scanned</code></td></tr>
+<tr><td>Cursor refusal</td><td><code>paginateIndex()</code> wraps every index paginate: records.list and agent /records, related, CSV, events. Our own <code>list:</code> and <code>events:</code> cursors, and any cursor Convex cannot parse, get <code>VALIDATION: Invalid cursor</code>.</td><td>R4-C2 observed a raw "Failed to parse cursor" server error for a list cursor on the index path</td><td>R4-C2: all three switches give VALIDATION Invalid cursor</td><td>New test "a cursor from the other path is refused cleanly". Caught: prefix check removed, and the catch removed (garbage cursor).</td></tr>
+</table>
+
+<h2>Not done or not proven</h2>
+<ul>
+<li>Large lists (IV item L): a scope list write fails at about 4080 IDs, and an agent holding a bigger union across grants gets a generic 500 on list reads. It fails closed. Not changed.</li>
+<li>Agent GET /me now counts only visible items, from the same streams. The count was already correct, but I have no unit test for its timing. Timing was only measured through the list endpoints in R4-S.</li>
+<li>Not rerun: <code>iv-r4-limits.mjs</code>, <code>iv-r4-floor.mjs</code>, <code>iv-r4-breaks.mjs</code> (it targets revision-3 code), <code>iv-r3-d8.mjs</code>.</li>
+<li>Carried unchanged: the 19 weak D6 rows, the floor's content limit, unreadable lookup IDs on readable records, the readonly tail, the SIM finality adapter, and unchecked hosted log sinks.</li>
+</ul>
+
+<h2>How to reproduce</h2>
+<pre>git checkout wip/i1-authority   # this commit
+pnpm install &amp;&amp; (cd packages/mcp &amp;&amp; pnpm install &amp;&amp; pnpm build &amp;&amp; pnpm test)
+pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm build &amp;&amp; pnpm verify:release
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/service.mjs            # 65 PASS (127.0.0.1:3480/3481)
+I1_EVIDENCE_DIR=/tmp/b node ops/authority/migration-service.mjs  # PASS
+python3 evidence/2026-09-25-i1/revision-4/mutants.py             # 33 breaks, all caught; restores files
+# IV suites from untracked copies: 8f9e362 (iv, iv-r2), f25ef43 (iv-r3), 6b1e2d2 (iv-r4);
+# cp evidence/2026-09-25-i1/iv-r2/fixture-iv.ts ops/authority/  (remove before builder SERVICE runs)
+I1_EVIDENCE_DIR=/tmp/x node evidence/2026-09-25-i1/iv-r4/iv-r4.mjs   # 7/7</pre>
+
+<h2>Attack cases for the re-verifier</h2>
+<ul>
+<li>Suggestion and inbox lists for a legacy (pre-freeze) agent with shared inbox access, and for a member with no scope at all: compare them with and without hidden items.</li>
+<li>Suggestions on records that were later deleted, and create suggestions (no record) on list-scoped objects.</li>
+<li>Agent GET /me latency against 1000 hidden pending items.</li>
+</ul>
+
+<h2>H0 group to production test mapping (guarded by operations and each group's own check)</h2>
+<table><tr><th>#</th><th>H0 group (proofs/contract/replay.mjs)</th><th>Own check (pattern a mapped test must contain)</th><th>Production test(s)</th></tr>
+<tr><td>1</td><td>A/B known-ID isolation, server-derived actors and full binding tuple collision</td><td><code>shared-external-id|Account already bound</code></td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>H0#1 foreign owners cannot mutate known IDs and actor injection is rejected<br>Same external ID under different provider instances stays isolated per connection<br>SERVICE cross-tenant collision leaves the losing account and organization unchanged</td></tr>
+<tr><td>2</td><td>Grant scopes reject foreign bindings, currencies, record masks and unrelated delegation</td><td><code>currency: &#x27;EUR&#x27;|bindings: \[other\.bindingId\]</code></td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor<br>Propose-mode external authority still requires human approval; currency and binding scopes cannot widen</td></tr>
+<tr><td>3</td><td>Explicit manage lists cannot authorize firing or regranting an ancestor</td><td><code>&#x27;authority/fire&#x27;</code></td><td>H0#2 H0#3 delegation cannot widen limits, manage outside scope, or return to an ancestor<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
+<tr><td>4</td><td>Direct mode executes without human approval; propose mode and invalidated direct grant refuse</td><td><code>/Approval/|held\.fence &gt; c\.fence</code></td><td>Propose-mode external authority still requires human approval; currency and binding scopes cannot widen<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>5</td><td>Delegation ancestry revokes queued/read/model paths while independent human grant survives</td><td><code>const afterFire = await childRead\(\)</code></td><td>H0#5 firing a manager removes delegated reads and queued model work while the child keeps its independent human grant<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
+<tr><td>6</td><td>Read scopes restrict object/records/fields and every SIM surface has a leakable shape</td><td><code>MASKED_|leaked a hidden field value</code></td><td>Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks<br>Hidden field value never appears in any human query or agent REST read<br>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit<br>a manager cannot escalate fields, manage peers, or fire its grant ancestor</td></tr>
+<tr><td>7</td><td>Final permit rechecks expired authority without a sweep and honors schedule</td><td><code>pause\(1600\); await refuse\(t\.adapter\(&#x27;permit&#x27;|Dispatch bounds</code></td><td>H0#7 expired grant denies final permit without a lifecycle sweep<br>Payload edits invalidate immutable approval; destination and schedule are enforced</td></tr>
+<tr><td>8</td><td>Before-permit fire refuses; after-permit fire preserves one late outcome</td><td><code>result\.late, true[\s\S]*agentId: before\.agentId \}\); await assert\.rejects\(t\.adapter\(&#x27;permit&#x27;, \{ id: pending, \.\.\.c, worker: &#x27;w&#x27; \}\), /Agent inactive/\)</code></td><td>External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail</td></tr>
+<tr><td>9</td><td>Scoped adapter cannot permit, consume, reconcile, callback or provision in B</td><td><code>\[403, 404\]\.includes</code></td><td>H0#1 H0#9 cross-connection adapters cannot touch another connection tuple<br>Same external ID under different provider instances stays isolated per connection</td></tr>
+<tr><td>10</td><td>Lost acceptance response reconciles once; missing usage blocks cheaper new spend</td><td><code>Unresolved usage</code></td><td>Missing usage pauses cheaper work until authoritative usage settles exactly once<br>Provisional absence permits only same-key retry and old-fence truthful settlement</td></tr>
+<tr><td>11</td><td>Concurrent logical calls/claims and org budget reservations serialize on real backend</td><td><code>allSettled</code></td><td>SERVICE transaction races reserve organization budget and concurrency once<br>Concurrent duplicate logical proposals and claims yield one operation and reservation</td></tr>
+<tr><td>12</td><td>Per-run/global spend and global concurrency caps bound both tenants</td><td><code>Per-run budget</code></td><td>Global spend, concurrency and per-run ceilings serialize across distinct tenants</td></tr>
+<tr><td>13</td><td>Model continuation rechecks authority, step/fence and remaining exposure</td><td><code>second\.step, 2|held\.step, c\.step \+ 1</code></td><td>Continuation reduces per-call exposure and old fence cannot consume the next step<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>14</td><td>Expired unconsumed permits retry safely; consumed crash becomes unknown</td><td><code>spent permit</code></td><td>One-use expiring permit and server scheduled crash recovery retain consumed uncertainty<br>H0#6 H0#14 agents cannot read foreign operations and a reclaimed fence rejects the old permit</td></tr>
+<tr><td>15</td><td>Unknown authoritative absence never resends after firing; terminal rejection releases reservation</td><td><code>Operation stopped</code></td><td>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>16</td><td>Authoritative absence and retryable rejection preserve logical key and revalidate new permits</td><td><code>firstSend\.key, secondSend\.key</code></td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives</td></tr>
+<tr><td>17</td><td>Material edits, audience, currency and approval expiry invalidate immutable snapshot</td><td><code>Approval changed</code></td><td>Every approval material field invalidates the reviewed version<br>Payload edits invalidate immutable approval; destination and schedule are enforced<br>Final permit refuses expired approval without relying on asynchronous sweeps</td></tr>
+<tr><td>18</td><td>Authenticated fake callback body dedup/out-of-order suppression reaches final permit in readonly</td><td><code>&#x27;applied&#x27;, &#x27;duplicate&#x27;</code></td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose<br>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>19</td><td>Readonly allows truthful late reconciliation, masked export and human adoption preserves authorship</td><td><code>adoptedFrom|commands\.adopt</code></td><td>Readonly between claim and permit stops sends but permits truthful receipt settlement<br>Human adoption creates a new attributed command while preserving the fired agent original<br>H0#18 H0#19 readonly accepts suppression and adoption after a fired agent</td></tr>
+<tr><td>20</td><td>Provisioning durable intents preserve delete-before/create-before races</td><td><code>cleanupRequired: true</code></td><td>Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient</td></tr>
+<tr><td>21</td><td>Partial traversal commits only full checkpoints and later traversal resumes without regression</td><td><code>traversal: &#x27;second&#x27;</code></td><td>Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>22</td><td>Durable cancellation survives rejection, absence, expiry and model continuation</td><td><code>cancelled late|t\.cancel\(id\); await t\.adapter\(&#x27;fail&#x27;</code></td><td>Durable cancellation survives rejection and absence<br>Production dispatch records cancelled late acceptance exactly once<br>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
+<tr><td>23</td><td>Scoped adapter sees cancellation signal and records one late accepted tail</td><td><code>\)\)\.cancel, true</code></td><td>External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>24</td><td>Late consumed outcome settles once after provisional or final absent lookup</td><td><code>acceptedAfterFinalAbsence</code></td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>25</td><td>Per-call remaining exposure, missing usage and actual overruns fence final dispatch</td><td><code>usageOverrun|anomaly hold</code></td><td>Continuation reduces per-call exposure and old fence cannot consume the next step<br>Final permit rechecks missing usage discovered after a different operation was claimed<br>Actual overrun records the full cost and blocks continuation and new spending<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>26</td><td>Conflicting provider reference refuses durably and holds spend without rolling back anomaly</td><td><code>providerResultCollision</code></td><td>Receipt collisions persist a durable anomaly instead of rolling it back with an exception</td></tr>
+<tr><td>27</td><td>Per-recipient and per-purpose suppression never changes another contact or tenant</td><td><code>recipient-B|dump\(\)\.consent, before</code></td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose<br>H0#21 H0#23 H0#27 cursors, cancellation and consent isolation stay fenced</td></tr>
+<tr><td>28</td><td>Server scheduler recovers adapter crashes without a callback or manual expiry call</td><td><code>pause\(2300\); assert\.equal\(\(await t\.get\(id\)\)\.state, &#x27;outcomeUnknown&#x27;\)</code></td><td>One-use expiring permit and server scheduled crash recovery retain consumed uncertainty</td></tr>
+<tr><td>29</td><td>Manager grant downgrade invalidates delegated queued/model/read work, independent human scope survives</td><td><code>childRead\(|held\.fence &gt; c\.fence</code></td><td>H0#4 H0#5 H0#13 H0#16 H0#29 stale delegated fences fail while an independent root survives<br>Delegation revocation changes actual REST read projection while independent human grants survive</td></tr>
+<tr><td>30</td><td>Unresolved consumed attempt survives sweep and holds global exposure</td><td><code>Budget or concurrency cap|budget\(\)\.active, 1\)</code></td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>31</td><td>Unresolved consumed attempt survives expiry and holds global exposure</td><td><code>Budget or concurrency cap|budget\(\)\.active, 1\)</code></td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>32</td><td>Unresolved consumed attempt survives failure and holds global exposure</td><td><code>Budget or concurrency cap|budget\(\)\.active, 1\)</code></td><td>Unresolved prior consumed attempt survives<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>33</td><td>Cancellation cannot release confirmed work with missing usage</td><td><code>t\.cancel\(id\); assert\.equal\(t\.budget\(\)\.reserved, 2\)</code></td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#30 H0#31 H0#32 H0#33 global exposure holds a second tenant until late truth settles</td></tr>
+<tr><td>34</td><td>Unconsumed unknown is ignored and scheduler recovers false</td><td><code>cancelled \? &#x27;cancelled&#x27; : &#x27;queued&#x27;</code></td><td>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
+<tr><td>35</td><td>Unconsumed unknown is ignored and scheduler recovers true</td><td><code>cancelled \? &#x27;cancelled&#x27; : &#x27;queued&#x27;</code></td><td>Unconsumed unknown does not manufacture provider uncertainty; expiry recovers</td></tr>
+<tr><td>36</td><td>Single-step accepted overrun remains confirmed false</td><td><code>usageOverrun|providerRef: &#x27;accepted&#x27;, usage: 3</code></td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>37</td><td>Single-step accepted overrun remains confirmed true</td><td><code>usageOverrun|providerRef: &#x27;accepted&#x27;, usage: 3</code></td><td>Single-step overrun remains confirmed and retained missing usage cannot be cancelled away<br>H0#15 H0#24 H0#25 H0#36 H0#37 absence and overrun hold claims until an operator clears the anomaly</td></tr>
+<tr><td>38</td><td>Exhausted successful continuation settles and releases its slot</td><td><code>exhausted\.continuationRefused, true</code></td><td>Continuation reduces per-call exposure and old fence cannot consume the next step</td></tr>
+<tr><td>39</td><td>Suppression without an existing purpose/channel row is durable</td><td><code>consent\.map</code></td><td>Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose</td></tr>
+<tr><td>40</td><td>Settled-step provisional absence cannot settle a later unresolved step</td><td><code>current unknow</code></td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly</td></tr>
+<tr><td>41</td><td>Settled-step final absence cannot settle a later unresolved step</td><td><code>current unknow</code></td><td>Final absence targets only the current unresolved logical step, then late truth is held as anomaly</td></tr>
+<tr><td>42</td><td>Old consumed fence for the same unresolved step still supports provisional absence</td><td><code>first\.step, second\.step</code></td><td>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
+<tr><td>43</td><td>Old consumed fence for the same unresolved step still supports final absence</td><td><code>first\.step, second\.step</code></td><td>Provisional absence permits only same-key retry and old-fence truthful settlement<br>H0#42 H0#43 old consumed fence for the same unresolved step still supports provisional absence</td></tr>
+</table>
+
+
+<h2>Revision 3 record</h2>
+<p>Revision 3 (<code>87d4c10</code>) replied to IV round 3. Its evidence is in <code>evidence/2026-09-25-i1/revision-3/</code>. IV round 4 certified it except residual S, and found the items fixed above.</p>
+
+<h3>Revision 3: done and proven by the builder (not independent)</h3>
+<ul>
+<li><b>IV suites on this code.</b> Round 3 <code>iv-r3.mjs</code>: <b>10/10 PASS</b>, up from 2/10 here (the IV measured 3/10; my before-run also failed the timing check). Round 2 <code>iv-r2.mjs</code>: 14/14. Round 1 <code>iv-service.mjs</code>: 24/24.</li>
+<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 91/91 (was 71). Release tests 19/19 (was 18). <code>pnpm build</code> passes. MCP build plus 2/2.</li>
+<li><b>SERVICE replay 65/65 PASS</b> (one new H0#5 test). <b>Migration replay PASS.</b></li>
+<li><b>Deliberate breaks: 25 of 25 caught</b> (22 unit and release breaks in <code>mutants.py</code>, the two IV D6 data breaks, and one SERVICE break for H0#5). Each fix and each of the 13 original <code>firstVisible</code> sites was reverted one at a time, and each revert fails its own test. Details are in the table below; the mutant script and every run are in <code>revision-3/reds/</code>.</li>
+<li>No real providers, production, spend or sends. Evidence secret scan: no raw agent or adapter keys in logs or fixture zips. Hashes in red and IV logs are replaced with <code>&lt;sha256&gt;</code>.</li>
+</ul>
+
+
+<h3>Revision 3 fixes: before and after</h3>
+<table><tr><th>#</th><th>Fix</th><th>Before</th><th>After</th><th>Regression test, and what reverting the fix does</th></tr>
+<tr><td>P (paginated reads)</td><td>When none of a caller's scopes on an object covers all of its records, the caller is served from their own explicit record list: <code>listedRecords()</code> in <code>convex/authority/reads.ts</code>. Filter and sort run in memory on readable rows, in the index's own order, with an offset cursor (<code>list:N</code>). This covers records.list and agent GET /records (<code>pageRecords</code> in <code>lib/list.ts</code>), records.related and agent related (<code>listedRelated</code>), and csv.exportPage. <code>events.forOrg</code> pages the org-wide index only when the caller covers every record of every object. Anyone else gets a newest-first merge of streams: one per fully readable object (new <code>by_object</code> index) and one per listed record. The cursor is creation time plus the IDs already returned at that time. Readers with <code>records: 'all'</code> keep the Convex paginated path, because every row of a per-object index is readable to them. No other reader kind meets hidden rows on these paths. Field masks remove values but never rows, and filters and sorts already require the field in every scope.</td><td>IV R3-P1 to P6 FAIL: short pages and early "not done" revealed hidden deals and, with a filter, their amount (<code>reds/iv-r3-before-fix-2of10.log</code>)</td><td>R3-P1 to P7 PASS</td><td>New <code>ops/authority/pagination.test.ts</code> (8 tests: list recent, list filtered, list sorted, agent /records, related, events pages, events completeness, CSV). Turning off the list path at each site fails its tests: <code>p-list-listed-path-off</code>, <code>p-related-member-listed-off</code>, <code>p-events-merge-off</code>, <code>p-csv-listed-off</code>.</td></tr>
+<tr><td>F1, F2 (scan cap, timing)</td><td>Search (member and agent) now goes through <code>lib/search.ts</code>. A record-scoped caller is matched against their own list. A caller who can read every record and title of an object uses the search index with <code>take(limit)</code>, with nothing to skip. Other objects are left out. Name matching (<code>findReadableByTitle</code>) and the daily lists (<code>lib/daily.ts</code>) use the same split.</td><td>R3-F1 FAIL (999 vs 1000 hidden changed the result), R3-F2 FAIL (search slowed as hidden rows grew)</td><td>R3-F1, R3-F2, R3-F3 PASS</td><td>For record-scoped callers, and for callers who see every row, neither leak remains: nothing unreadable is scanned. What remains is the suggestion and inbox lists (see Your calls). The daily lists still skip done tasks and won or lost deals, but the caller can see those rows.</td></tr>
+<tr><td>T (site tests)</td><td>New <code>ops/authority/limits.test.ts</code> has one test per original site. In each, enough unreadable rows sit ahead of the caller's one readable row to fill the limit, including the <code>take(200)</code> the pre-revision-2 code used.</td><td>IV: 10 of 13 sites could be reverted to take-then-filter with every suite green</td><td>13 of 13 sites have their own test</td><td>Each site reverted to take-then-filter fails its own test. Member search, agent search, name matching, agent related (both branches), member and agent today tasks, member and agent quiet deals, member and agent suggestion lists, member and agent inbox lists. The helper stopping after <i>limit</i> scanned rows fails the four list tests. All logs are <code>reds/t-*.log</code>.</td></tr>
+<tr><td>D6 map and guard</td><td>Row 5's own check now keys the read after the manager is fired, in a new SERVICE test ("H0#5 firing a manager removes delegated reads..."). The test fires the manager and checks that the child loses the delegated field and title, while its independent human grant keeps the other field and its queued model work pauses. Row 8 keys the late outcome plus the before-permit refusal, which now asserts its reason ("Agent inactive"). Row 38 keys a new assertion that the exhausted step refuses continuation (<code>exhausted.continuationRefused</code>), confirms, frees its slot and cannot be claimed again. The guard is now a function (<code>gapsFor</code>), and two self-tests feed it bad maps.</td><td>IV: rows 5, 8, 38 keyed the wrong assertion; removing the own-check line or raising the limit to 60 left the suite green</td><td>Guard 5/5; max single-test acceptance still 5 of 43</td><td>Removing the own-check line fails a self-test (<code>d6-guard-own-check-line-removed</code>). So does raising the limit to 60 (<code>d6-guard-max-shared-60</code>). The IV's two data mutants still fail. If a fired manager's delegated grants survive (a liveGrant break), the new H0#5 SERVICE test fails (<code>d6-row5-fired-manager-grants-survive.log</code>).</td></tr>
+<tr><td>Floor message</td><td><code>authorityFloorCheck()</code> returns the reason for a refusal. Preflight reports it, and the release CLI uses it. <code>authorityFloor()</code> keeps its boolean. The pin is unchanged, per the coordinator.</td><td>Squash, shallow clone and missing pin all said "predates the I1 authority core"</td><td>Each says what failed: the pinned floor commit is not in this clone (with "this clone is shallow; fetch --unshallow" when it is shallow), the target is a tree rather than a commit, the target does not descend from the floor (it predates I1 or came by squash or rebase), or it descends but lacks a core file (<code>reds/floor-iv-probe-cli-reasons.log</code>)</td><td>New release test "a refused rollback floor says what failed". A generic-message break fails it (<code>floor-generic-message.log</code>).</td></tr>
+</table>
+
+<h3>Not done or not proven</h3>
+<ul>
+<li>Suggestion and inbox lists keep the scan cap and timing hint for hidden items (see Your calls).</li>
+<li>Offset cursors: if a caller's scope switches between an explicit list and "all" while they are paging, the old cursor is refused and paging restarts. Rows added between pages shift later pages the same way they do in any offset list.</li>
+<li>A record-scoped read costs one fetch per listed record (the restricted events feed reads one stream per listed record). A very long explicit list could hit Convex read limits. That limit depends only on the caller's own list, never on hidden rows. Not measured.</li>
+<li>Timing was checked only through IV R3-F2 on a local backend. I did not rerun <code>iv-r3-timing.mjs</code>, <code>iv-r3-d8.mjs</code> or <code>iv-r3-breaks.mjs</code>; the breaks script targets revision-2 code.</li>
+<li>The other 19 own-check rows the IV rated weak were not reworked. Only rows 5, 8 and 38 were changed.</li>
+<li>Floor: a descendant of I1 that restores pre-I1 code plus empty marker files is still accepted. That is a content check, which ancestry cannot do (the known limit). The pin will be raised only after certification.</li>
+<li>Unreadable lookup IDs still show on readable records (unchanged, optional in round 2).</li>
+<li>Carried: readonly tail, SIM financial finality adapter, hosted log sinks unchecked.</li>
+</ul>
+
+
+<h2>Revision 2 record</h2>
+<p>Revision 2 (<code>babeb42</code>) replied to IV round 2. Its evidence is in <code>evidence/2026-09-25-i1/revision-2/</code>. IV round 3 confirmed R1 to R4 closed and found the gaps fixed above.</p>
+
+<h3>Revision 2: done and proven by the builder (not independent)</h3>
+<ul>
+<li><b>All four IV round-2 defects fixed, plus the D6 guard.</b> Each fix was first reproduced with the IV's own check, then fixed, then rerun green. Each has a builder regression test that fails when the fix is reverted (table below).</li>
+<li><b>IV suites on this code.</b> Round 2 <code>iv-r2.mjs</code>: <b>14/14 PASS</b>, up from 11/14. Round 1 <code>iv-service.mjs</code>: <b>24/24 PASS</b>. IV floor probe: fooled by one case instead of three (see R4).</li>
+<li><b>Local checks.</b> Typecheck passes. App tests 73/73. Authority unit tests 71/71 (was 66). Release tests 18/18. <code>pnpm build</code> passes. MCP build plus 2/2.</li>
+<li><b>SERVICE replay 64/64 PASS</b> (hidden field leaves an open subscription in 15.11 ms). <b>Migration replay PASS.</b></li>
+<li>No real providers, production, spend or sends. Red logs have 64-character hashes replaced with <code>&lt;sha256&gt;</code>.</li>
+</ul>
+
+
+<h3>Revision 2 fixes: before and after</h3>
+<table><tr><th>#</th><th>Fix</th><th>Before</th><th>After</th><th>Regression test, and what reverting the fix does</th></tr>
+<tr><td>R1 (D8 bypass)</td><td><code>convex/lib/shape.ts</code>: the extra-key check uses <code>Object.hasOwn(fields, key)</code> instead of <code>key in fields</code>. That was the only place the pattern checked user keys; other <code>in</code> uses test server IDs or literal names.</td><td>IV R2-D8a FAIL: <code>{"text":"x","constructor":"..."}</code> reached Convex, which logged the body and key hash (<code>reds/iv-r2-before-fix-11of14.log</code>)</td><td>R2-D8a PASS (<code>reds/iv-r2-after-fix-targeted.log</code>)</td><td>New <code>ops/authority/shape.test.ts</code> and four inherited-name bodies added to the SERVICE secrets test. Reverting shape.ts fails both: <code>reds/r1-shape.log</code>, and <code>reds/r1-shape-service.log</code> ("backend/function log contains the forwarded body field: Object: {constructor: ...}").</td></tr>
+<tr><td>R2 (search oracle)</td><td>New <code>firstVisible()</code> in <code>convex/authority/reads.ts</code> filters while reading and stops at the limit or 1000 scanned rows. Used by records.search and agent search (text and recent-first), plus every other take-then-filter list: agent related, agent and member today, agent and member suggestion lists, agent and member inbox lists, and name matching (<code>findReadableByTitle</code> now takes the first 20 readable candidates).</td><td>IV R2-O5 FAIL: with limit 1, an unreadable match pushed the caller's own match out (member 0 vs 1, agent 0 vs 1)</td><td>R2-O5 PASS</td><td>Two new tests in <code>oracles.test.ts</code>. Reverting records.ts, agentApi.ts or find.ts, or making the helper stop after <i>limit</i> rows, fails them: <code>reds/r2-records.log</code>, <code>r2-agentApi.log</code>, <code>r2-find.log</code>, <code>r2-helper-take-then-filter.log</code>.</td></tr>
+<tr><td>R3</td><td>events.forRecord and records.related check readability in the same step as existence, so an unreadable ID gets the same NOT_FOUND message as a deleted one. Unreadable lookup IDs shown on readable records are not masked (optional in the IV report; not done).</td><td>IV R2-O2 FAIL: events gave [] vs NOT_FOUND; related gave "Record not found" vs "Record or field not found"</td><td>R2-O2 PASS</td><td>New test in <code>oracles.test.ts</code>. Reverting events.ts or records.ts fails it: <code>reds/r3-events.log</code>, <code>reds/r2-records.log</code>.</td></tr>
+<tr><td>R4 (floor)</td><td><code>authorityFloor</code> also requires <code>git merge-base --is-ancestor 7299ee98d05c39480e5ad8018e0d81ac119062d8 &lt;target&gt;</code>, the first commit that added migration.ts and reads.ts. The path check stays.</td><td>IV floor probe fooled by empty stubs on pre-I1 code, a tree SHA, and I1 code with a check switched off (<code>reds/floor-iv-probe-before.log</code>)</td><td>Fooled only by I1 code with a check switched off, which ancestry cannot see, as the IV noted. 3339517 refused; d2c8744, f1de701, 4cb4671, 7299ee9 accepted (<code>reds/floor-iv-probe-after.log</code>)</td><td>The release test now also refuses a stub commit, a tree SHA and a descendant that deleted reads.ts. The old floor fails it: <code>reds/r4-floor.log</code>.</td></tr>
+<tr><td>D6 guard</td><td>Each row of <code>h0-parity.json</code> now names the group's own check as a pattern. The guard requires a mapped test to contain it, and the pattern may appear in at most 6 production tests, so it cannot be a generic step. A new test caps how many groups any one production test can satisfy at 5. The harness was not changed.</td><td>IV: one test satisfied the guard for 25 of 43 groups. The old guard, rerun here, accepts 24 groups for it (19 gaps: <code>reds/d6-old-guard-one-test-map.log</code>).</td><td>The most any single test satisfies is 5 of 43, which is the five groups that test was written for (<code>reds/d6-parity-power-after.log</code>)</td><td>The one-test map fails with 38 missing own checks (<code>reds/d6-new-guard-one-test-map.log</code>). A generic own pattern fails, because it appears in 35 tests (<code>d6-generic-own-pattern.log</code>). Dropping the own check from the guard fails the cap test (<code>d6-guard-ignores-own-check.log</code>).</td></tr>
+</table>
+
+<h3>Not done or not proven</h3>
+<ul>
+<li>Paginated lists can return short pages (see Your calls). Not fixed.</li>
+<li>R3's optional step, masking unreadable lookup IDs on readable records, was not done. The ID alone now gives the same answers as a deleted ID on the paths the IV checked.</li>
+<li>Only search, name matching, related, events-by-record and records.related have direct regression tests. The other lists that now use <code>firstVisible</code> (today, suggestion and inbox lists) are covered only through the shared helper's tests, not by their own.</li>
+<li>The D6 own-check patterns were chosen by the builder from the mapped test bodies. The guard proves each pattern is present and specific. It does not prove the pattern is the right one, so a verifier should still read the table below.</li>
+<li>Carried from revision 1: the readonly tail (one send within the 1-second permit window), the SIM financial finality adapter, and unchecked hosted log sinks.</li>
+</ul>
+
+
+<h2>Revision 1 record</h2>
+<p>Revision 1 (evidence source <code>f1de7010c28d</code>) replied to IV round 1. Its evidence is in <code>evidence/2026-09-25-i1/revision-1/</code>. IV round 2 closed D1 to D5 and D7 and found the gaps fixed above.</p>
+
+<h3>Revision 1: done and proven by the builder</h3>
+<ul>
+  <li><b>Rollback floor (decided).</b> Release preflight now fails closed unless the rollback target contains the I1 authority core. The release tests refuse a pre-I1 commit and accept an I1 commit (18/18). On the real repo, <code>3339517</code> is refused and <code>7299ee9</code> and HEAD are accepted.</li>
+  <li><b>All seven IV defects fixed</b> (D1 to D8; the IV report has no D9). Each fix has a test that failed before it and passes after; red to green is in the table below. D7 was fixed rather than documented.</li>
+  <li><b>The two breaks the builder's suite missed are now caught</b>: filter or sort by a hidden field, and a secret-reference environment or provider change. The wildcard mutant was reworked: it now fails only when access actually widens (a post-freeze create returns 200).</li>
+  <li><b>The IV's own attack suite, run on this code:</b> 24/24 PASS, up from 21/24 (<code>revision-1/iv-suite-24of24.log</code>; the before-fix run is in <code>reds/</code>).</li>
+  <li><b>Local checks.</b> Typecheck passes. App tests: 73/73. Authority unit tests: 66/66. Release tests: 18/18. MCP package: build plus 2/2. <code>pnpm build</code> passes.</li>
+  <li><b>SERVICE replay:</b> 64/64 PASS. The hidden field leaves an open subscription in 15.2 ms (target 2 s).</li>
+  <li><b>Migration replay:</b> PASS.</li>
+  <li><b>Deliberate breaks:</b> all 8 unit-level and all 14 SERVICE-level breaks were caught, each by its intended assertion. <code>convex/</code> was restored after every run.</li>
+  <li><b>No real providers, production, spend or sends.</b> Evidence secret scans are clean.</li>
+</ul>
+<h3>Defects: red to green</h3>
+<table>
+<tr><th>#</th><th>Fix</th><th>Red (before)</th><th>Green (after)</th></tr>
+<tr><td>D1</td><td>CSV import duplicate and lookup matching only match records the member can read (<code>findReadableByTitle</code>). An unreadable name is treated exactly like a missing one.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/oracles-red.log</code>: "expected 2 to be 1" (hidden title skipped); lookup column gave "Record not found" vs a different error for a missing name</td><td><code>ops/authority/oracles.test.ts</code> 4/4 (<code>evidence/2026-09-25-i1/revision-1/reds/oracles-green.log</code>); IV C3-M4 PASS</td></tr>
+<tr><td>D2</td><td>Capture uses the same readable-only match, so an unreadable company falls through to the same create-scope refusal as a missing one.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/oracles-red.log</code>: the two outcomes differ</td><td>oracles test; IV C3-M5 PASS</td></tr>
+<tr><td>D3</td><td>Agent proposals check read scope (unreadable stays 404, like missing) and then proposal scope, before resolving any lookup value. Lookup resolution ignores unreadable id, code or name matches, so every miss gives the same validation error.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/oracles-red.log</code>: 404 vs 403 expected</td><td>oracles test: read-only agent gets 403 for either name; with proposal scope, either name gets the same 400. IV C3-M6 PASS</td></tr>
+<tr><td>D4</td><td>Refused under readonly: <code>registerSecret</code>, org <code>budgets:configure</code>, and <code>seed:ensureStandard</code>/<code>backfillRefs</code>/<code>releaseStandardSlots</code>. Relabelled with reasons: <code>ops:setFlag</code> and <code>clearAnomaly</code> as operator-override, migration as reduction-only, global and telemetry rows as outside-workspace, and the internal functions behind adapter routes as settlement-allowed. A new SERVICE sweep calls each of these under readonly and fails on any mismatch with its label.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d4-red.log</code>: "registerSecret is labelled refused but was: allowed"</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d4-green.log</code>, test "Operator-internal and adapter paths behave under readonly exactly as the inventory labels them"</td></tr>
+<tr><td>D5</td><td>The inventory test derives agent routes from the <code>dispatch()</code> branches themselves. Any new branch, or any return statement the parser can't read, fails the test.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d5-red.log</code>: the pre-fix guard passed 2/2 with <code>GET /records/:id/dump</code> added</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d5-attack-now-caught.log</code>: the same attack fails, with the missing row named</td></tr>
+<tr><td>D6</td><td>All 43 groups are remapped; 18 rows were corrected. The guard extracts each H0 group body and each mapped test body, and fails unless the mapped tests perform every operation the group performs. The stale-fence test gained an approved propose-mode variant for group 5.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d6-red-old-guard.log</code>: the old guard passed with all 43 rows pointed at the JWT test</td><td>The new guard fails that map on all 43 rows and 44 gaps (<code>evidence/2026-09-25-i1/revision-1/reds/d6-new-guard-on-jwt-map.log</code>) and fails the previous map on 16 gaps (<code>d6-new-guard-on-old-map.log</code>). It passes on the new map, and a built-in test re-runs the all-JWT attack.</td></tr>
+<tr><td>D7</td><td>The freeze (and org creation) records each object's key at that moment. Legacy key matching before backfill, and <code>migrateAgent</code> expansion, both use those frozen keys.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d7-red.log</code>: update after an operator rename returned 200</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d7-green.log</code>: 403 before and after migration; <code>dropped: ['update:vendor']</code></td></tr>
+<tr><td>D8</td><td>Adapter and agent REST routes check the body against the target function's own argument validator, plus ID table membership via <code>lib/shape:idsBelong</code>, before calling it. Malformed bodies get a generic 400 and are never logged.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d8-red.log</code>: "backend/function log contains the forwarded body field"</td><td><code>evidence/2026-09-25-i1/revision-1/reds/d8-green.log</code>; the IV's C4-S2 now shows neither key hash in logs</td></tr>
+<tr><td>Floor</td><td><code>authorityFloor()</code> plus a required argument to <code>preflight()</code>. The release CLI computes it from the rollback target's tree.</td><td><code>evidence/2026-09-25-i1/revision-1/reds/floor-red.log</code>: "Missing expected exception"</td><td><code>evidence/2026-09-25-i1/revision-1/reds/floor-green.log</code> 18/18; <code>evidence/2026-09-25-i1/revision-1/reds/floor-real-repo.log</code></td></tr>
+</table>
+
+<h3>Corrected claims from the first handover</h3>
+<ul>
+  <li><b>"Refused after rollback" was overstated.</b> The old "compatible-enforcing-rollback" phase restored the expanded schema and kept running the I1 code; no code was rolled back. The IV showed that a real code rollback to <code>3339517</code> brings hidden fields back and widens scoped reads. The release gate now refuses such a target. The replay's rollback phase still only proves a schema rollback on I1-or-later code.</li>
+  <li><b>"All 43 H0 groups are mapped to named production tests" was a string match only.</b> 18 rows were wrong. The guard now checks that each mapped test actually performs the group's operations. The guard's limit: it checks which operations are performed, not assertion meaning, so a verifier should still read the mapped tests.</li>
+  <li><b>"A new route or function fails the test" was true for functions only.</b> It now also holds for sub-routes and any unparsed branch in the agent REST dispatcher. Adapter routes are derived from the route table and the explicit names.</li>
+  <li><b>"Mutant wildcard-cutoff is caught" came from a status-code change, not a widening.</b> Removing only the <code>identity.granted</code> cutoff is not observable, because the read cutoff still refuses (404). The reworked mutants remove both cutoffs, or expand migration over all objects, and are caught only when a post-freeze create returns 200.</li>
+  <li><b>Internal inventory labels are now swept, not just declared,</b> for every operator write that touches a workspace, and for the adapter settlement routes checked in the internal sweep (bind, page and callback). The remaining internal functions sit behind swept routes.</li>
+</ul>
+
+<h3>Known limits</h3>
+<ul>
+  <li>Workspaces frozen before this revision have no recorded frozen keys, so they fall back to current keys (the D7 behaviour). Nothing with I1 has been deployed, so no workspace is affected.</li>
+  <li>Readonly tail: one send can still be consumed within the 1-second permit window (see Your calls).</li>
+  <li>Two tests race the pause sweep that a role or grant change schedules. They accept either specific refusal ("Approver authority changed" or "Stale claim"; "External capability denied" or "Stale claim"). The final-permit authority check is proven separately by the grant-expiry test, where there is no sweep, and by the <code>h0-final-permit</code> mutant.</li>
+  <li>The financial finality adapter is still SIM. Hosted log sinks were not checked.</li>
+</ul>
+
+<h3>How to reproduce</h3>
+<pre>git clone https://github.com/shakur-cmd/remold &amp;&amp; cd remold &amp;&amp; git checkout f1de7010c28d28578882497f295e5cd2eb938549
+pnpm install &amp;&amp; (cd packages/mcp &amp;&amp; pnpm install &amp;&amp; pnpm build &amp;&amp; pnpm test)
+pnpm typecheck &amp;&amp; pnpm test &amp;&amp; pnpm test:authority &amp;&amp; pnpm build &amp;&amp; node --test ops/release/release.test.mjs
+# Isolated local backend on 127.0.0.1:3480/3481, synthetic data only.
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/service.mjs            # 64 PASS
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/migration-service.mjs  # PASS
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutations.mjs          # 8 CAUGHT
+I1_EVIDENCE_DIR=/tmp/iv node ops/authority/mutants-service.mjs    # 14 CAUGHT, needs a clean convex/
+# IV suite: checkout i1/iv-2026-09-25 -- evidence/2026-09-25-i1/iv, copy fixture-iv.ts to ops/authority/,
+# then node evidence/2026-09-25-i1/iv/iv-service.mjs  (24/24 here; needs ports 3480/3481 free, or apply its port patch)</pre>
+
+<h3>Attack cases for the re-verifier</h3>
+<p>This is authorized defensive testing of the owner's own app. Run it on an isolated local backend with synthetic data only.</p>
+<ol>
+  <li><b>Existence oracles.</b> Probe every name- and code-based resolution path with a record the caller can't read versus a name that doesn't exist, and compare outcomes byte for byte:
+    <ul>
+      <li>CSV import, both the skip-duplicates check and lookup columns</li>
+      <li>capture, for both company and person</li>
+      <li>agent suggestions and changes, using a lookup by id, by code and by name</li>
+      <li>links fields</li>
+    </ul>
+  </li>
+  <li><b>Rollback floor.</b> Build a release whose declared rollback target predates I1 and run <code>release.mjs preflight</code>. It must be refused. Then try a target that has only one of the two marker files.</li>
+  <li><b>Body logging.</b> Send malformed bodies, extra fields and wrong-table IDs to all 15 adapter routes and every agent REST POST. Grep the backend log for the body values and for both key hashes.</li>
+  <li><b>Readonly labels.</b> Pick internal rows the builder did not sweep and check them against their labels.</li>
+  <li><b>Everything from the first handover:</b> old wildcard agent writing a newly added object, role downgrade, stale approval, a hidden field in an open subscription, an invalid secret reference, and the same ID under a different provider instance.</li>
+</ol>
+
+
+<h2>First handover, for reference</h2>
+<p>This session's first-round evidence is in <code>evidence/2026-09-25-i1/</code> (service, migration, service-mutants, unit-mutants). Revision-1 evidence is in <code>evidence/2026-09-25-i1/revision-1/</code>.</p>
+</body>
+</html>
+
+

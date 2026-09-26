@@ -1,0 +1,83 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/inbox.test.ts (2 tests | 2 failed) 156ms
+   × a new scoped agent sees its own inbox rows and counts, not unshared human text 139ms
+   × an agent cannot resolve an unreadable inbox row or attach an unreadable record 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/inbox.test.ts > a new scoped agent sees its own inbox rows and counts, not unshared human text
+AssertionError: expected [ …(2) ] to deeply equal [ '0000000000000000010051agentInbox' ]
+
+- Expected
++ Received
+
+  [
++   "0000000000000000010050agentInbox",
+    "0000000000000000010051agentInbox",
+  ]
+
+ ❯ ops/authority/inbox.test.ts:8:80
+      6|   await f.client.mutation(api.inbox.add, { orgId: f.orgId, text: 'Unsh…
+      7|   const own = await call('POST', '/api/v1/inbox', { text: 'My own work…
+      8|   expect.soft((await call('GET', '/api/v1/inbox')).json.map((r: any) =…
+       |                                                                                ^
+      9|   expect.soft((await call('GET', '/api/v1/me')).json.pendingInbox).toB…
+     10| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  ops/authority/inbox.test.ts > a new scoped agent sees its own inbox rows and counts, not unshared human text
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ ops/authority/inbox.test.ts:9:68
+      7|   const own = await call('POST', '/api/v1/inbox', { text: 'My own work…
+      8|   expect.soft((await call('GET', '/api/v1/inbox')).json.map((r: any) =…
+      9|   expect.soft((await call('GET', '/api/v1/me')).json.pendingInbox).toB…
+       |                                                                    ^
+     10| });
+     11| it('an agent cannot resolve an unreadable inbox row or attach an unrea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  ops/authority/inbox.test.ts > an agent cannot resolve an unreadable inbox row or attach an unreadable record
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ ops/authority/inbox.test.ts:14:83
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  ops/authority/inbox.test.ts > an agent cannot resolve an unreadable inbox row or attach an unreadable record
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ ops/authority/inbox.test.ts:17:112
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  17:05:17
+   Duration  319ms (tests 61%, transform 27%, import 11%, worker 1%)
+

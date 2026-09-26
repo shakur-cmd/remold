@@ -1,0 +1,24 @@
+{"state":"dispatching","reserved":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'dispatching'
+- 'outcomeUnknown'
+
+    at withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/watchdog-service.mjs:11:127)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async withAuthority (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/local.mjs:68:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/ops/authority/watchdog-service.mjs:5:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'dispatching',
+  expected: 'outcomeUnknown',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

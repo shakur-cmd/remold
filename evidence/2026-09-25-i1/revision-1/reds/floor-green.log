@@ -1,0 +1,26 @@
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.840083ms)
+✔ changed, missing and injected artifact bytes are refused (1.299625ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (54.025167ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.328834ms)
+✔ version metadata must name the artifact commit (0.91925ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.758666ms)
+✔ failed real process halts checks before a later process can run (21.450167ms)
+✔ successful real processes run in order (40.389625ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.200417ms)
+✔ missing metadata and destructive contraction are refused (0.09625ms)
+✔ a rollback to a schema without the expanded fields is refused (0.109ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.451458ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (31.237542ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.043583ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (18.359292ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (20.73575ms)
+✔ PR changes use their common ancestor when the target branch advances independently (202.291125ms)
+✔ after the I1 freeze, rollback to code that predates I1 authority is refused (137.382209ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 569.850417

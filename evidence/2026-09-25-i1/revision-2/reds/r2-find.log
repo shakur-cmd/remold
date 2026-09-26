@@ -1,0 +1,37 @@
+$ vitest run --config ops/authority/vitest.config.ts
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/oracles.test.ts (7 tests | 1 failed) 384ms
+   × name matching still finds a readable record when many unreadable near-matches outrank it 55ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches outrank it
+AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true, value: { …(2) } }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
+-   "value": {
+-     "companyCreated": false,
+-     "recordId": "0000000000000000000010102records",
+-   },
++   "ok": false,
+  }
+
+ ❯ ops/authority/oracles.test.ts:103:123
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  1 failed | 69 passed (70)
+   Start at  07:40:14
+   Duration  790ms (tests 71%, transform 18%, import 10%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.

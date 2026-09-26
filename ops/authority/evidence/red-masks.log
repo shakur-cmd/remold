@@ -1,0 +1,47 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold
+
+ ❯ ops/authority/masks.test.ts (2 tests | 1 failed) 124ms
+   × a hidden field is removed from user records, history, suggestions and exports 111ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/masks.test.ts > a hidden field is removed from user records, history, suggestions and exports
+AssertionError: expected '[{"agentName":"writer","objectKey":"c…' not to match /Hidden City|Future Secret/
+
+- Expected:
+/Hidden City|Future Secret/
+
++ Received:
+"[{\"agentName\":\"writer\",\"objectKey\":\"company\",\"objectLabel\":\"Company\",\"recordRef\":\"velvet-quick-still\",\"recordTitle\":\"Private Title\",\"suggestion\":{\"_creationTime\":1790278919699,\"_id\":\"000000000000000010051suggestions\",\"agentId\":\"00000000000000000000010050agents\",\"authorityEpoch\":0,\"before\":{\"00000000000000000000010012fields\":\"Hidden City\"},\"change\":{\"action\":\"update\",\"objectId\":\"0000000000000000000010003objects\",\"recordId\":\"0000000000000000000010048records\",\"values\":{\"00000000000000000000010012fields\":\"Future Secret\"}},\"orgId\":\"0000000000000000000000010001orgs\",\"reason\":\"Hidden City in free text\",\"recordId\":\"0000000000000000000010048records\",\"status\":\"pending\"}}]"
+
+ ❯ ops/authority/masks.test.ts:16:88
+     14|   expect.soft(JSON.stringify(record)).not.toMatch(/Private Title|Hidde…
+     15|   expect.soft(JSON.stringify(await client.query(api.events.forRecord, …
+     16|   expect.soft(JSON.stringify(await client.query(api.suggestions.list, …
+       |                                                                                        ^
+     17|   expect.soft(JSON.stringify(await client.query(api.csv.exportPage, { …
+     18|   expect(await client.query(api.records.search, { orgId, text: 'Privat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  ops/authority/masks.test.ts > a hidden field is removed from user records, history, suggestions and exports
+AssertionError: expected '{"cursor":"_end_cursor","done":true,"…' not to match /Private Title|Hidden City/
+
+- Expected:
+/Private Title|Hidden City/
+
++ Received:
+"{\"cursor\":\"_end_cursor\",\"done\":true,\"header\":[\"Code\",\"Name\",\"Domain\",\"City\",\"Notes\",\"Street\",\"State\",\"Postal Code\",\"Country\"],\"rows\":[[\"velvet-quick-still\",\"Private Title\",\"\",\"Hidden City\",\"\",\"\",\"\",\"\",\"\"]]}"
+
+ ❯ ops/authority/masks.test.ts:17:130
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 4 passed (5)
+   Start at  15:41:59
+   Duration  253ms (tests 62%, transform 26%, import 11%, worker 1%)
+

@@ -1,0 +1,37 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i1
+
+ ❯ ops/authority/pagination.test.ts (10 tests | 1 failed) 708ms
+   × the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text 184ms
+
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 96 passed (97)
+   Start at  08:55:24
+   Duration  1.26s (tests 78%, transform 12%, import 9%, worker 1%)
+
+[ELIFECYCLE] Command failed with exit code 1.
+$ vitest run --config ops/authority/vitest.config.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ops/authority/pagination.test.ts > the list path sorts and filters exactly like the index path, including ties, -0 and non-BMP text
+AssertionError: expected { Object (amountMinus0) } to deeply equal {}
+
+- Expected
++ Received
+
+- {}
++ {
++   "amountMinus0": {
++     "expected": [],
++     "got": [
++       "0000000000000000000010060records",
++     ],
++   },
++ }
+
+ ❯ ops/authority/pagination.test.ts:99:18
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
