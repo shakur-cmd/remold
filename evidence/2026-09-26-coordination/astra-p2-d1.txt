@@ -1,0 +1,13 @@
+**Pursue (c): Convex-owned raw capture as a bounded P2 proof**, removing Mautic form submission from the public write path. Keep Mautic as a downstream engine candidate.
+
+The independent report at `0c2cdf5`, `proofs/marketing/ownership/evidence/admission/iv/report.html`, proves D1: editing an admitted form changed the owner and removed DNC. Rechecking before each POST still leaves a check/use race unless admission and execution are atomic. Locking forms adds a native permission constraint requiring separate proof. Raw capture removes that dependency and the associated Mautic submission queue.
+
+This fits [P2](/Users/urkel/Documents/CodeMyVibe/Projects/remold/docs/unified-launch/integration-and-build-jobs.html): compare an equivalent “capture → segment → two-step email” slice; recover submissions once with authoritative suppression. It does not establish feature parity.
+
+**First step:** preserve D1’s failing fixture, then implement one tenant-bound, validated, idempotent raw-capture mutation in the isolated proof. Acknowledge only durable storage; make zero Mautic form POSTs. Treat captured fields as suggestions, never consent or permission to overwrite an existing profile.
+
+**Success check:** independent verification repeats post-publication mapping/remove-DNC edits, concurrent submissions, and commit-before-response crashes followed by retries. Require one durable capture per logical submission, zero native form POSTs, unchanged owner/DNC, tenant isolation, and eventual reconciliation once without weakening suppression. Any violation fails. D1 remains open until this passes.
+
+**Shakur:** no new decision needed for the authorized isolated proof; live gates remain.
+
+**D0M:** not pre-empted. Its root/Fable/Opus reviewed selection must still compare both engines, operations, costs, and every S4 completion requirement. Retain the OOM/deadlock evidence against Mautic.
