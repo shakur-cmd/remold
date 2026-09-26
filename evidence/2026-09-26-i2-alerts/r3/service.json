@@ -1,0 +1,1099 @@
+{
+  "status": "PASS",
+  "level": "SERVICE disposable local Convex, synthetic faults, local HTTP sink (not the owner channel)",
+  "steps": {
+    "background": {
+      "deliveredByCronAfterMs": 40545,
+      "open": [
+        {
+          "id": "nn79jmzn8pkmsywgfp0j6q0y6x8f5cty",
+          "at": "2026-09-26T17:03:56.037Z",
+          "count": 1,
+          "event": "open",
+          "key": "background-error:alertFixture:job",
+          "kind": "background-error",
+          "source": "remold",
+          "summary": "Background function alertFixture:job is failing (1 seen)."
+        }
+      ]
+    },
+    "rest": {
+      "open": [
+        {
+          "id": "nn7b3nwnmn6tt0362zc2e20nfn8f43sr",
+          "at": "2026-09-26T17:03:57.348Z",
+          "count": 1,
+          "event": "open",
+          "key": "rest-500",
+          "kind": "rest-500",
+          "source": "remold",
+          "summary": "REST API is returning internal errors (500) (1 seen)."
+        }
+      ]
+    },
+    "stalled": {
+      "open": [
+        {
+          "id": "nn74amwh3kd0q4dc1a3pm6nxrx8f4f90",
+          "at": "2026-09-26T17:04:08.832Z",
+          "count": 1,
+          "event": "open",
+          "key": "stalled:alertFixture:slow",
+          "kind": "stalled",
+          "source": "remold",
+          "summary": "Scheduled function alertFixture:slow is stalled (1 seen)."
+        }
+      ]
+    }
+  },
+  "earlyResolves": [
+    "background-error",
+    "stalled"
+  ],
+  "resolves": [
+    {
+      "id": "nn7d82hn5hzkmya7a2a1mpve8n8f4083",
+      "at": "2026-09-26T17:04:25.922Z",
+      "count": 2,
+      "event": "resolve",
+      "key": "background-error:alertFixture:job",
+      "kind": "background-error",
+      "source": "remold",
+      "summary": "Resolved: Background function alertFixture:job was failing."
+    },
+    {
+      "id": "nn7fmstyj753eszvcjmp5npjhn8f557a",
+      "at": "2026-09-26T17:04:25.922Z",
+      "count": 1,
+      "event": "resolve",
+      "key": "stalled:alertFixture:slow",
+      "kind": "stalled",
+      "source": "remold",
+      "summary": "Resolved: Scheduled function alertFixture:slow was stalled."
+    },
+    {
+      "id": "nn70hq8x632ftn73fs1x331gz18f5be4",
+      "at": "2026-09-26T17:05:00.437Z",
+      "count": 2,
+      "event": "resolve",
+      "key": "rest-500",
+      "kind": "rest-500",
+      "source": "remold",
+      "summary": "Resolved: REST API was returning internal errors (500)."
+    }
+  ],
+  "load": {
+    "rest5100": {
+      "ms": 21037,
+      "checksDuringLoad": 12,
+      "slowestCheckMs": 4030,
+      "checkErrors": [],
+      "behindDuringLoad": 0,
+      "notAppliedOverlap": 0
+    },
+    "rest15000": {
+      "ms": 215281,
+      "checksDuringLoad": 11,
+      "slowestCheckMs": 29921,
+      "checkErrors": [],
+      "behindDuringLoad": 0,
+      "notAppliedOverlap": 0
+    },
+    "largeArgs5000x4KB": {
+      "ms": 9230,
+      "checksDuringLoad": 1,
+      "slowestCheckMs": 31358,
+      "checkErrors": [],
+      "behindDuringLoad": 0,
+      "notAppliedOverlap": 0
+    },
+    "futureBurst5000": {
+      "checks": [
+        {
+          "applied": false,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 30236,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 300,
+          "ms": 32512,
+          "scannedThrough": 1790442556773.5518
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 26453,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 1000,
+          "ms": 29104,
+          "scannedThrough": 1790442560214.763
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 30185,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 600,
+          "ms": 31712,
+          "scannedThrough": 1790442586524.039
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 23266,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 1000,
+          "ms": 26120,
+          "scannedThrough": 1790442587610.941
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 30230,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 900,
+          "ms": 32666,
+          "scannedThrough": 1790442588591.281
+        },
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "configured",
+          "delivered": 1,
+          "readMs": 10557,
+          "scanned": 0,
+          "watchAdded": 0,
+          "watchChecked": 1000,
+          "ms": 12153,
+          "scannedThrough": 1790442745021
+        }
+      ]
+    },
+    "statusAfter": {
+      "channel": "configured",
+      "open": [],
+      "scannedThrough": 1790442757455,
+      "undelivered": 0
+    },
+    "schedulerBacklog25000": {
+      "observedMs": 203370,
+      "checks": [
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 1,
+          "readMs": 30005,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 1000,
+          "ms": 34512
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 30406,
+          "scanned": 1000,
+          "watchAdded": 1000,
+          "watchChecked": 0,
+          "ms": 31831
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 32709,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 700,
+          "ms": 44537
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 30925,
+          "scanned": 800,
+          "watchAdded": 800,
+          "watchChecked": 0,
+          "ms": 32161
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 31636,
+          "scanned": 1200,
+          "watchAdded": 1200,
+          "watchChecked": 0,
+          "ms": 32982
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "configured",
+          "delivered": 0,
+          "readMs": 24922,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 1000,
+          "ms": 27347
+        }
+      ],
+      "status": {
+        "channel": "configured",
+        "open": [
+          {
+            "count": 1,
+            "key": "coverage",
+            "kind": "coverage",
+            "openedAt": 1790442828913
+          }
+        ],
+        "scannedThrough": 1790442787586.372,
+        "undelivered": 0
+      }
+    }
+  },
+  "finalStatus": {
+    "channel": "configured",
+    "open": [],
+    "scannedThrough": 1790442290644,
+    "undelivered": 0
+  },
+  "deliveredCount": 9,
+  "forbiddenChecked": [
+    "private.person@example.invalid",
+    "sk_live_synthetic_must_not_leave_0123456789",
+    "must-not-persist",
+    "Synthetic background failure",
+    "Synthetic REST failure",
+    "private=",
+    "Bearer",
+    "example.invalid"
+  ],
+  "leaks": [],
+  "checks": [
+    {
+      "started": 1790442236712,
+      "ended": 1790442236917,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442236917,
+      "ended": 1790442237135,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442237156,
+      "ended": 1790442237822,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 1,
+      "readMs": 6,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442238034,
+      "ended": 1790442238238,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442243438,
+      "ended": 1790442243719,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 9,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442243971,
+      "ended": 1790442244415,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 12,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442244667,
+      "ended": 1790442244952,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 7,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442245204,
+      "ended": 1790442245439,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442245691,
+      "ended": 1790442245934,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 3,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442246185,
+      "ended": 1790442246425,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442246677,
+      "ended": 1790442246914,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 1,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442247166,
+      "ended": 1790442247404,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 1,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442247657,
+      "ended": 1790442247902,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 1,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442248154,
+      "ended": 1790442248393,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 3,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442248644,
+      "ended": 1790442248866,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 1,
+      "readMs": 3,
+      "scanned": 1,
+      "watchAdded": 1,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442248866,
+      "ended": 1790442249075,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 1
+    },
+    {
+      "started": 1790442265734,
+      "ended": 1790442265975,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 2,
+      "readMs": 8,
+      "scanned": 2,
+      "watchAdded": 0,
+      "watchChecked": 1
+    },
+    {
+      "started": 1790442300222,
+      "ended": 1790442300473,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 1,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442300473,
+      "ended": 1790442300676,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 4,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442301073,
+      "ended": 1790442301353,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 12,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442302352,
+      "ended": 1790442302643,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 22,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442303643,
+      "ended": 1790442303919,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 12,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442304920,
+      "ended": 1790442305187,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 11,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442306186,
+      "ended": 1790442306654,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 53,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442307654,
+      "ended": 1790442307936,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 20,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442308937,
+      "ended": 1790442309241,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 26,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442310242,
+      "ended": 1790442310548,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 22,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442311549,
+      "ended": 1790442312108,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 302,
+      "scanned": 279,
+      "watchAdded": 3,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442313110,
+      "ended": 1790442313894,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 495,
+      "scanned": 530,
+      "watchAdded": 203,
+      "watchChecked": 3
+    },
+    {
+      "started": 1790442314895,
+      "ended": 1790442316780,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 1377,
+      "scanned": 645,
+      "watchAdded": 645,
+      "watchChecked": 206
+    },
+    {
+      "started": 1790442317782,
+      "ended": 1790442321812,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 3382,
+      "scanned": 836,
+      "watchAdded": 836,
+      "watchChecked": 741
+    },
+    {
+      "started": 1790442322813,
+      "ended": 1790442329811,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 6346,
+      "scanned": 1018,
+      "watchAdded": 1018,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442330811,
+      "ended": 1790442341298,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 9214,
+      "scanned": 1636,
+      "watchAdded": 1636,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442342301,
+      "ended": 1790442351945,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 8465,
+      "scanned": 1434,
+      "watchAdded": 1434,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442352946,
+      "ended": 1790442370440,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 15815,
+      "scanned": 1234,
+      "watchAdded": 1234,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442371440,
+      "ended": 1790442391954,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 18211,
+      "scanned": 1836,
+      "watchAdded": 1836,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442392956,
+      "ended": 1790442412056,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 17035,
+      "scanned": 1569,
+      "watchAdded": 1569,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442413056,
+      "ended": 1790442437765,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 22104,
+      "scanned": 1525,
+      "watchAdded": 1525,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442438767,
+      "ended": 1790442462802,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 20585,
+      "scanned": 1739,
+      "watchAdded": 1739,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442463801,
+      "ended": 1790442493722,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 26105,
+      "scanned": 1495,
+      "watchAdded": 1495,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442494724,
+      "ended": 1790442524030,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 25818,
+      "scanned": 1710,
+      "watchAdded": 1710,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442525032,
+      "ended": 1790442552922,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 24474,
+      "scanned": 1496,
+      "watchAdded": 1496,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442553926,
+      "ended": 1790442585284,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 28697,
+      "scanned": 1117,
+      "watchAdded": 1117,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442600958,
+      "ended": 1790442633470,
+      "applied": false,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 30236,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 300
+    },
+    {
+      "started": 1790442633885,
+      "ended": 1790442662989,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 26453,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442663346,
+      "ended": 1790442695058,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 30185,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 600
+    },
+    {
+      "started": 1790442695361,
+      "ended": 1790442721481,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 23266,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442721795,
+      "ended": 1790442754461,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 30230,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 900
+    },
+    {
+      "started": 1790442754749,
+      "ended": 1790442766902,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 1,
+      "readMs": 10557,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442767191,
+      "ended": 1790442782144,
+      "applied": true,
+      "behind": false,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 13663,
+      "scanned": 0,
+      "watchAdded": 0,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442798202,
+      "ended": 1790442832714,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 1,
+      "readMs": 30005,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 1000
+    },
+    {
+      "started": 1790442832714,
+      "ended": 1790442864545,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 30406,
+      "scanned": 1000,
+      "watchAdded": 1000,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442864545,
+      "ended": 1790442909082,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 32709,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 700
+    },
+    {
+      "started": 1790442909082,
+      "ended": 1790442941243,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 30925,
+      "scanned": 800,
+      "watchAdded": 800,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442941243,
+      "ended": 1790442974225,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 31636,
+      "scanned": 1200,
+      "watchAdded": 1200,
+      "watchChecked": 0
+    },
+    {
+      "started": 1790442974225,
+      "ended": 1790443001572,
+      "applied": true,
+      "behind": true,
+      "channel": "configured",
+      "delivered": 0,
+      "readMs": 24922,
+      "scanned": 2000,
+      "watchAdded": 2000,
+      "watchChecked": 1000
+    }
+  ],
+  "sink": [
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn79jmzn8pkmsywgfp0j6q0y6x8f5cty",
+        "at": "2026-09-26T17:03:56.037Z",
+        "count": 1,
+        "event": "open",
+        "key": "background-error:alertFixture:job",
+        "kind": "background-error",
+        "source": "remold",
+        "summary": "Background function alertFixture:job is failing (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn7b3nwnmn6tt0362zc2e20nfn8f43sr",
+        "at": "2026-09-26T17:03:57.348Z",
+        "count": 1,
+        "event": "open",
+        "key": "rest-500",
+        "kind": "rest-500",
+        "source": "remold",
+        "summary": "REST API is returning internal errors (500) (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn74amwh3kd0q4dc1a3pm6nxrx8f4f90",
+        "at": "2026-09-26T17:04:08.832Z",
+        "count": 1,
+        "event": "open",
+        "key": "stalled:alertFixture:slow",
+        "kind": "stalled",
+        "source": "remold",
+        "summary": "Scheduled function alertFixture:slow is stalled (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn7d82hn5hzkmya7a2a1mpve8n8f4083",
+        "at": "2026-09-26T17:04:25.922Z",
+        "count": 2,
+        "event": "resolve",
+        "key": "background-error:alertFixture:job",
+        "kind": "background-error",
+        "source": "remold",
+        "summary": "Resolved: Background function alertFixture:job was failing."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn7fmstyj753eszvcjmp5npjhn8f557a",
+        "at": "2026-09-26T17:04:25.922Z",
+        "count": 1,
+        "event": "resolve",
+        "key": "stalled:alertFixture:slow",
+        "kind": "stalled",
+        "source": "remold",
+        "summary": "Resolved: Scheduled function alertFixture:slow was stalled."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn70hq8x632ftn73fs1x331gz18f5be4",
+        "at": "2026-09-26T17:05:00.437Z",
+        "count": 2,
+        "event": "resolve",
+        "key": "rest-500",
+        "kind": "rest-500",
+        "source": "remold",
+        "summary": "Resolved: REST API was returning internal errors (500)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn766ztjgpdjg7e1rvrnmafe4h8f5rw3",
+        "at": "2026-09-26T17:10:26.399Z",
+        "count": 1,
+        "event": "open",
+        "key": "coverage",
+        "kind": "coverage",
+        "source": "remold",
+        "summary": "Alert checks are falling behind, so some scheduled work is not checked yet (1 seen)."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn78vb3eacakj9esajc05zxpb18f4zht",
+        "at": "2026-09-26T17:12:45.579Z",
+        "count": 1,
+        "event": "resolve",
+        "key": "coverage",
+        "kind": "coverage",
+        "source": "remold",
+        "summary": "Resolved: Alert checks were falling behind, so some scheduled work was not checked yet."
+      }
+    },
+    {
+      "path": "/hook",
+      "contentType": "application/json",
+      "body": {
+        "id": "nn7e757jh1p7sys2strjz7hwy98f5bcb",
+        "at": "2026-09-26T17:13:48.913Z",
+        "count": 1,
+        "event": "open",
+        "key": "coverage",
+        "kind": "coverage",
+        "source": "remold",
+        "summary": "Alert checks are falling behind, so some scheduled work is not checked yet (1 seen)."
+      }
+    }
+  ],
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-R0fSGu"
+}

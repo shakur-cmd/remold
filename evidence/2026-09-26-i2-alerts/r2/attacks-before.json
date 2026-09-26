@@ -1,0 +1,180 @@
+{
+  "level": "SERVICE disposable local Convex, synthetic data, local sinks",
+  "phases": {
+    "scrub": {
+      "bogusFunctionName": "refused: Error: Attempted to schedule function, but no exported function iv_private_person_example_invalid found in the file: ivFixture.js. Did you forget to export it?",
+      "restStatus": 500,
+      "check": {
+        "channel": "configured",
+        "delivered": 2,
+        "undelivered": 0
+      },
+      "sinkBodies": [
+        {
+          "id": "nd77dh4z88fs6gh1m4r6c2evv18f4qgd",
+          "at": "2026-09-26T14:27:28.086Z",
+          "count": 1,
+          "event": "open",
+          "key": "background-error:ivFixture:fail",
+          "kind": "background-error",
+          "source": "remold",
+          "summary": "Background function ivFixture:fail is failing (1 seen)."
+        },
+        {
+          "id": "nd7bt61samwhmdxx4a71ncawgn8f4g84",
+          "at": "2026-09-26T14:27:28.086Z",
+          "count": 1,
+          "event": "open",
+          "key": "rest-500",
+          "kind": "rest-500",
+          "source": "remold",
+          "summary": "REST API is returning internal errors (500) (1 seen)."
+        }
+      ],
+      "storedAlerts": [
+        {
+          "key": "background-error:ivFixture:fail",
+          "kind": "background-error",
+          "fn": "ivFixture:fail",
+          "count": 1,
+          "state": "open"
+        },
+        {
+          "key": "rest-500",
+          "kind": "rest-500",
+          "count": 1,
+          "state": "open"
+        }
+      ],
+      "leaksInSink": [],
+      "leaksInStoredTables": []
+    },
+    "concurrent": {
+      "results": [
+        {
+          "channel": "configured",
+          "delivered": 0,
+          "undelivered": 0
+        },
+        {
+          "channel": "configured",
+          "delivered": 0,
+          "undelivered": 0
+        },
+        {
+          "channel": "configured",
+          "delivered": 0,
+          "undelivered": 0
+        },
+        {
+          "channel": "configured",
+          "delivered": 0,
+          "undelivered": 0
+        },
+        {
+          "channel": "configured",
+          "delivered": 1,
+          "undelivered": 0
+        },
+        {
+          "channel": "configured",
+          "delivered": 0,
+          "undelivered": 0
+        }
+      ],
+      "newDeliveries": [
+        {
+          "id": "nd74jccafn96k3gay7bm1d08bh8f4bzw",
+          "at": "2026-09-26T14:27:30.435Z",
+          "count": 1,
+          "event": "open",
+          "key": "background-error:ivFixture:failTwo",
+          "kind": "background-error",
+          "source": "remold",
+          "summary": "Background function ivFixture:failTwo is failing (1 seen)."
+        }
+      ],
+      "alertRowsPerKey": {
+        "background-error:ivFixture:fail": 1,
+        "rest-500": 1,
+        "background-error:ivFixture:failTwo": 1
+      },
+      "deliveredIds": [
+        "nd77dh4z88fs6gh1m4r6c2evv18f4qgd",
+        "nd7bt61samwhmdxx4a71ncawgn8f4g84",
+        "nd74jccafn96k3gay7bm1d08bh8f4bzw"
+      ],
+      "duplicateIds": []
+    },
+    "redirect": {
+      "directIpv6": "unconfigured",
+      "direct0000": "unconfigured",
+      "received6": [
+        {
+          "method": "POST",
+          "path": "/landed",
+          "body": "{\"id\":\"nd7dj14gb83z5bt5ewk5xzs9jh8f59jj\",\"at\":\"2026-09-26T14:29:00.144Z\",\"count\":1,\"event\":\"resolve\",\"key\":\"rest-500\",\"kind\":\"rest-500\",\"source\":\"remold\",\"summary\":\"Resolved: REST API was returning internal errors (500).\"}"
+        }
+      ],
+      "redirectHits": 1
+    },
+    "coverage": {
+      "restRequests": 5100,
+      "restMs": 18295,
+      "scheduledRows": {
+        "byName": {
+          "telemetry.js:record": 4000
+        },
+        "rowsSeenCapped4000": 4000
+      },
+      "check": {
+        "error": "Error: [Request ID: f8e800ed5748381e] Server Error | Uncaught Error: Uncaught Error: Too many reads in a single function execution (limit: 4096). Consider using smaller limits in your queries, paginating your queries, or using indexed queries with a selective index range expressions."
+      },
+      "status": {
+        "channel": "configured",
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivFixture:fail",
+            "kind": "background-error",
+            "openedAt": 1790432848086
+          },
+          {
+            "count": 1,
+            "key": "background-error:ivFixture:failTwo",
+            "kind": "background-error",
+            "openedAt": 1790432850435
+          }
+        ],
+        "undelivered": 0
+      }
+    },
+    "largeArgs": {
+      "scheduledRows": 4000,
+      "check": {
+        "error": "Error: [Request ID: 5ea36f5388ed34aa] Server Error | Uncaught Error: Uncaught Error: Too many reads in a single function execution (limit: 4096). Consider using smaller limits in your queries, paginating your queries, or using indexed queries with a selective index range expressions."
+      },
+      "status": {
+        "channel": "configured",
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivFixture:fail",
+            "kind": "background-error",
+            "openedAt": 1790432848086
+          },
+          {
+            "count": 1,
+            "key": "background-error:ivFixture:failTwo",
+            "kind": "background-error",
+            "openedAt": 1790432850435
+          }
+        ],
+        "undelivered": 0
+      }
+    }
+  },
+  "allSinkLeaks": [],
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-GFPxaT"
+}

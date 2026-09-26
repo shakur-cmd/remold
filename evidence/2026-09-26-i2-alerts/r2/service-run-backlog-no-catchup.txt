@@ -1,0 +1,42 @@
+Waiting for the REST window (previous and current minute) to pass the last 500.
+burst check {"applied":false,"behind":true,"channel":"configured","delivered":0,"ms":32338,"scannedThrough":1790435767654.3557}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":31667,"scannedThrough":1790435769228.8362}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32658,"scannedThrough":1790435770347.3457}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":31483,"scannedThrough":1790435771105.2273}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32593,"scannedThrough":1790435772506.6287}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32360,"scannedThrough":1790435791315.5996}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":36526,"scannedThrough":1790435791316.039}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":31441,"scannedThrough":1790435791807.9153}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":33848,"scannedThrough":1790435792592.0325}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32430,"scannedThrough":1790435793109.375}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":33270,"scannedThrough":1790435793109.6191}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32910,"scannedThrough":1790435793564.055}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":31419,"scannedThrough":1790435793564.2502}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32157,"scannedThrough":1790435794039.35}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32036,"scannedThrough":1790435794039.5942}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32657,"scannedThrough":1790435794693.6301}
+burst check {"applied":false,"behind":true,"channel":"configured","delivered":0,"ms":32891,"scannedThrough":1790435794693.8743}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32105,"scannedThrough":1790435795213.1404}
+burst check {"applied":true,"behind":true,"channel":"configured","delivered":0,"ms":32158,"scannedThrough":1790435795213.531}
+Sink at failure: [{"at":1790435444034,"headers":{"content-type":"application/json","content-length":"254","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn72m19pfq0ceeatnw1ht451g18f4ed2\",\"at\":\"2026-09-26T15:10:44.017Z\",\"count\":1,\"event\":\"open\",\"key\":\"background-error:alertFixture:job\",\"kind\":\"background-error\",\"source\":\"remold\",\"summary\":\"Background function alertFixture:job is failing (1 seen).\"}"},{"at":1790435445203,"headers":{"content-type":"application/json","content-length":"217","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn7dt4hrmrt3r9h7xxaadtg45d8f5jfg\",\"at\":\"2026-09-26T15:10:45.198Z\",\"count\":1,\"event\":\"open\",\"key\":\"rest-500\",\"kind\":\"rest-500\",\"source\":\"remold\",\"summary\":\"REST API is returning internal errors (500) (1 seen).\"}"},{"at":1790435455950,"headers":{"content-type":"application/json","content-length":"237","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn72ef4ydte7swg97wac36qx7n8f59sr\",\"at\":\"2026-09-26T15:10:55.942Z\",\"count\":1,\"event\":\"open\",\"key\":\"stalled:alertFixture:slow\",\"kind\":\"stalled\",\"source\":\"remold\",\"summary\":\"Scheduled function alertFixture:slow is stalled (1 seen).\"}"},{"at":1790435473492,"headers":{"content-type":"application/json","content-length":"259","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn7d2ew76fpy6h6nzyqz4grbxx8f5j8z\",\"at\":\"2026-09-26T15:11:13.483Z\",\"count\":2,\"event\":\"resolve\",\"key\":\"background-error:alertFixture:job\",\"kind\":\"background-error\",\"source\":\"remold\",\"summary\":\"Resolved: Background function alertFixture:job was failing.\"}"},{"at":1790435473495,"headers":{"content-type":"application/json","content-length":"242","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn70gphqq76940kvjjfpyfxjp58f5bqx\",\"at\":\"2026-09-26T15:11:13.483Z\",\"count\":1,\"event\":\"resolve\",\"key\":\"stalled:alertFixture:slow\",\"kind\":\"stalled\",\"source\":\"remold\",\"summary\":\"Resolved: Scheduled function alertFixture:slow was stalled.\"}"},{"at":1790435520382,"headers":{"content-type":"application/json","content-length":"222","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn79vebcz3hmbnv80t24496rs98f5w44\",\"at\":\"2026-09-26T15:12:00.375Z\",\"count\":2,\"event\":\"resolve\",\"key\":\"rest-500\",\"kind\":\"rest-500\",\"source\":\"remold\",\"summary\":\"Resolved: REST API was returning internal errors (500).\"}"},{"at":1790435544736,"headers":{"content-type":"application/json","content-length":"248","accept":"*/*","user-agent":"Convex/1.0","accept-encoding":"gzip","host":"127.0.0.1:3832"},"body":"{\"id\":\"nn719jf4zwx66xamwv8qxpdkx58f43bt\",\"at\":\"2026-09-26T15:12:24.315Z\",\"count\":1,\"event\":\"open\",\"key\":\"coverage\",\"kind\":\"coverage\",\"source\":\"remold\",\"summary\":\"Alert checks are falling behind, so some scheduled work is not checked yet (1 seen).\"}"}]
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: checks catch up after the burst
+
+true !== false
+
+    at withLocalCore.cloudPort (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/telemetry/alerts.mjs:177:10)
+    at async withLocalCore (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/rehearsal/local-core.mjs:41:20)
+    at async file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/ops/telemetry/alerts.mjs:50:16 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: true,
+  expected: false,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0
+exit 1

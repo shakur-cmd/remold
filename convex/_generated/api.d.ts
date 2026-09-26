@@ -10,6 +10,7 @@
 
 import type * as agentApi from "../agentApi.js";
 import type * as agents from "../agents.js";
+import type * as alerts from "../alerts.js";
 import type * as capture from "../capture.js";
 import type * as crons from "../crons.js";
 import type * as csv from "../csv.js";
@@ -49,6 +50,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   agentApi: typeof agentApi;
   agents: typeof agents;
+  alerts: typeof alerts;
   capture: typeof capture;
   crons: typeof crons;
   csv: typeof csv;

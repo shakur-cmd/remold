@@ -1,0 +1,66 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9
+
+stderr | convex/alerts.test.ts > alerts on a job that fails long after it was due, timing the failure by when it finished
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/convex/telemetry.ts:16:228)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithGlobalOverrides (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-afc5a8445e36165b9/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+
+ ❯ convex/alerts.test.ts (19 tests | 2 failed) 527ms
+   × alerts on a job that fails long after it was due, timing the failure by when it finished 4ms
+   × accepts HTTPS to public hosts and plain HTTP only to exactly 127.0.0.1 or localhost 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/alerts.test.ts > alerts on a job that fails long after it was due, timing the failure by when it finished
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ convex/alerts.test.ts:80:58
+     78|   await run(t);
+     79|   await later(t);
+     80|   expect(opens(await allNotices(t), "background-error")).toHaveLength(…
+       |                                                          ^
+     81| });
+     82|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  convex/alerts.test.ts > accepts HTTPS to public hosts and plain HTTP only to exactly 127.0.0.1 or localhost
+AssertionError: https://localhost./x: expected 'https://localhost./x' to be null
+
+- Expected:
+null
+
++ Received:
+"https://localhost./x"
+
+ ❯ convex/alerts.test.ts:204:180
+    202|     "https://0.1.2.3/x", "https://[::ffff:7f00:1]/x", "https://100.64.…
+    203|     "https://localhost./x", "https://metadata.google.internal./x", "ht…
+    204|     "https://198.18.0.1/x", "https://198.19.255.1/x", "https://224.0.0…
+       |                                                                                                                                                                                    ^
+    205| });
+    206|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 17 passed (19)
+   Start at  13:00:57
+   Duration  696ms (tests 83%, transform 12%, import 5%)
+

@@ -15,7 +15,7 @@ export const seed = internalMutation({
     await ctx.db.insert("members", { orgId: orgs[0], userId, role: "owner" });
     const userB = await ctx.db.insert("users", { tokenIdentifier: "proof-b", name: "Synthetic B" });
     await ctx.db.insert("members", { orgId: orgs[1], userId: userB, role: "owner" });
-    return { orgA: orgs[0], orgB: orgs[1], startedAt: Date.now() };
+    return { orgA: orgs[0], orgB: orgs[1], agents, startedAt: Date.now() };
   },
 });
 export const snapshot = internalQuery({ args: {}, handler: async (ctx) => ({

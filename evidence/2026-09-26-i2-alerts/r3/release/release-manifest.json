@@ -1,0 +1,68 @@
+{
+  "sha": "d9c798e5dd5de619c7c1fc99a5083b9d02db38ff",
+  "baseSha": "d66eb0b1f8d5aac7aca63d9c964a6850f1e2584c",
+  "release": {
+    "class": "expand",
+    "rollbackTarget": "566abac6a382007d9d3edf58006904e1b2bc5e6f"
+  },
+  "schemaSha256": "28f02ad8e3846ffc6e06be180978c8b857c9d83fe0e37a6de233d39c6f7c7164",
+  "checks": [
+    "pnpm test",
+    "pnpm typecheck",
+    "node --test ops/release/release.test.mjs",
+    "pnpm --dir packages/mcp test",
+    "pnpm --dir packages/mcp build",
+    "pnpm exec vite build --outDir /tmp/i2-release3/artifact"
+  ],
+  "format": 1,
+  "files": [
+    {
+      "path": "_headers",
+      "sha256": "1c3b56ff9f3cf85efa1543c93890630c025b5c41aeaf7e14cd50d6b7d28654c0"
+    },
+    {
+      "path": "_redirects",
+      "sha256": "3738936006ee3f1f690507ffabb941d1ad629e42d3a349b3928d1a035b4d3455"
+    },
+    {
+      "path": "assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2",
+      "sha256": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e"
+    },
+    {
+      "path": "assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2",
+      "sha256": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09"
+    },
+    {
+      "path": "assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+      "sha256": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f"
+    },
+    {
+      "path": "assets/geist-latin-wght-normal-BgDaEnEv.woff2",
+      "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+    },
+    {
+      "path": "assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2",
+      "sha256": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1"
+    },
+    {
+      "path": "assets/index-Bghzk4qC.css",
+      "sha256": "1de08daf8fddc7f6e1469d41aa239e544fa69b637cceca6aca41679990bbc58f"
+    },
+    {
+      "path": "assets/index-Dr7bQT_j.js",
+      "sha256": "ab01a48cb1785d9b9e7822300b3043910cdf13de4d300b773da18e1b5778167c"
+    },
+    {
+      "path": "favicon.svg",
+      "sha256": "61bc9a161de58248288e6905425d7180f0624c2865007b97d763fdac12043a66"
+    },
+    {
+      "path": "index.html",
+      "sha256": "dd82723287e447e3d23f2e379117e569feb018ad617a84b4110fc758821ab742"
+    },
+    {
+      "path": "version.json",
+      "sha256": "98e2255d565401ed7d5393200b3dfd4107f25c0a61ad6f5faa973a1ab76de5fe"
+    }
+  ]
+}

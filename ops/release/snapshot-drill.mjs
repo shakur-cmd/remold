@@ -13,6 +13,7 @@ const temp = mkdtempSync(join(tmpdir(), 'remold-snapshot-drill-'));
 const results = {}, evidence = { level: flag ? 'SANDBOX snapshot restored into local scratch' : 'SERVICE-local; synthetic fixture', sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim()), results, limitations: ['Loopback local Convex only; no cloud deployment or customer data', 'Synthetic fixture does not prove a managed backup export or independent verification'] };
 function candidate(name, change) {
   const source = join(temp, name); cpSync(join(root, 'convex'), join(source, 'convex'), { recursive: true });
+  cpSync(join(root, 'packages/contracts'), join(source, 'packages/contracts'), { recursive: true });
   const schema = join(source, 'convex/schema.ts'), before = readFileSync(schema, 'utf8'), after = change(before);
   assert.notEqual(after, before, `Expected ${name} schema replacement`); writeFileSync(schema, after); return source;
 }
