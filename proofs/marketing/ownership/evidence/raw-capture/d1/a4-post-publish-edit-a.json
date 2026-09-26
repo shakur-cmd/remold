@@ -1,0 +1,165 @@
+{
+ "run": "e114f791",
+ "capturedAt": "2026-09-26T12:01:16.651Z",
+ "tenant": "a",
+ "formId": 34,
+ "formBefore": {
+  "fields": [
+   {
+    "id": 100,
+    "alias": "email",
+    "type": "email",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 101,
+    "alias": "firstname",
+    "type": "text",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 102,
+    "alias": "submit",
+    "type": "button",
+    "mappedObject": null,
+    "mappedField": null
+   }
+  ],
+  "actions": []
+ },
+ "admissionBefore": "admitted",
+ "edit": {
+  "status": 200,
+  "error": null
+ },
+ "formEdited": {
+  "fields": [
+   {
+    "id": 100,
+    "alias": "email",
+    "type": "email",
+    "mappedObject": "contact",
+    "mappedField": "email"
+   },
+   {
+    "id": 101,
+    "alias": "firstname",
+    "type": "text",
+    "mappedObject": "contact",
+    "mappedField": "firstname"
+   },
+   {
+    "id": 102,
+    "alias": "submit",
+    "type": "button",
+    "mappedObject": null,
+    "mappedField": null
+   }
+  ],
+  "actions": [
+   {
+    "id": 10,
+    "type": "lead.remove_do_not_contact"
+   }
+  ]
+ },
+ "admissionAfterEdit": "Form 34 on tenant a refused: has native actions; mapped field email; mapped field firstname",
+ "responses": [
+  [
+   200
+  ],
+  [
+   200
+  ],
+  [
+   200
+  ],
+  [
+   200
+  ]
+ ],
+ "submissions": "194\t245\n195\t245\n196\t246\n197\t246",
+ "newEmailContacts": "246\tEdited new 2",
+ "ownerId": 245,
+ "ownerBefore": {
+  "id": 245,
+  "firstname": "IV owner postedit",
+  "lastname": "Stable postedit",
+  "email": "iv-own-e114f791-postedit@example.invalid",
+  "points": 0,
+  "tags": [],
+  "doNotContact": [
+   {
+    "channel": "email",
+    "reason": 3
+   }
+  ]
+ },
+ "ownerAfter": {
+  "id": 245,
+  "firstname": "Edited existing 2",
+  "lastname": "Stable postedit",
+  "email": "iv-own-e114f791-postedit@example.invalid",
+  "points": 0,
+  "tags": [],
+  "doNotContact": []
+ },
+ "countersBefore": {
+  "contacts": 240,
+  "anonymousContacts": 42,
+  "maxLeadId": 245,
+  "dnc": 39,
+  "submissions": 180,
+  "campaignLeads": 137,
+  "campaignEventLog": 169,
+  "pointActionLog": 26,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "countersAfter": {
+  "contacts": 241,
+  "anonymousContacts": 42,
+  "maxLeadId": 246,
+  "dnc": 38,
+  "submissions": 184,
+  "campaignLeads": 137,
+  "campaignEventLog": 169,
+  "pointActionLog": 26,
+  "queuedEmails": 0,
+  "emailStats": 170
+ },
+ "edgeStartedAtUnchanged": true,
+ "revert": {
+  "actions": 200,
+  "fields": 200
+ },
+ "formReverted": {
+  "fields": [
+   {
+    "id": 100,
+    "alias": "email",
+    "type": "email",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 101,
+    "alias": "firstname",
+    "type": "text",
+    "mappedObject": null,
+    "mappedField": null
+   },
+   {
+    "id": 102,
+    "alias": "submit",
+    "type": "button",
+    "mappedObject": null,
+    "mappedField": null
+   }
+  ],
+  "actions": []
+ },
+ "admissionAfterRevert": "admitted"
+}

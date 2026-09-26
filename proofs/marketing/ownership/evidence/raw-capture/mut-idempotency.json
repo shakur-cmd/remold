@@ -1,0 +1,889 @@
+{
+ "label": "mut-idempotency",
+ "fixture": "51378067",
+ "startedAt": "2026-09-26T12:08:59.847Z",
+ "level": "SERVICE isolated local containers; synthetic data; no mail, DNS, TLS, provider or host port beyond the loopback forward",
+ "checks": [
+  {
+   "ok": true,
+   "name": "deployed edges run the repository server.mjs"
+  },
+  {
+   "ok": true,
+   "name": "a: all 16 concurrent posts acknowledged",
+   "detail": "200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200"
+  },
+  {
+   "ok": true,
+   "name": "a: exactly 16 captures stored under tenant a",
+   "detail": 16
+  },
+  {
+   "ok": true,
+   "name": "a: no other captures appeared",
+   "detail": [
+    17,
+    33
+   ]
+  },
+  {
+   "ok": true,
+   "name": "b: all 16 concurrent posts acknowledged",
+   "detail": "200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200"
+  },
+  {
+   "ok": true,
+   "name": "b: exactly 16 captures stored under tenant b",
+   "detail": 16
+  },
+  {
+   "ok": true,
+   "name": "b: no other captures appeared",
+   "detail": [
+    17,
+    33
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: inventory holds none of tenant b captures"
+  },
+  {
+   "ok": true,
+   "name": "b: inventory holds none of tenant a captures"
+  },
+  {
+   "ok": true,
+   "name": "a: first reply lost after commit (502), client retry acknowledged (200)",
+   "detail": [
+    502,
+    200
+   ]
+  },
+  {
+   "ok": false,
+   "name": "a: exactly one capture for the retried nonce",
+   "detail": 2
+  },
+  {
+   "ok": false,
+   "name": "a: same nonce with changed values refused as conflict",
+   "detail": 502
+  },
+  {
+   "ok": true,
+   "name": "b: first reply lost after commit (502), client retry acknowledged (200)",
+   "detail": [
+    502,
+    200
+   ]
+  },
+  {
+   "ok": false,
+   "name": "b: exactly one capture for the retried nonce",
+   "detail": 2
+  },
+  {
+   "ok": false,
+   "name": "b: same nonce with changed values refused as conflict",
+   "detail": 502
+  },
+  {
+   "ok": true,
+   "name": "refused: reconciler A settles a B capture",
+   "detail": "scope"
+  },
+  {
+   "ok": true,
+   "name": "refused: edge A key reads pending",
+   "detail": "credential"
+  },
+  {
+   "ok": true,
+   "name": "refused: reconciler A key writes a capture",
+   "detail": "credential"
+  },
+  {
+   "ok": true,
+   "name": "refused: unknown key",
+   "detail": "credential"
+  },
+  {
+   "ok": true,
+   "name": "B capture untouched by A credentials"
+  },
+  {
+   "ok": true,
+   "name": "a: Mautic untouched by every public post (form submissions 184 to 184)",
+   "detail": {
+    "afterSeed": {
+     "formSubmissions": 184,
+     "contacts": 244,
+     "anonymousContacts": 42,
+     "dnc": 40,
+     "campaignLeads": 137,
+     "queuedEmails": 0,
+     "emailStats": 170
+    },
+    "beforeReconcile": {
+     "formSubmissions": 184,
+     "contacts": 244,
+     "anonymousContacts": 42,
+     "dnc": 40,
+     "campaignLeads": 137,
+     "queuedEmails": 0,
+     "emailStats": 170
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "b: Mautic untouched by every public post (form submissions 92 to 92)",
+   "detail": {
+    "afterSeed": {
+     "formSubmissions": 92,
+     "contacts": 61,
+     "anonymousContacts": 24,
+     "dnc": 23,
+     "campaignLeads": 1,
+     "queuedEmails": 4,
+     "emailStats": 4
+    },
+    "beforeReconcile": {
+     "formSubmissions": 92,
+     "contacts": 61,
+     "anonymousContacts": 24,
+     "dnc": 23,
+     "campaignLeads": 1,
+     "queuedEmails": 4,
+     "emailStats": 4
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "a: owner unchanged after public posts with the D1 edit live"
+  },
+  {
+   "ok": true,
+   "name": "b: owner unchanged after public posts with the D1 edit live"
+  },
+  {
+   "ok": true,
+   "name": "a: reconciler crashed after its first create, before settle",
+   "detail": 86
+  },
+  {
+   "ok": true,
+   "name": "a: reconciler restart completed",
+   "detail": ""
+  },
+  {
+   "ok": false,
+   "name": "b: untouched while a reconciled"
+  },
+  {
+   "ok": true,
+   "name": "b: reconciler completed",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "third run finds nothing pending on either tenant"
+  },
+  {
+   "ok": true,
+   "name": "a: repeat reconcile made no Mautic change"
+  },
+  {
+   "ok": true,
+   "name": "a: Mautic form submissions unchanged for the whole run",
+   "detail": [
+    184,
+    184
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: reconcile created exactly one contact (the new email), no anonymous contacts",
+   "detail": [
+    244,
+    245
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: one contact for the new email, started from a suggestion",
+   "detail": [
+    {
+     "id": 250,
+     "firstname": "Suggested new 8"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: DNC, campaign, queue and mail counters unchanged by reconcile"
+  },
+  {
+   "ok": true,
+   "name": "a: existing owner profile and DNC never overwritten",
+   "detail": {
+    "id": 249,
+    "firstname": "Owner a",
+    "lastname": "Stable a",
+    "email": "own-a-51378067@example.invalid",
+    "points": 0,
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   }
+  },
+  {
+   "ok": false,
+   "name": "a: all 17 captures settled once, to the owner or the new contact",
+   "detail": [
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     249
+    ],
+    [
+     "existing",
+     250
+    ],
+    [
+     "existing",
+     250
+    ]
+   ]
+  },
+  {
+   "ok": true,
+   "name": "b: repeat reconcile made no Mautic change"
+  },
+  {
+   "ok": true,
+   "name": "b: Mautic form submissions unchanged for the whole run",
+   "detail": [
+    92,
+    92
+   ]
+  },
+  {
+   "ok": true,
+   "name": "b: reconcile created exactly one contact (the new email), no anonymous contacts",
+   "detail": [
+    61,
+    62
+   ]
+  },
+  {
+   "ok": true,
+   "name": "b: one contact for the new email, started from a suggestion",
+   "detail": [
+    {
+     "id": 69,
+     "firstname": "Suggested new 8"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "b: DNC, campaign, queue and mail counters unchanged by reconcile"
+  },
+  {
+   "ok": true,
+   "name": "b: existing owner profile and DNC never overwritten",
+   "detail": {
+    "id": 68,
+    "firstname": "Owner b",
+    "lastname": "Stable b",
+    "email": "own-b-51378067@example.invalid",
+    "points": 0,
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   }
+  },
+  {
+   "ok": false,
+   "name": "b: all 17 captures settled once, to the owner or the new contact",
+   "detail": [
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "created",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     68
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ],
+    [
+     "existing",
+     69
+    ]
+   ]
+  }
+ ],
+ "mauticStart": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 243,
+   "anonymousContacts": 42,
+   "dnc": 39,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "b": {
+   "formSubmissions": 92,
+   "contacts": 60,
+   "anonymousContacts": 24,
+   "dnc": 22,
+   "campaignLeads": 1,
+   "queuedEmails": 4,
+   "emailStats": 4
+  }
+ },
+ "edges": {
+  "a": {
+   "serverSha256": "3a46cf7701daa2e94b40b24e98698787c378467c64dc17464cd19ac53f1f6225"
+  },
+  "b": {
+   "serverSha256": "3a46cf7701daa2e94b40b24e98698787c378467c64dc17464cd19ac53f1f6225"
+  }
+ },
+ "localServerSha256": "3a46cf7701daa2e94b40b24e98698787c378467c64dc17464cd19ac53f1f6225",
+ "d1Edit": {
+  "a": {
+   "formId": 34,
+   "mapped": [
+    "email",
+    "firstname"
+   ],
+   "actions": [
+    "lead.remove_do_not_contact"
+   ]
+  },
+  "b": {
+   "formId": 29,
+   "mapped": [
+    "email",
+    "firstname"
+   ],
+   "actions": [
+    "lead.remove_do_not_contact"
+   ]
+  }
+ },
+ "mauticAfterSeed": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 244,
+   "anonymousContacts": 42,
+   "dnc": 40,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "b": {
+   "formSubmissions": 92,
+   "contacts": 61,
+   "anonymousContacts": 24,
+   "dnc": 23,
+   "campaignLeads": 1,
+   "queuedEmails": 4,
+   "emailStats": 4
+  }
+ },
+ "posts-a": {
+  "statuses": [
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200
+  ],
+  "stored": 16,
+  "inventoryTotal": 33
+ },
+ "posts-b": {
+  "statuses": [
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200
+  ],
+  "stored": 16,
+  "inventoryTotal": 33
+ },
+ "retry-a": {
+  "first": 502,
+  "retry": 200,
+  "changedValues": 502,
+  "storedForNonce": 2,
+  "mutationsSeenByProxy": 3
+ },
+ "retry-b": {
+  "first": 502,
+  "retry": 200,
+  "changedValues": 502,
+  "storedForNonce": 2,
+  "mutationsSeenByProxy": 3
+ },
+ "tenantRefusals": {
+  "reconciler A settles a B capture": "scope",
+  "edge A key reads pending": "credential",
+  "reconciler A key writes a capture": "credential",
+  "unknown key": "credential"
+ },
+ "mauticBeforeReconcile": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 244,
+   "anonymousContacts": 42,
+   "dnc": 40,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "b": {
+   "formSubmissions": 92,
+   "contacts": 61,
+   "anonymousContacts": 24,
+   "dnc": 23,
+   "campaignLeads": 1,
+   "queuedEmails": 4,
+   "emailStats": 4
+  }
+ },
+ "reconcileCrashA": {
+  "exit": 86,
+  "stderr": ""
+ },
+ "reconcileA": {
+  "exit": 0,
+  "stderr": "",
+  "log": [
+   {
+    "capture": "j579mks3zcbvhcqtxs1cjn7zfn8f4v51",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j57454wjnvqy1y9v980akqwqgh8f49nb",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j57b38wv5avqk305qzzwywfvj98f51hs",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j575nday91s3h5dbc4vfyp90t18f57xq",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j5798ea8fpme91cvr4078fwsq98f49ng",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j5758r8b9fg6qdzbpz09qmsnz18f4at1",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j57f8613zpr7fdexvbshtktp2d8f5a6g",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j577mj8ghzmk5bsmtbx1r9paq18f44em",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j57ah1swrsz10j9hwx7g91wz3s8f5p6e",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j57bn9gytqb3pkrevswj0kb70n8f44gh",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j57f8d0v2s9rdym7sdn84g8p1d8f5v87",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j57eht6pv7k0zrcze770v0m36d8f569r",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j572j7kthejejqmz1s66qgabj98f4pn2",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j5757e0hjja8mphz0hsnx2f67d8f41v4",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j574x5dq5ek3zvfpkc447ydxmh8f5vm2",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j57a0xfhwatchamt0k3whzn9h18f52zy",
+    "outcome": "existing",
+    "contactId": 249,
+    "result": "settled"
+   },
+   {
+    "capture": "j57c4arvg6400hfqqbzsdn59cx8f58d9",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   },
+   {
+    "capture": "j57crbf4z5dw2nj0yfdp3whmm98f5878",
+    "outcome": "existing",
+    "contactId": 250,
+    "result": "settled"
+   }
+  ]
+ },
+ "reconcileB": {
+  "exit": 0,
+  "stderr": "",
+  "log": [
+   {
+    "capture": "j5771yrjdney3zbqzv2xj47r3n8f4zhm",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j576qvy6artka29bcgq9d1yw6h8f5x0a",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j57dcb9k8qt37zhyqkgk4807ds8f4rsm",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j5739gh6kp4rsgg40w8hzc91fh8f4emv",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j57cjy3gx5t9z5zc9da0tm97ss8f4gw3",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j576hev0bf7nk6zytbxj7ghbp98f4kwm",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j5737ngj43vt0r2snxhhkcxqy98f4cwh",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j57atfedp8g9eatchk9e6xkzpn8f58y5",
+    "outcome": "created",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j57736f7ebwvmk709t00wx7wvd8f52qg",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j57enffm0sbwcv9gh2c5w7mbh18f4ay9",
+    "outcome": "existing",
+    "contactId": 68,
+    "result": "settled"
+   },
+   {
+    "capture": "j578hrx1v2hw618a8n169gkqhx8f4bdq",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j57704t7wy0gwefz97q3t1t0y58f4hdh",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j575xrpdzv53wh10ff8jrzqzy98f4zzn",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j57fndv3qpksr7r6gnr1p7y58n8f54wt",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j570yenbhxfhnn202hbz7ktre98f4a3k",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j57dpr13j6p1a5vpex8ytghb8s8f5hph",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j57demergef2nhmd3exyj7dkb18f59jf",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   },
+   {
+    "capture": "j572kcpkcbxjt4sbt20j0zeq3x8f4yts",
+    "outcome": "existing",
+    "contactId": 69,
+    "result": "settled"
+   }
+  ]
+ },
+ "reconcileAgain": [
+  {
+   "exit": 0,
+   "out": "[]"
+  },
+  {
+   "exit": 0,
+   "out": "[]"
+  }
+ ],
+ "mauticEnd": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 245,
+   "anonymousContacts": 42,
+   "dnc": 40,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  },
+  "b": {
+   "formSubmissions": 92,
+   "contacts": 62,
+   "anonymousContacts": 24,
+   "dnc": 23,
+   "campaignLeads": 1,
+   "queuedEmails": 4,
+   "emailStats": 4
+  }
+ },
+ "revert-a": {
+  "mapped": 0,
+  "actions": 0
+ },
+ "revert-b": {
+  "mapped": 0,
+  "actions": 0
+ },
+ "finishedAt": "2026-09-26T12:09:48.578Z",
+ "failed": [
+  "a: exactly one capture for the retried nonce",
+  "a: same nonce with changed values refused as conflict",
+  "b: exactly one capture for the retried nonce",
+  "b: same nonce with changed values refused as conflict",
+  "b: untouched while a reconciled",
+  "a: all 17 captures settled once, to the owner or the new contact",
+  "b: all 17 captures settled once, to the owner or the new contact"
+ ],
+ "status": "FAIL"
+}

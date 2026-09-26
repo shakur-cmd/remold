@@ -1,0 +1,7 @@
+22c22
+<    else if(matches.length===1){outcome='existing';contactId=matches[0];}
+---
+>    else if(matches.length===1){outcome='existing';contactId=matches[0];ok(api(tenant,'/contacts/'+contactId+'/edit','PATCH',{firstname:c.firstname}));}
+FAIL 41/43 checks
+FAILED: a: existing owner profile and DNC never overwritten
+        b: existing owner profile and DNC never overwritten
