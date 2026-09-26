@@ -29,6 +29,8 @@ export const seedBatch=internalMutation({args:{orgId:v.id("orgs"),userId:v.id("u
 function setup(source, prefix, permissive = false) {
   const scratch = mkdtempSync(join(tmpdir(), prefix));
   cpSync(join(source, 'convex'), join(scratch, 'convex'), { recursive: true, filter: path => !path.endsWith('.test.ts') && !path.endsWith('test.helpers.ts') && !path.endsWith('test.setup.ts') });
+  // Since I1 the schema imports shared validators from packages/contracts.
+  cpSync(join(source, 'packages/contracts'), join(scratch, 'packages/contracts'), { recursive: true });
   writeFileSync(join(scratch, 'convex/auth.config.ts'), 'export default { providers: [] };\n');
   if (permissive) writeFileSync(join(scratch, 'convex/schema.ts'), 'import { defineSchema } from "convex/server"; export default defineSchema({}, { schemaValidation: false });\n');
   writeFileSync(join(scratch, 'package.json'), JSON.stringify({ name: 'remold-snapshot-local', private: true, type: 'module', dependencies: { convex: '1.46.0', '@convex-dev/rate-limiter': '0.4.0' } }));
