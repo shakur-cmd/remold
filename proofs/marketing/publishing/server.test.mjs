@@ -61,12 +61,14 @@ test('raw invalid UTF-8 and streamed oversized forms refuse before capture',()=>
  assert.equal((await call(pa,a.host,'/form/intake',{...valid,body:new URLSearchParams({email:'local@example.invalid',firstname:'x'.repeat(20000),t:formToken(a),n:nonce}).toString(),chunked:true})).status,413);
  assert.equal(stored.length,0);
 }));
-test('only plain addresses are captured; wildcard, quoting and malformed emails are refused before capture',()=>fixture(async({a,pa,stored})=>{
+test('only plain addresses up to 64 characters and first names up to 64 are captured; the rest are refused before capture',()=>fixture(async({a,pa,stored})=>{
  const post=email=>call(pa,a.host,'/form/intake',submit(a,{body:new URLSearchParams({email,firstname:'Local',t:formToken(a),n:nonce}).toString()}));
- for(const email of ['plain@example.invalid','First.Last+tag@Sub-1.example.invalid','under_score@example.invalid','x'.repeat(64)+'@example.invalid'])assert.equal((await post(email)).status,200,email);
+ for(const email of ['plain@example.invalid','First.Last+tag@Sub-1.example.invalid','under_score@example.invalid','x'.repeat(48)+'@example.invalid'])assert.equal((await post(email)).status,200,email);
  const accepted=stored.length;
- for(const email of ['iv%pct@example.invalid','%@%.%','a*b@example.invalid',"o'neil@example.invalid",'a&b@example.invalid','a b@example.invalid','.a@example.invalid','a..b@example.invalid','a.@example.invalid','a@-x.invalid','a@b','a@@example.invalid','"q"@example.invalid','x'.repeat(65)+'@example.invalid','a@'+'d'.repeat(250)+'.invalid'])assert.equal((await post(email)).status,400,email);
+ for(const email of ['iv%pct@example.invalid','%@%.%','a*b@example.invalid',"o'neil@example.invalid",'a&b@example.invalid','a b@example.invalid','.a@example.invalid','a..b@example.invalid','a.@example.invalid','a@-x.invalid','a@b','a@@example.invalid','"q"@example.invalid','x'.repeat(49)+'@example.invalid','x'.repeat(65)+'@example.invalid','a@'+'d'.repeat(250)+'.invalid'])assert.equal((await post(email)).status,400,email);
  assert.equal(stored.length,accepted);
+ const named=firstname=>call(pa,a.host,'/form/intake',submit(a,{body:new URLSearchParams({email:'plain@example.invalid',firstname,t:formToken(a),n:nonce}).toString()}));
+ assert.equal((await named('N'.repeat(64))).status,200);assert.equal((await named('N'.repeat(65))).status,400);assert.equal(stored.length,accepted+1);
 }));
 test('an edge without a well-formed capture key or store refuses to start',()=>{
  const config={host:'tenant-a.marketing-proof.invalid',key:'a'.repeat(64),upstream:'http://127.0.0.1:9',form:{id:'intake',title:'Fixture',fields:[{name:'email',type:'email',label:'Email'},{name:'firstname',type:'text',label:'First name'}]},routes:[]};

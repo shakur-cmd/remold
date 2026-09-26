@@ -1,0 +1,56 @@
+{
+ "section": "collation",
+ "label": "r3b-d1",
+ "at": "2026-09-26T13:33:10.503Z",
+ "status": "FAIL",
+ "failed": [
+  "owner email bytes not rewritten by a collation-equal capture"
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "name": "reconciler completes",
+   "detail": ""
+  },
+  {
+   "ok": false,
+   "name": "owner email bytes not rewritten by a collation-equal capture"
+  },
+  {
+   "ok": true,
+   "name": "owner DNC kept"
+  },
+  {
+   "ok": true,
+   "name": "capture links to the collation-equal owner; no new contact",
+   "detail": {
+    "ownerId": 801,
+    "reconciler": {
+     "exit": 0,
+     "err": ""
+    },
+    "capture": {
+     "outcome": "existing",
+     "contactId": 801
+    },
+    "ownerEmailBytesUnchanged": false,
+    "dnc": 1,
+    "plainContacts": "0"
+   }
+  }
+ ],
+ "out": {
+  "ownerId": 801,
+  "reconciler": {
+   "exit": 0,
+   "err": ""
+  },
+  "capture": {
+   "outcome": "existing",
+   "contactId": 801
+  },
+  "ownerEmailBytesUnchanged": false,
+  "dnc": 1,
+  "plainContacts": "0"
+ }
+}

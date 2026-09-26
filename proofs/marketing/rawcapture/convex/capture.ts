@@ -3,10 +3,11 @@ import {mutation,query,internalMutation,type QueryCtx,type MutationCtx} from './
 import {tenant,role,outcome} from './schema';
 const digest=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),b=>b.toString(16).padStart(2,'0')).join('');
 const refuse=(code:string)=>{throw new ConvexError({code});};
-// Deliberately narrower than RFC 5321: plain ASCII local part and hostname, no quoting, no %, *, ', & or spaces.
-// Keep in step with publishing/server.mjs.
+// Deliberately narrower than RFC 5321: plain ASCII local part and hostname, no quoting, no %, *, ', & or spaces, and at
+// most 64 characters in total because Mautic stores no more. Keep in step with publishing/server.mjs.
 const EMAIL=/^[A-Za-z0-9_+-]+(\.[A-Za-z0-9_+-]+)*@([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
-const validEmail=(e:string)=>e.length<=254&&EMAIL.test(e)&&e.indexOf('@')<=64;
+const validEmail=(e:string)=>e.length<=64&&EMAIL.test(e);
+const NAME_MAX=64;
 const TOKEN=/^[a-f0-9]{32}$/;
 async function tenantFor(ctx:QueryCtx,key:string,want:'edge'|'reconciler'){
  if(!/^[a-f0-9]{64}$/.test(key))refuse('credential');
@@ -28,7 +29,7 @@ export const registerKey=internalMutation({args:{keyHash:v.string(),tenant,role}
 // Called by a tenant's public edge. Same key and same values returns the stored capture; same key with other values refuses.
 export const capture=mutation({args:{key:v.string(),idempotencyKey:v.string(),email:v.string(),firstname:v.string()},handler:async(ctx,a)=>{
  const t=await tenantFor(ctx,a.key,'edge');
- if(!TOKEN.test(a.idempotencyKey)||!validEmail(a.email)||a.firstname.length>100||/[\x00-\x1f\x7f]/.test(a.firstname))refuse('invalid');
+ if(!TOKEN.test(a.idempotencyKey)||!validEmail(a.email)||a.firstname.length>NAME_MAX||/[\x00-\x1f\x7f]/.test(a.firstname))refuse('invalid');
  const payloadSha256=await digest(JSON.stringify([a.email,a.firstname]));
  const old=await ctx.db.query('captures').withIndex('by_key',q=>q.eq('tenant',t).eq('idempotencyKey',a.idempotencyKey)).unique();
  if(old){if(old.payloadSha256!==payloadSha256)refuse('conflict');return {id:old._id,duplicate:true};}
@@ -62,7 +63,7 @@ export const settle=mutation({args:{key:v.string(),lease:v.string(),id:v.id('cap
  const t=await tenantFor(ctx,a.key,'reconciler');await live(ctx,t,a.lease);
  const row=await ctx.db.get(a.id);if(!row||row.tenant!==t)refuse('scope');
  const linked=a.outcome==='created'||a.outcome==='existing';
- if(linked!==(a.contactId!==undefined)||(a.contactId!==undefined&&(!Number.isSafeInteger(a.contactId)||a.contactId<1))||(a.outcome==='rejected')!==(a.reason!==undefined)||(a.reason!==undefined&&(a.reason.length<1||a.reason.length>300)))refuse('invalid');
+ if(linked!==(a.contactId!==undefined)||(a.contactId!==undefined&&(!Number.isSafeInteger(a.contactId)||a.contactId<1))||(a.outcome==='rejected'&&a.reason===undefined)||(a.reason!==undefined&&a.outcome!=='rejected'&&a.outcome!=='created')||(a.reason!==undefined&&(a.reason.length<1||a.reason.length>300)))refuse('invalid');
  if(row!.status==='settled'){if(row!.outcome!==a.outcome||row!.contactId!==a.contactId)refuse('conflict');return 'duplicate';}
  await ctx.db.patch(a.id,{status:'settled',outcome:a.outcome,contactId:a.contactId,reason:a.reason});return 'settled';
 }});

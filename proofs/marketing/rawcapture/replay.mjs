@@ -12,8 +12,10 @@ import {keys,query,mutation} from './runtime.mjs';
 import {probe} from './races.mjs';
 const label=process.argv[2];assert.match(label??'',/^[a-zA-Z0-9_-]+$/);
 const outDir=directory+'ownership/evidence/raw-capture/',output=outDir+label+'.json';assert.ok(!existsSync(output),'One-shot: use a new label');mkdirSync(outDir,{recursive:true});
-const fx=randomUUID().slice(0,8),K=keys(),hosts={a:'tenant-a.marketing-proof.invalid',b:'tenant-b.marketing-proof.invalid'},T=['a','b'];
-const evidence={label,fixture:fx,startedAt:new Date().toISOString(),level:'SERVICE isolated local containers; synthetic data; no mail, DNS, TLS, provider or host port beyond the loopback forward',checks:[]};
+const fx=randomUUID().slice(0,8),K=keys(),hosts={a:'tenant-a.marketing-proof.invalid',b:'tenant-b.marketing-proof.invalid'};
+// REMOLD_REPLAY_TENANTS=a runs with no writes to tenant B at all (db-b sits near its memory limit); B is then only read.
+const T=(process.env.REMOLD_REPLAY_TENANTS??'a,b').split(',');if(!T.length||T.some(t=>!['a','b'].includes(t))||new Set(T).size!==T.length)throw Error('REMOLD_REPLAY_TENANTS must be a, b or a,b');
+const evidence={label,tenants:T,fixture:fx,startedAt:new Date().toISOString(),level:'SERVICE isolated local containers; synthetic data; no mail, DNS, TLS, provider or host port beyond the loopback forward',checks:[]};
 const check=(ok,name,detail)=>{evidence.checks.push({ok:!!ok,name,...(detail===undefined?{}:{detail})});};
 const ok=r=>{assert.ok(r.status>=200&&r.status<300,'Mautic API refused '+r.status);return r.data;};
 const sql=(t,q)=>docker(['exec',prefix+'-db-'+t,'sh','-c','MYSQL_PWD="$MYSQL_PASSWORD" mysql -u "$MYSQL_USER" "$MYSQL_DATABASE" -NB -e "$1"','--',q]).trim();
@@ -67,7 +69,7 @@ try{
    check(mine.length===16&&mine.every(c=>c.tenant===t&&c.status==='pending'),t+': exactly 16 captures stored under tenant '+t,mine.length);
    check(inv.length===state[t].inventoryBefore+16,t+': no other captures appeared',[state[t].inventoryBefore,inv.length]);
   }
-  for(const t of T){const other=T.find(x=>x!==t),inv=await inventory(t);check(!inv.some(c=>c.email.includes('-'+other+'-')),t+': inventory holds none of tenant '+other+' captures');}
+  if(T.length===2)for(const t of T){const other=T.find(x=>x!==t),inv=await inventory(t);check(!inv.some(c=>c.email.includes('-'+other+'-')),t+': inventory holds none of tenant '+other+' captures');}
  });
  await phase('lost response retry',async()=>{for(const t of T){
   const r=await inContainer(t,retryScript,{email:state[t].newEmail,firstname:'Retry '+t});state[t].nonces.push(r.n);const got=(await inventory(t)).filter(c=>c.idempotencyKey===r.n);
@@ -77,14 +79,15 @@ try{
   check(r.changed.status===409,t+': same nonce with changed values refused as conflict',r.changed.status);
  }});
  await phase('tenant binding',async()=>{
-  const bCapture=(await inventory('b')).find(c=>c.idempotencyKey===state.b.nonces[0]);
+  // With B in the run, use one of this run's B captures; otherwise any existing B capture (read only).
+  const bInv=await inventory('b'),bCapture=T.includes('b')?bInv.find(c=>c.idempotencyKey===state.b.nonces[0]):bInv[0],bStatus=bCapture.status;
   // A holds its own live lease, so a refusal here can only come from tenant scope.
   const lease=randomUUID().replaceAll('-','');await mutation('capture:acquire',{key:K.a.reconciler,token:lease,ttlMs:20000});
   const expect={'reconciler A settles a B capture':'scope','edge A key reads pending':'credential','reconciler A key writes a capture':'credential','unknown key':'credential'};
   const tries={'reconciler A settles a B capture':()=>mutation('capture:settle',{key:K.a.reconciler,lease,id:bCapture.id,outcome:'existing',contactId:1}),'edge A key reads pending':()=>query('capture:pending',{key:K.a.edge,limit:1}),'reconciler A key writes a capture':()=>mutation('capture:capture',{key:K.a.reconciler,idempotencyKey:'f'.repeat(32),email:'x@example.invalid',firstname:''}),'unknown key':()=>query('capture:inventory',{key:'e'.repeat(64)})};
   evidence.tenantRefusals={};for(const [name,fn] of Object.entries(tries)){let code=null;try{await fn();}catch(e){code=e.code??e.message;}evidence.tenantRefusals[name]=code;check(code===expect[name],'refused ('+expect[name]+'): '+name,code);}
   await mutation('capture:release',{key:K.a.reconciler,token:lease});
-  check((await inventory('b')).find(c=>c.id===bCapture.id).status==='pending','B capture untouched by A credentials');
+  check((await inventory('b')).find(c=>c.id===bCapture.id).status===bStatus,'B capture untouched by A credentials');
  });
  // Store refusals with no Mautic call: input validation, no re-settle, lease exclusivity and fencing (tenant A lease only).
  await phase('store probe',async()=>{for(const c of await probe())check(c.ok,'store: '+c.name,c.detail);});
@@ -94,10 +97,10 @@ try{
  await phase('reconcile',async()=>{
   const run=(t,crash)=>spawnSync(process.execPath,[directory+'rawcapture/reconcile.mjs',t],{encoding:'utf8',env:{...process.env,...(crash?{REMOLD_RECONCILE_CRASH_AFTER_CREATE:'1'}:{})}});
   const crash=run('a',true);evidence.reconcileCrashA={exit:crash.status,stderr:crash.stderr.slice(0,300)};check(crash.status===86,'a: reconciler crashed after its first create, before settle',crash.status);
-  const bWhileA=mautic('b');
+  const bWhileA=mautic('b'),bPendingBefore=(await inventory('b')).filter(c=>c.status==='pending').length;
   const a1=run('a',false);evidence.reconcileA={exit:a1.status,stderr:a1.stderr.slice(0,300),log:a1.status===0?JSON.parse(a1.stdout):null};check(a1.status===0,'a: reconciler restart completed',a1.stderr.slice(0,200));
-  check(JSON.stringify(mautic('b'))===JSON.stringify(bWhileA)&&(await inventory('b')).filter(c=>c.status==='pending'&&state.b.nonces.includes(c.idempotencyKey)).length===17,'b: untouched while a reconciled');
-  const b1=run('b',false);evidence.reconcileB={exit:b1.status,stderr:b1.stderr.slice(0,300),log:b1.status===0?JSON.parse(b1.stdout):null};check(b1.status===0,'b: reconciler completed',b1.stderr.slice(0,200));
+  check(JSON.stringify(mautic('b'))===JSON.stringify(bWhileA)&&(await inventory('b')).filter(c=>c.status==='pending').length===bPendingBefore&&(!T.includes('b')||(await inventory('b')).filter(c=>c.status==='pending'&&state.b.nonces.includes(c.idempotencyKey)).length===17),'b: untouched while a reconciled');
+  if(T.includes('b')){const b1=run('b',false);evidence.reconcileB={exit:b1.status,stderr:b1.stderr.slice(0,300),log:b1.status===0?JSON.parse(b1.stdout):null};check(b1.status===0,'b: reconciler completed',b1.stderr.slice(0,200));}
   const after={};for(const t of T)after[t]=mautic(t);
   const again=T.map(t=>run(t,false));evidence.reconcileAgain=again.map(r=>({exit:r.status,out:r.stdout.trim()}));
   check(again.every(r=>r.status===0&&r.stdout.trim()==='[]'),'third run finds nothing pending on either tenant');

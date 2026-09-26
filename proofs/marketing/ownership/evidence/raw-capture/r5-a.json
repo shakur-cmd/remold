@@ -1,0 +1,564 @@
+{
+ "label": "r5-a",
+ "tenants": [
+  "a"
+ ],
+ "fixture": "3c041090",
+ "startedAt": "2026-09-26T13:33:25.205Z",
+ "level": "SERVICE isolated local containers; synthetic data; no mail, DNS, TLS, provider or host port beyond the loopback forward",
+ "checks": [
+  {
+   "ok": true,
+   "name": "deployed edges run the repository server.mjs"
+  },
+  {
+   "ok": true,
+   "name": "a: all 16 concurrent posts acknowledged",
+   "detail": "200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200"
+  },
+  {
+   "ok": true,
+   "name": "a: exactly 16 captures stored under tenant a",
+   "detail": 16
+  },
+  {
+   "ok": true,
+   "name": "a: no other captures appeared",
+   "detail": [
+    1012,
+    1028
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: first reply lost after commit (502), client retry acknowledged (200)",
+   "detail": [
+    502,
+    200
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: exactly one capture for the retried nonce",
+   "detail": 1
+  },
+  {
+   "ok": true,
+   "name": "a: same nonce with changed values refused as conflict",
+   "detail": 409
+  },
+  {
+   "ok": true,
+   "name": "refused (scope): reconciler A settles a B capture",
+   "detail": "scope"
+  },
+  {
+   "ok": true,
+   "name": "refused (credential): edge A key reads pending",
+   "detail": "credential"
+  },
+  {
+   "ok": true,
+   "name": "refused (credential): reconciler A key writes a capture",
+   "detail": "credential"
+  },
+  {
+   "ok": true,
+   "name": "refused (credential): unknown key",
+   "detail": "credential"
+  },
+  {
+   "ok": true,
+   "name": "B capture untouched by A credentials"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"iv%pct@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"%@%.%\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a*b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a@b\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a@@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \".a@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a..b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a@-x.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"x@example.invalid\\n\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"o'neil@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a&b@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"a@dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses email \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.invalid\"",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses control char in first name",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses 65-char first name",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: store refuses short nonce",
+   "detail": "invalid"
+  },
+  {
+   "ok": true,
+   "name": "store: no refused input was stored",
+   "detail": [
+    1029,
+    1029
+   ]
+  },
+  {
+   "ok": true,
+   "name": "store: first reconciler acquires the lease"
+  },
+  {
+   "ok": true,
+   "name": "store: second reconciler is refused while the lease is live"
+  },
+  {
+   "ok": true,
+   "name": "store: tenant B lease is independent of A"
+  },
+  {
+   "ok": true,
+   "name": "store: a foreign token cannot renew"
+  },
+  {
+   "ok": true,
+   "name": "store: a settled capture cannot be re-settled differently, even by the lease holder",
+   "detail": "j57e6w83tk8q8bprkm3jn2v8jn8f5v86"
+  },
+  {
+   "ok": true,
+   "name": "store: settle with a stale lease token is refused"
+  },
+  {
+   "ok": true,
+   "name": "store: after release the lease can be taken"
+  },
+  {
+   "ok": true,
+   "name": "store: settle with an expired lease is refused"
+  },
+  {
+   "ok": true,
+   "name": "store: an expired lease can be taken over"
+  },
+  {
+   "ok": true,
+   "name": "a: Mautic untouched by every public post (form submissions 184 to 184)",
+   "detail": {
+    "afterSeed": {
+     "formSubmissions": 184,
+     "contacts": 800,
+     "anonymousContacts": 42,
+     "dnc": 137,
+     "campaignLeads": 137,
+     "queuedEmails": 0,
+     "emailStats": 170
+    },
+    "beforeReconcile": {
+     "formSubmissions": 184,
+     "contacts": 800,
+     "anonymousContacts": 42,
+     "dnc": 137,
+     "campaignLeads": 137,
+     "queuedEmails": 0,
+     "emailStats": 170
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "a: owner unchanged after public posts with the D1 edit live"
+  },
+  {
+   "ok": true,
+   "name": "a: reconciler crashed after its first create, before settle",
+   "detail": 86
+  },
+  {
+   "ok": true,
+   "name": "a: reconciler restart completed",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "name": "b: untouched while a reconciled"
+  },
+  {
+   "ok": true,
+   "name": "third run finds nothing pending on either tenant"
+  },
+  {
+   "ok": true,
+   "name": "a: repeat reconcile made no Mautic change"
+  },
+  {
+   "ok": true,
+   "name": "a: Mautic form submissions unchanged for the whole run",
+   "detail": [
+    184,
+    184
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: reconcile created exactly one contact (the new email), no anonymous contacts",
+   "detail": [
+    800,
+    801
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: one contact for the new email, started from a suggestion",
+   "detail": [
+    {
+     "id": 806,
+     "firstname": "Suggested new 8"
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a: DNC, campaign, queue and mail counters unchanged by reconcile"
+  },
+  {
+   "ok": true,
+   "name": "a: existing owner profile and DNC never overwritten",
+   "detail": {
+    "id": 805,
+    "firstname": "Owner a",
+    "lastname": "Stable a",
+    "email": "own-a-3c041090@example.invalid",
+    "points": 0,
+    "doNotContact": [
+     {
+      "channel": "email",
+      "reason": 3
+     }
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "a: all 17 captures settled once, to the owner or the new contact",
+   "detail": [
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     805
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ],
+    [
+     "existing",
+     806
+    ]
+   ]
+  }
+ ],
+ "mauticStart": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 799,
+   "anonymousContacts": 42,
+   "dnc": 136,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  }
+ },
+ "edges": {
+  "a": {
+   "serverSha256": "445041bb699838818b4cc80bbf3bf6e051925f4aa331b8c73c149a1f62dfc7b7"
+  }
+ },
+ "localServerSha256": "445041bb699838818b4cc80bbf3bf6e051925f4aa331b8c73c149a1f62dfc7b7",
+ "d1Edit": {
+  "a": {
+   "formId": 34,
+   "mapped": [
+    "email",
+    "firstname"
+   ],
+   "actions": [
+    "lead.remove_do_not_contact"
+   ]
+  }
+ },
+ "mauticAfterSeed": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 800,
+   "anonymousContacts": 42,
+   "dnc": 137,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  }
+ },
+ "posts-a": {
+  "statuses": [
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200,
+   200
+  ],
+  "stored": 16,
+  "inventoryTotal": 1028
+ },
+ "retry-a": {
+  "first": 502,
+  "retry": 200,
+  "changedValues": 409,
+  "storedForNonce": 1,
+  "mutationsSeenByProxy": 3
+ },
+ "tenantRefusals": {
+  "reconciler A settles a B capture": "scope",
+  "edge A key reads pending": "credential",
+  "reconciler A key writes a capture": "credential",
+  "unknown key": "credential"
+ },
+ "mauticBeforeReconcile": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 800,
+   "anonymousContacts": 42,
+   "dnc": 137,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  }
+ },
+ "reconcileCrashA": {
+  "exit": 86,
+  "stderr": ""
+ },
+ "reconcileA": {
+  "exit": 0,
+  "stderr": "",
+  "log": [
+   {
+    "capture": "j571f2dnvkaxvqxd24p2ytfxfs8f5r0j",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j579nydwfxtfz4gwzx3pv2cq0x8f5tme",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j57cbwt1hbt0ekb0kgyetxae7n8f44br",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j57cccx09n69pz5zj177bs7wsd8f49z5",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j5778jtax3c168ckj2gb2xmwph8f4p5h",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j574f8d412szxb8zj6tc41cjq18f5271",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j571czv0dwymvr9rmdg23yg4s58f44ty",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j57a0ghnngdp8df9605ekjq5xx8f4gpm",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   },
+   {
+    "capture": "j5774tdkx83n5jwj9zmqn9hnch8f4g60",
+    "outcome": "existing",
+    "contactId": 806,
+    "reason": null,
+    "result": "settled"
+   }
+  ]
+ },
+ "reconcileAgain": [
+  {
+   "exit": 0,
+   "out": "[]"
+  }
+ ],
+ "mauticEnd": {
+  "a": {
+   "formSubmissions": 184,
+   "contacts": 801,
+   "anonymousContacts": 42,
+   "dnc": 137,
+   "campaignLeads": 137,
+   "queuedEmails": 0,
+   "emailStats": 170
+  }
+ },
+ "revert-a": {
+  "mapped": 0,
+  "actions": 0
+ },
+ "finishedAt": "2026-09-26T13:34:03.291Z",
+ "failed": [],
+ "status": "PASS"
+}

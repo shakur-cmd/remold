@@ -1,10 +1,14 @@
 // Feeds one tenant's pending captures to Mautic through its contacts API. It never edits an existing contact and
 // never reads or writes do-not-contact.
 // - Single writer: holds the tenant lease in Convex, renews it before every Mautic write, and every settle is fenced by it.
-// - Exact, case-insensitive email lookup (API where eq), not the LIKE search that treats % and _ as wildcards.
+// - Exact email lookup (API where eq), not the LIKE search that treats % and _ as wildcards. Every row the database
+//   returns counts, including collation-equal ones (josé = jose, trailing space), so a match never becomes a create:
+//   Mautic's create would upsert onto that contact and rewrite its email.
 // - Creates with the email only. Mautic's create upserts, so the first name is set only when the reply is 201 for an
 //   id the lookup did not see; a 200 means someone else created the contact meanwhile, and it is left alone.
-// - A capture Mautic refuses (400/422) settles as rejected with the reason; the run carries on.
+// - A capture Mautic refuses (400/422) settles as rejected with the reason; the run carries on. A refused name update
+//   keeps the new contact unnamed and is recorded on the capture. Any other failure (5xx, network) stops the run and
+//   leaves the capture pending, so an outage never silently drops captures.
 // - A crash after create but before settle heals next run: the contact is then found and the capture settles as existing.
 import {realpathSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
@@ -16,7 +20,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function exact(tenant,email){
  const p=new URLSearchParams({limit:'100','where[0][col]':'l.email','where[0][expr]':'eq','where[0][val]':email}),r=api(tenant,'/contacts?'+p);
  if(r.status!==200)throw Error('Mautic lookup failed '+r.status);
- return Object.values(r.data.contacts).filter(c=>String(c.fields.all.email??'').toLowerCase()===email.toLowerCase()).map(c=>c.id);
+ return Object.values(r.data.contacts).map(c=>c.id);
 }
 const refusal=r=>'Mautic refused create ('+r.status+'): '+String(r.data?.errors?.[0]?.message??'no message').slice(0,200);
 export async function reconcile(tenant,{crashAfterCreate=false,pauseBeforeCreate=0}={}){
@@ -41,7 +45,7 @@ export async function reconcile(tenant,{crashAfterCreate=false,pauseBeforeCreate
      if(r.status===400||r.status===422){outcome='rejected';reason=refusal(r);}
      else if(r.status===201&&!seen.includes(r.data.contact.id)){
       contactId=r.data.contact.id;outcome='created';
-      if(c.firstname){const p=api(tenant,'/contacts/'+contactId+'/edit','PATCH',{firstname:c.firstname});if(p.status!==200)throw Error('Mautic name update failed '+p.status);}
+      if(c.firstname){const p=api(tenant,'/contacts/'+contactId+'/edit','PATCH',{firstname:c.firstname});if(p.status!==200)reason='name not set: Mautic refused name update ('+p.status+'): '+String(p.data?.errors?.[0]?.message??'no message').slice(0,160);}
       if(crashAfterCreate)process.exit(86);
      }
      else if(r.status===200){outcome='existing';contactId=r.data.contact.id;}

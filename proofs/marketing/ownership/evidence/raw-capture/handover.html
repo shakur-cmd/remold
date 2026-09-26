@@ -22,12 +22,37 @@
 </head>
 <body>
 <h1>P2 raw capture: public forms no longer write to Mautic</h1>
-<div class="meta">2026-09-26 · scope: proofs/marketing only, SERVICE, isolated local containers (colima-remold-proof), synthetic data · status: builder-run, NOT independently verified, round 2 fixes awaiting independent check (round 1 was checked by the IV at 7b994e0: D1 closed) · supersedes the admission design in <code>../admission/handover.html</code></div>
+<div class="meta">2026-09-26 · scope: proofs/marketing only, SERVICE, isolated local containers (colima-remold-proof), synthetic data · status: builder-run, NOT independently verified, round 3 fixes awaiting independent check (IV 473d956: public write path holds at SERVICE) · supersedes the admission design in <code>../admission/handover.html</code></div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
   <li>None. This follows the coordinator's decision (on Astra's advice) to close D1 by taking Mautic form submission out of the public write path. Next is a fresh independent check.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Round 3 (after IV 473d956): small reconciler defects fixed (builder only, tenant A only)</h2>
+<p>The IV found the public write path holds at SERVICE level. It also found four small reconciler issues, each reproduced first here. There were no B writes this round: tenant B's Mautic counters are identical to r4's end state (<code>ivr3/b-untouched.json</code>). The IV noted that the capture backend grew to 347 of 512 MiB under its abuse test. It was at 169 MiB after my runs, and its limit is unchanged.</p>
+<table>
+<tr><th>Defect</th><th>Before (reproduced)</th><th>Fix</th><th>After</th></tr>
+<tr><td>D-R3-1: a collation-equal email rewrites an owner's email</td><td>The IV's <code>c6</code> copy: owners' emails were rewritten josé to jose, straße to strasse, fullwidth to ASCII, and a trailing space was trimmed. DNC was kept. My <code>collation before</code> check also failed.</td><td>Every row the exact lookup returns counts. One row means existing, more than one means ambiguous, and neither ever creates. The byte-for-byte JS filter is gone.</td><td><code>c6</code>: no email rewritten in any of the 5 cases, all linked as existing, DNC kept. <code>collation after-r3</code> 4/4.</td></tr>
+<tr><td>D-R3-2: a first name of 65 to 100 characters stops the run</td><td>The IV's <code>c9</code> copy: two runs stopped on "name update failed 400", and contacts 764 and 765 were left unnamed. My <code>faults before</code> check also failed.</td><td>First name capped at 64 at the edge (including the input maxlength) and in Convex. A refused name update no longer stops the run: the capture settles as created, with the reason recorded and the contact left unnamed.</td><td><code>c9</code>: the 65 and 100 names get 400 at the edge, one run, exit 0. <code>faults after-r3b</code> 5/5.</td></tr>
+<tr><td>D-R3-3: emails over 64 characters are acknowledged but can never reach Mautic</td><td><code>probe before-r3</code>: the store accepted a 65-character email and a 65-character first name.</td><td>Email capped at 64 in total at the edge and in Convex.</td><td><code>probe after-r3</code> 28/28. The edge unit test covers the 64 and 65 boundaries for both fields.</td></tr>
+<tr><td>Test gap: M5 (a 5xx marked rejected) and M6 (no renew right before create) survived</td><td>Shown by the IV. There was no 5xx check and no stall longer than the lease.</td><td><code>faults</code>: an instrumented copy of the reconciler (reply substitution only) fakes a 400 on create, a 400 on the name update, and a 500 on create. The 500 must stop the run and leave the capture pending, never rejected. <code>stall</code>: a 17-second pause before create, longer than the 15-second lease. No contact may be written, and the next run must create exactly one.</td><td>Both pass on the real code. M5 and M6 are killed.</td></tr>
+</table>
+<p><b>Mutants</b> (<code>node rawcapture/mutants.mjs r3b</code>): all 12 killed. They are C4, C5, L1, L2, R1, R2, R3, M5, M6, and D1 to D3 (one per fix this round). The runner now checks every anchor before changing anything.</p>
+<p><b>Full replay in A-only mode</b> (<code>REMOLD_REPLAY_TENANTS=a</code>, new this round so B gets no writes at all): PASS 53/53. Mautic form submissions on A stayed at 184. The tenant refusals return the exact codes, using an existing B capture read-only. Unit tests 10/10, typecheck clean, and both edges run server.mjs 445041bb69983881.</p>
+<p><b>Two test-harness bugs I found and fixed</b> (not product bugs; the recorded outcomes were already correct):</p>
+<ul>
+  <li>A SQL helper trimmed an empty trailing column.</li>
+  <li>An error extractor grabbed the wrong stderr line.</li>
+</ul>
+<p><b>Still open (not built in this slice).</b> The coordinator's decision on abuse (IV N-1) is a required gate before any live public form: an edge rate limit per client and per email, one pending capture per email per tenant, a pending cap with an alert, and contact creation only after email confirmation. Also still open:</p>
+<ul>
+  <li>D-R3-4 (disclosed): a stall of more than 15 s inside a Mautic create call can still overlap with a second reconciler.</li>
+  <li>A persistent 5xx still stops each run at that capture. It is correctly left pending, but there is no attempt counter to park it.</li>
+  <li>Tenant B was not re-verified with the round-3 reconciler, to protect db-b.</li>
 </ul>
 </div>
 
@@ -142,6 +167,21 @@ node rawcapture/replay.mjs r3                 PASS 43/43 (restored code, 512 MiB
 node --test publishing/server.test.mjs        9 pass
 tsc -p rawcapture/convex/tsconfig.json        exit 0
 REMOLD_PUBLISH_EVIDENCE_DIR=... node publishing/read-effects-replay.mjs after   PASS
+
+Round 3 (tenant A only; no B writes; IV copies in ivr3/before and ivr3/after are byte-identical to 473d956)
+ivr3/before: node c6-collation.mjs   4 owner emails rewritten (reproduced)
+ivr3/before: node c9-long-name.mjs   2 runs stopped on name update 400 (reproduced)
+node rawcapture/races.mjs probe before-r3 FAIL 25/28; collation before FAIL 3/4; faults before FAIL 3/5
+node rawcapture/setup.mjs ; REMOLD_PUBLISH_EVIDENCE_DIR=.../r5-setup/ node publishing/setup.mjs
+node rawcapture/races.mjs probe|poison|window|collation after-r3   28/28, 4/4, 6/6, 4/4
+node rawcapture/races.mjs faults|stall after-r3b                   5/5, 3/3 (after-r3 failed on two harness bugs, kept)
+ivr3/after: c6 no rewrite, all existing, DNC kept; c9 posts 400,400,200,200, one run exit 0
+node rawcapture/mutants.mjs r3b      12/12 killed (r3 stopped on a stale C5 anchor before any change)
+REMOLD_REPLAY_TENANTS=a node rawcapture/replay.mjs r5-a   PASS 53/53
+node ownership/evidence/raw-capture/ivr3/b-untouched.mjs  B counters equal r4 end
+node --test publishing/server.test.mjs 10 pass; tsc exit 0
+sha256 (first 16): server.mjs 445041bb69983881 (both edges), server.test.mjs ffc4ca55c35ba365, capture.ts f9c61372448d2437,
+ reconcile.mjs ae8caf0e7f352776, races.mjs e28b0471455debc7, mutants.mjs 36e43bcd241b3a9d, replay.mjs f4a1d3ad374d53bf
 
 Round 2 (tenant A only unless noted; IV copies in ivr2/before and ivr2/after are byte-identical to 7b994e0)
 ivr2/before: node b6-reconciler.mjs poison   runs exit 1, 1 (reproduced); node b6b-unblock.mjs (to clear it)
