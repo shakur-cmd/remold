@@ -1,0 +1,256 @@
+{
+  "level": "SERVICE disposable local Convex, synthetic",
+  "phases": {
+    "tie": {
+      "times": {
+        "distinct": 1599,
+        "first": 1790443451245.0503,
+        "last": 1790443451511.4575,
+        "lastRow": 1790443451511.458,
+        "n": 1599
+      },
+      "checks": [
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 150,
+          "scanned": 1600,
+          "watchAdded": 0,
+          "watchChecked": 0
+        }
+      ],
+      "alerts": {
+        "functions": [
+          {
+            "_creationTime": 1790443465478.7651,
+            "_id": "n17br6bt72vpcegjt73qv0s65h8f44ns",
+            "failures": 0,
+            "fn": "ivWm:noop",
+            "lastAt": 1790443454428.748,
+            "lastFailed": false
+          },
+          {
+            "_creationTime": 1790443465478.7654,
+            "_id": "n17ckw97zh3nt94ngbvebzx6658f59bk",
+            "failures": 1,
+            "fn": "ivWm:failTie",
+            "lastAt": 1790443454437.067,
+            "lastFailed": true
+          }
+        ],
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failTie"
+          }
+        ],
+        "watch": 0
+      }
+    },
+    "big": {
+      "checks": [
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 23,
+          "scanned": 202,
+          "watchAdded": 0,
+          "watchChecked": 0
+        }
+      ],
+      "alerts": {
+        "functions": [
+          {
+            "_creationTime": 1790443465478.7651,
+            "_id": "n17br6bt72vpcegjt73qv0s65h8f44ns",
+            "failures": 0,
+            "fn": "ivWm:noop",
+            "lastAt": 1790443482354.556,
+            "lastFailed": false
+          },
+          {
+            "_creationTime": 1790443465478.7654,
+            "_id": "n17ckw97zh3nt94ngbvebzx6658f59bk",
+            "failures": 1,
+            "fn": "ivWm:failTie",
+            "lastAt": 1790443454437.067,
+            "lastFailed": true
+          },
+          {
+            "_creationTime": 1790443490116.044,
+            "_id": "n17fxjqnrsz004an4e01ayfysh8f56gr",
+            "failures": 10,
+            "fn": "ivWm:failBig",
+            "lastAt": 1790443482362.229,
+            "lastFailed": true
+          }
+        ],
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failTie"
+          },
+          {
+            "count": 10,
+            "key": "background-error:ivWm:failBig"
+          }
+        ],
+        "watch": 0
+      }
+    },
+    "past": {
+      "checks": [
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 4,
+          "scanned": 1,
+          "watchAdded": 0,
+          "watchChecked": 0
+        }
+      ],
+      "alerts": {
+        "functions": [
+          {
+            "_creationTime": 1790443465478.7651,
+            "_id": "n17br6bt72vpcegjt73qv0s65h8f44ns",
+            "failures": 0,
+            "fn": "ivWm:noop",
+            "lastAt": 1790443482354.556,
+            "lastFailed": false
+          },
+          {
+            "_creationTime": 1790443465478.7654,
+            "_id": "n17ckw97zh3nt94ngbvebzx6658f59bk",
+            "failures": 1,
+            "fn": "ivWm:failTie",
+            "lastAt": 1790443454437.067,
+            "lastFailed": true
+          },
+          {
+            "_creationTime": 1790443490116.044,
+            "_id": "n17fxjqnrsz004an4e01ayfysh8f56gr",
+            "failures": 10,
+            "fn": "ivWm:failBig",
+            "lastAt": 1790443482362.229,
+            "lastFailed": true
+          },
+          {
+            "_creationTime": 1790443506683.302,
+            "_id": "n17ajt9yvcad5yx4c4c32pzyhn8f4y4e",
+            "failures": 1,
+            "fn": "ivWm:failPast",
+            "lastAt": 1790443495436.325,
+            "lastFailed": true
+          }
+        ],
+        "open": [
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failTie"
+          },
+          {
+            "count": 10,
+            "key": "background-error:ivWm:failBig"
+          },
+          {
+            "count": 1,
+            "key": "background-error:ivWm:failPast"
+          }
+        ],
+        "watch": 0
+      }
+    },
+    "pastJob": {
+      "completedTime": 1790443507083.954,
+      "creationTime": 1790443507082.9182,
+      "scheduledTime": 1790436307082,
+      "state": "failed"
+    },
+    "slowCreation": {
+      "callStart": 1790443506905,
+      "mutationStarted": 1790443510676,
+      "callEnd": 1790443510729,
+      "job": {
+        "completedTime": 1790443510700.004,
+        "creationTime": 1790443510676.2092,
+        "scheduledTime": 1790443510676,
+        "state": "failed"
+      }
+    },
+    "future": {
+      "checks": [
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 1022,
+          "scanned": 3000,
+          "watchAdded": 2998,
+          "watchChecked": 0
+        },
+        {
+          "applied": true,
+          "behind": true,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 605,
+          "scanned": 2000,
+          "watchAdded": 2000,
+          "watchChecked": 0
+        },
+        {
+          "applied": true,
+          "behind": false,
+          "channel": "unconfigured",
+          "delivered": 0,
+          "readMs": 93,
+          "scanned": 996,
+          "watchAdded": 996,
+          "watchChecked": 0
+        }
+      ],
+      "watchRows": 4000
+    },
+    "status": {
+      "channel": "unconfigured",
+      "open": [
+        {
+          "count": 1,
+          "key": "background-error:ivWm:failTie",
+          "kind": "background-error",
+          "openedAt": 1790443465478
+        },
+        {
+          "count": 10,
+          "key": "background-error:ivWm:failBig",
+          "kind": "background-error",
+          "openedAt": 1790443490116
+        },
+        {
+          "count": 2,
+          "key": "background-error:ivWm:failPast",
+          "kind": "background-error",
+          "openedAt": 1790443506683
+        },
+        {
+          "count": 1,
+          "key": "background-error:ivWm:failLong",
+          "kind": "background-error",
+          "openedAt": 1790443525472
+        }
+      ],
+      "scannedThrough": 1790443538884,
+      "undelivered": 6
+    }
+  },
+  "rootDeploymentConfigUnchanged": true,
+  "scratch": "/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-core-service-TQ38MI"
+}
