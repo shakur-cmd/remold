@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>H0 amendment A1 draft r3: agents propose CRM setup changes</title>
+<title>H0 amendment A1 draft r5: agents propose CRM setup changes</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -21,15 +21,15 @@
 </style>
 </head>
 <body>
-<h1>H0 amendment A1 draft r3: agents propose CRM setup changes</h1>
-<div class="meta">2026-09-26 · scope: H0 contract, I1 authority, I3/I4/I12 consumers · base: <code>wip/i1-authority</code> 4cb4671 · status: DRAFT r3 for root, Fable and Opus review. Nothing is built from this until all three approve the same hash.</div>
+<h1>H0 amendment A1 draft r5: agents propose CRM setup changes</h1>
+<div class="meta">2026-09-26 · scope: H0 contract, I1 authority, I3/I4/I12 consumers · base: <code>wip/i1-authority</code> 4cb4671 · status: DRAFT r5 for root, Fable and Opus review. Nothing is built from this until all three approve the same hash.</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
   <li><b>Propose-only at launch.</b> Recommended yes. Agents suggest; an admin approves each change. Only you (the owner) can give an agent this ability. Letting an agent change setup without asking would be a later amendment and reopens the I1 checks.</li>
   <li><b>Default limits on that ability:</b> recommended 10 changes per proposal and 3 open proposals per agent. You set them per agent when granting; these are only the pre-filled values.</li>
-  <li><b>Two small changes to what people can do today</b> (both reviewers found the current behavior unsafe): adding a field when that field type has no storage left will be refused instead of creating a broken field, and the built-in fields that the Today feed and the won-to-delivery handoff depend on can no longer be retired. Recommended yes.</li>
+  <li><b>Two small changes to what people can do today.</b> (1) A field that points at one related record (a lookup) will be refused when it can get no index slot, because without one its "related records" view does not work. Other field types keep today's behavior: created without an index, they store and show values but cannot be sorted or filtered. (2) The fields that come built into the standard objects (Company, Person, Opportunity, Task and so on) can no longer be retired, because the Today feed and the won-to-delivery handoff read them. Fields you add yourself stay retirable. Recommended yes to both.</li>
 </ul>
 </div>
 
@@ -37,7 +37,7 @@
 <h2>Done and proven</h2>
 <ul>
   <li>Nothing built. Design draft only.</li>
-  <li>Two review rounds by Fable 5.1 (<code>claude-fable-5-1</code>, Max subscription) and a fresh Opus 5.5 session, both REVISE each time. r3 takes every finding. Where they disagreed, r3 takes the smaller option: no key rename at approval, failed approvals stay pending until dismissed, no ops hash. Reviews: <code>evidence/2026-09-26-coordination/a1-review-r1/</code> and <code>a1-review-r2/</code>.</li>
+  <li>Four review rounds by Fable 5.1 (<code>claude-fable-5-1</code>, Max subscription) and a fresh Opus 5.5 session, r1 and r2 REVISE from both; r3 APPROVED by Opus (d234fc46...) and REVISE by Fable with one high finding (proposals not checked against the grant scope). r4: REVISE from both on wording left over from the slot change. r5 takes all of it. Where they disagreed, r3 takes the smaller option: no key rename at approval, failed approvals stay pending until dismissed, no ops hash. Reviews: <code>evidence/2026-09-26-coordination/a1-review-r1/</code>, <code>a1-review-r2/</code>, <code>a1-review-r3/</code> and <code>a1-review-r4/</code>.</li>
   <li>Gap confirmed: on I1 (4cb4671) human setup is authority-checked but agents cannot reach it, and no setup change writes an event.</li>
 </ul>
 </div>
@@ -76,41 +76,44 @@ setupProposals (new table, index by_org_status, by_agent_status)
 setupEvents (new table, index by_org, by_object)
   orgId, objectId, fieldId?, proposalId?,
   actor: { kind: 'user', id } | { kind: 'operator', id },   // approving admin, or ensureStandard
-  op: SetupOp['op'],
+  op: SetupOp['op'] | 'field.releaseSlot',   // releaseSlot: event only, never proposable
   before: FieldMeta | ObjectMeta | null, after: FieldMeta | ObjectMeta | null,
   reason?, at
   // ObjectMeta = { key, label, labelPlural, icon? }
-  // FieldMeta  = { key, label, type, options?, targetObjectId?, retired }</pre>
+  // FieldMeta  = { key, label, type, options?, targetObjectId?, retired, slot?: { kind, index } }</pre>
 <p>The existing <code>events</code> table stays record-only. No change to the <code>objects</code> or <code>fields</code> schema.</p>
 
 <h2>Operations</h2>
 <table>
-<tr><th>Operation</th><th>Refused</th></tr>
-<tr><td><code>object.create</code></td><td>standard object keys; existing key</td></tr>
-<tr><td><code>field.create</code></td><td>same key twice in one proposal; <code>ref</code> not pointing at an earlier <code>object.create</code>; <code>ref</code> under an ids scope; relation target that is a new object in the same proposal</td></tr>
-<tr><td><code>field.relabel</code></td><td>(key and type cannot be named)</td></tr>
-<tr><td><code>field.addOptions</code></td><td>non-select field; option ids already present</td></tr>
-<tr><td><code>field.retire</code></td><td>title field; standard fields of standard objects</td></tr>
+<tr><th>Operation</th><th>Refused at propose</th><th>Refused at approval</th></tr>
+<tr><td><code>object.create</code></td><td>standard object keys; ids scope</td><td>key already used</td></tr>
+<tr><td><code>field.create</code></td><td>same key twice in one proposal; <code>ref</code> not pointing at an earlier <code>object.create</code>; <code>ref</code> under an ids scope; object outside the grant; relation target that is a new object in the same proposal</td><td>key already used (retired included); lookup field with no slot left</td></tr>
+<tr><td><code>field.relabel</code></td><td>object outside the grant (key and type cannot be named)</td><td>field gone or retired</td></tr>
+<tr><td><code>field.addOptions</code></td><td>object outside the grant</td><td>non-select field; option ids already present</td></tr>
+<tr><td><code>field.retire</code></td><td>object outside the grant; title field; standard field</td><td>field already retired</td></tr>
 </table>
+<p>A <b>standard field</b> is a field on an <code>isStandard</code> object whose key is in that object's entry in <code>convex/lib/standard.ts</code>. A person's custom field on a standard object whose key later becomes a standard key is locked too; that is accepted.</p>
 <p>New objects and fields are permanent, as they already are for people. Retire is the only reverse, and the review card says so. Out of scope: object retire, field restore, undo, views, pipelines, formulas, automations (I9), roles, masks, grants.</p>
 
 <h2>Authority rules</h2>
 <ul>
   <li><b>Issuing the grant.</b> Mode <code>direct</code> refused. Delegation refused. A <code>'new'</code> scope needs an unrestricted owner. An ids scope needs a grantor who passes <code>requireObjectAdministration</code> on every listed object. <code>issue()</code> and <code>within()</code> get an explicit <code>setup</code> branch that never falls through to another kind.</li>
-  <li><b>Proposing.</b> Needs a concrete live <code>setup.propose</code> grant; it does not reuse <code>canPropose</code>, whose legacy branch admits migrated wildcard agents. Readonly refuses. Every <code>fieldId</code> must pass <code>canReadField</code> for the agent, and every object id and relation target <code>canReadObject</code>; anything unreadable returns exactly the error an id that does not exist returns. Op count above <code>maxOps</code> refuses. Open proposals at <code>maxOpen</code> refuse, where open means pending with a live grant and a matching agent epoch. Key uniqueness is not checked here.</li>
-  <li><b>Approving.</b> Re-reads membership and runs, per op, the human checks: <code>requireWriter(admin)</code>, <code>requireObjectAdministration</code> for field ops on existing objects, <code>unrestrictedHuman</code> for object create, <code>requireObjectRead</code> on relation targets. The agent's grant must be live and its current <code>authorityEpoch</code> equal the proposal's. Preconditions re-checked: key free (retired keys included), field exists and not retired, target is select, option ids absent, not a title or standard field, slot available where <code>kindFor(type)</code> gives a kind.</li>
+  <li><b>Scope.</b> A proposal names one live <code>setup.propose</code> grant. <code>object.create</code> and <code>ref</code> ops need a <code>'new'</code> scope. Every other op's object, resolved by id, must be in the grant's ids list. Under a <code>'new'</code> scope, field ops may only target objects created earlier in the same proposal, so only <code>object.create</code> and <code>field.create</code> by <code>ref</code> can appear. An object that is readable but outside the grant refuses FORBIDDEN after the read check, so an unreadable object still looks missing. <code>maxOps</code> and <code>maxOpen</code> are that grant's. An <b>open</b> proposal is one that is pending, has that <code>grantId</code>, and whose agent epoch still matches.</li>
+  <li><b>Proposing.</b> Needs a concrete live <code>setup.propose</code> grant; it does not reuse <code>canPropose</code>, whose legacy branch admits migrated wildcard agents. Readonly refuses. Every <code>fieldId</code> must pass <code>canReadField</code> for the agent, and every object id and relation target <code>canReadObject</code>; anything unreadable returns exactly the error an id that does not exist returns. Op count above <code>maxOps</code> refuses. Open proposals at <code>maxOpen</code> refuse. Key uniqueness is not checked here.</li>
+  <li><b>Approving.</b> Re-reads membership and runs, per op, the human checks: <code>requireWriter(admin)</code>, <code>requireObjectAdministration</code> for field ops on existing objects, <code>unrestrictedHuman</code> for object create, <code>requireObjectRead</code> on relation targets. The agent's grant must be live and its current <code>authorityEpoch</code> equal the proposal's. Preconditions re-checked: key free (retired keys included), field exists and not retired, target is select, option ids absent, not a title or standard field, slot available for a lookup field.</li>
   <li><b>When approval fails.</b> The mutation throws, nothing changes, and the proposal stays pending. The admin sees the reason and dismisses it. There is no auto-close.</li>
   <li><b>Exactly once.</b> Approving or dismissing a proposal that is not pending returns its status and changes nothing.</li>
   <li><b>No oracle.</b> The agent sees only <code>pending</code>, <code>applied</code> or <code>closed</code>, with no reason. Dismissed, and pending with a dead grant or moved epoch, all show as <code>closed</code>. A hidden-key clash can only fail at approval, which the agent sees as <code>closed</code>, the same as any dismissal.</li>
   <li><b>New objects start closed.</b> No agent, including the proposer, gets grants on an object it proposed. The owner grants separately.</li>
   <li><b>Masks.</b> Proposals and setup events follow <code>projectEvent</code>: if any touched object or field is hidden from the reader, the whole item and its reason are hidden. A restricted admin cannot see or approve a proposal touching something hidden from them. Another agent asking for a proposal id gets NOT_FOUND.</li>
-  <li><b>Slots.</b> Slots are never reused (8 text, 8 number, 4 date, 4 boolean per object; links use none). The shared field-create internal refuses with a plain message when no slot of the needed kind is left, on both paths. That replaces today's human behavior of silently creating a field with no slot. The review card shows the slots left and warns that retire does not free one.</li>
-  <li><b>Every setup write is evented.</b> <code>objects.create</code>, <code>fields.create/update/retire</code>, approved proposals and <code>seed:ensureStandard</code> (actor <code>operator</code>) write <code>setupEvents</code>. Seeding at org creation is the one exemption, named in code.</li>
+  <li><b>Slots.</b> Each object has 8 slots shared by text, select and lookup fields, 8 for numbers, 4 for dates and 4 for booleans; links use none. Slots are never reused, even after retire, except the operator release in <code>seed:releaseStandardSlots</code>. When none is left, the shared field-create internal refuses a lookup field on both paths, because a lookup without a slot breaks its related-records view. Every other type is created without a slot, as people get today: it stores and shows values but cannot be sorted or filtered. The review card simulates the ops in order, counting slots taken by earlier ops in the same proposal, shows the slots left, marks a lookup that would get none as "approval will fail", flags any other op that would land without one, and warns that retire does not free a slot.</li>
+  <li><b>Every setup write is evented.</b> <code>objects.create</code>, <code>fields.create/update/retire</code>, approved proposals and <code>seed:ensureStandard</code> and <code>seed:releaseStandardSlots</code> (actor <code>operator</code>) write <code>setupEvents</code>. Seeding at org creation is the one exemption, named in code. <code>ensureStandard</code> keeps adding a standard field without a slot when none is left (lookups included, logged loudly), so a backfill never stops halfway.</li>
+  <li><b>Readonly.</b> Propose, approve and dismiss are all refused while the workspace is readonly.</li>
 </ul>
 
 <h2>Human path changes (deliberate, go in the I1 parity map)</h2>
 <ul>
-  <li>Field create refuses when no slot of the needed kind is left.</li>
+  <li>Lookup field create refuses when no slot is left. Other types unchanged.</li>
   <li>Field retire refuses standard fields of standard objects.</li>
   <li>Setup mutations write setup events.</li>
 </ul>
@@ -126,7 +129,7 @@ setupEvents (new table, index by_org, by_object)
 <tr><td>S4b</td><td>Admin masked from a target field between opening and approving</td><td>refused</td></tr>
 <tr><td>S4c</td><td>Inventory scan: any function that patches <code>setupProposals.ops</code> or <code>reason</code></td><td>none exists</td></tr>
 <tr><td>S5</td><td>Agent grant revoked, agent fired, or agent mask narrowed before approval</td><td>refused; agent sees closed; it no longer counts toward <code>maxOpen</code></td></tr>
-<tr><td>S6</td><td>Readonly during propose, and during apply</td><td>both refused</td></tr>
+<tr><td>S6</td><td>Readonly during propose, approve and dismiss</td><td>all refused</td></tr>
 <tr><td>S7</td><td>Retire a title field, or a standard field (opportunity stage), by agent and by person</td><td>refused on both paths</td></tr>
 <tr><td>S8</td><td>Retire a custom field with 1,000 filled records</td><td>values and slot unchanged; writes to it refused</td></tr>
 <tr><td>S9</td><td>Pre-migration wildcard key, and a migrated v1 legacy agent, call propose</td><td>both refused</td></tr>
@@ -134,17 +137,19 @@ setupEvents (new table, index by_org, by_object)
 <tr><td>S11</td><td>Masked agent proposes a key matching a hidden field</td><td>propose response and final agent-visible status identical to a dismissed fresh key</td></tr>
 <tr><td>S12</td><td>Masked member reads setup events; restricted admin opens a proposal touching a hidden field</td><td>no hidden label or reason; approve refused</td></tr>
 <tr><td>S13</td><td>One invalid op among valid ones; two new fields with the same key</td><td>nothing applied; shape refuses the duplicate</td></tr>
-<tr><td>S14</td><td>Each human setup mutation and <code>seed:ensureStandard</code> on an existing org</td><td>each writes a setup event with the right actor</td></tr>
+<tr><td>S14</td><td>Each human setup mutation, <code>seed:ensureStandard</code> on an existing org, and <code>seed:releaseStandardSlots</code></td><td>each writes a setup event with the right actor</td></tr>
 <tr><td>S15</td><td>Relation target the agent cannot read</td><td>same response as a random id</td></tr>
 <tr><td>S16</td><td>Relabel or retire a field hidden from the agent</td><td>same response as a random id</td></tr>
 <tr><td>S17</td><td>Two admins approve at once; approve called twice</td><td>applied once</td></tr>
 <tr><td>S18</td><td>Agent B reads, dismisses or approves agent A's proposal</td><td>NOT_FOUND; no agent path can apply</td></tr>
 <tr><td>S19</td><td>Direct-mode grant, delegated grant, restricted owner issuing a 'new' scope, maxOps of 0</td><td>all refused</td></tr>
 <tr><td>S20</td><td>Agent exceeds <code>maxOps</code>, or opens more than <code>maxOpen</code></td><td>refused</td></tr>
-<tr><td>S21</td><td>Number slots used up by create-then-retire, then one more number field by agent and by person</td><td>both refused with the slot message; a links field still succeeds</td></tr>
+<tr><td>S21</td><td>Text-kind slots used up by create-then-retire; then a person adds one lookup and one text field, and an agent submits the same as two separate proposals</td><td>lookup refused with the slot message on both paths; text field created without a slot on both paths; a links field succeeds</td></tr>
 <tr><td>S22</td><td>One proposal: new "Job" object plus three fields by <code>ref</code></td><td>all four applied; proposer still has no grant on Job</td></tr>
 <tr><td>S23</td><td><code>ref</code> under an ids scope, <code>ref</code> to a later op, relation target to the same-proposal object</td><td>shape refuses</td></tr>
 <tr><td>S24</td><td>A person adds option id "x" after the proposal adds "x"</td><td>approve refused</td></tr>
+<tr><td>S25</td><td>ids-scope agent proposes <code>object.create</code>, and a field op on a readable object outside its list</td><td>both refused; the same field op on a listed object is accepted</td></tr>
+<tr><td>S26</td><td>Agent holds two setup grants and fills <code>maxOpen</code> on one</td><td>the other grant's limit is unaffected; a proposal cannot mix objects from both grants</td></tr>
 </table>
 
 <h2>Checks required before build</h2>
