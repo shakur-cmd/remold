@@ -1,0 +1,11 @@
+{
+  "level": "SERVICE-local; synthetic fixture",
+  "sourceSha": "d66eb0b1f8d5aac7aca63d9c964a6850f1e2584c",
+  "dirty": true,
+  "results": {},
+  "limitations": [
+    "Loopback local Convex only; no cloud deployment or customer data",
+    "Synthetic fixture does not prove a managed backup export or independent verification"
+  ],
+  "error": "Local backend failed to become ready: ot resolve \"../../packages/contracts/authority\"\n\n    convex/integrations/tables.ts:3:22:\n      3 │ import { actor } from '../../packages/contracts/authority';\n        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n✘ [ERROR] Could not resolve \"../../packages/contracts/integrations\"\n\n    convex/integrations/tables.ts:4:83:\n      4 │ ...e, financialReceipt } from '../../packages/contracts/integrations';\n        ╵                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
+}

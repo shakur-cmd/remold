@@ -1,0 +1,18 @@
+SURVIVED channel: 0.0.0.0 accepted as loopback [vitest run convex/alerts.test.ts] (0 failing)
+SURVIVED channel: any hostname starting with localhost [vitest run convex/alerts.test.ts] (0 failing)
+SURVIVED channel: any non-http scheme accepted (ftp, file) [vitest run convex/alerts.test.ts] (0 failing)
+SURVIVED stall: measured from creation, not due time [vitest run convex/alerts.test.ts] (0 failing)
+KILLED   stall: pending work never counted [vitest run convex/alerts.test.ts] (1 failing)
+SURVIVED coverage: evaluate never marks the scan truncated [vitest run convex/alerts.test.ts] (0 failing)
+SURVIVED retention: old notices never deleted [vitest run convex/alerts.test.ts] (0 failing)
+KILLED   delivery: failed send keeps its claim [vitest run convex/alerts.test.ts] (1 failing)
+KILLED   delivery: claim taken even with no channel [vitest run convex/alerts.test.ts] (1 failing)
+KILLED   resolve: resolve notice never queued [vitest run convex/alerts.test.ts] (3 failing)
+KILLED   dedupe: one key per kind, functions merged [vitest run convex/alerts.test.ts] (2 failing)
+KILLED   inventory: status becomes a public query [test:authority] (1 failing)
+KILLED   inventory: cron row removed [test:authority] (1 failing)
+KILLED   inventory: cron renamed in crons.ts [test:authority] (1 failing)
+KILLED   inventory: new unlisted internal function [test:authority] (1 failing)
+KILLED   inventory: evaluate row claims query/no-writes [test:authority] (1 failing)
+{"mutants":16,"killed":10,"survived":["channel: 0.0.0.0 accepted as loopback","channel: any hostname starting with localhost","channel: any non-http scheme accepted (ftp, file)","stall: measured from creation, not due time","coverage: evaluate never marks the scan truncated","retention: old notices never deleted"],"restoredGreen":true}
+exit 0

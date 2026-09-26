@@ -1,0 +1,92 @@
+566abac descends from bb8e3ed:
+yes
+566abac parent:
+566abac6a382007d9d3edf58006904e1b2bc5e6f a173192ea40f90859917d418079a872b2950758d Expand schema for operator alerts with no alert code (rollback target)
+files changed d66eb0b..566abac:
+ convex/schema.ts                                   |   6 +
+ evidence/2026-09-26-i2-alerts/app-tests.txt        |  11 +
+ evidence/2026-09-26-i2-alerts/authority-tests.txt  |  11 +
+ evidence/2026-09-26-i2-alerts/baseline-run.txt     |   2 +
+ evidence/2026-09-26-i2-alerts/baseline.json        |  27 +++
+ evidence/2026-09-26-i2-alerts/build.txt            |  22 ++
+ .../2026-09-26-i2-alerts/builder-handover.html     |  90 ++++++++
+ evidence/2026-09-26-i2-alerts/mutants.txt          |  14 ++
+ evidence/2026-09-26-i2-alerts/release-tests.txt    |  29 +++
+ .../service-mutant-error-text.txt                  |  26 +++
+ .../service-run-blocked-sink-failure.txt           |  28 +++
+ evidence/2026-09-26-i2-alerts/service-run.txt      |   3 +
+ evidence/2026-09-26-i2-alerts/service.json         | 255 +++++++++++++++++++++
+ evidence/2026-09-26-i2-alerts/typecheck.txt        |   2 +
+ ops/rehearsal/local-core.mjs                       |   1 +
+ ops/rehearsal/rate-fixture.ts                      |   2 +-
+ ops/rehearsal/rate-limit.mjs                       |   4 +
+ 17 files changed, 532 insertions(+), 1 deletion(-)
+schema diff d66eb0b..566abac:
+diff --git a/convex/schema.ts b/convex/schema.ts
+index 17609df..e902119 100644
+--- a/convex/schema.ts
++++ b/convex/schema.ts
+@@ -5,10 +5,16 @@ import { actor, capability, capabilityScope, recordScope } from "../packages/con
+ 
+ const slot = v.object({ kind: v.union(v.literal("n"), v.literal("s"), v.literal("d"), v.literal("b")), index: v.number() });
+ const values = v.record(v.string(), v.any());
++const alertKind = v.union(v.literal("background-error"), v.literal("rest-500"), v.literal("stalled"), v.literal("coverage"));
+ 
+ export default defineSchema({
+   ...integrationTables,
+   opsMetrics: defineTable({ minute:v.number(), route:v.union(v.literal("rest"),v.literal("probe")), status:v.string(), release:v.string(), count:v.number(), serverErrors:v.number(), clientErrors:v.number(), sumMs:v.number(), maxMs:v.number(), buckets:v.array(v.number()) }).index("by_minute",["minute"]),
++  opsAlerts: defineTable({ key: v.string(), kind: alertKind, fn: v.optional(v.string()), count: v.number(), state: v.union(v.literal("open"), v.literal("resolved")), openedAt: v.number(), resolvedAt: v.optional(v.number()) }).index("by_key", ["key"]).index("by_state", ["state"]),
++  opsNotices: defineTable({ payload: v.object({ source: v.literal("remold"), event: v.union(v.literal("open"), v.literal("resolve")), kind: alertKind, key: v.string(), count: v.number(), at: v.string(), summary: v.string() }), attempts: v.number(), claimedUntil: v.optional(v.number()), deliveredAt: v.optional(v.number()) }).index("by_pending", ["deliveredAt"]),
++  opsAlertScan: defineTable({ scannedThrough: v.number() }),
++  opsAlertWatch: defineTable({ jobId: v.id("_scheduled_functions"), fn: v.string(), due: v.number(), stalledAt: v.optional(v.number()) }).index("by_due", ["due"]).index("by_stalled", ["stalledAt"]),
++  opsAlertFunctions: defineTable({ fn: v.string(), lastAt: v.number(), lastFailed: v.boolean(), failures: v.number() }).index("by_fn", ["fn"]),
+   opsProbes: defineTable({minute:v.number(),result:v.union(v.literal("sent"),v.literal("failed"),v.literal("unconfigured"))}).index("by_minute",["minute"]),
+   authorityAudit: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.union(v.literal("user"), v.literal("agent"), v.literal("operator")), id: v.string() }), action: v.string(), targetId: v.string(), objectIds: v.optional(v.array(v.id("objects"))), epoch: v.optional(v.number()) }).index("by_org", ["orgId"]),
+   capabilityGrants: defineTable({ orgId: v.id("orgs"), agentId: v.id("agents"), grantor: actor, grantorEpoch: v.number(), grantorMembershipId: v.optional(v.id('members')), parent: v.optional(v.id("capabilityGrants")), capability, scope: capabilityScope, mode: v.union(v.literal("propose"), v.literal("direct")), delegate: v.boolean(), expiresAt: v.number(), revokedAt: v.optional(v.number()) }).index("by_agent", ["orgId", "agentId"]).index("by_agent_capability", ["orgId", "agentId", "capability"]),
+schema 566abac vs 117917d identical?
+identical
+alert code in 566abac:
+evidence/2026-09-26-i2-alerts/app-tests.txt
+evidence/2026-09-26-i2-alerts/authority-tests.txt
+evidence/2026-09-26-i2-alerts/baseline-run.txt
+evidence/2026-09-26-i2-alerts/baseline.json
+evidence/2026-09-26-i2-alerts/build.txt
+evidence/2026-09-26-i2-alerts/builder-handover.html
+evidence/2026-09-26-i2-alerts/mutants.txt
+evidence/2026-09-26-i2-alerts/release-tests.txt
+evidence/2026-09-26-i2-alerts/service-mutant-error-text.txt
+evidence/2026-09-26-i2-alerts/service-run-blocked-sink-failure.txt
+evidence/2026-09-26-i2-alerts/service-run.txt
+evidence/2026-09-26-i2-alerts/service.json
+evidence/2026-09-26-i2-alerts/typecheck.txt
+no alert cron
+notes at 117917d:
+{
+  "class": "expand",
+  "rollbackTarget": "566abac6a382007d9d3edf58006904e1b2bc5e6f"
+}
+fatal: ambiguous argument 'd66eb0bonvex/schema.ts': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+d66eb0b e3b0c44298fc1c14
+fatal: ambiguous argument '566abaconvex/schema.ts': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+566abac e3b0c44298fc1c14
+fatal: ambiguous argument '117917donvex/schema.ts': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+117917d e3b0c44298fc1c14
+fatal: ambiguous argument 'bb8e3edonvex/schema.ts': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+bb8e3ed e3b0c44298fc1c14
+fatal: ambiguous argument 'a173192onvex/schema.ts': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+a173192 e3b0c44298fc1c14
+d66eb0b schema sha256 2077681f280b6deb7e6ebb80887ea2983a03ea1575f19e211dcd3fe46f00c717
+566abac schema sha256 28f02ad8e3846ffc6e06be180978c8b857c9d83fe0e37a6de233d39c6f7c7164
+117917d schema sha256 28f02ad8e3846ffc6e06be180978c8b857c9d83fe0e37a6de233d39c6f7c7164
+bb8e3ed schema sha256 2077681f280b6deb7e6ebb80887ea2983a03ea1575f19e211dcd3fe46f00c717
+a173192 schema sha256 e6b370634beb0b125fda071d2da3983479cc2a0a148e6471c968ab388806f247

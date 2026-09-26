@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>I2 alerts: independent verification, round 2</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>I2 alerts: independent verification, round 2</h1>
+<div class="meta">2026-09-26 · target <code>117917d</code> on <code>i2/alerts-2026-09-26</code> (566abac, 069ce33, b4dcdef, 117917d) · level: SERVICE, disposable local Convex, synthetic data · verdict: <b>PASS at SERVICE with one medium defect to fix first</b> · checked by: fresh Opus 5.5 independent verifier, not the builder</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Alert channel and account are still yours. Owner channel delivery stays open and gated.</li>
+  <li>An outside heartbeat ("no message in N minutes") is still the only way to notice the alert check itself dying. The builder raised this too.</li>
+  <li>Recommendation, not a decision: fix D1 below (one line, use the job's finish time), then mark the I2 alert row done at SERVICE. I did not find anything else that blocks it.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>All five round 1 defects are fixed and I reproduced each fix myself. The load crash is gone (5100 REST requests, 5000 rows of 4 KB, 5994 far-future jobs, a 5994-job stall storm: no check threw). Long stalls stay open. Redirects are refused. Slow sinks don't double-send. Preflight passes for 566abac.</li>
+  <li>My attack script ran with 0 leaks, 0 duplicate ids, and nothing reached <code>[::1]</code> through the redirect. The builder's wrapper edit only guards my diagnostic count query, and the diff shows nothing else changed.</li>
+  <li>Six overlapping checks racing on a fresh key, three rounds: exactly 1 applied, 1 alert row and 1 delivered open per key each round.</li>
+  <li>Watermark holds. Rows from one transaction get distinct creation times (1599 of 1599). A failure placed past a page boundary inside one transaction was seen. 10 of 10 failures behind 16 KB rows were seen.</li>
+  <li>Rollback target 566abac descends from the certified I1 floor bb8e3ed. Its schema is base plus exactly the five alert tables, byte-identical to 117917d. It carries no alert code, cron or inventory rows. Its own gates pass (73 app, 97 authority).</li>
+  <li>Gates on 117917d: typecheck, app 87/87, authority 97/97, release tests, build pass. Builder mutants 25/25. Rehearsals rate-limit, flags, telemetry and snapshot pass. Snapshot fails on base d66eb0b, as the builder said.</li>
+  <li>The telemetry backlog comes from telemetry, not from alerts. It is the same on base: 5100 requests drain in about 111 s on base and 97 s with alerts running, all 5100 recorded, none lost or duplicated.</li>
+</ul>
+</div>
+
+<h2>Verdict per claim</h2>
+<table>
+<tr><th>Claim</th><th>Verdict</th><th>Evidence</th></tr>
+<tr><td>Small-query watermark scan plus watch list</td><td>PASS</td><td>watermark.json: tie, big-row and slow-creation phases. A row's creation time is its mutation's start time, and mutations are capped at 1 s, so the 10 s lag covers late commits.</td></tr>
+<tr><td>No write conflicts with telemetry:record</td><td>PASS</td><td>No check threw in attacks.json, stall-storm.json or the builder rehearsal rerun. Backlog drain is not slower with alerts running (backlog-*.json).</td></tr>
+<tr><td>Coverage alert under overload</td><td>PASS</td><td>Coverage opened in the attacks large-args phase and in the stall storm, and resolved once caught up. One check returned <code>applied: false</code>. The watermark advanced and the next checks applied, so I read it as the compare-and-set losing to the cron.</td></tr>
+<tr><td>Stalls from due time, resolve only on completion</td><td>PASS, with D1</td><td>The builder unit tests plus the stall storm: 2573 stalled rows, alert open until drained. But a job that finishes more than 60 min after its due time and fails is never reported (D1).</td></tr>
+<tr><td>Preflight: b4dcdef vs 566abac passes, refuses bb8e3ed/a173192, deploymentAuthorized false</td><td>PASS</td><td>Clean b4dcdef checkout: the release flow passes with a fresh receipt. With no receipt it is blocked. bb8e3ed, a173192 and d66eb0b are refused with "Rollback schema differs". An undeclared target is refused. deploymentAuthorized is false (preflight-targets-iv.txt). 069ce33 is also accepted because its schema is identical, which is correct.</td></tr>
+<tr><td>Redirects refused, strict host rules</td><td>PASS, with low notes</td><td>A 307 to <code>[::1]</code> was not followed. Loopback, private, link-local and mapped forms are refused (0x7f.1, 2130706433, octal, <code>::ffff:</code>, fe80, fc00). Still accepted: trailing-dot names (<code>https://localhost./</code>, <code>metadata.google.internal.</code>, <code>*.local.</code>), <code>[::7f00:1]</code>, NAT64, 198.18/15, multicast and broadcast (D2). A DNS name that resolves to a private IP is not detected, which the builder disclosed (<code>127.0.0.1.nip.io</code> accepted).</td></tr>
+<tr><td>Per-notice 5 min claim</td><td>PASS</td><td>Builder slow-sink test plus the concurrency runs: 0 duplicate ids.</td></tr>
+<tr><td>25/25 unit mutants</td><td>Reproduced</td><td>builder-mutants.txt. My own: 32 mutants, 22 killed. All 16 remapped round 1 mutants are killed. 10 new ones survive (see test gaps).</td></tr>
+<tr><td>Rehearsals pass after the real authority freeze and migration</td><td>PASS</td><td>rate-limit: 12 allowed, 38 limited. flags PASS. telemetry PASS. Snapshot drill: green and expansion PASS, red refused. The rate-limit fix calls the real <code>authority/migration:freeze</code> and <code>migrateAgent</code>.</td></tr>
+</table>
+
+<h2>Defects</h2>
+<p><b>D1 (medium): a job that fails more than 60 minutes after it was due is never alerted, and its stall reports "Resolved".</b> Finished outcomes are timed by <code>scheduledTime</code> (due time), and <code>conditions</code> only alerts when <code>lastAt</code> is within the 60 minute lookback. Repro (watermark.json, "past" phase): a failing job scheduled with a due time 2 hours ago runs and fails. <code>opsAlertFunctions</code> records <code>lastFailed: true, failures: 1</code>, but no alert opens. The realistic case is a scheduler backlog over an hour (the builder saw a 25000-job backlog not drain in 10 minutes) that ends in failures. The stall alert then resolves, and nothing says the job failed. Fix: time outcomes by completion (<code>completedTime</code> on the system row, or the check's own time), not due time.</p>
+<p><b>D2 (low): trailing-dot and a few rare address forms pass the host rule.</b> <code>https://localhost./</code>, <code>https://foo.localhost./</code>, <code>https://metadata.google.internal./</code> and <code>https://printer.local./</code> are accepted. So are <code>[::7f00:1]</code>, <code>[64:ff9b::…]</code>, 198.18.0.1, 224.0.0.1 and 255.255.255.255 (iv-channel-table.txt). The operator sets the URL and notices carry no customer data, so the impact is small. Stripping a trailing dot before the check would close the name cases.</p>
+<p><b>Note (not an I2 defect): telemetry capacity.</b> telemetry:record serializes on one metrics row. Locally it drains at about 60 per second on base and on 117917d alike. Sustained REST traffic above that grows the backlog without limit. After 65 minutes, records would fail "Invalid operational span" and the metrics would be lost. This is pre-existing telemetry design, worth a look before production traffic. Alerts would show it as a stall or background error on telemetry:record, apart from the D1 gap.</p>
+
+<h2>Test gaps (my surviving mutants on 117917d)</h2>
+<ul>
+  <li>Watermark boundary read with <code>gte</code> instead of <code>gt</code>. It would count the boundary row twice.</li>
+  <li>A running (<code>inProgress</code>) job treated as finished, so its stall resolves while it still runs.</li>
+  <li>A vanished or canceled watched job keeping its stall open.</li>
+  <li>An older outcome overwriting a newer one in the per-function health row.</li>
+  <li>A quiet failing function never resolving (lookback removed).</li>
+  <li>Host rule: 0.x, <code>::ffff:</code>, 100.64/10, fe80 and <code>.local</code> each removed. The code refuses them today; no test pins it.</li>
+</ul>
+
+<h2>Other findings</h2>
+<ul>
+  <li>The watch list grows one row per pending job, including jobs due days ahead: 5994 future jobs gave at least 4000 rows (my count query caps at 4000). Those rows are read only once due. They are bounded by the scheduler's own pending set, not by a fixed cap. Adding them took 3 checks (2 reported behind).</li>
+  <li>In the stall storm the stalled count shows 1000 while 2573 jobs were stalled, because the stalled query takes at most 1000 rows. The count understates the problem but the alert is correct.</li>
+  <li>Rehearsals still rewrite tracked files (<code>convex/_generated/api.d.ts</code> and three evidence JSONs). I restored them each time. No source was changed.</li>
+</ul>
+
+<h2>What I could not check</h2>
+<ul>
+  <li>Delivery to a real owner channel, and hosted Convex limits and timing.</li>
+  <li>How the system behaves when Convex deletes completed scheduled rows after 7 days. The code treats a missing row as done, but I could not wait 7 days. I only read the code path, and my "vanished job" mutant survives.</li>
+  <li>DNS-name-to-private-IP. It is disclosed, and it can't be solved on the URL text.</li>
+  <li>A check that dies entirely, including its final mutation, raises nothing. This is disclosed and needs an outside heartbeat.</li>
+</ul>
+
+<h2>How I ran it</h2>
+<p>Worktrees: <code>remold-i2-alerts-iv-r2</code> at 117917d, <code>remold-i2-alerts-iv-rel</code> at b4dcdef (also used to check out 566abac), and <code>remold-i2-alerts-iv-base</code> at d66eb0b. Ports: 3950 to 3968. The builder's own rehearsals used their fixed ports 3420/3421, 3460 to 3475. All scripts are in <code>scripts/</code>, and the outputs sit next to this file.</p>
+</body>
+</html>
