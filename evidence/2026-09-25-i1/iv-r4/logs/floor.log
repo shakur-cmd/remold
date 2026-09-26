@@ -1,0 +1,105 @@
+[
+  {
+    "name": "pre-I1 3339517",
+    "sha": "3339517a92618a2275ecca5105c20490b8f1a2be",
+    "floor": false,
+    "reason": "rollback target 3339517a92618a2275ecca5105c20490b8f1a2be does not descend from the I1 floor commit 7299ee98d05c39480e5ad8018e0d81ac119062d8. Either it predates I1, or I1 reached it by squash or rebase, which the floor cannot trace; merge I1 with a merge commit",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "refuse"
+  },
+  {
+    "name": "floor commit 7299ee9 itself",
+    "sha": "7299ee98d05c39480e5ad8018e0d81ac119062d8",
+    "floor": true,
+    "reason": "ok",
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "round-1 code d2c8744 (known D1-D3 oracles)",
+    "sha": "d2c87449d0f7070e9843f9153082b62999801f51",
+    "floor": true,
+    "reason": "ok",
+    "preflight": "accepted",
+    "expect": "accept (floor is only \"not pre-I1\")"
+  },
+  {
+    "name": "revision 3 87d4c10",
+    "sha": "87d4c10073dfb76f3e09ee4432dafe15b67f2b1d",
+    "floor": true,
+    "reason": "ok",
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "origin/main today (no I1)",
+    "sha": "1f793099bdba42611c7f48f063a610c7df5630d5",
+    "floor": false,
+    "reason": "rollback target 1f793099bdba42611c7f48f063a610c7df5630d5 does not descend from the I1 floor commit 7299ee98d05c39480e5ad8018e0d81ac119062d8. Either it predates I1, or I1 reached it by squash or rebase, which the floor cannot trace; merge I1 with a merge commit",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "refuse"
+  },
+  {
+    "name": "merge commit of I1 into main",
+    "sha": "7342c1d1f4f9a11a6890fcf1436cddfe9ba9d613",
+    "floor": true,
+    "reason": "ok",
+    "preflight": "accepted",
+    "expect": "accept"
+  },
+  {
+    "name": "squash-merge of I1 into main",
+    "sha": "c473a9409bc86c1f59b135a3fcc92bfd4f5a14b8",
+    "floor": false,
+    "reason": "rollback target c473a9409bc86c1f59b135a3fcc92bfd4f5a14b8 does not descend from the I1 floor commit 7299ee98d05c39480e5ad8018e0d81ac119062d8. Either it predates I1, or I1 reached it by squash or rebase, which the floor cannot trace; merge I1 with a merge commit",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "refuse (fail closed, documented)"
+  },
+  {
+    "name": "later commit on squashed main",
+    "sha": "a134acfd8baf14d7b78631537f48d38ff9153563",
+    "floor": false,
+    "reason": "rollback target a134acfd8baf14d7b78631537f48d38ff9153563 does not descend from the I1 floor commit 7299ee98d05c39480e5ad8018e0d81ac119062d8. Either it predates I1, or I1 reached it by squash or rebase, which the floor cannot trace; merge I1 with a merge commit",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "refuse (fail closed, documented)"
+  },
+  {
+    "name": "ATTACK descendant of I1 with pre-I1 tree + empty markers",
+    "sha": "db0ede588622221ddd35e4aa6fbd46ffcfc0b8d3",
+    "floor": true,
+    "reason": "ok",
+    "preflight": "accepted",
+    "expect": "refuse"
+  },
+  {
+    "name": "tree object of that attack commit",
+    "sha": "9255bf0c10e941bdd5dbdd285835879703335159",
+    "floor": false,
+    "reason": "rollback target 9255bf0c10e941bdd5dbdd285835879703335159 is a tree, not a commit",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "refuse"
+  },
+  {
+    "name": "git revert of the whole I1 range",
+    "floor": "revert conflicted: error: commit c887a7f2e04c75e79ab77cd22078a942389d4bf2 is a merge but no -m option was given.",
+    "expect": "refuse"
+  },
+  {
+    "name": "shallow clone, target = its own tip",
+    "sha": "87d4c10073dfb76f3e09ee4432dafe15b67f2b1d",
+    "floor": false,
+    "reason": "the pinned I1 floor commit 7299ee98d05c39480e5ad8018e0d81ac119062d8 is not in this clone; this clone is shallow; fetch full history (git fetch --unshallow) and rerun",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "accept ideally; refuse is fail-closed"
+  },
+  {
+    "name": "clone holding only the squashed main",
+    "sha": "c473a9409bc86c1f59b135a3fcc92bfd4f5a14b8",
+    "floor": false,
+    "reason": "the pinned I1 floor commit 7299ee98d05c39480e5ad8018e0d81ac119062d8 is not in this clone; fetch the history that contains it and rerun",
+    "preflight": "refused: Rollback target predates the I1 authority core; after the I1 freeze it",
+    "expect": "refuse (fail closed)"
+  }
+]
+ACCEPTED: floor commit 7299ee9 itself; round-1 code d2c8744 (known D1-D3 oracles); revision 3 87d4c10; merge commit of I1 into main; ATTACK descendant of I1 with pre-I1 tree + empty markers
+FOOLED BY: ATTACK descendant of I1 with pre-I1 tree + empty markers

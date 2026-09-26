@@ -1,0 +1,32 @@
+[
+ {
+  "step": "on 87d4c10",
+  "memberFeed": 2,
+  "expected": 2,
+  "events": 3
+ },
+ {
+  "step": "rolled back to babeb42 code and schema",
+  "deployed": true,
+  "indexDropped": [
+   "✔ Deleted table indexes:",
+   "  [-] events.by_object   orgId, objectId, _creationTime"
+  ],
+  "events": 3
+ },
+ {
+  "step": "old code reads",
+  "memberPageLen": 3,
+  "events": 5
+ },
+ {
+  "step": "forward again to 87d4c10 (index rebuilt)",
+  "deployed": true,
+  "memberFeed": 3,
+  "expected": 3,
+  "same": true,
+  "events": 5
+ }
+]
+ROLLBACK PASS
+exit 0

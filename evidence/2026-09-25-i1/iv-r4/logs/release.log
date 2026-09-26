@@ -1,0 +1,29 @@
+$ node --test ops/release/release.test.mjs
+✔ unchanged release verifies only for its full commit and pinned manifest digest (2.632625ms)
+✔ changed, missing and injected artifact bytes are refused (1.632917ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (57.805209ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.039958ms)
+✔ version metadata must name the artifact commit (0.893167ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.820583ms)
+✔ failed real process halts checks before a later process can run (22.991333ms)
+✔ successful real processes run in order (42.960041ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.227834ms)
+✔ missing metadata and destructive contraction are refused (0.097958ms)
+✔ a rollback to a schema without the expanded fields is refused (0.142ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.46825ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (42.923375ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.048667ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (24.791666ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (23.916083ms)
+✔ PR changes use their common ancestor when the target branch advances independently (293.311875ms)
+✔ after the I1 freeze, rollback to code that predates I1 authority is refused (743.629875ms)
+✔ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (842.318916ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2143.521125
+exit 0

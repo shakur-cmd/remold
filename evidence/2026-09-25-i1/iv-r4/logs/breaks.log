@@ -1,0 +1,32 @@
+CAUGHT P listedRecordIds always null (no list path anywhere) <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 100ms |    × name matching still finds a readable record when many unreadable near-matches outrank it 55ms |    × records.list: a filter
+CAUGHT P pageRecords list path off <- unit:    × records.list: a filter value only hidden deals hold pages like a value nobody holds 140ms |    × records.list: hidden deals do not change the recent-first pages 35ms |    × records.list: sorting by a field still pag
+MISSED P list path ignores filter 
+MISSED P list path ignores desc 
+MISSED P list path tie-break dropped 
+CAUGHT P pageList isDone off by one <- unit:    × records.list: sorting by a field still pages only readable rows 12ms |  FAIL  ops/authority/pagination.test.ts > records.list: sorting by a field still pages only readable rows
+CAUGHT P records.related list path off <- unit:    × records.related: hidden deals linked to a readable company do not change the pages 28ms |  FAIL  ops/authority/pagination.test.ts > records.related: hidden deals linked to a readable company do not change the pages
+CAUGHT P agent related list path off <- unit:    × records.related: hidden deals linked to a readable company do not change the pages 19ms |    × agent related through a lookup fills its limit with readable records 34ms |    × agent related through a links field fil
+CAUGHT P csv list path off <- unit:    × csv.exportPage: hidden deals do not change the export pages 172ms |  FAIL  ops/authority/pagination.test.ts > csv.exportPage: hidden deals do not change the export pages
+CAUGHT P events merge off <- unit:    × events.forOrg: activity on hidden deals does not change the member's pages 21ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages
+CAUGHT P events merge keeps already-seen ids <- unit:    × events.forOrg: a restricted member pages every event they can see, newest first, once each 43ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: a restricted member pages every event they can see, newest f
+CAUGHT P events: listed objects streamed whole <- unit:    × events.forOrg: activity on hidden deals does not change the member's pages 21ms |  FAIL  ops/authority/pagination.test.ts > events.forOrg: activity on hidden deals does not change the member's pages
+CAUGHT F search: record-scoped treated as fully searchable <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 59ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+CAUGHT F search recent: list path off <- unit:    × search fills its limit with readable matches, so hidden matches change nothing 77ms |  FAIL  ops/authority/oracles.test.ts > search fills its limit with readable matches, so hidden matches change nothing
+CAUGHT F name match list path off <- unit:    × name matching still finds a readable record when many unreadable near-matches outrank it 110ms |  FAIL  ops/authority/oracles.test.ts > name matching still finds a readable record when many unreadable near-matches o
+CAUGHT F dueTasks list path off <- unit:    × daily task membership cannot reveal due or done fields denied for that particular record 278ms |  FAIL  ops/authority/read-boundaries.test.ts > daily task membership cannot reveal due or done fields denied for that 
+MISSED F quietDeals list path off 
+MISSED F dueTasks index path skips canReadRecord 
+CAUGHT S suggestions.list take-then-filter <- unit:    × member suggestion list fills its limit with readable suggestions 18ms |  FAIL  ops/authority/limits.test.ts > member suggestion list fills its limit with readable suggestions
+CAUGHT S inbox.list take-then-filter <- unit:    × member inbox list fills its limit with items the member may see 10ms |  FAIL  ops/authority/limits.test.ts > member inbox list fills its limit with items the member may see
+CAUGHT R1 shape: Object.hasOwn back to `in` <- unit:    × refuses extra body keys even when they share a name with an Object.prototype member 4ms |  FAIL  ops/authority/shape.test.ts > refuses extra body keys even when they share a name with an Object.prototype member
+CAUGHT R3 events.forRecord: drop the read check <- unit:    × a record ID the member cannot read gets the same answer as a deleted record 53ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record
+CAUGHT R3 records.related: drop the target read check <- unit:    × a record ID the member cannot read gets the same answer as a deleted record 24ms |  FAIL  ops/authority/oracles.test.ts > a record ID the member cannot read gets the same answer as a deleted record
+CAUGHT R4 floor: drop the ancestry clause <- release: ✖ after the I1 freeze, rollback to code that predates I1 authority is refused (374.768708ms) | ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (371.766958ms) | ✖ f
+CAUGHT R4 floor: generic refusal message <- release: ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (467.325083ms) | ✖ failing tests: | ✖ a refused rollback floor says what failed: squash, shallow clone, missing pin
+CAUGHT D6 guard: own-check line disabled <- unit:    × the guard reports a row whose own check no mapped test performs 15ms |  FAIL  ops/authority/h0-parity.test.ts > the guard reports a row whose own check no mapped test performs
+CAUGHT D6 guard: MAX_SHARED 6 -> 60 <- unit:    × the guard reports an own check that seven production tests share 41ms |  FAIL  ops/authority/h0-parity.test.ts > the guard reports an own check that seven production tests share
+MISSED D6 row 5 own check -> old revoke pattern 
+MISSED D6 row 8 own check -> old key pattern 
+MISSED D6 row 38 own check -> old exposure pattern 
+tree after breaks: M ops/authority/local.mjs
+?? ops/authority/fixture-iv.ts
