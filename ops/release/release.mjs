@@ -90,13 +90,13 @@ export function preflight(manifest, targetSha, targetSchemaDigest, snapshotRecei
 }
 // The I1 authority core (masks, record scopes, frozen legacy grants). Code without it reads
 // I1-era data as if every agent and member were unrestricted, so it is never a rollback target.
-// The target must also descend from the commit that introduced the core, so empty stub
-// files on pre-I1 code or a bare tree SHA do not pass. A squash-merged I1 would refuse
-// every target (fail closed) until this pin is updated.
+// The target must also descend from the independently certified I1 commit (IV round 5),
+// so empty stub files, a bare tree SHA or earlier I1 revisions with known leaks do not pass.
+// A squash-merged I1 would refuse every target (fail closed) until this pin is updated.
 const AUTHORITY_CORE = ['convex/authority/migration.ts', 'convex/authority/reads.ts'];
-export const FIRST_I1_COMMIT = '7299ee98d05c39480e5ad8018e0d81ac119062d8';
+export const I1_FLOOR_COMMIT = 'bb8e3ed1a6df925e155c7eaeed4de5d9166fc14f';
 // Returns true, or the reason the target is refused.
-export function authorityFloorCheck(cwd, targetSha, floorSha = FIRST_I1_COMMIT) {
+export function authorityFloorCheck(cwd, targetSha, floorSha = I1_FLOOR_COMMIT) {
   requireSha(targetSha);
   const ok = (...args) => spawnSync('git', args, { cwd }).status === 0;
   const shallow = spawnSync('git', ['rev-parse', '--is-shallow-repository'], { cwd, encoding: 'utf8' }).stdout?.trim() === 'true';
@@ -110,7 +110,7 @@ export function authorityFloorCheck(cwd, targetSha, floorSha = FIRST_I1_COMMIT) 
   if (missing.length) return `rollback target ${targetSha} descends from I1 but lacks ${missing.join(' and ')}`;
   return true;
 }
-export function authorityFloor(cwd, targetSha, floorSha = FIRST_I1_COMMIT) {
+export function authorityFloor(cwd, targetSha, floorSha = I1_FLOOR_COMMIT) {
   return authorityFloorCheck(cwd, targetSha, floorSha) === true;
 }
 function git(cwd, ...args) {
