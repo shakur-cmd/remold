@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>P4 durable callback ingestion, local SERVICE/SIM proof (round 2)</title>
+<title>P4 durable callback ingestion, local SERVICE/SIM proof (round 3)</title>
 <style>
   body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
@@ -22,29 +22,67 @@
 </style>
 </head>
 <body>
-<h1>P4 durable callback ingestion, local SERVICE/SIM proof (round 2)</h1>
-<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion · evidence level: SERVICE/SIM, builder-run · status: awaiting independent verification of the round 2 fixes</div>
+<h1>P4 durable callback ingestion, local SERVICE/SIM proof (round 3)</h1>
+<div class="meta">2026-09-26 · scope: remold/P4/callback-ingestion · evidence level: SERVICE/SIM, builder-run · status: awaiting independent verification of the round 3 fixes</div>
 
 <div class="decisions">
 <h2>Your calls</h2>
 <ul>
-  <li>None open. The coordinator decided unbound accounts: accept with 200 and park, with no effect. That replaces my round 1 choice of 400.</li>
-  <li>Refund, dispute, credit note and subscription notifications are refused explicitly with a recorded reason. They are not yet turned into re-reads (see below). Say if you want that built next.</li>
+  <li>None open. The coordinator decided all four round 3 fixes. The verifier's check R2-4 now fails on purpose, explained below. If you want a platform 401 to stop only the merchant it came from, say so.</li>
 </ul>
 </div>
 
 <div class="status">
-<h2>Done and proven (builder run only)</h2>
+<h2>Done and proven in round 3 (builder run only)</h2>
 <ul>
-  <li>This is a builder-run SERVICE/SIM proof. Nobody independent has checked the round 2 fixes yet. Actual provider ingestion is still open.</li>
-  <li>No Stripe API calls, no sandbox writes, no provider activity. The signing secret is synthetic. Provider state is an in-process stub. Spent sandbox latches and private journals were not touched.</li>
-  <li>The independent verifier's attacks, rerun by me, show the change. Before: attacks 12 and 13 fail. With production-style error hiding, attack 6 also fails. After: all 13 attacks pass, both with and without error hiding.</li>
-  <li>My suite now has 10 checks. Before: 6 fail. After: 10 of 10 pass.</li>
-  <li>11 mutants, 3 from round 1 and 8 new ones: each makes at least one check fail. <code>--all</code> exits 0.</li>
-  <li>None of the 54 frozen payment files changed. <code>proofs/payments/convex/</code> is now byte-identical to base again: the Convex callback code moved to <code>callback/</code>. Typecheck passes.</li>
+  <li>This is a builder-run SERVICE/SIM proof. Nobody independent has checked the round 3 fixes yet. Actual provider ingestion is still open. There were no Stripe calls and no sandbox writes, and the latches and journals were not touched.</li>
+  <li>The verifier's round 2 script, with production-style error hiding and the 1001-receipt scan: <b>before</b>, 26 checks passed and 4 failed: R2-3b, R2-3c, R2-4b and R2-11. <b>After</b>, all four pass. R2-4 now fails for the designed reason explained below.</li>
+  <li>The verifier's round 1 script (error hiding on) still passes all 14 checks.</li>
+  <li>My suite now has 13 checks. Baseline fails 8, after passes 13 of 13. There are 15 mutants, 4 of them new in this round: pause, sweep, watermark and throwable. Each makes at least one check fail. <code>--all</code> exits 0.</li>
+  <li>The 54 frozen files are unchanged, and <code>convex/</code> is still identical to base. Both typechecks exit 0.</li>
 </ul>
 </div>
 
+<h2>Round 3 fixes</h2>
+<table>
+<tr><th>#</th><th>Problem (verifier round 2)</th><th>Fix</th><th>Before and after</th></tr>
+<tr><td>1</td><td>401 and 403 were final, so an expired or rotated platform key closed every due receipt.</td><td><code>classify()</code> marks 401 as a platform pause and 403 as a merchant pause. The drain leaves the receipt open and counts no attempt. It stops reading: for every merchant on 401, or for that merchant on 403. It writes one <code>provider_paused</code> alert row per episode. The next drain reads again, and the first successful read resolves the alert.</td><td>R2-3b and R2-4b: fail, then pass. My check 10: 2 reads while paused (one per drain), receipts open, no refusal or failure rows, one alert row, applied after restore and alert resolved. The same holds for a 403 on one merchant.</td></tr>
+<tr><td>2</td><td>After about 7.5 minutes of provider outage the trigger was lost, because the provider will not resend.</td><td>New <code>sweep()</code>. It re-reads invoices on a binding that are marked incomplete, in bounded batches, account-scoped, through the same reconcile and classify path. A per-merchant cursor rotates the batch so invoices that keep failing cannot starve the rest. The attempt cap stays at 5.</td><td>Before, there was no sweep: in R2-5 the document stays incomplete after the cap with nothing to re-read it. My check 12: the flaky invoice whose 100 receipts all closed as failed is completed by the sweep once the provider recovers, with at most 2 invoices per merchant per pass.</td></tr>
+<tr><td>3</td><td>With more than 1000 receipts backing off, newer ones starved.</td><td>Receipts are picked by an index on next-due time. <code>admit</code> adds new receipts to a schedule, oldest first, and moves a per-binding cursor past them. <code>due</code> reads only schedule rows with next-due time up to now, so a receipt waiting out a backoff is never read. Schedule rows for closed receipts are removed.</td><td>R2-11 (1001 stuck receipts): fail, then pass. The newer receipt applies at the same clock.</td></tr>
+<tr><td>4</td><td><code>classify()</code> threw on a thrown string or number.</td><td>Anything thrown that is not an Error becomes a retryable <code>internal_error</code>, which still counts attempts. The sweep also isolates each invoice now.</td><td>R2-3c: fail, then pass. My check 11: attempts go 1, then 2.</td></tr>
+</table>
+
+<h2>Why R2-4 now fails</h2>
+<p>R2-4 queues a 401 receipt and then a 429 receipt, and drains once. The 401 now pauses reading for every merchant (fix 1), as the coordinator asked. So the 429 receipt is not read in that pass. It stays open, which is correct, but R2-4 expects a <code>retry</code> outcome in that same drain. My check 11 covers 429 on its own: it is deferred as <code>provider_429</code> and the receipt stays open. R2-3 confirms 429 is classified as retryable.</p>
+
+<h2>Round 3 mutants</h2>
+<table>
+<tr><th>Mutant</th><th>What is removed</th><th>Checks that fail</th></tr>
+<tr><td>pause</td><td>401/403 pause branch in <code>classify()</code></td><td class="fail">credential pause</td></tr>
+<tr><td>sweep</td><td>incomplete-document filter in <code>stale</code></td><td class="fail">sweep</td></tr>
+<tr><td>watermark</td><td>cursor advance in <code>admit</code></td><td class="fail">bounded retries (newer receipt starved)</td></tr>
+<tr><td>throwable</td><td>object guard in <code>classify()</code></td><td class="fail">thrown string</td></tr>
+<tr><td>backoff (reworked)</td><td>next-due range in the due index read</td><td class="fail">bounded retries</td></tr>
+</table>
+
+<h2>Things to know (round 3)</h2>
+<ul>
+  <li>During a pause, each drain makes one probe read per paused scope. That read is how the drain notices recovery.</li>
+  <li>The sweep's <code>stale</code> query filters the binding's documents in <code>externalId</code> order. It reads a bounded batch, but a binding with very many complete invoices ahead of the incomplete ones would make that scan longer. A production version should add an index on the incomplete flag.</li>
+  <li>The sweep and the drain are separate calls. A hosted schedule has to run both, and none exists yet.</li>
+  <li>The frozen <code>ackEvent</code> does not remove schedule rows. <code>admit</code> removes rows whose receipt is closed, up to 200 per drain.</li>
+</ul>
+
+<h2>Round 3 commands and evidence (<code>evidence/callback-ingestion/fix2/</code>)</h2>
+<pre>cd proofs/payments
+CALLBACK_OUT=fix2/suite node callback-ingestion-replay.mjs --all
+IV_REDACT=1 IV_OUT=r2-after node iv-r2-copy.mjs --scan          # verifier round 2 script, output path changed only
+IV_OUT=fix2/r1-after-redacted node --import ./callback/redact-hook.mjs iv-attacks-after.mjs</pre>
+<p>Files: <code>r2-before.log</code> and <code>r2-before/none.json</code> (before), <code>r2-after.log</code> and <code>r2-after/none.json</code>, <code>r1-after-redacted.log</code>, <code>suite.txt</code> and <code>suite/*.json</code>, <code>typecheck.txt</code>, <code>frozen-source-check.txt</code>. <code>iv-r2-copy.mjs</code> differs from the verifier's <code>iv/r2/iv-r2.mjs</code> only in its output path.</p>
+<p>Source SHA256: <code>callback-ingestion.mjs</code> 65e2bb2daac137f08f5c002184bd39c17b5545001476a01c23569370d4b75da0, <code>callback/callbackIngestion.ts</code> 2c949ad7d1b6f82614fb75294a58281746367aefe6c9014937d01e2c87875c17, <code>callback/schema.ts</code> 3dedb98489dff7b732540a709a5b36c6977977d778da1c0eb7ac158530cbcbea, <code>callback-ingestion-replay.mjs</code> 4db33412e47bd0c95c357f85cc3208413953f6b7e15e0e89ab41298d43ae2a46.</p>
+
+<hr>
+<h2 style="margin-top:36px">Round 2 record (kept for history)</h2>
 <h2>What each fix does</h2>
 <table>
 <tr><th>#</th><th>Problem found by the verifier</th><th>Fix</th></tr>

@@ -24,9 +24,13 @@ const MUTANTS={
  dedupe:{file:'convex/payments.ts',from:"if (old) {\n            if (old.digest !== a.digest)\n                deny('event integrity mismatch');\n            return false;\n        }\n        const { token, ...row } = a;",to:"const { token, ...row } = a;"},
  signature:{file:'webhooks.mjs',from:"if(!fields.filter(([k])=>k==='v1').some(([,value])=>{const actual=Buffer.from(value??'','hex');return actual.length===expected.length&&timingSafeEqual(actual,expected)}))throw new Error('Webhook signature refused');",to:''},
  account:{file:'callback-ingestion.mjs',from:'merchants.find(m=>m.account===event.account)',to:'merchants.find(()=>true)'},
- isolation:{file:'callback-ingestion.mjs',from:"try{items=await due(merchant,now());}catch(error){outcomes.push({merchant:merchant.name,result:'merchant_error',code:codeOf(error)});continue;}",to:'items=await due(merchant,now());'},
+ isolation:{file:'callback-ingestion.mjs',from:"try{await admit?.(merchant,now());items=await due(merchant,now());}catch(error){outcomes.push({merchant:merchant.name,result:'merchant_error',code:codeOf(error)});continue;}",to:'await admit?.(merchant,now());items=await due(merchant,now());'},
  classify:{file:'callback-ingestion.mjs',from:"if(status>=400&&status<500&&![408,409,429].includes(status))",to:'if(false)'},
- backoff:{file:'convex/callbackIngestion.ts',from:'if (retry && retry.nextAt > a.now) continue;',to:''},
+ backoff:{file:'convex/callbackIngestion.ts',from:"for await (const s of ctx.db.query('callbackRetries').withIndex('due', q => q.eq('binding', a.binding).lte('nextAt', a.now)))",to:"for await (const s of ctx.db.query('callbackRetries').withIndex('due', q => q.eq('binding', a.binding)))"},
+ pause:{file:'callback-ingestion.mjs',from:"  if(status===401||status===403)return{final:false,pause:status===401?'platform':'merchant',code:'provider_'+status+code};\n",to:''},
+ watermark:{file:'convex/callbackIngestion.ts',from:'const seenUpTo = rows[rows.length - 1]._creationTime;',to:'const seenUpTo = cursor?.seenUpTo ?? 0;'},
+ sweep:{file:'convex/callbackIngestion.ts',from:"q.eq(q.field('adjustmentsComplete'), false)",to:"q.eq(q.field('adjustmentsComplete'), true)"},
+ throwable:{file:'callback-ingestion.mjs',from:"if(error&&typeof error==='object'&&'requestId' in error",to:"if(error&&'requestId' in error"},
  'attempt-cap':{file:'convex/callbackIngestion.ts',from:'const MAX_ATTEMPTS = 5,',to:'const MAX_ATTEMPTS = 1e9,'},
  'typed-refusal':{file:'convex/callbackIngestion.ts',from:"if (!doc) return { action: 'refuse' as const, code: 'unbound_document' };",to:''},
  unsupported:{file:'convex/callbackIngestion.ts',from:"if (!row.type.startsWith('invoice.')) return { action: 'refuse' as const, code: 'unsupported_event_type' };",to:''},
@@ -37,11 +41,13 @@ const RUNS=[['baseline','none','fail'],['after','none','pass'],...Object.keys(MU
 if(process.argv.includes('--all'))await all();else await one(arg('mode')??'after',arg('mutant')??'none');
 
 async function all(){
- mkdirSync(out,{recursive:true});const summary=[];
+ mkdirSync(out,{recursive:true});const summary=[],started=Date.now();
  for(const [mode,mutant,expected] of RUNS){
   const code=await new Promise(r=>spawn(process.execPath,[fileURLToPath(import.meta.url),'--mode='+mode,'--mutant='+mutant],{stdio:'inherit',env:process.env}).once('close',r));
-  const result=JSON.parse(readFileSync(out+label(mode,mutant)+'.json','utf8'));
-  summary.push({mode,mutant,expected,exit:code,failedCases:result.cases.filter(c=>!c.pass).map(c=>c.name),meetsExpectation:expected==='pass'?code===0&&result.cases.every(c=>c.pass):result.cases.some(c=>!c.pass)});
+  // A run that never wrote its result (backend refused the copy) counts as not meeting its expectation.
+  const file=out+label(mode,mutant)+'.json',result=existsSync(file)?JSON.parse(readFileSync(file,'utf8')):{cases:[{name:'run did not complete',pass:false}],incomplete:true};
+  if(result.startedAt&&Date.parse(result.startedAt)<started)result.cases=[{name:'stale result file',pass:false}];
+  summary.push({mode,mutant,expected,exit:code,failedCases:result.cases.filter(c=>!c.pass).map(c=>c.name),meetsExpectation:!result.incomplete&&(expected==='pass'?code===0&&result.cases.every(c=>c.pass):result.cases.some(c=>!c.pass))});
  }
  writeFileSync(out+'summary.json',JSON.stringify(summary,null,1)+'\n');
  console.log('\nSUMMARY');for(const s of summary)console.log(`${s.mode}/${s.mutant}: expected ${s.expected}, failed cases [${s.failedCases.join(', ')}] -> ${s.meetsExpectation?'OK':'UNEXPECTED'}`);
@@ -63,7 +69,7 @@ async function one(mode,mutant){
  writeFileSync(cwd+'/convex.json','{"functions":"convex"}');symlinkSync(root+'node_modules',cwd+'/node_modules','dir');
  if(mutant!=='none'){const m=MUTANTS[mutant],path=cwd+'/'+m.file,text=readFileSync(path,'utf8');assert.equal(text.split(m.from).length,2,'Mutant anchor must match exactly once: '+mutant);writeFileSync(path,text.replace(m.from,m.to));}
  const {verifyStripe}=await import(pathToFileURL(cwd+'/webhooks.mjs'));
- const {createReceiver,drain,convexDeps}=await import(pathToFileURL(cwd+'/callback-ingestion.mjs'));
+ const {createReceiver,drain,sweep,convexDeps}=await import(pathToFileURL(cwd+'/callback-ingestion.mjs'));
 
  const env={PATH:process.env.PATH,HOME:process.env.HOME,TMPDIR:process.env.TMPDIR,CONVEX_AGENT_MODE:'anonymous',CONVEX_DISABLE_METRICS:'1',CI:'1'};
  const cli=root+'node_modules/convex/bin/main.js';let backend,log='';
@@ -86,7 +92,7 @@ async function one(mode,mutant){
   for(const n of ['A','B']){run('payments:configureFixture',{binding:f[n].binding,adapterToken:f[n].adapter,account:accounts[n],environment:'SIM',healthy:true});f[n].key={provider:'stripe',environment:'SIM',account:accounts[n]};}
   const docs={};
   const mkDoc=async(n,ext)=>{const customer=run('paymentFixture:customer',{org:f[n].org,binding:f[n].binding,name:'Callback '+n+ext});const id=await m('prepareInvoice',{token:f[n].sessions.owner,customer,amountMinor:100,currency:'usd',kind:'invoice'});await m('attachProvider',{token:f[n].adapter,id,externalId:ext});return id;};
-  docs.A=await mkDoc('A','in_simCallbackA');docs.B=await mkDoc('B','in_simCallbackB');docs.gone=await mkDoc('A','in_simGone');docs.flaky=await mkDoc('A','in_simFlaky');
+  docs.A=await mkDoc('A','in_simCallbackA');docs.B=await mkDoc('B','in_simCallbackB');docs.gone=await mkDoc('A','in_simGone');docs.flaky=await mkDoc('A','in_simFlaky');docs.odd=await mkDoc('A','in_simOdd');docs.rate=await mkDoc('A','in_simRate');
   const merchants=['A','B'].map(n=>({name:n,account:accounts[n],binding:f[n].binding,token:f[n].adapter}));
 
   // Provider-state stub: every object lives inside one connected account; reads name the account.
@@ -98,10 +104,13 @@ async function one(mode,mutant){
    a['/v1/invoice_payments/inpay_simA']={id:'inpay_simA',invoice:'in_simCallbackA',currency:'usd',livemode:false,status:'paid',amount_paid:100,payment:{type:'payment_intent',payment_intent:'pi_simA'}};
    a['/v1/payment_intents/pi_simA']={id:'pi_simA',livemode:false,currency:'usd',status:'succeeded',amount_received:100,latest_charge:'ch_simA',metadata:{}};
    a['/v1/charges/ch_simA']={id:'ch_simA',payment_intent:'pi_simA',livemode:false,currency:'usd',amount:100,amount_refunded:0};};
-  const providerReads=[];
+  const providerReads=[];let authFail=null,flakyRecovered=false;provider[accounts.A]['/v1/invoices/in_simFlaky']=invoice('in_simFlaky',false);
   const stripe={request:async(method,path,params={},account)=>{
    assert.equal(method,'GET','Provider stub is read-only');providerReads.push({account,path});
-   if(path==='/v1/invoices/in_simFlaky')throw new StripeFailure(503,{type:'api_error'},'req_simFlaky');
+   if(authFail===401||(authFail===403&&account===accounts.A))throw new StripeFailure(authFail,{type:'invalid_request_error',...(authFail===403?{code:'account_invalid'}:{})},'req_simAuth');
+   if(path==='/v1/invoices/in_simFlaky'&&!flakyRecovered)throw new StripeFailure(503,{type:'api_error'},'req_simFlaky');
+   if(path==='/v1/invoices/in_simOdd')throw 'boom';
+   if(path==='/v1/invoices/in_simRate')throw new StripeFailure(429,{type:'invalid_request_error',code:'rate_limit'},'req_simRate');
    const state=provider[account];if(!state)throw new StripeFailure(404,{type:'invalid_request_error',code:'resource_missing',param:'id'},'req_sim');
    const list=p=>({data:Object.entries(state).filter(([k,v])=>k.startsWith(p+'/')&&Object.entries(params).every(([pk,pv])=>pk==='limit'||pk==='starting_after'||v[pk]===pv)).map(([,v])=>v),has_more:false});
    if(['/v1/invoice_payments','/v1/refunds','/v1/credit_notes'].includes(path))return list(path);
@@ -225,6 +234,34 @@ async function one(mode,mutant){
    const after=await snap();await checkB('liveness',after);const flakyOpen=(await Promise.all(Array.from({length:100},(_,i)=>rowsOf('A','evt_simFlaky'+i)))).filter(r=>!r[0]?.done).length;
    const pass=statuses.every(s=>s===200)&&o1.filter(o=>o.result==='retry').length===100&&valid?.done===true&&o2.filter(o=>o.eventId?.startsWith('evt_simFlaky')).length===0&&queryOk&&after.A.failed-before.A.failed===100&&flakyOpen===0;
    record('stuck receipts back off, do not starve newer ones, and close as failed after bounded attempts',pass,{firstDrain:tally(o1.map(o=>o.result)),validReceiptDone:valid?.done,flakyTouchedAtSameClock:o2.filter(o=>o.eventId?.startsWith('evt_simFlaky')).length,receiptsQueryAbove100:queryOk,laterDrains:later,failedAuditRows:after.A.failed-before.A.failed,stillOpen:flakyOpen});}
+
+  // 10. 401 pauses every merchant and 403 pauses one: receipts stay open, no attempt or refusal, one alert row per episode, resume on success.
+  {const before=await snap();const alertOf=async account=>(await client.query(api.callbackIngestion.parked,{token:ingressToken})).alerts.find(a=>a.kind==='provider_paused'&&a.account===account);
+   const a1=event('evt_simAuth1','invoice.updated',accounts.A,'in_simCallbackA',t0+11),a2=event('evt_simAuth2','invoice.updated',accounts.A,'in_simCallbackA',t0+11),b1=event('evt_simAuthB','charge.refunded',accounts.B,'ch_simB',t0+11);
+   for(const [l,e] of [['A1',a1],['A2',a2],['B behind platform pause',b1]])await deliver(l,e,sign(e));
+   authFail=401;const reads0=providerReads.length;const o1=await drainAll('platform key expired');const o2=await drainAll('platform key still expired');const readsDuring=providerReads.length-reads0;
+   const open1=[(await rowsOf('A','evt_simAuth1'))[0]?.done,(await rowsOf('A','evt_simAuth2'))[0]?.done,(await rowsOf('B','evt_simAuthB'))[0]?.done];const alertDuring=await alertOf('platform');const mid=await snap();
+   authFail=null;const o3=await drainAll('platform key restored');const alertAfter=await alertOf('platform');
+   authFail=403;const p1=event('evt_simPerm','invoice.updated',accounts.A,'in_simCallbackA',t0+12);await deliver('A access revoked',p1,sign(p1));const o4=await drainAll('merchant access revoked');const permOpen=(await rowsOf('A','evt_simPerm'))[0]?.done;const alertA=await alertOf(accounts.A);
+   authFail=null;const o5=await drainAll('merchant access restored');const alertA2=await alertOf(accounts.A);const after=await snap();await checkB('credential pause',after);
+   const done=async(n,id)=>(await rowsOf(n,id))[0]?.done;
+   const pass=o1.length===1&&o1[0].result==='paused'&&o1[0].scope==='platform'&&o2.length===1&&readsDuring===2&&open1.every(d=>d===false)&&mid.A.refused.length===before.A.refused.length&&mid.A.failed===before.A.failed&&alertDuring?.count===1&&alertDuring.active===true
+    &&await done('A','evt_simAuth1')&&await done('A','evt_simAuth2')&&await done('B','evt_simAuthB')&&alertAfter?.active===false
+    &&o4.length===1&&o4[0].result==='paused'&&o4[0].scope==='merchant'&&permOpen===false&&alertA?.active===true&&alertA.count===1&&await done('A','evt_simPerm')&&alertA2?.active===false&&after.A.failed===before.A.failed;
+   record('401 pauses all merchants and 403 pauses one; receipts stay open, one alert row, resume when a read succeeds',pass,{platform:{drain1:o1,drain2:o2,readsWhilePaused:readsDuring,openWhilePaused:open1,alert:alertDuring,afterRestore:o3,alertAfter},merchant:{drain:o4,openWhilePaused:permOpen,alert:alertA,afterRestore:o5,alertAfter:alertA2}});}
+
+  // 11. A thrown non-Error is a retryable internal error that still counts attempts; an integrated 429 is deferred, not closed.
+  {const e=event('evt_simOdd','invoice.updated',accounts.A,'in_simOdd',t0+13),r=event('evt_simRate','invoice.updated',accounts.A,'in_simRate',t0+13);await deliver('provider client throws a string',e,sign(e));await deliver('provider rate limit',r,sign(r));
+   const o1=await drainAll('string thrown, rate limited');clock+=BACKOFF*2**6;const o2=await drainAll('string thrown again');const x1=o1.find(o=>o.eventId==='evt_simOdd'),x2=o2.find(o=>o.eventId==='evt_simOdd'),r1=o1.find(o=>o.eventId==='evt_simRate');
+   record('a thrown string is retried as internal_error and counts attempts; a 429 is deferred',x1?.result==='retry'&&x1.code==='internal_error'&&x1.attempts===1&&x2?.result==='retry'&&x2.attempts===2&&r1?.result==='retry'&&r1.code==='provider_429'&&(await rowsOf('A','evt_simRate'))[0]?.done===false,{first:x1,second:x2,rateLimited:r1});}
+
+  // 12. Sweep: the 100 flaky receipts were closed as failed, so no trigger is left for in_simFlaky. After the
+  //     provider recovers, a bounded account-scoped sweep of incomplete invoices completes it through the same reconcile path.
+  {const before=await q('getDocument',{token:f.A.sessions.owner,id:docs.flaky});flakyRecovered=true;const cursors=new Map();
+   const passes=[];for(let i=0;i<3;i++)passes.push(mode==='baseline'?[]:await sweep({...deps,merchants,reconcile,cursors,limit:2}));
+   const after=await q('getDocument',{token:f.A.sessions.owner,id:docs.flaky});const s2=await snap();await checkB('sweep',s2);
+   const flat=passes.flat(),perMerchantMax=Math.max(0,...passes.map(p=>Math.max(0,...['A','B'].map(n=>p.filter(o=>o.merchant===n).length))));
+   record('sweep re-reads incomplete invoices in bounded batches and completes one whose trigger was lost',before.adjustmentsComplete===false&&after.adjustmentsComplete===true&&flat.some(o=>o.externalId==='in_simFlaky'&&o.result==='completed')&&perMerchantMax<=2&&s2.B.observed===0,{before:{adjustmentsComplete:before.adjustmentsComplete},after:{state:after.state,adjustmentsComplete:after.adjustmentsComplete},passes});}
 
   // Extra probe (not a required case): crash after the ledger write but before acknowledgement.
   {const before=await snap();const e=event('evt_simUpdatedLate','invoice.updated',accounts.A,'in_simCallbackA',t0+10);const s=await deliver('update event',e,sign(e));
