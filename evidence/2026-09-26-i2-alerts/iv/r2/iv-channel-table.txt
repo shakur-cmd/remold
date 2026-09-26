@@ -1,0 +1,38 @@
+
+ RUN  v5.0.1 /Users/urkel/Documents/CodeMyVibe/Projects/remold-i2-alerts-iv-r2
+
+stdout | convex/alerts.iv2.test.ts > channel host table
+IV2 channel table {
+ "https://hooks.example.com/x": "https://hooks.example.com/x",
+ "https://localhost./x": "https://localhost./x",
+ "https://foo.localhost./x": "https://foo.localhost./x",
+ "https://metadata.google.internal./x": "https://metadata.google.internal./x",
+ "https://printer.local./x": "https://printer.local./x",
+ "https://0x7f.1/x": null,
+ "https://2130706433/x": null,
+ "https://017700000001/x": null,
+ "https://[::ffff:127.0.0.1]/x": null,
+ "https://[::ffff:a00:1]/x": null,
+ "https://[0:0:0:0:0:0:0:1]/x": null,
+ "https://[::127.0.0.1]/x": "https://[::7f00:1]/x",
+ "https://[64:ff9b::a9fe:a9fe]/x": "https://[64:ff9b::a9fe:a9fe]/x",
+ "https://[fe80::1]/x": null,
+ "https://[fc00::1]/x": null,
+ "https://198.18.0.1/x": "https://198.18.0.1/x",
+ "https://224.0.0.1/x": "https://224.0.0.1/x",
+ "https://255.255.255.255/x": "https://255.255.255.255/x",
+ "https://127.0.0.1.nip.io/x": "https://127.0.0.1.nip.io/x",
+ "https://kubernetes.default.svc/x": "https://kubernetes.default.svc/x",
+ "https://169.254.169.254.nip.io/x": "https://169.254.169.254.nip.io/x",
+ "http://localhost./x": null,
+ "http://127.0.0.1:9@evil.test/x": null,
+ "https://user@10.0.0.1/x": null
+}
+
+ ✓ convex/alerts.iv2.test.ts > channel host table 1ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  12:16:31
+   Duration  90ms (transform 62%, import 31%, tests 4%, worker 3%)
+

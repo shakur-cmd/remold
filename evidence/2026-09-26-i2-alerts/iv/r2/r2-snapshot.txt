@@ -1,0 +1,705 @@
+$ node ops/release/snapshot-drill.mjs /tmp/iv2/r2-snapshot-drill.json
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790440505619254000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip
+- Importing /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip (30.7 KiB)
+
+- Importing /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip (30.7 KiB)
+
+Import change summary:
+table                   | create | delete |
+-------------------------------------------
+agentInbox              | 0      | 0 of 0 |
+agents                  | 1      | 0 of 0 |
+authorityAudit          | 0      | 0 of 0 |
+capabilityGrants        | 0      | 0 of 0 |
+consent                 | 0      | 0 of 0 |
+events                  | 0      | 0 of 0 |
+fields                  | 38     | 0 of 0 |
+integrationBindings     | 0      | 0 of 0 |
+integrationCallbacks    | 0      | 0 of 0 |
+integrationConnections  | 0      | 0 of 0 |
+integrationCursors      | 0      | 0 of 0 |
+integrationEvents       | 0      | 0 of 0 |
+integrationIntents      | 0      | 0 of 0 |
+integrationLookups      | 0      | 0 of 0 |
+integrationObservations | 0      | 0 of 0 |
+integrationOps          | 0      | 0 of 0 |
+integrationPages        | 0      | 0 of 0 |
+integrationProviders    | 0      | 0 of 0 |
+integrationReceipts     | 0      | 0 of 0 |
+invites                 | 0      | 0 of 0 |
+links                   | 0      | 0 of 0 |
+members                 | 1      | 0 of 0 |
+objects                 | 7      | 0 of 0 |
+opsAlertFunctions       | 0      | 0 of 0 |
+opsAlertScan            | 0      | 0 of 0 |
+opsAlertWatch           | 0      | 0 of 0 |
+opsAlerts               | 0      | 0 of 0 |
+opsEvents               | 0      | 0 of 0 |
+opsMetrics              | 0      | 0 of 0 |
+opsNotices              | 0      | 0 of 0 |
+opsProbes               | 0      | 0 of 0 |
+orgs                    | 1      | 0 of 0 |
+records                 | 250    | 0 of 0 |
+safetyTargets           | 0      | 0 of 0 |
+secretReferences        | 0      | 0 of 0 |
+suggestions             | 0      | 0 of 0 |
+usageBudgets            | 0      | 0 of 0 |
+users                   | 1      | 0 of 0 |
+Component rateLimiter
+table          | create | delete |
+----------------------------------
+pendingUpdates | 0      | 0 of 0 |
+rateLimits     | 0      | 0 of 0 |
+Component rateLimiter/batchWorker
+table       | create | delete |
+-------------------------------
+workerState | 0      | 0 of 0 |
+workers     | 0      | 0 of 0 |
+Once the import has started, it will run in the background.
+Interrupting `npx convex import` will not cancel it.
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing "secretReferences"
+
+✔ Imported "secretReferences" (0 documents)
+✔ Imported "integrationObservations" (0 documents)
+✔ Imported "integrationIntents" (0 documents)
+- Importing "integrationIntents"
+
+✔ Imported "pendingUpdates" in 'rateLimiter' (0 documents)
+✔ Imported "integrationConnections" (0 documents)
+- Importing "integrationConnections"
+
+✔ Imported "opsAlertWatch" (0 documents)
+- Importing "opsAlertWatch"
+
+✔ Imported "links" (0 documents)
+- Importing "links"
+
+✔ Imported "capabilityGrants" (0 documents)
+- Importing "capabilityGrants"
+
+✔ Imported "safetyTargets" (0 documents)
+- Importing "safetyTargets"
+
+- Importing "integrationLookups"
+
+✔ Imported "integrationLookups" (0 documents)
+- Importing "integrationCallbacks"
+
+✔ Imported "integrationCallbacks" (0 documents)
+- Importing "events"
+
+✔ Imported "events" (0 documents)
+- Importing "consent"
+
+✔ Imported "consent" (0 documents)
+- Importing "consent"
+
+✔ Imported "opsEvents" (0 documents)
+- Importing "opsEvents"
+
+✔ Imported "opsAlertFunctions" (0 documents)
+- Importing "opsAlertFunctions"
+
+- Importing "suggestions"
+
+✔ Imported "suggestions" (0 documents)
+- Importing "opsProbes"
+
+✔ Imported "opsProbes" (0 documents)
+- Importing "integrationPages"
+
+✔ Imported "integrationPages" (0 documents)
+✔ Imported "workers" in 'rateLimiter/batchWorker' (0 documents)
+- Importing "workers" in 'rateLimiter/batchWorker'
+
+✔ Imported "integrationBindings" (0 documents)
+- Importing "integrationBindings"
+
+- Importing "rateLimits" in 'rateLimiter'
+
+✔ Imported "rateLimits" in 'rateLimiter' (0 documents)
+- Importing "opsAlerts"
+
+✔ Imported "opsAlerts" (0 documents)
+✔ Imported "opsMetrics" (0 documents)
+- Importing "opsMetrics"
+
+- Importing "integrationEvents"
+
+✔ Imported "integrationEvents" (0 documents)
+✔ Imported "invites" (0 documents)
+- Importing "invites"
+
+✔ Imported "workerState" in 'rateLimiter/batchWorker' (0 documents)
+- Importing "workerState" in 'rateLimiter/batchWorker'
+
+✔ Imported "integrationOps" (0 documents)
+- Importing "integrationOps"
+
+✔ Imported "agentInbox" (0 documents)
+- Importing "agentInbox"
+
+✔ Imported "opsNotices" (0 documents)
+- Importing "opsNotices"
+
+✔ Imported "opsAlertScan" (0 documents)
+- Importing "opsAlertScan"
+
+✔ Imported "integrationProviders" (0 documents)
+- Importing "integrationProviders"
+
+✔ Imported "integrationReceipts" (0 documents)
+- Importing "integrationReceipts"
+
+✔ Imported "usageBudgets" (0 documents)
+- Importing "usageBudgets"
+
+- Importing "authorityAudit"
+
+✔ Imported "authorityAudit" (0 documents)
+✔ Imported "integrationCursors" (0 documents)
+- Importing "integrationCursors"
+
+✔ Imported "users" (1 documents)
+- Imported "users" (1 documents)
+
+- Importing "orgs"
+
+✔ Imported "orgs" (1 documents)
+- Importing "members"
+
+✔ Imported "members" (1 documents)
+- Importing "agents"
+
+✔ Imported "agents" (1 documents)
+- Importing "objects"
+
+✔ Imported "objects" (7 documents)
+- Imported "objects" (7 documents)
+
+- Importing "fields"
+
+✔ Imported "fields" (38 documents)
+- Imported "fields" (38 documents)
+
+- Importing "records"
+
+✔ Imported "records" (250 documents)
+- Imported "records" (250 documents)
+
+✔ Added 299 documents.
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790440508056123000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-rjUGx5/restored.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-rjUGx5/restored.zip
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790440510039737000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-rjUGx5/candidate.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-rjUGx5/candidate.zip
+- Importing /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip (30.7 KiB)
+
+- Importing /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip (30.7 KiB)
+
+Import change summary:
+table                   | create | delete |
+-------------------------------------------
+agentInbox              | 0      | 0 of 0 |
+agents                  | 1      | 0 of 0 |
+authorityAudit          | 0      | 0 of 0 |
+capabilityGrants        | 0      | 0 of 0 |
+consent                 | 0      | 0 of 0 |
+events                  | 0      | 0 of 0 |
+fields                  | 38     | 0 of 0 |
+integrationBindings     | 0      | 0 of 0 |
+integrationCallbacks    | 0      | 0 of 0 |
+integrationConnections  | 0      | 0 of 0 |
+integrationCursors      | 0      | 0 of 0 |
+integrationEvents       | 0      | 0 of 0 |
+integrationIntents      | 0      | 0 of 0 |
+integrationLookups      | 0      | 0 of 0 |
+integrationObservations | 0      | 0 of 0 |
+integrationOps          | 0      | 0 of 0 |
+integrationPages        | 0      | 0 of 0 |
+integrationProviders    | 0      | 0 of 0 |
+integrationReceipts     | 0      | 0 of 0 |
+invites                 | 0      | 0 of 0 |
+links                   | 0      | 0 of 0 |
+members                 | 1      | 0 of 0 |
+objects                 | 7      | 0 of 0 |
+opsAlertFunctions       | 0      | 0 of 0 |
+opsAlertScan            | 0      | 0 of 0 |
+opsAlertWatch           | 0      | 0 of 0 |
+opsAlerts               | 0      | 0 of 0 |
+opsEvents               | 0      | 0 of 0 |
+opsMetrics              | 0      | 0 of 0 |
+opsNotices              | 0      | 0 of 0 |
+opsProbes               | 0      | 0 of 0 |
+orgs                    | 1      | 0 of 0 |
+records                 | 250    | 0 of 0 |
+safetyTargets           | 0      | 0 of 0 |
+secretReferences        | 0      | 0 of 0 |
+suggestions             | 0      | 0 of 0 |
+usageBudgets            | 0      | 0 of 0 |
+users                   | 1      | 0 of 0 |
+Component rateLimiter
+table          | create | delete |
+----------------------------------
+pendingUpdates | 0      | 0 of 0 |
+rateLimits     | 0      | 0 of 0 |
+Component rateLimiter/batchWorker
+table       | create | delete |
+-------------------------------
+workerState | 0      | 0 of 0 |
+workers     | 0      | 0 of 0 |
+Once the import has started, it will run in the background.
+Interrupting `npx convex import` will not cancel it.
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+✔ Imported "secretReferences" (0 documents)
+- Importing "secretReferences"
+
+✔ Imported "integrationObservations" (0 documents)
+✔ Imported "integrationIntents" (0 documents)
+- Importing "integrationIntents"
+
+✔ Imported "pendingUpdates" in 'rateLimiter' (0 documents)
+✔ Imported "integrationConnections" (0 documents)
+- Importing "integrationConnections"
+
+✔ Imported "opsAlertWatch" (0 documents)
+- Importing "links"
+
+✔ Imported "links" (0 documents)
+✔ Imported "capabilityGrants" (0 documents)
+- Importing "capabilityGrants"
+
+✔ Imported "safetyTargets" (0 documents)
+- Importing "safetyTargets"
+
+✔ Imported "integrationLookups" (0 documents)
+- Importing "integrationCallbacks"
+
+✔ Imported "integrationCallbacks" (0 documents)
+✔ Imported "events" (0 documents)
+- Importing "events"
+
+✔ Imported "consent" (0 documents)
+- Importing "consent"
+
+✔ Imported "opsEvents" (0 documents)
+- Importing "opsAlertFunctions"
+
+✔ Imported "opsAlertFunctions" (0 documents)
+✔ Imported "suggestions" (0 documents)
+- Importing "suggestions"
+
+✔ Imported "opsProbes" (0 documents)
+- Importing "opsProbes"
+
+✔ Imported "integrationPages" (0 documents)
+- Importing "workers" in 'rateLimiter/batchWorker'
+
+✔ Imported "workers" in 'rateLimiter/batchWorker' (0 documents)
+- Importing "integrationBindings"
+
+✔ Imported "integrationBindings" (0 documents)
+- Importing "rateLimits" in 'rateLimiter'
+
+✔ Imported "rateLimits" in 'rateLimiter' (0 documents)
+✔ Imported "opsAlerts" (0 documents)
+- Importing "opsAlerts"
+
+✔ Imported "opsMetrics" (0 documents)
+- Importing "integrationEvents"
+
+✔ Imported "integrationEvents" (0 documents)
+- Importing "invites"
+
+✔ Imported "invites" (0 documents)
+- Importing "workerState" in 'rateLimiter/batchWorker'
+
+✔ Imported "workerState" in 'rateLimiter/batchWorker' (0 documents)
+✔ Imported "integrationOps" (0 documents)
+- Importing "integrationOps"
+
+✔ Imported "agentInbox" (0 documents)
+- Importing "agentInbox"
+
+- Importing "opsNotices"
+
+✔ Imported "opsNotices" (0 documents)
+- Importing "opsAlertScan"
+
+✔ Imported "opsAlertScan" (0 documents)
+- Importing "integrationProviders"
+
+✔ Imported "integrationProviders" (0 documents)
+- Importing "integrationProviders"
+
+✔ Imported "integrationReceipts" (0 documents)
+- Importing "usageBudgets"
+
+✔ Imported "usageBudgets" (0 documents)
+- Importing "authorityAudit"
+
+✔ Imported "authorityAudit" (0 documents)
+- Importing "integrationCursors"
+
+✔ Imported "integrationCursors" (0 documents)
+- Importing "users"
+
+✔ Imported "users" (1 documents)
+- Imported "users" (1 documents)
+
+- Importing "orgs"
+
+✔ Imported "orgs" (1 documents)
+- Importing "members"
+
+✔ Imported "members" (1 documents)
+- Importing "agents"
+
+✔ Imported "agents" (1 documents)
+- Importing "objects"
+
+✔ Imported "objects" (7 documents)
+- Imported "objects" (7 documents)
+
+- Importing "fields"
+
+✔ Imported "fields" (38 documents)
+- Importing "records"
+
+✔ Imported "records" (250 documents)
+- Imported "records" (250 documents)
+
+✔ Added 299 documents.
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790440512383014000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-9g2sR1/restored.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-9g2sR1/restored.zip
+- Importing /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip (30.7 KiB)
+
+- Importing /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip (30.7 KiB)
+
+Import change summary:
+table                   | create | delete |
+-------------------------------------------
+agentInbox              | 0      | 0 of 0 |
+agents                  | 1      | 0 of 0 |
+authorityAudit          | 0      | 0 of 0 |
+capabilityGrants        | 0      | 0 of 0 |
+consent                 | 0      | 0 of 0 |
+events                  | 0      | 0 of 0 |
+fields                  | 38     | 0 of 0 |
+integrationBindings     | 0      | 0 of 0 |
+integrationCallbacks    | 0      | 0 of 0 |
+integrationConnections  | 0      | 0 of 0 |
+integrationCursors      | 0      | 0 of 0 |
+integrationEvents       | 0      | 0 of 0 |
+integrationIntents      | 0      | 0 of 0 |
+integrationLookups      | 0      | 0 of 0 |
+integrationObservations | 0      | 0 of 0 |
+integrationOps          | 0      | 0 of 0 |
+integrationPages        | 0      | 0 of 0 |
+integrationProviders    | 0      | 0 of 0 |
+integrationReceipts     | 0      | 0 of 0 |
+invites                 | 0      | 0 of 0 |
+links                   | 0      | 0 of 0 |
+members                 | 1      | 0 of 0 |
+objects                 | 7      | 0 of 0 |
+opsAlertFunctions       | 0      | 0 of 0 |
+opsAlertScan            | 0      | 0 of 0 |
+opsAlertWatch           | 0      | 0 of 0 |
+opsAlerts               | 0      | 0 of 0 |
+opsEvents               | 0      | 0 of 0 |
+opsMetrics              | 0      | 0 of 0 |
+opsNotices              | 0      | 0 of 0 |
+opsProbes               | 0      | 0 of 0 |
+orgs                    | 1      | 0 of 0 |
+records                 | 250    | 0 of 0 |
+safetyTargets           | 0      | 0 of 0 |
+secretReferences        | 0      | 0 of 0 |
+suggestions             | 0      | 0 of 0 |
+usageBudgets            | 0      | 0 of 0 |
+users                   | 1      | 0 of 0 |
+Component rateLimiter
+table          | create | delete |
+----------------------------------
+pendingUpdates | 0      | 0 of 0 |
+rateLimits     | 0      | 0 of 0 |
+Component rateLimiter/batchWorker
+table       | create | delete |
+-------------------------------
+workerState | 0      | 0 of 0 |
+workers     | 0      | 0 of 0 |
+Once the import has started, it will run in the background.
+Interrupting `npx convex import` will not cancel it.
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing
+
+- Importing "secretReferences"
+
+✔ Imported "secretReferences" (0 documents)
+✔ Imported "integrationObservations" (0 documents)
+- Importing "integrationObservations"
+
+✔ Imported "integrationIntents" (0 documents)
+✔ Imported "pendingUpdates" in 'rateLimiter' (0 documents)
+- Importing "pendingUpdates" in 'rateLimiter'
+
+✔ Imported "integrationConnections" (0 documents)
+- Importing "opsAlertWatch"
+
+✔ Imported "opsAlertWatch" (0 documents)
+- Importing "links"
+
+✔ Imported "links" (0 documents)
+- Importing "capabilityGrants"
+
+✔ Imported "capabilityGrants" (0 documents)
+- Importing "capabilityGrants"
+
+✔ Imported "safetyTargets" (0 documents)
+- Importing "integrationLookups"
+
+✔ Imported "integrationLookups" (0 documents)
+- Importing "integrationCallbacks"
+
+✔ Imported "integrationCallbacks" (0 documents)
+- Importing "events"
+
+✔ Imported "events" (0 documents)
+- Importing "consent"
+
+✔ Imported "consent" (0 documents)
+- Importing "opsEvents"
+
+✔ Imported "opsEvents" (0 documents)
+- Importing "opsAlertFunctions"
+
+✔ Imported "opsAlertFunctions" (0 documents)
+- Importing "opsAlertFunctions"
+
+✔ Imported "suggestions" (0 documents)
+- Importing "opsProbes"
+
+✔ Imported "opsProbes" (0 documents)
+- Importing "opsProbes"
+
+✔ Imported "integrationPages" (0 documents)
+- Importing "integrationPages"
+
+- Importing "workers" in 'rateLimiter/batchWorker'
+
+✔ Imported "workers" in 'rateLimiter/batchWorker' (0 documents)
+✔ Imported "integrationBindings" (0 documents)
+- Importing "integrationBindings"
+
+✔ Imported "rateLimits" in 'rateLimiter' (0 documents)
+- Importing "rateLimits" in 'rateLimiter'
+
+✔ Imported "opsAlerts" (0 documents)
+- Importing "opsAlerts"
+
+✔ Imported "opsMetrics" (0 documents)
+- Importing "opsMetrics"
+
+✔ Imported "integrationEvents" (0 documents)
+- Importing "integrationEvents"
+
+✔ Imported "invites" (0 documents)
+- Importing "workerState" in 'rateLimiter/batchWorker'
+
+✔ Imported "workerState" in 'rateLimiter/batchWorker' (0 documents)
+- Importing "integrationOps"
+
+✔ Imported "integrationOps" (0 documents)
+- Importing "agentInbox"
+
+✔ Imported "agentInbox" (0 documents)
+- Importing "opsNotices"
+
+✔ Imported "opsNotices" (0 documents)
+- Importing "opsNotices"
+
+✔ Imported "opsAlertScan" (0 documents)
+- Importing "opsAlertScan"
+
+✔ Imported "integrationProviders" (0 documents)
+- Importing "integrationProviders"
+
+✔ Imported "integrationReceipts" (0 documents)
+- Importing "integrationReceipts"
+
+✔ Imported "usageBudgets" (0 documents)
+- Importing "usageBudgets"
+
+✔ Imported "authorityAudit" (0 documents)
+- Importing "authorityAudit"
+
+✔ Imported "integrationCursors" (0 documents)
+- Importing "integrationCursors"
+
+- Importing "users"
+
+✔ Imported "users" (1 documents)
+- Imported "users" (1 documents)
+
+✔ Imported "orgs" (1 documents)
+- Imported "orgs" (1 documents)
+
+- Importing "members"
+
+✔ Imported "members" (1 documents)
+- Importing "agents"
+
+✔ Imported "agents" (1 documents)
+- Importing "objects"
+
+✔ Imported "objects" (7 documents)
+- Imported "objects" (7 documents)
+
+- Importing "fields"
+
+✔ Imported "fields" (38 documents)
+- Importing "records"
+
+✔ Imported "records" (250 documents)
+- Imported "records" (250 documents)
+
+✔ Added 299 documents.
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790440516191654000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-kmo5SU/restored.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-kmo5SU/restored.zip
+- Creating snapshot export
+
+✔ Created snapshot export at timestamp 1790440518163018000
+✔ Export is available at https://dashboard.convex.dev/d/anonymous-agent/settings/snapshots
+- Downloading snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-kmo5SU/candidate.zip
+
+✔ Downloaded snapshot export to /var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-kmo5SU/candidate.zip
+{"result":"PASS","output":"/tmp/iv2/r2-snapshot-drill.json","results":{"seed":{"out":"/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-drill-k9HNkx/fixture.zip","sha256":"183e74aff6b92b409ffe99b462fa993aa288f5692891f0e8beb9d1078fc98a0a","canonical":{"tables":{"_tables":{"count":38,"sha256":"f16f57c8137523dfaf1f4c81bb05767c0d5a4042261e107cbe47ad46c722e306"},"agentInbox":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"agents":{"count":1,"sha256":"beeafa266cd09266f5113f3aa9911026af07abb61b4bdab29a2678bd30b4d986"},"authorityAudit":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"capabilityGrants":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"consent":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"events":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"fields":{"count":38,"sha256":"ae2fd8300d69b98e0733ad409c22d0efce5c3897319912ec3d069e783afdc0b7"},"integrationBindings":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCallbacks":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationConnections":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCursors":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationIntents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationLookups":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationObservations":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationOps":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationPages":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationProviders":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationReceipts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"invites":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"links":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"members":{"count":1,"sha256":"0b66b0d1f98d7814cd330fecfb65c3ac1bf6e680d4aa94beafe513ca4f974e3f"},"objects":{"count":7,"sha256":"b8384c65dfa8a539d67b324fc6ea9d6505f7af6833c461a5fd1d38dca2fa7478"},"opsAlertFunctions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertScan":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertWatch":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlerts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsMetrics":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsNotices":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsProbes":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"orgs":{"count":1,"sha256":"4c64d2a6b39d92e02ea40ce2958eff08da09b836ff7343b289ca6252dd6ab3a8"},"records":{"count":250,"sha256":"3e10e0c1d4e0f18e2318e6161ec5c296c27936af88e52147f16aade5d39b6e6a"},"safetyTargets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"secretReferences":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"suggestions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"usageBudgets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"users":{"count":1,"sha256":"dbfb390e20f1fb2e766e7ad96e4e281aa729a986dd7823397540d5842362464f"}},"sha256":"a5726e190ff1bf3720c1f61502794730b3650c81c8d19f2f8e76739b96640e1a","skipped":["README.md","_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl","_components/rateLimiter/_components/batchWorker/workers/documents.jsonl","_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl","_components/rateLimiter/_tables/documents.jsonl","_components/rateLimiter/pendingUpdates/documents.jsonl","_components/rateLimiter/pendingUpdates/generated_schema.jsonl","_components/rateLimiter/rateLimits/documents.jsonl","_components/rateLimiter/rateLimits/generated_schema.jsonl","agentInbox/generated_schema.jsonl","agents/generated_schema.jsonl","authorityAudit/generated_schema.jsonl","capabilityGrants/generated_schema.jsonl","consent/generated_schema.jsonl","events/generated_schema.jsonl","fields/generated_schema.jsonl","integrationBindings/generated_schema.jsonl","integrationCallbacks/generated_schema.jsonl","integrationConnections/generated_schema.jsonl","integrationCursors/generated_schema.jsonl","integrationEvents/generated_schema.jsonl","integrationIntents/generated_schema.jsonl","integrationLookups/generated_schema.jsonl","integrationObservations/generated_schema.jsonl","integrationOps/generated_schema.jsonl","integrationPages/generated_schema.jsonl","integrationProviders/generated_schema.jsonl","integrationReceipts/generated_schema.jsonl","invites/generated_schema.jsonl","links/generated_schema.jsonl","members/generated_schema.jsonl","objects/generated_schema.jsonl","opsAlertFunctions/generated_schema.jsonl","opsAlertScan/generated_schema.jsonl","opsAlertWatch/generated_schema.jsonl","opsAlerts/generated_schema.jsonl","opsEvents/generated_schema.jsonl","opsMetrics/generated_schema.jsonl","opsNotices/generated_schema.jsonl","opsProbes/generated_schema.jsonl","orgs/generated_schema.jsonl","records/generated_schema.jsonl","safetyTargets/generated_schema.jsonl","secretReferences/generated_schema.jsonl","suggestions/generated_schema.jsonl","usageBudgets/generated_schema.jsonl","users/generated_schema.jsonl"]}},"green":{"result":"PASS","canonical":{"tables":{"_tables":{"count":38,"sha256":"f16f57c8137523dfaf1f4c81bb05767c0d5a4042261e107cbe47ad46c722e306"},"agentInbox":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"agents":{"count":1,"sha256":"beeafa266cd09266f5113f3aa9911026af07abb61b4bdab29a2678bd30b4d986"},"authorityAudit":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"capabilityGrants":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"consent":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"events":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"fields":{"count":38,"sha256":"ae2fd8300d69b98e0733ad409c22d0efce5c3897319912ec3d069e783afdc0b7"},"integrationBindings":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCallbacks":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationConnections":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCursors":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationIntents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationLookups":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationObservations":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationOps":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationPages":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationProviders":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationReceipts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"invites":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"links":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"members":{"count":1,"sha256":"0b66b0d1f98d7814cd330fecfb65c3ac1bf6e680d4aa94beafe513ca4f974e3f"},"objects":{"count":7,"sha256":"b8384c65dfa8a539d67b324fc6ea9d6505f7af6833c461a5fd1d38dca2fa7478"},"opsAlertFunctions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertScan":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertWatch":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlerts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsMetrics":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsNotices":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsProbes":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"orgs":{"count":1,"sha256":"4c64d2a6b39d92e02ea40ce2958eff08da09b836ff7343b289ca6252dd6ab3a8"},"records":{"count":250,"sha256":"3e10e0c1d4e0f18e2318e6161ec5c296c27936af88e52147f16aade5d39b6e6a"},"safetyTargets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"secretReferences":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"suggestions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"usageBudgets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"users":{"count":1,"sha256":"dbfb390e20f1fb2e766e7ad96e4e281aa729a986dd7823397540d5842362464f"}},"sha256":"a5726e190ff1bf3720c1f61502794730b3650c81c8d19f2f8e76739b96640e1a","skipped":["README.md","_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl","_components/rateLimiter/_components/batchWorker/workers/documents.jsonl","_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl","_components/rateLimiter/_tables/documents.jsonl","_components/rateLimiter/pendingUpdates/documents.jsonl","_components/rateLimiter/pendingUpdates/generated_schema.jsonl","_components/rateLimiter/rateLimits/documents.jsonl","_components/rateLimiter/rateLimits/generated_schema.jsonl","agentInbox/generated_schema.jsonl","agents/generated_schema.jsonl","authorityAudit/generated_schema.jsonl","capabilityGrants/generated_schema.jsonl","consent/generated_schema.jsonl","events/generated_schema.jsonl","fields/generated_schema.jsonl","integrationBindings/generated_schema.jsonl","integrationCallbacks/generated_schema.jsonl","integrationConnections/generated_schema.jsonl","integrationCursors/generated_schema.jsonl","integrationEvents/generated_schema.jsonl","integrationIntents/generated_schema.jsonl","integrationLookups/generated_schema.jsonl","integrationObservations/generated_schema.jsonl","integrationOps/generated_schema.jsonl","integrationPages/generated_schema.jsonl","integrationProviders/generated_schema.jsonl","integrationReceipts/generated_schema.jsonl","invites/generated_schema.jsonl","links/generated_schema.jsonl","members/generated_schema.jsonl","objects/generated_schema.jsonl","opsAlertFunctions/generated_schema.jsonl","opsAlertScan/generated_schema.jsonl","opsAlertWatch/generated_schema.jsonl","opsAlerts/generated_schema.jsonl","opsEvents/generated_schema.jsonl","opsMetrics/generated_schema.jsonl","opsNotices/generated_schema.jsonl","opsProbes/generated_schema.jsonl","orgs/generated_schema.jsonl","records/generated_schema.jsonl","safetyTargets/generated_schema.jsonl","secretReferences/generated_schema.jsonl","suggestions/generated_schema.jsonl","usageBudgets/generated_schema.jsonl","users/generated_schema.jsonl"]},"snapshotSha256":"183e74aff6b92b409ffe99b462fa993aa288f5692891f0e8beb9d1078fc98a0a","candidateSchemaSha256":"28f02ad8e3846ffc6e06be180978c8b857c9d83fe0e37a6de233d39c6f7c7164","scratch":"/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-rjUGx5"},"red":{"result":"FAIL","reason":"✖ Schema validation failed.","snapshotSha256":"183e74aff6b92b409ffe99b462fa993aa288f5692891f0e8beb9d1078fc98a0a","candidateSchemaSha256":"6ea93c8c3531389caa19bb25c2e45b348a32754f763b223c568fa907be80074d","canonical":{"tables":{"_tables":{"count":38,"sha256":"f16f57c8137523dfaf1f4c81bb05767c0d5a4042261e107cbe47ad46c722e306"},"agentInbox":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"agents":{"count":1,"sha256":"beeafa266cd09266f5113f3aa9911026af07abb61b4bdab29a2678bd30b4d986"},"authorityAudit":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"capabilityGrants":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"consent":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"events":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"fields":{"count":38,"sha256":"ae2fd8300d69b98e0733ad409c22d0efce5c3897319912ec3d069e783afdc0b7"},"integrationBindings":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCallbacks":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationConnections":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCursors":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationIntents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationLookups":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationObservations":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationOps":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationPages":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationProviders":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationReceipts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"invites":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"links":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"members":{"count":1,"sha256":"0b66b0d1f98d7814cd330fecfb65c3ac1bf6e680d4aa94beafe513ca4f974e3f"},"objects":{"count":7,"sha256":"b8384c65dfa8a539d67b324fc6ea9d6505f7af6833c461a5fd1d38dca2fa7478"},"opsAlertFunctions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertScan":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertWatch":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlerts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsMetrics":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsNotices":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsProbes":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"orgs":{"count":1,"sha256":"4c64d2a6b39d92e02ea40ce2958eff08da09b836ff7343b289ca6252dd6ab3a8"},"records":{"count":250,"sha256":"3e10e0c1d4e0f18e2318e6161ec5c296c27936af88e52147f16aade5d39b6e6a"},"safetyTargets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"secretReferences":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"suggestions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"usageBudgets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"users":{"count":1,"sha256":"dbfb390e20f1fb2e766e7ad96e4e281aa729a986dd7823397540d5842362464f"}},"sha256":"a5726e190ff1bf3720c1f61502794730b3650c81c8d19f2f8e76739b96640e1a","skipped":["README.md","_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl","_components/rateLimiter/_components/batchWorker/workers/documents.jsonl","_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl","_components/rateLimiter/_tables/documents.jsonl","_components/rateLimiter/pendingUpdates/documents.jsonl","_components/rateLimiter/pendingUpdates/generated_schema.jsonl","_components/rateLimiter/rateLimits/documents.jsonl","_components/rateLimiter/rateLimits/generated_schema.jsonl","agentInbox/generated_schema.jsonl","agents/generated_schema.jsonl","authorityAudit/generated_schema.jsonl","capabilityGrants/generated_schema.jsonl","consent/generated_schema.jsonl","events/generated_schema.jsonl","fields/generated_schema.jsonl","integrationBindings/generated_schema.jsonl","integrationCallbacks/generated_schema.jsonl","integrationConnections/generated_schema.jsonl","integrationCursors/generated_schema.jsonl","integrationEvents/generated_schema.jsonl","integrationIntents/generated_schema.jsonl","integrationLookups/generated_schema.jsonl","integrationObservations/generated_schema.jsonl","integrationOps/generated_schema.jsonl","integrationPages/generated_schema.jsonl","integrationProviders/generated_schema.jsonl","integrationReceipts/generated_schema.jsonl","invites/generated_schema.jsonl","links/generated_schema.jsonl","members/generated_schema.jsonl","objects/generated_schema.jsonl","opsAlertFunctions/generated_schema.jsonl","opsAlertScan/generated_schema.jsonl","opsAlertWatch/generated_schema.jsonl","opsAlerts/generated_schema.jsonl","opsEvents/generated_schema.jsonl","opsMetrics/generated_schema.jsonl","opsNotices/generated_schema.jsonl","opsProbes/generated_schema.jsonl","orgs/generated_schema.jsonl","records/generated_schema.jsonl","safetyTargets/generated_schema.jsonl","secretReferences/generated_schema.jsonl","suggestions/generated_schema.jsonl","usageBudgets/generated_schema.jsonl","users/generated_schema.jsonl"]},"scratch":"/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-9g2sR1"},"expansion":{"result":"PASS","canonical":{"tables":{"_tables":{"count":38,"sha256":"f16f57c8137523dfaf1f4c81bb05767c0d5a4042261e107cbe47ad46c722e306"},"agentInbox":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"agents":{"count":1,"sha256":"beeafa266cd09266f5113f3aa9911026af07abb61b4bdab29a2678bd30b4d986"},"authorityAudit":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"capabilityGrants":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"consent":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"events":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"fields":{"count":38,"sha256":"ae2fd8300d69b98e0733ad409c22d0efce5c3897319912ec3d069e783afdc0b7"},"integrationBindings":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCallbacks":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationConnections":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationCursors":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationIntents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationLookups":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationObservations":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationOps":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationPages":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationProviders":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"integrationReceipts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"invites":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"links":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"members":{"count":1,"sha256":"0b66b0d1f98d7814cd330fecfb65c3ac1bf6e680d4aa94beafe513ca4f974e3f"},"objects":{"count":7,"sha256":"b8384c65dfa8a539d67b324fc6ea9d6505f7af6833c461a5fd1d38dca2fa7478"},"opsAlertFunctions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertScan":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlertWatch":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsAlerts":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsEvents":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsMetrics":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsNotices":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"opsProbes":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"orgs":{"count":1,"sha256":"4c64d2a6b39d92e02ea40ce2958eff08da09b836ff7343b289ca6252dd6ab3a8"},"records":{"count":250,"sha256":"3e10e0c1d4e0f18e2318e6161ec5c296c27936af88e52147f16aade5d39b6e6a"},"safetyTargets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"secretReferences":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"suggestions":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"usageBudgets":{"count":0,"sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"},"users":{"count":1,"sha256":"dbfb390e20f1fb2e766e7ad96e4e281aa729a986dd7823397540d5842362464f"}},"sha256":"a5726e190ff1bf3720c1f61502794730b3650c81c8d19f2f8e76739b96640e1a","skipped":["README.md","_components/rateLimiter/_components/batchWorker/_tables/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/documents.jsonl","_components/rateLimiter/_components/batchWorker/workerState/generated_schema.jsonl","_components/rateLimiter/_components/batchWorker/workers/documents.jsonl","_components/rateLimiter/_components/batchWorker/workers/generated_schema.jsonl","_components/rateLimiter/_tables/documents.jsonl","_components/rateLimiter/pendingUpdates/documents.jsonl","_components/rateLimiter/pendingUpdates/generated_schema.jsonl","_components/rateLimiter/rateLimits/documents.jsonl","_components/rateLimiter/rateLimits/generated_schema.jsonl","agentInbox/generated_schema.jsonl","agents/generated_schema.jsonl","authorityAudit/generated_schema.jsonl","capabilityGrants/generated_schema.jsonl","consent/generated_schema.jsonl","events/generated_schema.jsonl","fields/generated_schema.jsonl","integrationBindings/generated_schema.jsonl","integrationCallbacks/generated_schema.jsonl","integrationConnections/generated_schema.jsonl","integrationCursors/generated_schema.jsonl","integrationEvents/generated_schema.jsonl","integrationIntents/generated_schema.jsonl","integrationLookups/generated_schema.jsonl","integrationObservations/generated_schema.jsonl","integrationOps/generated_schema.jsonl","integrationPages/generated_schema.jsonl","integrationProviders/generated_schema.jsonl","integrationReceipts/generated_schema.jsonl","invites/generated_schema.jsonl","links/generated_schema.jsonl","members/generated_schema.jsonl","objects/generated_schema.jsonl","opsAlertFunctions/generated_schema.jsonl","opsAlertScan/generated_schema.jsonl","opsAlertWatch/generated_schema.jsonl","opsAlerts/generated_schema.jsonl","opsEvents/generated_schema.jsonl","opsMetrics/generated_schema.jsonl","opsNotices/generated_schema.jsonl","opsProbes/generated_schema.jsonl","orgs/generated_schema.jsonl","records/generated_schema.jsonl","safetyTargets/generated_schema.jsonl","secretReferences/generated_schema.jsonl","suggestions/generated_schema.jsonl","usageBudgets/generated_schema.jsonl","users/generated_schema.jsonl"]},"snapshotSha256":"183e74aff6b92b409ffe99b462fa993aa288f5692891f0e8beb9d1078fc98a0a","candidateSchemaSha256":"9d24aa7ef2db0cf40b36a998324d07853f61095344d3b0dbf761cef690ed5930","scratch":"/var/folders/9g/lc9sprl94dl4d7x2lvtbspc80000gn/T/remold-snapshot-restore-kmo5SU"},"tamper":{"originalSha256":"a5726e190ff1bf3720c1f61502794730b3650c81c8d19f2f8e76739b96640e1a","tamperedSha256":"26b080514bd4d64a1ee5f4738c65bc8e8d7dd15da47051e50055ecf8cc6a12ad"}}}
+exit 0
