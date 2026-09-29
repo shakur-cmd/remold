@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold go-live: new version on app.remoldcrm.com</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Remold go-live: new version on app.remoldcrm.com</h1>
+<div class="meta">2026-09-29 · scope: production switch · builder: Claude Opus 5.5 · status: awaiting independent check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>Proper production sign-in: create a WorkOS production environment with your own Google OAuth client and an auth.remoldcrm.com domain. Needs your clicks in Google Cloud and WorkOS. Until then the site uses the WorkOS staging client with the session kept in the browser, the same level as the old Clerk "Development mode".</li>
+  <li>The two agent keys (fable-mac, astra-verifier) still work but must point at the new backend <code>https://nautical-viper-899.convex.site</code> instead of gallant-pika-581.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li>app.remoldcrm.com serves the new build <code>index-rIzLqg-9.js</code> (was <code>index-BdUsyEab.js</code>, Clerk). Cloudflare version <code>bedaee45-525e-4e2b-9c17-505445ebfc25</code>.</li>
+  <li>New Convex production deployment <code>nautical-viper-899</code> created; code from <code>dced42d</code> deployed.</li>
+  <li>Live data exported from old <code>gallant-pika-581</code> (sha256 <code>664e87a4…</code>) and imported. Re-export compared per table: 17 tables, 0 mismatches (1 user, 1 org, 16 records, 38 fields, 7 objects, 2 agents, 27 events, 3 suggestions, 1 link, 1 member).</li>
+  <li>Before import, a local restore drill pushed the new schema over the same data: every existing table unchanged, only 25 new empty tables added, schema validation passed.</li>
+  <li>User row relinked from Clerk to WorkOS id by exact email match (shakur@codemyvibe.com). Workspace authority frozen; both agents migrated to authority v1, 0 grants dropped.</li>
+  <li>WorkOS staging: added callback <code>https://app.remoldcrm.com/callback</code>, sign-out <code>https://app.remoldcrm.com</code>, CORS origin <code>https://app.remoldcrm.com</code>. Re-read after page reload; all prior entries kept.</li>
+  <li>Real Google sign-in on the live site landed in the existing workspace <code>kh74gfj79fms7mk2x7w3fx56ts8ewy52</code>; Companies (3) and People (4) match the old data after a full reload.</li>
+  <li>Code change (interim browser session only for staging client on app.remoldcrm.com): new test failed before, passes after; 94/94 tests, typecheck clean.</li>
+</ul>
+</div>
+
+<h2>Before and after</h2>
+<table>
+<tr><th>Before</th><th>After</th></tr>
+<tr><td><img src="live-before-clerk.png" width="340"><br>Clerk dev sign-in, dev database</td><td><img src="live-after-companies.png" width="340"><br>New build, signed in, existing companies</td></tr>
+</table>
+
+<h2>Roll back</h2>
+<p><code>bun x wrangler@4.138.0 rollback 8f0763b2-22e5-4f78-b2ca-0a4e994c8f78</code> restores the old site on the untouched old database. Anything created on the new site after the switch lives only in <code>nautical-viper-899</code> and would need copying back.</p>
+
+<h2>How to check</h2>
+<ol>
+<li>Open https://app.remoldcrm.com, sign in with Google, confirm the Codemyvibe workspace, 3 companies, 4 people.</li>
+<li><code>curl -s https://app.remoldcrm.com | grep index-</code> shows <code>index-rIzLqg-9.js</code>.</li>
+<li>Pre-switch backup: <code>~/scratch/remold-cutover/live-before.zip</code>.</li>
+</ol>
+</body>
+</html>
