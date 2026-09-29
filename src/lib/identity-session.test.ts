@@ -10,6 +10,13 @@ describe("AuthKit session configuration", () => {
       expect(authSessionOptions({ ...config, ...change }).devMode).toBe(false);
     }
   });
+  it("lets the interim live site keep browser sessions only on the staging client", () => {
+    const config = { mode: "staging-live", clientId: staging, hostname: "app.remoldcrm.com" };
+    expect(authSessionOptions(config).devMode).toBe(true);
+    for (const change of [{ mode: undefined }, { mode: "preview-local" }, { clientId: "client_production" }, { hostname: "pr-4-remold-i2-preview.shakur-949.workers.dev" }, { hostname: "evil.app.remoldcrm.com" }]) {
+      expect(authSessionOptions({ ...config, ...change }).devMode).toBe(false);
+    }
+  });
   it("preserves local development and leaves production on cookie sessions", () => {
     for (const hostname of ["localhost", "127.0.0.1"]) expect(authSessionOptions({ hostname, clientId: staging }).devMode).toBe(true);
     expect(authSessionOptions({ hostname: "app.remoldcrm.com", clientId: "client_production", apiHostname: "auth.remoldcrm.com" })).toEqual({ devMode: false, apiHostname: "auth.remoldcrm.com" });
