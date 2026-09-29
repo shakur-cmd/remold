@@ -52,6 +52,14 @@
 <tr><td><img src="live-before-clerk.png" width="340"><br>Clerk dev sign-in, dev database</td><td><img src="live-after-companies.png" width="340"><br>New build, signed in, existing companies</td></tr>
 </table>
 
+<h2>Agent test (added after go-live)</h2>
+<ul>
+<li>Created test key <code>go-live-test</code> (propose-only) in Settings as the owner.</li>
+<li>REST: <code>/me</code> returned the Codemyvibe workspace; companies listed 3; fake key 401; direct create without grant 403 <code>No grant for create:company</code>, company count still 3.</li>
+<li>Real agent: headless Claude through <code>packages/mcp</code> named the workspace, listed companies and people correctly, and proposed City Demo Bay → "Go-live test city" (suggestion <code>kx78ba020bex1cmahn28r4zsxn8fb8qz</code>, pending).</li>
+<li>The suggestion appeared in the live Suggestions page (<a href="agent-suggestion.png">screenshot</a>); dismissed there; the agent then saw it as dismissed and the record still reads Demo Bay with no new events.</li>
+<li>Key revoked in Settings; the same key then got 401 "Invalid or revoked agent key". Local key copies deleted.</li>
+</ul>
 <h2>Roll back</h2>
 <p><code>bun x wrangler@4.138.0 rollback 8f0763b2-22e5-4f78-b2ca-0a4e994c8f78</code> restores the old site on the untouched old database. Anything created on the new site after the switch lives only in <code>nautical-viper-899</code> and would need copying back.</p>
 
