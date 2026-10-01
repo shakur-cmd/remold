@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What Remold needs to replace Baserow</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  .have { color: #1d6b2f; font-weight: 600; }
+  .part { color: #8a5a00; font-weight: 600; }
+  .miss { color: #a31515; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>What Remold needs to replace Baserow</h1>
+<div class="meta">2026-10-01 · scope: CodeMyVibe CRM · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>When should website leads also go into Remold?</b> I recommend waiting until Remold has items 1 and 2 below. Until then every lead is emailed to you, which already works.</li>
+  <li><b>What is a lead in Remold?</b> I recommend a Person plus an Opportunity at stage "new". Remold already has that pipeline (new, contacted, qualified, proposal, won, lost), so no new object is needed.</li>
+  <li><b>Delete your Baserow account?</b> All code that used it is gone. The account and its data are still there, and only you can delete them. Export first if you want a copy.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li><b>codemyvibe.com.</b> Leads from /start are emailed to shakur@codemyvibe.com from leads@codemyvibe.com. I tested this twice through the real form and both emails reached your inbox (18:12 and 18:32 UTC).</li>
+  <li><b>Website code and keys.</b> The chat-to-Baserow webhook and the Baserow setup scripts are deleted. The Baserow and tawk keys are deleted from Cloudflare; only <code>RESEND_API_KEY</code> is left.</li>
+  <li><b>Website tests and checks.</b> 12 of 12 tests pass, and the SEO and site checks pass. <code>/api/chat</code> now answers 405 because the endpoint no longer exists.</li>
+  <li><b>Website git.</b> <code>main</code> now matches the live site (merge 9e663ec). For site files I kept the live version over main's never-released CSS restyle; main's extra docs were kept.</li>
+  <li><b>last-mile-desk, commit 64c9631.</b> Baserow removed. This repo has no tests; the code builds and a scratch run worked.</li>
+  <li><b>outreach-desk, commits abf1a38 and 44a120f.</b> Baserow removed. 136 of 136 tests pass. The two Baserow keys are deleted from <code>outreach/private/.env</code>.</li>
+  <li><b>agentic-os-skills, commit 7315d66.</b> The CRM sync skill and its pipeline stage are removed. 14 tests pass. The commit is on GitHub; the push to the Codeberg mirror failed with an access error.</li>
+  <li><b>lead-ops, commit 22d556f.</b> The Baserow client and the promote command are removed. 19 tests pass and the typecheck is clean.</li>
+  <li><b>How I checked.</b> I re-ran the tests for outreach-desk and lead-ops myself, confirmed every commit is on GitHub, and grepped for Baserow: no live code calls it anywhere. Remaining mentions are history files and removal notes.</li>
+</ul>
+</div>
+
+<h2>What Baserow was doing for us</h2>
+<p>Five jobs, from most to least important. Most of them had already stopped running.</p>
+<ol>
+  <li><b>Website leads.</b> Every form, chat and preview claim became a row with a dedupe key, status "new", contact details, what they want, consent and source. <i>Now emailed.</i></li>
+  <li><b>A timeline per client or prospect.</b> Events like scan, view, claim, reply, call and booking, each with a time and a source. Desk notes were added to it too.</li>
+  <li><b>Prospect pipeline.</b> One deduped row per prospect, with a status that only moved forward (discovered, approved, mailing, delivered, viewed, contacted, call booked, won, lost and so on). Fields you own, like outcome notes, were never overwritten by automation.</li>
+  <li><b>Outcomes and numbers.</b> Won or lost, with a dollar value. Those fed the funnel rates: scan to call, and call to won.</li>
+  <li><b>Bulk prospect import.</b> Deduped on name, domain, email, phone and address, checked against a do-not-contact list, with a record of each import run.</li>
+</ol>
+
+<h2>What Remold must do, and what it has today</h2>
+<p>Remold already has a REST API with per-key permissions, list and filter, record history and CSV import. The gaps are below, in the order they matter.</p>
+
+<table>
+<tr><th>#</th><th>Remold must</th><th>Today</th><th>Why it matters</th></tr>
+<tr><td>1</td><td><b>Ignore a repeated request.</b> An <code>Idempotency-Key</code> on <code>POST /api/v1/changes</code> so a retried form or webhook makes one record, not two.</td><td class="miss">Missing (designed in ADR 002, not built)</td><td>Forms retry, and so do webhooks. Without this, leads are duplicated.</td></tr>
+<tr><td>2</td><td><b>Find or create a person by email or phone</b> in one call, so the same person is never added twice.</td><td class="miss">Missing (two calls, not atomic)</td><td>The same owner fills the form twice, or chats and then books.</td></tr>
+<tr><td>3</td><td><b>Store lead details on a Person or Opportunity:</b> source, ref or UTM, what they're launching, when, consent, and the full message.</td><td class="part">Partial: custom fields exist, but only 8 text fields per object can be filtered</td><td>You need to see where each lead came from, and to filter by it.</td></tr>
+<tr><td>4</td><td><b>Log events on a record</b> (scan, view, claim, reply, call, booking, note), each with type, source and a <i>full timestamp</i>.</td><td class="part">Partial: notes work, but date fields drop the time of day</td><td>The timeline is how you know who is warm.</td></tr>
+<tr><td>5</td><td><b>Fields automation can't overwrite,</b> such as outcome and your notes, and a status that only moves forward unless a person changes it.</td><td class="part">Partial: capability grants can be scoped to fields, with no UI and no forward-only rule</td><td>Agents must never undo your calls.</td></tr>
+<tr><td>6</td><td><b>Import with dedupe</b> on email, phone, domain and normalized name, plus a do-not-contact list that every import checks.</td><td class="part">Partial: CSV import dedupes on the title (name) only</td><td>Prospect lists are only worth it when they're clean.</td></tr>
+<tr><td>7</td><td><b>Filter on more than one field, and by date range</b>, e.g. events of type "booking" in September.</td><td class="part">Partial: one exact-match filter</td><td>This is how you get the funnel numbers.</td></tr>
+<tr><td>8</td><td><b>Notify you about new leads</b> by email, or through an outbound webhook that something else turns into an email.</td><td class="miss">Missing (planned as job I9)</td><td>Not urgent, since the website emails you already. Needed once leads come from places other than the website.</td></tr>
+<tr><td>9</td><td><b>Accept third-party webhooks</b> (tawk.to, Cal.com, Stripe), with signature checks.</td><td class="miss">Missing</td><td>Low priority. A small function in between can call the REST API instead.</td></tr>
+</table>
+
+<h3>Smallest useful first step</h3>
+<p>Build items 1 and 2, then add these fields on Opportunity: source, ref, launch kind, launch month, details. With that, <code>functions/api/intake.js</code> on the website can keep emailing you and also make one Remold call: find or create the person, then create an Opportunity at stage "new". Give its key <code>create:person</code> and <code>create:opportunity</code> only. It runs on the server, so CORS isn't needed. Everything else can wait until the outreach pipeline runs again.</p>
+
+<h2>Detail</h2>
+<ul>
+  <li><b>Source for the Remold "today" column:</b> a read-only inventory of the remold repo. Key files are <code>convex/http.ts</code> (routes), <code>convex/agentApi.ts</code>, <code>convex/lib/standard.ts</code> (Person, Company, Opportunity and the others), <code>convex/schema.ts</code> (8 text, 8 number, 4 date and 4 boolean filterable slots per object), <code>docs/adr/002-events.md</code> (idempotency is designed, not built) and <code>docs/unified-launch/execution.json</code> (I3, I9 and I10 are specified, not started).</li>
+  <li><b>Source for "what Baserow did":</b> the pre-removal code in last-mile-desk (<code>src/baserow.ts</code>), outreach-desk (<code>gtm-workflow.mjs</code>, <code>jobs.mjs</code>), agentic-os-skills (<code>skills/gtm-crm-sync/references/baserow-schema.md</code>) and lead-ops (<code>src/baserow/repositories.ts</code>). All of it is still in each repo's git history.</li>
+  <li><b>What stopped working with the removal:</b>
+    <ul>
+      <li>Desk notes no longer go anywhere outside the desk.</li>
+      <li>The desk's "days since real contact" now counts paid invoices and desk events only.</li>
+      <li>outreach-desk no longer syncs prospects to a CRM. It never actually ran: 0 jobs.</li>
+      <li>lead-ops stops at "decide".</li>
+      <li>gtm-measure has no live event source.</li>
+    </ul>
+    All of these come back once Remold covers items 1 to 7.</li>
+  <li><b>Loose ends that need your login:</b>
+    <ul>
+      <li>tawk.to may still have a webhook pointing at <code>codemyvibe.com/api/chat</code>. It now gets 405 and stores nothing. Delete it under Administration, then Webhooks, if it's there.</li>
+      <li>The agentic-os-skills Codeberg mirror rejected the push.</li>
+    </ul></li>
+  <li><b>Test emails:</b> the two "TEST" lead emails in your inbox are mine; delete them.</li>
+</ul>
+</body>
+</html>
