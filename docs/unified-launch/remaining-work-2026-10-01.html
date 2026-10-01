@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold: what still needs to happen</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Remold: what still needs to happen</h1>
+<div class="meta">2026-10-01 · scope: getting Remold up and running the way you want · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li><b>Scope:</b> make Remold your own safe daily CRM first, then a small paid offer; park social, marketing engine, client invoicing, hosted agents, mail sequences, A1, full dashboard, impact tracker. <b>Recommend yes.</b> This changes the approved pack, so only you can say it.</li>
+  <li><b>First paid offer:</b> the core CRM plus outside agents that propose changes, nothing else. <b>Recommend yes.</b></li>
+  <li><b>Your real data:</b> where do your clients and prospects live today (Baserow, EspoCRM, Gmail, a sheet, nowhere)? <b>Recommend:</b> export Baserow before you delete that account, and import only what you still use.</li>
+  <li><b>Daily workflow:</b> what must Remold handle for you to work from it every day? Tell us in your own words.</li>
+  <li><b>Demo records:</b> delete the sample companies and people in your live workspace? <b>Recommend yes,</b> after a backup.</li>
+  <li><b>Who can sign up:</b> until there are terms and a price, only you and people you invite can create workspaces. <b>Recommend yes.</b></li>
+  <li><b>Backups and spend:</b> all spend caps are 0 today. <b>Recommend</b> free daily exports now, and Convex Professional (listed at $25 per developer per month) when the first customer is near. Say yes, or set a cap for Pro now.</li>
+  <li><b>Data loss you can live with:</b> <b>Recommend</b> at most one day, which matches a daily backup.</li>
+  <li><b>Website leads into Remold:</b> once the lead check passes, also send leads into Remold, email stays. <b>Recommend yes.</b></li>
+  <li><b>Email confirmation for leads:</b> skip the "click to confirm" step for sales enquiries, keep the rate limits, cap and alert. <b>Recommend skip.</b></li>
+  <li><b>Old agent keys (fable-mac, astra-verifier):</b> <b>Recommend revoke</b> unless you name a place that still uses them.</li>
+  <li><b>Alerts:</b> send Remold alerts to shakur@codemyvibe.com? <b>Recommend yes.</b></li>
+  <li><b>Proof code:</b> move <code>proofs/</code> to an archive branch, keeping what the app imports. <b>Recommend yes;</b> nothing is lost, git keeps it.</li>
+  <li><b>Price and terms for the first offer:</b> US$49 per workspace per month with a 14-day cardless trial is only a recommendation on file. Confirm or change before the first-customer milestone.</li>
+  <li><b>Offline:</b> what has happened with customers, prospects or pricing talks since 2026-09-25? Has anyone said they would pay for Remold?</li>
+</ul>
+
+<h2>One sitting: sign-ins and accounts</h2>
+<ul>
+  <li>WorkOS: create the production environment.</li>
+  <li>Google Cloud: create your own Google OAuth client for sign-in and give it to WorkOS.</li>
+  <li>WorkOS and Cloudflare: set up <code>auth.remoldcrm.com</code> as the sign-in domain and add its DNS record.</li>
+  <li>WorkOS: check who is allowed to sign up (we could not see this setting).</li>
+  <li>Convex and Cloudflare billing: only if you choose Pro now (see backups above).</li>
+  <li>Baserow: export your data, keep the file, then delete the account.</li>
+  <li>tawk.to: delete the old webhook that points at <code>codemyvibe.com/api/chat</code>.</li>
+  <li>Optional while signed in: Codeberg mirror access for agentic-os-skills; delete the two TEST lead emails.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<p><b>Checked by someone other than the builder</b> (recorded in the repo):</p>
+<ul>
+  <li>Agent permission core (I1): certified at <code>bb8e3ed</code>, merged in <code>328941c</code>. SERVICE (local Convex).</li>
+  <li>Parts of identity and release (I2): write rate limit, release check, flags, <code>/version</code>, migration rehearsal, AuthKit, alerts. SERVICE. I2 as a whole is not done.</li>
+  <li>Proof slices: P2 form capture (SERVICE), P4 payment callbacks (SERVICE/SIM), P4 one finite recurring payment run in Stripe test mode (SANDBOX), P5 bounded mail and calendar tests (LIVE, test mailboxes only), P6 hosted-run safety with a stub model (SERVICE/SIM).</li>
+</ul>
+<p><b>Checked by the builder only</b> (nobody else has looked yet):</p>
+<ul>
+  <li>2026-09-29: app.remoldcrm.com runs the new build on the new backend <code>nautical-viper-899</code>; Google sign-in reached your workspace with 3 companies and 4 people. LIVE, builder only.</li>
+  <li>2026-09-29: an outside agent read and proposed changes on the live backend; the test key was revoked. LIVE, builder only.</li>
+  <li>2026-10-01: website leads go to your inbox by email through Resend; test leads arrived. LIVE, builder only, in the website repo.</li>
+  <li>2026-10-01: Baserow removed from five repos. Builder only.</li>
+</ul>
+<p><b>Not checked by anyone today:</b> the live site and backend. This plan was built from files only. The plan itself awaits your check.</p>
+</div>
+
+<h2>Detail</h2>
+
+<h2>1. Where Remold is, in plain words</h2>
+<p>Remold is live on app.remoldcrm.com. It runs the new build. You can sign in with Google.</p>
+<p>But three things are not safe yet. Sign-in still uses a test (staging) setup. No backup is set up that we can find. And the next routine deploy from this Mac would point the site at the old database.</p>
+<p>Your live workspace held only the sample data at go-live: the 3 companies and 4 people from the seed file. So you are not yet using Remold as your CRM. Your real contacts are somewhere else.</p>
+<p>The approved plan has 29 jobs. Most of them build a big product: social posting, a marketing engine, client invoicing, hosted agents. None of those have a user yet. Both reviewers said the same thing on their own: finish a safe CRM you use every day, then sell a small version of it, and park the rest.</p>
+
+<h2>2. Recommendation</h2>
+<p>Do the milestones below in order. Each one ends with a check that someone other than the builder runs, and that check must be able to fail. Keep all the pack's safety rules: changes that only add, a rollback target, independent checks, explicit gates for spend, sends and charges.</p>
+<p>Use one independent check per milestone, with a test that fails before the change and passes after. (Opus noted that slices took 3 to 5 review rounds so far; that pace does not fit small own-use features.)</p>
+<p>Before any of this starts, an agent records your scope decision in the decisions log. Without it, the Baserow work sits inside I3 and I9, which formally wait on L0. That is a deadlock in the pack (<code>jobs.json</code> depends; I2 <code>remaining</code> in <code>execution.json</code>).</p>
+
+<h2>3. Milestones</h2>
+
+<h3>M0. Safe floor</h3>
+<p><b>You see:</b> the live app is confirmed by a fresh checker, a backup from today exists outside scratch, and only you can create workspaces.</p>
+<p><b>Work:</b></p>
+<ul>
+  <li>Independent check of the 2026-09-29 go-live, using its "How to check" list.</li>
+  <li>Daily export of <code>nautical-viper-899</code> to a lasting folder. Restore it into a throwaway deployment, never into production. Move the pre-switch backup out of <code>~/scratch/remold-cutover/</code>.</li>
+  <li>One deploy command that always targets <code>nautical-viper-899</code>, runs the release check, and refuses a dirty tree. Today <code>.env.local</code> points at the old <code>gallant-pika-581</code>.</li>
+  <li>A rollback that keeps writes made after the switch: the previous compatible code on the current database. The 2026-09-29 rollback goes back to the old database and loses anything new.</li>
+  <li>Limit workspace creation to you and invitees (<code>convex/orgs.ts</code>).</li>
+  <li>Send alerts to a real channel, or stop the every-minute alert crons until it exists.</li>
+  <li>Turn off or document the unused payment callback route on production.</li>
+  <li>Update AGENTS.md, build-status, gate register and README to match reality.</li>
+</ul>
+<p><b>Depends on:</b> your calls on scope, sign-up, backups, data loss, alerts.</p>
+<p><b>Who:</b> agent alone, after those calls. Spend only if you choose Pro.</p>
+<p><b>Check that can fail (not the builder):</b> sign in fresh and see the workspace; restore the latest export into a throwaway deployment and compare counts table by table, fail on any mismatch or missing file; run the deploy command with <code>.env.local</code> still on the old backend and confirm it refuses or still targets the new one; a second Google account cannot create a workspace; rehearse rollback after making a new write, and fail if that write is gone; trigger a test fault and see the alert arrive.</p>
+
+<h3>M1. Real sign-in</h3>
+<p><b>You see:</b> sign-in at auth.remoldcrm.com, the same workspace and history as before, and no session kept in browser storage.</p>
+<p><b>Work:</b> switch to WorkOS production with your Google client. Move your existing user so the same user, membership, workspace and change history carry over. A new sign-in identity would otherwise create a new, empty user (<code>convex/identity.ts</code> <code>getPrincipal</code>, <code>convex/users.ts</code> <code>store</code>). The first cutover needed the same relink. Then delete the interim browser-session code in <code>src/lib/identity-session.ts</code>.</p>
+<p><b>Depends on:</b> M0, and your one sitting.</p>
+<p><b>Who:</b> you for the sign-ins, then the agent.</p>
+<p><b>Check that can fail (not the builder):</b> in a clean browser, sign in and land in the same workspace with the same user id and history; fail on a duplicate or empty workspace. No refresh token in local storage. A browser that blocks third-party cookies still signs in. A staging token is refused. Sign out, sign back in, and use a second browser.</p>
+
+<h3>M2. A website lead lands once</h3>
+<p><b>You see:</b> a lead from codemyvibe.com shows up as one Person and one Opportunity at stage "new", and you still get the email.</p>
+<p><b>Work:</b></p>
+<ul>
+  <li>Idempotency key on <code>POST /api/v1/changes</code>, as designed in <code>docs/adr/002-events.md</code>.</li>
+  <li>One intake call that finds or creates the Person, creates the Opportunity and links them in one go. Two separate calls would not be all-or-nothing.</li>
+  <li>Clean up email and phone before matching (case, spaces), since filters match exactly.</li>
+  <li>Lead fields within the slot limits. Opportunity has 4 free filterable text slots; source, ref, launch kind and launch month would fill it. Details go in an unfiltered field.</li>
+  <li>A website key that can only write those Person and Opportunity fields and cannot read the rest of the CRM. It must be a new-style field grant; old <code>create:x</code> grants skip the field check (<code>convex/identity.ts</code> <code>granted</code>).</li>
+  <li>Abuse limits: rate limit per client and per email, a cap on pending leads, and an alert.</li>
+  <li>The website calls Remold after the email is sent and never blocks it. Failures are logged and visible.</li>
+</ul>
+<p><b>Depends on:</b> M0; your calls on leads and confirmation.</p>
+<p><b>Who:</b> agent; the website key goes into Cloudflare as a secret.</p>
+<p><b>Check that can fail (not the builder):</b> send the same lead twice with the same key and get one Person and one Opportunity; send two at once; same key with a different body is refused; <code>Shakur@X.com</code> and <code>shakur@x.com </code> reach the same Person; conflicting email and phone matches do not overwrite your fields; no half-written records on failure; the key cannot read other records; a burst hits the limit; with Remold down, the email still arrives. Undo the idempotency check and the test must fail.</p>
+
+<h3>M3. Your real book is in Remold</h3>
+<p><b>You see:</b> your actual clients and prospects in Remold, with no duplicates, do-not-contact respected, and the sample rows gone.</p>
+<p><b>Work:</b> import from the source you name, with matching on email, phone, domain and cleaned name (today import only matches on lowercased title, <code>convex/csv.ts</code>). Add a do-not-contact list. Remove the demo rows after a backup.</p>
+<p><b>Depends on:</b> your answer on where your data lives. If there is no real dataset yet, this milestone shrinks to "remove the samples" (Astra would wait for a real dataset before building bulk merge).</p>
+<p><b>Who:</b> agent, with your export file.</p>
+<p><b>Check that can fail (not the builder):</b> source rows equal created plus skipped, with a report; a second import creates nothing; a do-not-contact email is refused; spot-check random rows against the source.</p>
+
+<h3>M4. Daily workflow</h3>
+<p><b>You see:</b> on your phone and desktop you can go capture, person, company, opportunity, next task, note, outcome. Each person has a timeline with real times. You can filter "bookings in September". An agent cannot move a stage backward or touch your notes.</p>
+<p><b>Work:</b></p>
+<ul>
+  <li>An Activity object on the normal metadata path, with type, source and when it happened. The existing <code>events</code> table is only a change log (create, update, delete), not a business timeline (<code>convex/schema.ts</code>).</li>
+  <li>Date fields keep time of day, or activities store a full timestamp (<code>convex/lib/values.ts</code> drops time today).</li>
+  <li>Filters on more than one field and on a date range (REST takes one exact filter today, <code>convex/http.ts</code>).</li>
+  <li>Forward-only stage and protected fields for agents.</li>
+  <li>Full history paging. Today REST returns 20 events and the app 200, with no way to page further (<code>convex/agentApi.ts</code>, <code>convex/events.ts</code>).</li>
+  <li>The known small audit fix: the late-result check ignores read-only workspaces (<code>convex/integrations/outcomes.ts</code>, decisions log 2026-09-26 P6). It was meant to ride with A1; if A1 is parked, do it here.</li>
+</ul>
+<p><b>Depends on:</b> M1; ideally M3 so the test uses real data.</p>
+<p><b>Who:</b> agent builds; you do the phone run.</p>
+<p><b>Check that can fail:</b> you run the workflow on your phone; a separate checker confirms an activity made at 14:32 reads back 14:32, a two-field plus date-range filter matches an export count, an agent's backward stage move and protected-field write get 403, and records from another workspace stay hidden.</p>
+
+<h3>M5. You work from Remold</h3>
+<p><b>You see:</b> Remold is where you do your sales work.</p>
+<p><b>Work:</b> use it. Fix what gets in the way. Restore an old Baserow-era tool only when it removes a real manual chore; do not bring all five back by default.</p>
+<p><b>Who:</b> you; agent fixes.</p>
+<p><b>Check that can fail:</b> raw count of your own changes per day from the <code>events</code> table, reported as is, with no target invented; and your own yes or no. Opus suggested two weeks of real use before M6; that is his proposal, not a rule.</p>
+
+<h3>M6. First paying customer</h3>
+<p><b>You see:</b> a customer can join, use, pay for and leave the CRM you promised.</p>
+<p><b>Work:</b> a written, bounded offer; terms and privacy policy; price; sign-up reopened with a rate limit; simple onboarding and start page; subscription billing through Stripe Checkout with one access flag (not Stripe Connect, which is for client invoicing); full export with links by id, definitions and history (today's CSV export links by title only, <code>convex/csv.ts</code> <code>exportPage</code>); deletion; a support route; scheduled backups. A short first-customer gate list replaces V0 and L0 as written.</p>
+<p><b>Depends on:</b> M5; your calls on offer, price, terms and spend. Live billing needs your explicit OK.</p>
+<p><b>Who:</b> both.</p>
+<p><b>Check that can fail (not the builder):</b> two separate customer workspaces; onboarding; removing a member's access; reading the other workspace through the app, API and export is refused; subscription retry, cancel and access change; full export, and a restore into scratch. Live billing is not claimed until a live charge you authorised is shown.</p>
+
+<h2>4. What would be parked (needs your yes)</h2>
+<p>Parked means: stop work, keep code and evidence, delete nothing.</p>
+<table>
+<tr><th>Area</th><th>Jobs</th><th>Why park</th></tr>
+<tr><td>Hosted agents</td><td>P1, P6, D0A, I4</td><td>Outside agents already work through REST and MCP. Funding cap is 0.</td></tr>
+<tr><td>Marketing engine</td><td>P2, D0M, I5</td><td>No user. The abuse rules carry over to lead intake in M2.</td></tr>
+<tr><td>Social posting</td><td>P3, D0S, I6</td><td>Five developer enrolments and the most sign-in work for you. No user.</td></tr>
+<tr><td>Client invoicing</td><td>P4, D0P, I7</td><td>Separate from charging for Remold. Open test invoices in Stripe test mode stay as recorded; do not rerun spent fixtures.</td></tr>
+<tr><td>Mail and calendar sequences</td><td>P5, D0C, I8</td><td>You send from Gmail today.</td></tr>
+<tr><td>Other</td><td>I9 beyond a lead notice; I10 full dashboard and the measurement addendum; I12 registry publishing; full I13 and I14; A1; impact tracker</td><td>Bring back when a customer or your own use asks.</td></tr>
+</table>
+
+<h2>5. Corrections to the research, re-checked in the repo</h2>
+<table>
+<tr><th>Research said</th><th>What the repo shows</th></tr>
+<tr><td>Build branch is 132 commits ahead of main; merging needs your call.</td><td>132 is the stale local <code>main</code> (<code>1f79309</code>). <code>origin/main</code> is <code>c48e4d5</code>, an ancestor of HEAD; only <code>eaf7c70</code> is ahead. No decision needed.</td></tr>
+<tr><td>Old agents cannot work until keys are re-minted.</td><td>The go-live report says the keys still work but must use the new URL. The values are not on this Mac (decisions log 2026-09-29T23:45). Where else they live: unknown.</td></tr>
+<tr><td>P4 recurring is fully blocked.</td><td>A later finite recurring run in Stripe test mode passed an independent review (<code>proofs/payments/evidence/recurring-sandbox-continuation-2/final-independent-review.json</code>). Future-start, monthly cadence and signed recurring ingress stay open. Note: <code>execution.json</code> P4 still has the older "BLOCKED" line next to the newer PASS line.</td></tr>
+<tr><td>Lead email deploy is unclear.</td><td>The 18:12 entry on 2026-10-01 says it supersedes the 18:05 "not deployed" note: deploy <code>2bc7eaa6</code>, test lead in Gmail. The 18:39 entry records another test. Builder evidence only.</td></tr>
+<tr><td>You decided to wait for intake items 1 and 2.</td><td>That was a recommendation in <code>docs/spec/replace-baserow.html</code>, not your decision. It is in your calls above.</td></tr>
+<tr><td>8 filterable text fields per object.</td><td>Text, select and lookup share the same 8 slots (<code>convex/lib/slots.ts</code>). Opportunity uses 4, Person 5 (<code>convex/lib/standard.ts</code>). The live workspace had 38 fields at go-live, exactly the standard set, so this holds there too.</td></tr>
+<tr><td>Event log needs time added.</td><td>Change events already keep their creation time. What is missing is a business activity with its own source and time.</td></tr>
+<tr><td>Restore test on production.</td><td>The pack says restore into scratch (<code>integration-and-build-jobs.html</code>, C5 and I13 text).</td></tr>
+<tr><td>Convex Pro is approved within $50 a month.</td><td>The $50 allowance is in the accounts addendum, but every job in <code>execution.json</code> has <code>costCap: 0</code>. Missing cap means zero.</td></tr>
+<tr><td>94 of 94 tests pass.</td><td>True for <code>pnpm test</code> (Sonnet and Opus each ran it). It does not include <code>test:authority</code>, the authority proofs or <code>verify:release</code>. No one reran those today.</td></tr>
+</table>
+<p>Also confirmed: <code>.env.local</code> points at <code>gallant-pika-581</code> and still carries a Clerk key; <code>wrangler.jsonc</code> deploys <code>./dist</code> straight to app.remoldcrm.com; <code>convex/crons.ts</code> runs the telemetry probe and alert check every minute; <code>orgs.create</code> lets any signed-in user make a workspace; the demo names (Demo Bay and others) come from <code>convex/seed.ts</code>; build-status has no mention of the go-live; README still says Clerk and "Status 2026-09-23"; AGENTS.md still says no production cutover before L0.</p>
+
+<h2>6. Where the passes disagreed, or could not verify</h2>
+<ul>
+  <li><b>Backups.</b> Opus says production has no backup at all after 2026-09-29. Astra says this cannot be known from files. I agree with Astra: no scheduled backup is recorded in the repo, but the provider setting is unknown. M0 makes one either way.</li>
+  <li><b>Rollback.</b> Opus: restore from export plus an older Worker on the same database. Astra: older compatible code on current data, rehearsed with new writes. These fit together; M0 uses both.</li>
+  <li><b>Importing data.</b> Opus puts a full import early (M3). Astra would do bulk import only once a real dataset exists. Your answer on where your data lives settles it.</li>
+  <li><b>Lead confirmation rule.</b> Astra says the recorded abuse gate (decisions log 2026-09-26 P2) applies to direct lead intake. Opus did not cover it. The gate was written for public forms with email confirmation; whether sales enquiries need confirmation is your call above.</li>
+  <li><b>Code size.</b> Opus counted 34,440 lines in <code>proofs/</code> against 9,025 in <code>src/</code> and <code>convex/</code>. I got the same 34,440 and 8,514 (8,901 with generated files). Same point either way.</li>
+  <li><b>Could not verify:</b> today's live site and backend; whether the workspace still holds only sample data; Convex plan tier and whether free export works there; WorkOS sign-up policy; where the old agent keys are used; other repos' claims (website, outreach-desk and others); whether you still use EspoCRM; anything you have done offline.</li>
+</ul>
+
+<h2>7. Who checked what</h2>
+<ul>
+  <li>Sonnet 5.5 wrote the inventory from the repo and decisions log. Read only.</li>
+  <li>Astra (gpt-6-astra through Codex, read only) and Opus 5.5 each reviewed it on their own, without seeing each other.</li>
+  <li>Opus 5.5 assembled this report and re-checked the disputed facts in the repo with git and file reads. No tests, deploys or production calls.</li>
+  <li>No one has checked the live production state today.</li>
+  <li>This plan awaits your check.</li>
+</ul>
+<p>Inputs: <code>~/scratch/remold-plan-2026-10-01/research.md</code>, <code>astra.txt</code>, <code>opus-review.md</code>. Main sources: <code>evidence/2026-09-29-go-live/report.html</code>, <code>docs/unified-launch/execution.json</code>, <code>docs/unified-launch/jobs.json</code>, <code>docs/spec/replace-baserow.html</code>, <code>docs/unified-launch/accounts-and-subscriptions-addendum.html</code>, <code>docs/unified-launch/pricing-recommendation.html</code>, decisions log entries 2026-09-26 (P2, P6), 2026-09-29 (cutover) and 2026-10-01 (intake, Baserow removal).</p>
+</body>
+</html>
