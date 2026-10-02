@@ -52,25 +52,33 @@ export async function grantIntake(ctx: MutationCtx, orgId: Id<"orgs">, agentId: 
   for (const scope of (await intakeScopes(ctx, orgId)).scopes) await issue(ctx, owner, { target: agentId, capability: `record.${scope.action}`, scope: { kind: "records", objectId: scope.object._id, records: "all", fields: scope.fieldIds }, mode: "direct", delegate: false, expiresAt: Date.now() + GRANT_MS });
 }
 
-async function firstWith(ctx: MutationCtx, item: Item, key: string, value: string) {
-  const field = item.fields[key]!, { orgId, _id: objectId } = item.object;
-  if (!field.slot) return (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect()).find((record) => record.values[field._id] === value) ?? null;
-  const name = `${field.slot.kind}${field.slot.index}`;
-  return await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", objectId).eq(name, value)).first() as Doc<"records"> | null;
+// Stored values keep whatever formatting people typed, so both sides are normalized
+// before comparing. A scan of People is fine at current scale; earliest record wins.
+async function matches(ctx: MutationCtx, item: Item, email: string, phone?: string) {
+  const emailId = item.fields.email!._id, phoneId = item.fields.phone!._id;
+  let byEmail: Doc<"records"> | null = null, byPhone: Doc<"records"> | null = null;
+  for await (const record of ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", item.object.orgId).eq("objectId", item.object._id))) {
+    const storedEmail = record.values[emailId], storedPhone = record.values[phoneId];
+    if (!byEmail && typeof storedEmail === "string" && normalEmail(storedEmail) === email) byEmail = record;
+    if (!byPhone && phone && typeof storedPhone === "string" && normalPhone(storedPhone) === phone) byPhone = record;
+    if (byEmail && (byPhone || !phone)) break;
+  }
+  return { byEmail, byPhone };
 }
 
-// Over-limit leads write no records; the operator hears once an hour per limit.
+// Over-limit leads write no records; the operator hears once an hour per limit, with the
+// workspace id (opaque) in the key and no contact data. The daily window is anchored at UTC midnight.
 async function overLimit(ctx: MutationCtx, principal: AgentMembership, email: string) {
   const orgId = principal.org._id, cap = dailyCap();
   const checks = [
     ["key", () => intakeLimiter.limit(ctx, "intakeKey", { key: principal.agent._id })],
     ["email", () => intakeLimiter.limit(ctx, "intakeEmail", { key: `${orgId}:${email}` })],
-    ["daily", async () => cap > 0 ? intakeLimiter.limit(ctx, "intakeDaily", { key: orgId, config: { kind: "fixed window", rate: cap, period: DAY } }) : { ok: false, retryAfter: DAY - (Date.now() % DAY) }],
+    ["daily", async () => cap > 0 ? intakeLimiter.limit(ctx, "intakeDaily", { key: orgId, config: { kind: "fixed window", rate: cap, period: DAY, start: 0 } }) : { ok: false, retryAfter: DAY - (Date.now() % DAY) }],
   ] as const;
   for (const [which, take] of checks) {
     const result = await take();
     if (result.ok) continue;
-    if ((await intakeLimiter.limit(ctx, "intakeAlert", { key: `${orgId}:${which}` })).ok) await ctx.db.insert("opsNotices", { payload: notice("open", { key: `intake-limit:${which}`, kind: "intake-limit", fn: which, count: 1 }, Date.now()), attempts: 0 });
+    if ((await intakeLimiter.limit(ctx, "intakeAlert", { key: `${orgId}:${which}` })).ok) await ctx.db.insert("opsNotices", { payload: notice("open", { key: `intake-limit:${orgId}:${which}`, kind: "intake-limit", fn: which, count: 1 }, Date.now()), attempts: 0 });
     return { retryAfter: Math.max(1, Math.ceil((result.retryAfter ?? 0) / 1000)) };
   }
   return null;
@@ -99,7 +107,7 @@ export async function submitLead(ctx: MutationCtx, principal: AgentMembership, i
   const create = async (item: Item, values: Record<string, unknown>) => (await applyChange(ctx, principal, { action: "create", orgId, objectId: item.object._id, values: ids(item, values), reason }, { writeOnly: true })).recordId;
 
   const companyId = company ? (await findByTitle(ctx, orgId, companies.object._id, company))?._id ?? await create(companies, { name: company }) : undefined;
-  const byEmail = await firstWith(ctx, person, "email", email), byPhone = phone ? await firstWith(ctx, person, "phone", phone) : null;
+  const { byEmail, byPhone } = await matches(ctx, person, email, phone);
   // Email wins. A phone that belongs to someone else is flagged, never merged or copied.
   const conflict = byEmail && byPhone && byEmail._id !== byPhone._id ? byPhone : null, match = byEmail ?? byPhone;
   let personId: Id<"records">;

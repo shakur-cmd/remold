@@ -58,6 +58,41 @@ describe("Idempotency-Key on POST /api/v1/changes", () => {
     expect((await counts(t)).company).toBe(3);
   });
 
+  it("re-checks current read access on replay and refuses once the read grant is revoked, without writing again", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const person = await objectFields(client, orgId, "person");
+    const created = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Private Person", [person.fields.email._id]: "private@x.com" } });
+    const agent = await client.action(api.agents.createScoped, { orgId, name: "scoped", origin: "external" });
+    const scope = (fields: string[]) => ({ kind: "records" as const, objectId: person.object._id, records: "all" as const, fields: fields.map((key) => person.fields[key]._id) });
+    const read = await client.mutation(api.authority.grants.grant, { orgId, target: agent.agentId, capability: "read", scope: scope(["name", "email"]), mode: "direct", delegate: false, expiresAt: Date.now() + 3600_000 });
+    await client.mutation(api.authority.grants.grant, { orgId, target: agent.agentId, capability: "record.update", scope: scope(["name"]), mode: "direct", delegate: false, expiresAt: Date.now() + 3600_000 });
+    const body = { action: "update", record: created.recordId, values: { name: "Renamed" }, reason: "fix" };
+    const first = await post(t, agent.key, "/api/v1/changes", body, "cached");
+    expect(first.status).toBe(200);
+    await client.mutation(api.authority.grants.revoke, { orgId, id: read });
+    const before = await counts(t);
+    const replayed = await post(t, agent.key, "/api/v1/changes", body, "cached");
+    expect(replayed.status).toBe(403);
+    expect(JSON.stringify(replayed.json)).not.toContain("private@x.com");
+    expect(await counts(t)).toEqual(before);
+  });
+
+  it("returns only fields still readable when a field is hidden after the original write", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const person = await objectFields(client, orgId, "person");
+    const created = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Person", [person.fields.email._id]: "secret@x.com" } });
+    const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "update", objectKey: "person" }] });
+    const body = { action: "update", record: created.recordId, values: { name: "Renamed" }, reason: "fix" };
+    expect((await post(t, agent.key, "/api/v1/changes", body, "masked")).json.record.values.email).toBe("secret@x.com");
+    await client.mutation(api.authority.policies.setAgentMasks, { orgId, agentId: agent.agentId, hiddenFieldIds: [person.fields.email._id] });
+    const before = await counts(t);
+    const replayed = await post(t, agent.key, "/api/v1/changes", body, "masked");
+    expect(replayed.status).toBe(200);
+    expect(replayed.json.record.values.name).toBe("Renamed");
+    expect(JSON.stringify(replayed.json)).not.toContain("secret@x.com");
+    expect(await counts(t)).toEqual(before);
+  });
+
   it("still writes every time when no key is sent", async () => {
     const { t, client, orgId } = await userAndOrg();
     const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "create", objectKey: "company" }] });
@@ -127,6 +162,29 @@ describe("POST /api/v1/intake/lead", () => {
     await send({ name: "Shakur", email: "Shakur@X.com " }, "a");
     await send({ name: "Shakur A.", email: "shakur@x.com" }, "b");
     expect(await counts(t)).toMatchObject({ person: 1, opportunity: 2 });
+  });
+
+  it("matches people entered through ordinary CRM writes with different email formatting, keeping their stored value", async () => {
+    const { t, client, orgId, send } = await intakeSetup();
+    const person = await objectFields(client, orgId, "person");
+    const existing = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Shakur", [person.fields.email._id]: "Shakur@X.com " } });
+    expect((await send({ name: "Shakur", email: "shakur@x.com" }, "crm-email")).status).toBe(201);
+    expect((await counts(t)).person).toBe(1);
+    const [opp] = await recordsOf(t, "opportunity");
+    const opportunity = await objectFields(client, orgId, "opportunity");
+    expect(opp.values[opportunity.fields.person._id]).toBe(existing.recordId);
+    expect((await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record.values[person.fields.email._id]).toBe("Shakur@X.com ");
+  });
+
+  it("matches people entered through ordinary CRM writes with different phone formatting, keeping their stored value", async () => {
+    const { t, client, orgId, send } = await intakeSetup();
+    const person = await objectFields(client, orgId, "person");
+    const existing = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Caller", [person.fields.phone._id]: "+1 (410) 555-0100" } });
+    expect((await send({ name: "Caller", email: "caller@x.com", phone: "+14105550100" }, "crm-phone")).status).toBe(201);
+    expect((await counts(t)).person).toBe(1);
+    const record = (await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record;
+    expect(record.values[person.fields.phone._id]).toBe("+1 (410) 555-0100");
+    expect(record.values[person.fields.email._id]).toBe("caller@x.com");
   });
 
   it("falls back to the phone number and fills only empty person fields", async () => {
@@ -228,7 +286,7 @@ describe("intake abuse limits", () => {
 
   it("limits a burst from one key, writes nothing over the limit, and alerts the operator once", async () => {
     vi.spyOn(Date, "now").mockReturnValue(1_800_000_000_000);
-    const { t, send } = await intakeSetup();
+    const { t, orgId, send } = await intakeSetup();
     for (let i = 0; i < 10; i++) expect((await send({ name: `Lead ${i}`, email: `lead${i}@x.com` }, `burst-${i}`)).status).toBe(201);
     const before = await counts(t);
     const limited = await send({ name: "Lead 10", email: "lead10@x.com" }, "burst-10");
@@ -239,7 +297,7 @@ describe("intake abuse limits", () => {
     expect(await counts(t)).toEqual(before);
     const alerts = await notices(t);
     expect(alerts).toHaveLength(1);
-    expect(alerts[0]).toMatchObject({ source: "remold", event: "open", kind: "intake-limit" });
+    expect(alerts[0]).toMatchObject({ source: "remold", event: "open", kind: "intake-limit", key: `intake-limit:${orgId}:key` });
     expect(JSON.stringify(alerts)).not.toContain("lead10@x.com");
   });
 
@@ -256,13 +314,32 @@ describe("intake abuse limits", () => {
   it("caps leads per workspace per day from REMOLD_INTAKE_DAILY_CAP", async () => {
     vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", "2");
     vi.spyOn(Date, "now").mockReturnValue(1_800_000_000_000);
-    const { t, send } = await intakeSetup();
+    const { t, orgId, send } = await intakeSetup();
     expect((await send({ name: "A", email: "a@x.com" }, "1")).status).toBe(201);
     expect((await send({ name: "B", email: "b@x.com" }, "2")).status).toBe(201);
     expect((await send({ name: "C", email: "c@x.com" }, "3")).status).toBe(429);
     expect((await counts(t)).opportunity).toBe(2);
-    expect((await notices(t)).map((n: any) => n.key)).toEqual(["intake-limit:daily"]);
+    expect((await notices(t)).map((n: any) => n.key)).toEqual([`intake-limit:${orgId}:daily`]);
     // A replay of a lead that already landed is not a new lead and is not capped.
     expect((await send({ name: "A", email: "a@x.com" }, "1")).status).toBe(201);
+  });
+
+  it("counts the daily cap per UTC day: enforced all day, reset at midnight", async () => {
+    vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", "2");
+    // Without an anchored window the limiter picks a random offset; pin it so an unanchored window would reset at 12:14 UTC.
+    const random = Math.random.bind(Math);
+    vi.spyOn(Math, "random").mockImplementation(() => new Error().stack?.includes("calculateRateLimit") ? 0.99 : random());
+    const clock = vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-02T12:00:00Z"));
+    const { t, send } = await intakeSetup();
+    expect((await send({ name: "A", email: "a@x.com" }, "d1")).status).toBe(201);
+    expect((await send({ name: "B", email: "b@x.com" }, "d2")).status).toBe(201);
+    expect((await send({ name: "C", email: "c@x.com" }, "d3")).status).toBe(429);
+    clock.mockReturnValue(Date.parse("2026-10-02T12:15:00Z"));
+    expect((await send({ name: "D", email: "d@x.com" }, "d4")).status).toBe(429);
+    clock.mockReturnValue(Date.parse("2026-10-02T23:59:59Z"));
+    expect((await send({ name: "E", email: "e@x.com" }, "d5")).status).toBe(429);
+    clock.mockReturnValue(Date.parse("2026-10-03T00:00:01Z"));
+    expect((await send({ name: "F", email: "f@x.com" }, "d6")).status).toBe(201);
+    expect((await counts(t)).opportunity).toBe(3);
   });
 });
