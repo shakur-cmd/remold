@@ -6,21 +6,25 @@ import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { canReadRecord, projectEvent, listedRecordIds, paginateIndex } from "./authority/reads";
 
-export const forRecord = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => {
-  const principal = await requireMember(ctx, args.orgId);
-  const record = await ctx.db.get(args.recordId);
+// Newest first. Every event of a readable record is readable, so pages have no holes.
+async function recordEvents(ctx: QueryCtx, orgId: Id<"orgs">, recordId: Id<"records">, opts: { cursor: string | null; numItems: number }) {
+  const principal = await requireMember(ctx, orgId);
+  const record = await ctx.db.get(recordId);
   // An unreadable record gets the same answer as a deleted one.
-  const object = record && record.orgId === args.orgId ? await ctx.db.get(record.objectId) : null;
+  const object = record && record.orgId === orgId ? await ctx.db.get(record.objectId) : null;
   if (!record || !object || !canReadRecord(principal, object, record)) fail("NOT_FOUND", "Record not found");
-  const events = await ctx.db.query("events").withIndex("by_record", (q) => q.eq("orgId", args.orgId).eq("recordId", args.recordId)).order("desc").take(200);
-  return (await Promise.all(events.map(async (event) => {
+  const result = await paginateIndex(ctx.db.query("events").withIndex("by_record", (q) => q.eq("orgId", orgId).eq("recordId", recordId)).order("desc"), opts);
+  const page = (await Promise.all(result.page.map(async (event) => {
     const actor = event.actor.kind === "user" ? await ctx.db.get(event.actor.id as Id<"users">) : event.actor.kind === "agent" ? await ctx.db.get(event.actor.id as Id<"agents">) : null;
     const suggestion = event.suggestionId ? await ctx.db.get(event.suggestionId) : null;
     const appliedBy = suggestion?.resolvedBy ? await ctx.db.get(suggestion.resolvedBy) : null;
     const masked = await projectEvent(ctx, principal, event);
     return masked ? { ...masked, actorName: actor?.name ?? null, appliedByName: appliedBy?.name ?? null } : null;
   }))).filter((event): event is NonNullable<typeof event> => event !== null);
-} });
+  return { ...result, page };
+}
+export const forRecord = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => (await recordEvents(ctx, args.orgId, args.recordId, { cursor: null, numItems: 200 })).page });
+export const page = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), paginationOpts: paginationOptsValidator }, handler: (ctx, args) => recordEvents(ctx, args.orgId, args.recordId, args.paginationOpts) });
 export const forOrg = query({ args: { orgId: v.id("orgs"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId);
   // Only a caller who covers every record of every object can page the org-wide index

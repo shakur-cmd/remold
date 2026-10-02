@@ -11,6 +11,15 @@ export type ApiRecord = { id: string; ref: string | null; object: string; title:
 const empty = (value: unknown) => value === null || value === undefined;
 const pad = (value: number) => String(value).padStart(2, "0");
 const dateText = (value: number) => { const d = new Date(value); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
+const day = (value: string) => { const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value); if (!match) return undefined; const ms = Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!); return dateText(ms) === value.slice(0, 10) ? ms : undefined; };
+// A time without an offset names no instant, so with-time fields refuse it rather than guess a zone.
+export const instant = (value: string) => {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return day(value);
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|[+-]\d{2}:?\d{2})$/.exec(value);
+  if (!match || day(match[1]!) === undefined || +match[2]! > 23 || +match[3]! > 59 || +(match[4] ?? 0) > 59) return undefined;
+  const ms = Date.parse(value.replace(/([+-]\d{2})(\d{2})$/, "$1:$2"));
+  return Number.isFinite(ms) ? ms : undefined;
+};
 
 async function related(ctx: Ctx, principal: Principal, field: Doc<"fields">, value: unknown, fieldKey: string) {
   const orgId = principal.org._id;
@@ -40,7 +49,7 @@ function scalar(field: Doc<"fields">, value: unknown, fieldKey: string) {
   if (field.type === "text") { if (typeof value !== "string") fail("VALIDATION", "Expected text", { fieldKey }); return value; }
   if (field.type === "number") { const number = typeof value === "number" ? value : typeof value === "string" ? Number(value.replace(/[$,\s]/g, "")) : NaN; if (!Number.isFinite(number)) fail("VALIDATION", "Expected a finite number", { fieldKey }); return number; }
   if (field.type === "boolean") { if (typeof value === "boolean") return value; if (typeof value === "string") { const normalized = value.toLowerCase(); if (["true", "yes"].includes(normalized)) return true; if (["false", "no"].includes(normalized)) return false; } fail("VALIDATION", "Expected boolean", { fieldKey }); }
-  if (field.type === "date") { if (typeof value === "number" && Number.isInteger(value)) return value; if (typeof value === "string") { const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value); if (match) { const ms = Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!); if (dateText(ms) === value.slice(0, 10)) return ms; } } fail("VALIDATION", "Expected a real date as YYYY-MM-DD", { fieldKey }); }
+  if (field.type === "date") { if (typeof value === "number" && Number.isInteger(value)) return value; if (typeof value === "string") { const ms = field.withTime ? instant(value) : day(value); if (ms !== undefined) return ms; } fail("VALIDATION", field.withTime ? "Expected YYYY-MM-DD or an ISO 8601 time with an offset" : "Expected a real date as YYYY-MM-DD", { fieldKey }); }
   if (field.type === "select") { if (typeof value !== "string") fail("VALIDATION", "Expected select option", { fieldKey }); const option = field.options?.find((item) => item.id === value || item.label.toLowerCase() === value.toLowerCase()); if (!option) fail("VALIDATION", "Invalid select option", { fieldKey }); return option.id; }
   return value;
 }
@@ -61,7 +70,7 @@ export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc
 export async function readableValue(ctx: Ctx, principal: Principal, field: Doc<"fields">, value: unknown) {
   if (empty(value)) return undefined;
   if (field.type === "number" || field.type === "text" || field.type === "boolean" || field.type === "select") return value;
-  if (field.type === "date") return dateText(value as number);
+  if (field.type === "date") return field.withTime ? new Date(value as number).toISOString() : dateText(value as number);
   const reference = async (id: string) => {
     const normal = ctx.db.normalizeId("records", id), record = normal ? await ctx.db.get(normal) : null;
     if (!record || record.orgId !== principal.org._id) return null;

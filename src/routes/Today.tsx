@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
-import { quietFor, relativeDay } from "@/lib/fields";
+import { localDay, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 // Date fields hold UTC midnight of the chosen day, so "today" is encoded the same way.
@@ -22,7 +22,8 @@ export function Today() {
   const update = useMutation(api.records.update);
   if (!data) return <Loading />;
   const { task } = data;
-  const due = (record: Doc<"records">) => (task ? (record.values[task.dueFieldId] as number) : 0);
+  const at = (record: Doc<"records">) => (task ? (record.values[task.dueFieldId] as number) : 0);
+  const due = (record: Doc<"records">) => localDay(task?.dueField, at(record));
   const groups = [
     { label: "Overdue", rows: data.tasks.filter((r) => due(r) < today) },
     { label: "Today", rows: data.tasks.filter((r) => due(r) === today) },
@@ -56,7 +57,10 @@ export function Today() {
                     <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className="min-w-0 flex-1 truncate text-sm">
                       {record.title || "Untitled"}
                     </Link>
-                    <span className={cn("text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>{relativeDay(due(record), today)}</span>
+                    <span className={cn("text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>
+                      {relativeDay(due(record), today)}
+                      {task && timeOfDay(task.dueField, at(record)) && ` ${timeOfDay(task.dueField, at(record))}`}
+                    </span>
                   </div>
                 ))}
               </section>

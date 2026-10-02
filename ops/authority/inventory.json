@@ -344,6 +344,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "events:page",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
     "id": "events:forOrg",
     "kind": "query",
     "visibility": "public",
@@ -1140,6 +1150,16 @@
   },
   {
     "id": "records:related",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:timeline",
     "kind": "query",
     "visibility": "public",
     "writes": false,

@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
-import { type Field, contactHref, formatDate, formatNumber, isEmpty, optionLabel } from "@/lib/fields";
+import { type Field, contactHref, formatFieldDate, formatNumber, isEmpty, optionLabel } from "@/lib/fields";
 
 export function RecordLink({ orgId, recordId, plain = false }: { orgId: Id<"orgs">; recordId: Id<"records">; plain?: boolean }) {
   const result = useQuery(api.records.get, { orgId, recordId });
@@ -32,7 +32,7 @@ export function FieldValue({ orgId, field, value, plain = false }: { orgId: Id<"
     case "select":
       return <Badge variant="secondary">{optionLabel(field, value)}</Badge>;
     case "date":
-      return <span className="tabular-nums">{formatDate(value)}</span>;
+      return <span className="tabular-nums">{formatFieldDate(field, value as number)}</span>;
     case "boolean":
       return <>{value ? "Yes" : "No"}</>;
     case "number":

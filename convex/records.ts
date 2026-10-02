@@ -1,12 +1,13 @@
 import { mutation, query } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { listRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
-import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
+import { canReadObject, canReadField, canReadRecord, canQueryField, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
 
 const values = v.record(v.string(), v.any());
 const direction = v.union(v.literal("asc"), v.literal("desc"));
@@ -30,6 +31,33 @@ export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("reco
   return { ...page, page: (await Promise.all(page.page.map((r: any) => projectRecord(ctx, principal, r)))).filter(Boolean) };
 } });
 export const reverseFields = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const object = await ctx.db.get(args.objectId); if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect(); const result = []; for (const source of objects.filter(o => canReadObject(principal, o))) { const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", source._id)).collect(); for (const field of fields) if (!field.retired && canReadField(principal, source, field) && (field.type === "lookup" || field.type === "links") && (!field.targetObjectId || field.targetObjectId === args.objectId)) result.push({ field, object: source }); } return result; } });
+// Activities, notes and tasks whose About points at this record, for its timeline.
+// Each kind is capped at its newest TIMELINE_CAP by creation.
+const TIMELINE_CAP = 200;
+export const timeline = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => {
+  const principal = await requireMember(ctx, args.orgId); const target = await ctx.db.get(args.recordId);
+  const targetObject = target && target.orgId === args.orgId ? await ctx.db.get(target.objectId) : null;
+  if (!target || !targetObject || !canReadRecord(principal, targetObject, target)) fail("NOT_FOUND", "Record not found");
+  const items = [];
+  for (const kind of ["activity", "note", "task"] as const) {
+    const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", args.orgId).eq("key", kind)).unique();
+    if (!object || !canReadObject(principal, object)) continue;
+    const byKey = new Map((await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect()).filter((f) => !f.retired).map((f) => [f.key, f]));
+    const about = byKey.get("about");
+    if (!about || about.type !== "lookup" || about.targetObjectId || !about.slot || !canQueryField(principal, object, about)) continue;
+    const name = slotName(about.slot.kind, about.slot.index);
+    const rows = (await listedRelated(ctx, principal, object, about, target._id))?.reverse() ?? await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", args.orgId).eq("objectId", object._id).eq(name, target._id)).order("desc").take(TIMELINE_CAP) as Doc<"records">[];
+    for (const row of rows.slice(0, TIMELINE_CAP)) {
+      const record = await projectRecord(ctx, principal, row); if (!record) continue;
+      const value = (key: string) => { const field = byKey.get(key); return field ? record.values[field._id] : undefined; };
+      const when = value("when"), due = value("dueDate"), type = byKey.get("type");
+      items.push({ _id: record._id, kind, objectKey: object.key, title: record.title, createdAt: record._creationTime, at: typeof when === "number" ? when : record._creationTime,
+        ...(kind === "activity" ? { type: type && value("type") !== undefined ? type.options?.find((o) => o.id === value("type"))?.label ?? String(value("type")) : null, source: (value("source") as string | undefined) ?? null } : {}),
+        ...(kind === "task" ? { due: typeof due === "number" ? due : null, dueWithTime: !!byKey.get("dueDate")?.withTime, done: value("done") === true } : {}) });
+    }
+  }
+  return items.sort((a, b) => b.at - a.at);
+} });
 export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), values, reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "create", ...args }) });
 export const update = mutation({ args: { orgId: v.id("orgs"), recordId: v.id("records"), values, reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "update", ...args }) });
 export const remove = mutation({ args: { orgId: v.id("orgs"), recordId: v.id("records"), reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "delete", ...args }) });

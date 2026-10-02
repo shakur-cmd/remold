@@ -6,7 +6,7 @@ import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { RecordLink } from "@/components/FieldValue";
 import { attempt } from "@/lib/errors";
-import { type Field, formatNumber, isMoney, quietFor } from "@/lib/fields";
+import { formatFieldDate, type Field, formatNumber, isMoney, quietFor } from "@/lib/fields";
 
 type Props = { orgId: Id<"orgs">; object: Doc<"objects">; groupBy: Field; fields: Field[] };
 type Preview = { number?: Field; date?: Field; lookup?: Field };
@@ -81,7 +81,7 @@ function Card({ orgId, object, record, column, preview }: { orgId: Id<"orgs">; o
   const date = preview.date && (record.values[preview.date._id] as number | undefined);
   const lookup = preview.lookup && (record.values[preview.lookup._id] as Id<"records"> | undefined);
   const quiet = Date.now() - record.updatedAt > STALE;
-  const meta = [typeof number === "number" && show(preview.number!, number), date && new Date(date).toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric" })].filter(Boolean).join(" · ");
+  const meta = [typeof number === "number" && show(preview.number!, number), date && formatFieldDate(preview.date, date)].filter(Boolean).join(" · ");
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={cn("grid touch-manipulation gap-1 rounded-md border bg-card p-3 text-[13px]", isDragging && "relative z-10 shadow-md")}>
       <Link to={`/o/${orgId}/${object.key}/${record._id}`} className="font-medium hover:text-primary">

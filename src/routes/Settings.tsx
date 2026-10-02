@@ -7,6 +7,7 @@ import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
@@ -194,6 +195,7 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
   const [type, setType] = useState<(typeof TYPES)[number]>("text");
   const [options, setOptions] = useState("");
   const [target, setTarget] = useState<Id<"objects"> | undefined>();
+  const [withTime, setWithTime] = useState(false);
   const key = toKey(label);
   const linking = type === "lookup" || type === "links";
 
@@ -205,10 +207,11 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
         .map((s) => s.trim())
         .filter(Boolean)
         .map((s) => ({ id: s.toLowerCase().replace(/[^a-z0-9]+/g, "_"), label: s }));
-      const result = await create({ orgId, objectId: object._id, key, label: label.trim(), type, options: type === "select" ? parsed : undefined, targetObjectId: linking ? target : undefined });
+      const result = await create({ orgId, objectId: object._id, key, label: label.trim(), type, options: type === "select" ? parsed : undefined, targetObjectId: linking ? target : undefined, withTime: type === "date" && withTime ? true : undefined });
       if (!result.slot) toast.warning("Slots for this type are used up: the field stores values but cannot sort or filter.");
       setLabel("");
       setOptions("");
+      setWithTime(false);
     }, "Field added");
   }
 
@@ -238,6 +241,12 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
             Add field
           </Button>
           {type === "select" && <Input className="sm:col-span-3" value={options} onChange={(e) => setOptions(e.target.value)} placeholder="Options, comma separated: New, Contacted, Won" aria-label="Options" required />}
+          {type === "date" && (
+            <label className="flex items-center gap-2 text-sm sm:col-span-3">
+              <Checkbox checked={withTime} onCheckedChange={(checked) => setWithTime(checked === true)} aria-label="Keep time of day" />
+              Keep time of day
+            </label>
+          )}
           {linking && (
             <Select value={target} onValueChange={(v) => setTarget(v as Id<"objects">)}>
               <SelectTrigger className="w-full sm:col-span-3" aria-label="Target object">
@@ -284,7 +293,7 @@ function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs"
   return (
     <li className="flex min-h-10 flex-wrap items-center gap-2 px-3 py-1.5">
       <span className={field.retired ? "text-muted-foreground line-through" : "font-medium"}>{field.label}</span>
-      <span className="text-xs text-muted-foreground">{field.type}</span>
+      <span className="text-xs text-muted-foreground">{field.type}{field.withTime && " and time"}</span>
       {isTitle && <Badge variant="secondary">title</Badge>}
       {/* Only unindexed fields need a note: they store values but cannot sort or filter. */}
       {!field.slot && field.type !== "links" && <Badge variant="outline" title="Stores values, cannot sort or filter">unindexed</Badge>}

@@ -17,7 +17,7 @@ import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
-import { contactHref, formatTime, isEmpty, relativeDay, type Field } from "@/lib/fields";
+import { contactHref, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -53,6 +53,9 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
   const shown = showEmpty ? rest : rest.filter((f) => !isEmpty(record.values[f._id]));
   // Tasks pointing at this record through a single lookup feed the next step; "blocked by" lists are not next steps.
   const taskSources = (reverse ?? []).filter((r) => r.object.key === "task" && r.field.type === "lookup").slice(0, 2);
+  // Notes and activities about this record live in the timeline, not in panels of their own.
+  const about = (key: string) => reverse?.find((r) => r.object.key === key && r.field.key === "about" && r.field.type === "lookup" && !r.field.targetObjectId);
+  const inTimeline = [about("note"), about("activity")];
 
   // What needs a decision comes first: beside the record on wide screens, under its header on phones.
   const act = (
@@ -123,14 +126,14 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
         </div>
 
         {/* Tasks that feed the next step are listed there, not twice. */}
-        {reverse?.filter((entry) => !taskSources.includes(entry)).map((entry) => (
+        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry)).map((entry) => (
           <RelatedPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} showVia={reverse.filter((r) => r.object._id === entry.object._id).length > 1} />
         ))}
       </div>
 
       <div className="grid min-w-0 content-start gap-5">
         <div className="hidden gap-5 lg:grid">{act}</div>
-        <Timeline orgId={orgId} recordId={recordId} fields={fields} />
+        <Timeline orgId={orgId} recordId={recordId} fields={fields} note={inTimeline[0]} activity={inTimeline[1]} />
       </div>
     </div>
   );
@@ -325,6 +328,7 @@ function NextStep({ orgId, recordId, sources }: { orgId: Id<"orgs">; recordId: I
   const dueOf = (r: Doc<"records">) => (due ? (r.values[due._id] as number | undefined) : undefined) ?? Infinity;
   const all = [...new Map([...a.results, ...b.results].map((r) => [r._id, r])).values()];
   const open = all.filter((r) => !done || r.values[done._id] !== true).sort((x, y) => dueOf(x) - dueOf(y));
+  const dayOf = (r: Doc<"records">) => localDay(due, dueOf(r));
   const now = new Date();
   const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
   return (
@@ -349,7 +353,12 @@ function NextStep({ orgId, recordId, sources }: { orgId: Id<"orgs">; recordId: I
             <Link to={`/o/${orgId}/${first!.object.key}/${item._id}`} className={cn("min-w-0 flex-1 truncate text-sm", index === 0 && "font-medium")}>
               {item.title || "Untitled"}
             </Link>
-            {dueOf(item) !== Infinity && <span className={cn("text-xs tabular-nums", dueOf(item) < today ? "font-medium text-destructive" : "text-muted-foreground")}>{relativeDay(dueOf(item), today)}</span>}
+            {dueOf(item) !== Infinity && (
+              <span className={cn("text-xs tabular-nums", dayOf(item) < today ? "font-medium text-destructive" : "text-muted-foreground")}>
+                {relativeDay(dayOf(item), today)}
+                {timeOfDay(due, dueOf(item)) && ` ${timeOfDay(due, dueOf(item))}`}
+              </span>
+            )}
           </div>
         ))}
         {all.length > open.length && <p className="px-2 pt-1 text-xs text-muted-foreground">{all.length - open.length} done</p>}
@@ -374,51 +383,97 @@ function PendingSuggestions({ orgId, recordId }: { orgId: Id<"orgs">; recordId: 
 
 const TIMELINE_PREVIEW = 5;
 
-function Timeline({ orgId, recordId, fields }: { orgId: Id<"orgs">; recordId: Id<"records">; fields: Field[] }) {
-  const events = useQuery(api.events.forRecord, { orgId, recordId });
+// Change history merged with the activities, notes and tasks about this record, newest first.
+function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs">; recordId: Id<"records">; fields: Field[]; note?: Reverse; activity?: Reverse }) {
+  const history = usePaginatedQuery(api.events.page, { orgId, recordId }, { initialNumItems: 50 });
+  const items = useQuery(api.records.timeline, { orgId, recordId });
   const [expanded, setExpanded] = useState(false);
+  const [logging, setLogging] = useState(false);
   const byId = new Map(fields.map((f) => [f._id, f]));
   const show = (field: Field | undefined, value: unknown) =>
     isEmpty(value) ? <span className="italic">empty</span> : field ? <FieldValue orgId={orgId} field={field} value={value} plain /> : String(value);
-  const visible = expanded ? events : events?.slice(0, TIMELINE_PREVIEW);
+  const more = history.status === "CanLoadMore" || history.status === "LoadingMore";
+  // Items older than the oldest loaded change wait until history reaches them, so nothing shows out of order.
+  const oldest = history.results.at(-1)?._creationTime ?? Infinity;
+  const entries = [
+    ...history.results.map((event) => ({ key: event._id as string, at: event._creationTime, event, item: undefined })),
+    ...(items ?? []).filter((item) => !more || item.at >= oldest).map((item) => ({ key: item._id as string, at: item.at, event: undefined, item })),
+  ].sort((a, b) => b.at - a.at);
+  const visible = expanded ? entries : entries.slice(0, TIMELINE_PREVIEW);
+  const loading = history.status === "LoadingFirstPage" || items === undefined;
   return (
     <Card className="min-w-0">
       <CardHeader>
         <CardTitle>Timeline</CardTitle>
+        {activity && (
+          <CardAction>
+            <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setLogging(true)}>
+              <Plus /> Log activity
+            </Button>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent className="grid gap-3">
-        {events === undefined && <span className="text-sm text-muted-foreground">Loading</span>}
-        {visible?.map((event) => (
-          <div key={event._id} className="grid min-w-0 gap-0.5 border-l-2 pl-3 text-[13px]">
-            <div className="flex flex-wrap items-baseline gap-x-1.5">
-              <span className="font-medium">{event.actorName ?? (event.actor.kind === "agent" ? "An agent" : "Automation")}</span>
-              <span className="text-muted-foreground">
-                {event.action === "create" ? "created this" : event.action === "delete" ? "deleted this" : "changed"}
-                {event.appliedByName && `, applied by ${event.appliedByName}`}
-              </span>
-              <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(event._creationTime)}</time>
-            </div>
-            {event.action === "update" && event.after && (
-              <ul className="grid gap-0.5 text-muted-foreground">
-                {Object.keys(event.after).map((fieldId) => {
-                  const field = byId.get(fieldId as Id<"fields">);
-                  return (
-                    <li key={fieldId} className="break-words">
-                      {field?.label ?? "Field"}: {show(field, event.before?.[fieldId])} → <span className="text-foreground">{show(field, event.after?.[fieldId])}</span>
-                    </li>
-                  );
-                })}
-              </ul>
+        {note && <NoteComposer orgId={orgId} note={note.object} about={note.field} recordId={recordId} />}
+        {loading && <span className="text-sm text-muted-foreground">Loading</span>}
+        {visible.map(({ key, at, event, item }) => (
+          <div key={key} className="grid min-w-0 gap-0.5 border-l-2 pl-3 text-[13px]">
+            {item ? (
+              <>
+                <div className="flex flex-wrap items-baseline gap-x-1.5">
+                  <span className="font-medium">{item.kind === "activity" ? (item.type ?? "Activity") : item.kind === "note" ? "Note" : "Task"}</span>
+                  {item.kind === "activity" && item.source && <span className="text-muted-foreground">via {item.source}</span>}
+                  {item.kind === "task" && item.done && <span className="text-muted-foreground">done</span>}
+                  <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(at)}</time>
+                </div>
+                <Link to={`/o/${orgId}/${item.objectKey}/${item._id}`} className={cn("min-w-0 break-words hover:underline", item.kind === "note" && "whitespace-pre-wrap", item.kind === "task" && item.done && "text-muted-foreground line-through")}>
+                  {item.title || "Untitled"}
+                </Link>
+                {item.kind === "task" && typeof item.due === "number" && <span className="text-muted-foreground">Due {formatFieldDate({ withTime: item.dueWithTime } as Field, item.due)}</span>}
+              </>
+            ) : (
+              event && (
+                <>
+                  <div className="flex flex-wrap items-baseline gap-x-1.5">
+                    <span className="font-medium">{event.actorName ?? (event.actor.kind === "agent" ? "An agent" : "Automation")}</span>
+                    <span className="text-muted-foreground">
+                      {event.action === "create" ? "created this" : event.action === "delete" ? "deleted this" : "changed"}
+                      {event.appliedByName && `, applied by ${event.appliedByName}`}
+                    </span>
+                    <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(at)}</time>
+                  </div>
+                  {event.action === "update" && event.after && (
+                    <ul className="grid gap-0.5 text-muted-foreground">
+                      {Object.keys(event.after).map((fieldId) => {
+                        const field = byId.get(fieldId as Id<"fields">);
+                        return (
+                          <li key={fieldId} className="break-words">
+                            {field?.label ?? "Field"}: {show(field, event.before?.[fieldId])} → <span className="text-foreground">{show(field, event.after?.[fieldId])}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  {event.reason && <p className="text-muted-foreground">“{event.reason}”</p>}
+                </>
+              )
             )}
-            {event.reason && <p className="text-muted-foreground">“{event.reason}”</p>}
           </div>
         ))}
-        {events && events.length > TIMELINE_PREVIEW && (
-          <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => setExpanded((v) => !v)}>
-            {expanded ? "Show less" : `Show all ${events.length}`}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-1">
+          {entries.length > TIMELINE_PREVIEW && (
+            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setExpanded((v) => !v)}>
+              {expanded ? "Show less" : `Show all ${entries.length}${more ? "+" : ""}`}
+            </Button>
+          )}
+          {expanded && more && (
+            <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={history.status === "LoadingMore"} onClick={() => history.loadMore(100)}>
+              Load more
+            </Button>
+          )}
+        </div>
       </CardContent>
+      {activity && <AddRelatedDialog orgId={orgId} recordId={recordId} entry={activity} open={logging} onOpenChange={setLogging} />}
     </Card>
   );
 }

@@ -45,4 +45,16 @@ describe("CSV export", () => {
     expect(page.rows[0].slice(1)).toEqual(["Site", "", "Won", "2026-01-05", "Acme", ""]);
     expect(page.done).toBe(true);
   });
+
+  it("keeps the time of a with-time date through export and import", async () => {
+    const { client, orgId } = await userAndOrg();
+    const task = await objectFields(client, orgId, "task"), f = task.fields;
+    await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [f.title._id]: "Call", [f.dueDate._id]: Date.UTC(2026, 9, 1, 18, 32) } });
+    const page = await client.query(api.csv.exportPage, { orgId, objectId: task.object._id, cursor: null });
+    expect(page.rows[0][page.header.indexOf("Due Date")]).toBe("2026-10-01T18:32:00.000Z");
+    await client.mutation(api.csv.importRows, { orgId, objectId: task.object._id, firstRow: 2, skipDuplicates: false, createMissing: false, columns: [f.title._id, f.dueDate._id], rows: [["Offset", "2026-10-01T14:32:00-04:00"], ["Plain", "2026-10-02"]] });
+    const rows = (await client.query(api.records.list, { orgId, objectId: task.object._id, paginationOpts: { numItems: 10, cursor: null } })).page;
+    expect(rows.find((r: any) => r.title === "Offset").values[f.dueDate._id]).toBe(Date.UTC(2026, 9, 1, 18, 32));
+    expect(rows.find((r: any) => r.title === "Plain").values[f.dueDate._id]).toBe(Date.UTC(2026, 9, 2));
+  });
 });

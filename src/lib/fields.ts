@@ -8,10 +8,29 @@ export const isSlotted = (field: Field) => field.slot !== undefined;
 export const isEmpty = (value: unknown) =>
   value === undefined || value === null || value === "" || (Array.isArray(value) && value.length === 0);
 
-export const dateToInput = (ms: unknown) => (typeof ms === "number" ? new Date(ms).toISOString().slice(0, 10) : "");
+const DAY = 86400000;
+const pad = (n: number) => String(n).padStart(2, "0");
+// A with-time value at exactly UTC midnight came from a plain date (or predates
+// time of day), so it is that calendar day everywhere, not the evening before.
+const allDay = (field: Field | undefined, ms: number) => !field?.withTime || ms % DAY === 0;
 
-// Dates are stored as UTC midnight so every machine shows the same day.
-export const inputToDate = (value: string) => (value ? Date.parse(`${value}T00:00:00Z`) : null);
+// Plain dates are stored as UTC midnight so every machine shows the same day;
+// with-time dates are instants, edited and shown in the browser's zone.
+export const dateToInput = (ms: unknown, field?: Field) => {
+  if (typeof ms !== "number") return "";
+  if (!field?.withTime) return new Date(ms).toISOString().slice(0, 10);
+  if (allDay(field, ms)) return `${new Date(ms).toISOString().slice(0, 10)}T00:00`;
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+export const inputToDate = (value: string, field?: Field) => (!value ? null : field?.withTime ? new Date(value).getTime() : Date.parse(`${value}T00:00:00Z`));
+
+// The local day a date falls on, encoded as UTC midnight like plain dates and "today".
+export const localDay = (field: Field | undefined, ms: number) => {
+  if (allDay(field, ms)) return ms;
+  const d = new Date(ms);
+  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+};
 
 export const optionLabel = (field: Field, id: unknown) =>
   field.options?.find((option) => option.id === id)?.label ?? String(id ?? "");
@@ -31,6 +50,13 @@ export function contactHref(field: Field, value: unknown): string | undefined {
 // Short, locale-aware display: "Sep 22, 2026". Date fields are UTC midnight.
 export const formatDate = (ms: unknown) =>
   typeof ms === "number" ? new Date(ms).toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" }) : "";
+
+// "Oct 1, 2026, 2:32 PM" in the viewer's zone for with-time values; plain days as formatDate.
+export const formatFieldDate = (field: Field | undefined, ms: number) =>
+  allDay(field, ms) ? formatDate(ms) : new Date(ms).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+
+// Time of day alone, "2:32 PM", or null for an all-day value.
+export const timeOfDay = (field: Field | undefined, ms: number) => (allDay(field, ms) ? null : new Date(ms).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }));
 
 // Only the standard "amount" field is money; any other number is a plain count. USD for the US launch.
 export const isMoney = (field: Field) => field.type === "number" && field.key === "amount";

@@ -46,7 +46,7 @@ export function compareIndexValues(a: unknown, b: unknown) { return compareValue
 // get a clean refusal instead of a raw server error.
 export async function paginateIndex<T = any>(query: { paginate(opts: any): Promise<T> }, opts: { cursor: string | null; numItems: number; endCursor?: string | null }) {
   if ([opts.cursor, opts.endCursor].some(c => typeof c === 'string' && /^(list|events):/.test(c))) fail('VALIDATION', 'Invalid cursor');
-  try { return await query.paginate(opts); } catch (error) { if (/cursor/i.test(String((error as Error)?.message ?? error))) fail('VALIDATION', 'Invalid cursor'); throw error; }
+  try { return await query.paginate(opts); } catch (error) { if (/cursor|not valid JSON/i.test(String((error as Error)?.message ?? error))) fail('VALIDATION', 'Invalid cursor'); throw error; }
 }
 export function pageList<T>(rows: T[], opts: { cursor: string | null; numItems: number; endCursor?: string | null }) {
   const at = (cursor: string) => { const m = /^list:(\d+)$/.exec(cursor); if (!m) fail('VALIDATION', 'Invalid cursor'); return Number(m[1]); };

@@ -74,7 +74,7 @@ describe("agent safety", () => {
     const agent = await agentFor(client, orgId, { name: "agent" }), call = rest(t, agent.key);
     const proposal = await call("POST", "/api/v1/suggestions", { action: "update", record: item.recordId, values: { dueDate: null }, reason: "no deadline" });
     expect(proposal.json.suggestion.values).toEqual({ dueDate: null });
-    expect(proposal.json.suggestion.before).toEqual({ dueDate: "2026-10-01" });
+    expect(proposal.json.suggestion.before).toEqual({ dueDate: "2026-10-01T00:00:00.000Z" });
   });
 
   it("resolves the inbox item when its suggestion is applied", async () => {

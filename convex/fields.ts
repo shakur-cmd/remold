@@ -11,7 +11,7 @@ const validKey = (key: string) => /^[a-z][a-zA-Z0-9]*$/.test(key);
 function checkOptions(value: { id: string }[] | undefined) { return !!value?.length && new Set(value.map((option) => option.id)).size === value.length; }
 
 export const list = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const object = await ctx.db.get(args.objectId); if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); requireObjectRead(principal, object); return (await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)).collect()).filter(f => canReadField(principal, object, f)).sort((a, b) => a.order - b.order); } });
-export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), key: v.string(), label: v.string(), type, options: v.optional(options), targetObjectId: v.optional(v.id("objects")), required: v.optional(v.boolean()) }, handler: async (ctx, args) => {
+export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), key: v.string(), label: v.string(), type, options: v.optional(options), targetObjectId: v.optional(v.id("objects")), required: v.optional(v.boolean()), withTime: v.optional(v.boolean()) }, handler: async (ctx, args) => {
   const principal = await requireWriter(ctx, args.orgId, "admin");
   const object = await ctx.db.get(args.objectId);
   if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found");
@@ -20,6 +20,7 @@ export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("ob
   if (await ctx.db.query("fields").withIndex("by_object_key", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId).eq("key", args.key)).unique()) fail("VALIDATION", "Field key already exists");
   if (args.type === "select" && !checkOptions(args.options)) fail("VALIDATION", "Select needs unique options");
   if (args.type !== "select" && args.options) fail("VALIDATION", "Only select fields have options");
+  if (args.withTime !== undefined && args.type !== "date") fail("VALIDATION", "Only date fields keep time");
   if (args.targetObjectId && args.type !== "lookup" && args.type !== "links") fail("VALIDATION", "Only relation fields have a target");
   if (args.targetObjectId) { const target = await ctx.db.get(args.targetObjectId); if (!target || target.orgId !== args.orgId) fail("NOT_FOUND", "Target object not found"); requireObjectRead(principal, target); }
   const existing = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)).collect();

@@ -108,7 +108,7 @@ export function FieldInput({ orgId, field, value, onChange, autoFocus }: { orgId
         />
       );
     case "date":
-      return <Input id={id} autoFocus={autoFocus} type="date" value={dateToInput(value)} onChange={(e) => onChange(inputToDate(e.target.value))} />;
+      return <Input id={id} autoFocus={autoFocus} type={field.withTime ? "datetime-local" : "date"} value={dateToInput(value, field)} onChange={(e) => onChange(inputToDate(e.target.value, field))} />;
     case "boolean":
       return (
         <div className="flex h-9 items-center">

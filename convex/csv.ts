@@ -7,6 +7,7 @@ import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
 import { findReadableByTitle } from "./lib/find";
+import { instant } from "./lib/values";
 import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQueryField, visibleTitle, listedRecords, pageList, paginateIndex } from "./authority/reads";
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
@@ -53,6 +54,8 @@ async function coerce(run: Run, field: Doc<"fields">, raw: string): Promise<unkn
     case "number": { const n = Number(text.replace(/[$,\s]/g, "")); return Number.isFinite(n) ? n : bad("is not a number"); }
     case "boolean": return TRUE.has(text.toLowerCase()) ? true : FALSE.has(text.toLowerCase()) ? false : bad("is not yes or no");
     case "date": {
+      const timed = field.withTime ? instant(text) : undefined;
+      if (timed !== undefined) return timed;
       const iso = ISO.exec(text), us = US.exec(text);
       if (iso) return Date.UTC(+iso[1]!, +iso[2]! - 1, +iso[3]!);
       if (us) { const year = +us[3]! < 100 ? 2000 + +us[3]! : +us[3]!; return Date.UTC(year, +us[1]! - 1, +us[2]!); }
@@ -106,7 +109,7 @@ export const importRows = mutation({
 });
 
 // One page of an export, already as spreadsheet text: select labels, dates as
-// YYYY-MM-DD, linked records by name, several links joined with "; ".
+// YYYY-MM-DD (with-time dates as ISO 8601 UTC), linked records by name, several links joined with "; ".
 export const exportPage = query({
   args: { orgId: v.id("orgs"), objectId: v.id("objects"), cursor: v.union(v.string(), v.null()) },
   handler: async (ctx, args) => {
@@ -130,7 +133,7 @@ export const exportPage = query({
         const value = record.values[field._id];
         if (value === undefined || value === null) row.push("");
         else if (field.type === "select") row.push(field.options?.find((o) => o.id === value)?.label ?? String(value));
-        else if (field.type === "date") row.push(isoDate(value as number));
+        else if (field.type === "date") row.push(field.withTime ? new Date(value as number).toISOString() : isoDate(value as number));
         else if (field.type === "boolean") row.push(value ? "yes" : "no");
         else if (field.type === "lookup") row.push(await titleOf(value as string));
         else if (field.type === "links") row.push((await Promise.all((value as string[]).map(titleOf))).join("; "));
