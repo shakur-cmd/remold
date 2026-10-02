@@ -78,9 +78,9 @@ describe("funnels", () => {
   it("combines two field filters with an inclusive date range, over REST and in the app", async () => {
     const { t, client, orgId, deal, task, newCampaign, newDeal } = await funnels();
     const spring = await newCampaign("Spring webinar"), referral = await newCampaign("Referral push");
-    await newDeal("First day", { stage: "new", campaign: spring, closeDate: "2026-10-01" });
-    await newDeal("Last day", { stage: "new", campaign: spring, closeDate: "2026-10-31" });
-    await newDeal("Day after", { stage: "new", campaign: spring, closeDate: "2026-11-01" });
+    const first = await newDeal("First day", { stage: "new", campaign: spring, closeDate: "2026-10-01" });
+    const last = await newDeal("Last day", { stage: "new", campaign: spring, closeDate: "2026-10-31" });
+    const after = await newDeal("Day after", { stage: "new", campaign: spring, closeDate: "2026-11-01" });
     await newDeal("Day before", { stage: "new", campaign: spring, closeDate: "2026-09-30" });
     await newDeal("Other stage", { stage: "contacted", campaign: spring, closeDate: "2026-10-15" });
     await newDeal("Other funnel", { stage: "new", campaign: referral, closeDate: "2026-10-15" });
@@ -109,6 +109,11 @@ describe("funnels", () => {
     expect(tasks.json.records.map((r: any) => r.title)).toEqual(["Start", "Late on the 31st"]);
     expect((await call("GET", "/api/v1/records?object=task&range[dueDate]=2026-10-31..2026-10-01")).status).toBe(400);
     expect((await call("GET", "/api/v1/records?object=task&range[title]=2026-10-01..2026-10-31")).status).toBe(400);
+    // A record-scoped reader gets the same answer from their own list, limited to what they hold.
+    const memberId = await t.run(async (ctx) => (await ctx.db.query("members").collect())[0]!._id);
+    await client.mutation(anyApi["authority/policies"].setMember, { orgId, memberId, scopes: [{ objectId: deal.object._id, records: [last, after, first], fields: "all" }], hiddenFieldIds: [] });
+    expect((await client.query(api.records.list, { orgId, objectId: deal.object._id, filters, range, paginationOpts: page })).page.map((r: any) => r.title)).toEqual(["First day", "Last day"]);
+    expect((await client.query(api.records.list, { orgId, objectId: deal.object._id, filters, range, sort: { fieldId: deal.fields.closeDate._id, direction: "desc" }, paginationOpts: page })).page.map((r: any) => r.title)).toEqual(["Last day", "First day"]);
   });
 
   it("refuses to filter, range, total or export by a field the caller cannot read", async () => {
@@ -121,7 +126,7 @@ describe("funnels", () => {
     expect((await call("GET", `/api/v1/records?object=opportunity&filter[stage]=new&filter[campaign]=${spring}`)).status).toBe(404);
     expect((await call("GET", "/api/v1/records?object=opportunity&filter[stage]=new")).status).toBe(200);
     const memberId = await t.run(async (ctx) => (await ctx.db.query("members").collect())[0]!._id);
-    await client.mutation(anyApi["authority/policies"].setMember, { orgId, memberId, hiddenFieldIds: [deal.fields.closeDate._id, deal.fields.campaign._id] });
+    await client.mutation(anyApi["authority/policies"].setMember, { orgId, memberId, hiddenFieldIds: [deal.fields.closeDate._id, deal.fields.campaign._id, deal.fields.amount._id] });
     const objectId = deal.object._id, stage = { fieldId: deal.fields.stage._id, value: "new" };
     const hiddenRange = { fieldId: deal.fields.closeDate._id, from: day("2026-10-01"), to: day("2026-10-31") }, hiddenFilter = { fieldId: deal.fields.campaign._id, value: spring };
     await expect(client.query(api.records.list, { orgId, objectId, filters: [stage], range: hiddenRange, paginationOpts: page })).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
@@ -129,6 +134,9 @@ describe("funnels", () => {
     await expect(client.query(api.records.totals, { orgId, objectId, groupFieldId: deal.fields.stage._id, filters: [hiddenFilter] })).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
     await expect(client.query(api.csv.exportPage, { orgId, objectId, cursor: null, filters: [hiddenFilter] })).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
     expect((await client.query(api.records.list, { orgId, objectId, filters: [stage], paginationOpts: page })).page.map((r: any) => r.title)).toEqual(["Secret"]);
+    // A hidden number is never summed: the board still counts, but shows no total.
+    const counted = await client.query(api.records.totals, { orgId, objectId, groupFieldId: deal.fields.stage._id, sumFieldId: deal.fields.amount._id });
+    expect(counted.groups.find((g: any) => g.value === "new")).toEqual({ value: "new", count: 1, sum: null });
   });
 
   it("shows a due funnel step on Today with the funnel's name", async () => {
