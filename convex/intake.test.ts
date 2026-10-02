@@ -1,6 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
+import { requireAgent } from "./identity";
+import { applyChange } from "./lib/applyChange";
 
+// Production needs REMOLD_INTAKE_DAILY_CAP set; unset it means zero leads.
+beforeEach(() => { vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", "50"); });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 
 const post = (t: any, key: string, path: string, body: unknown, idempotencyKey?: string) => t.fetch(path, { method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json", ...(idempotencyKey ? { "idempotency-key": idempotencyKey } : {}) }, body: JSON.stringify(body) }).then(async (r: Response) => ({ status: r.status, headers: r.headers, json: await r.json() }));
@@ -234,20 +238,19 @@ describe("POST /api/v1/intake/lead", () => {
     expect((await counts(t)).person).toBe(1);
     const record = (await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record;
     expect(record.values[person.fields.phone._id]).toBe("+1 (410) 555-0100");
-    expect(record.values[person.fields.email._id]).toBe("caller@x.com");
+    expect(record.values[person.fields.email._id]).toBeUndefined();
   });
 
-  it("falls back to the phone number and fills only empty person fields", async () => {
+  it("falls back to the phone number and changes nothing on that person", async () => {
     const { t, client, orgId, send } = await intakeSetup();
-    const person = await objectFields(client, orgId, "person");
-    const existing = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Original Name", [person.fields.phone._id]: "+14105550100", [person.fields.title._id]: "Owner", [person.fields.email._id]: "old@x.com" } });
+    const person = await objectFields(client, orgId, "person"), opportunity = await objectFields(client, orgId, "opportunity");
+    const values = { [person.fields.name._id]: "Original Name", [person.fields.phone._id]: "+14105550100", [person.fields.title._id]: "Owner", [person.fields.email._id]: "old@x.com" };
+    const existing = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values });
     await send({ name: "Changed Name", email: "new@x.com", phone: "+1 410 555 0100", company: "Acme" }, "c");
     expect((await counts(t)).person).toBe(1);
-    const record = (await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record;
-    expect(record.values[person.fields.name._id]).toBe("Original Name");
-    expect(record.values[person.fields.title._id]).toBe("Owner");
-    expect(record.values[person.fields.email._id]).toBe("old@x.com");
-    expect(record.values[person.fields.company._id]).toBeTruthy();
+    expect((await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record.values).toEqual(values);
+    const [opp] = await recordsOf(t, "opportunity");
+    expect(opp.values[opportunity.fields.person._id]).toBe(existing.recordId);
   });
 
   it("never merges when email and phone point at different people, and flags it", async () => {
@@ -262,6 +265,42 @@ describe("POST /api/v1/intake/lead", () => {
     expect(n.values[note.fields.body._id]).toMatch(/phone .*Phone Person/i);
     const people = await recordsOf(t, "person");
     expect(people.find((p: any) => p.title === "Phone Person").values[person.fields.email._id]).toBeUndefined();
+  });
+
+  it("links an existing person matched by email without changing them; the submitted details go only in the Note", async () => {
+    const { t, client, orgId, send } = await intakeSetup();
+    const person = await objectFields(client, orgId, "person"), opportunity = await objectFields(client, orgId, "opportunity"), note = await objectFields(client, orgId, "note");
+    const existing = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Shakur", [person.fields.email._id]: "shakur@x.com" } });
+    const before = (await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record;
+    expect((await send(lead, "keep-email")).status).toBe(201);
+    const after = (await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record;
+    expect(after.values).toEqual(before.values);
+    expect(after.updatedAt).toBe(before.updatedAt);
+    const [opp] = await recordsOf(t, "opportunity"), [n] = await recordsOf(t, "note");
+    expect(opp.values[opportunity.fields.person._id]).toBe(existing.recordId);
+    expect(n.values[note.fields.body._id]).toContain("Submitted: Shakur Abdul, shakur@x.com, +14105550100, CodeMyVibe");
+    expect(await t.run((ctx: any) => ctx.db.query("events").withIndex("by_record", (q: any) => q.eq("orgId", orgId).eq("recordId", existing.recordId)).collect()).then((events: any[]) => events.map((e) => e.action))).toEqual(["create"]);
+  });
+
+  it("links an existing person matched by phone without filling their empty email or company", async () => {
+    const { t, client, orgId, send } = await intakeSetup();
+    const person = await objectFields(client, orgId, "person"), note = await objectFields(client, orgId, "note");
+    const existing = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Caller", [person.fields.phone._id]: "+1 (410) 555-0100" } });
+    expect((await send({ name: "Caller", email: "caller@x.com", phone: "+14105550100", company: "Acme" }, "keep-phone")).status).toBe(201);
+    const record = (await client.query(api.records.get, { orgId, recordId: existing.recordId }))!.record;
+    expect(record.values).toEqual({ [person.fields.name._id]: "Caller", [person.fields.phone._id]: "+1 (410) 555-0100" });
+    const [n] = await recordsOf(t, "note");
+    expect(n.values[note.fields.body._id]).toContain("caller@x.com");
+    expect((await counts(t)).company).toBe(1);
+  });
+
+  it("leaves the email-matched person's empty phone empty when the phone belongs to someone else", async () => {
+    const { client, orgId, send } = await intakeSetup();
+    const person = await objectFields(client, orgId, "person");
+    const byEmail = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Email Person", [person.fields.email._id]: "shakur@x.com" } });
+    await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Phone Person", [person.fields.phone._id]: "+14105550100" } });
+    expect((await send(lead, "conflict-phone")).status).toBe(201);
+    expect((await client.query(api.records.get, { orgId, recordId: byEmail.recordId }))!.record.values[person.fields.phone._id]).toBeUndefined();
   });
 
   it("reuses a company with the same name", async () => {
@@ -422,6 +461,18 @@ describe("intake abuse limits", () => {
     expect((await send({ name: "A", email: "a@x.com" }, "1")).status).toBe(201);
   });
 
+  for (const [label, raw] of [["missing", undefined], ["empty", " "], ["not a number", "abc"], ["negative", "-1"], ["fractional", "1.5"], ["zero", "0"]] as const) {
+    it(`takes no leads when REMOLD_INTAKE_DAILY_CAP is ${label}: a missing or unreadable cap means zero`, async () => {
+      vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", raw);
+      const { t, send } = await intakeSetup();
+      const before = await counts(t);
+      const refused = await send({ name: "A", email: "a@x.com" }, `cap-${label.replace(/ /g, "-")}`);
+      expect(refused.status).toBe(429);
+      expect(refused.json.error.code).toBe("RATE_LIMITED");
+      expect(await counts(t)).toEqual(before);
+    });
+  }
+
   it("counts the daily cap per UTC day: enforced all day, reset at midnight", async () => {
     vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", "2");
     // Without an anchored window the limiter picks a random offset; pin it so an unanchored window would reset at 12:14 UTC.
@@ -439,5 +490,40 @@ describe("intake abuse limits", () => {
     clock.mockReturnValue(Date.parse("2026-10-03T00:00:01Z"));
     expect((await send({ name: "F", email: "f@x.com" }, "d6")).status).toBe(201);
     expect((await counts(t)).opportunity).toBe(3);
+  });
+});
+
+describe("applyChange write-only path", () => {
+  // Called directly, so this guards applyChange itself and not only submitLead's own grant check.
+  const writeOnly = async (t: any, agentId: any, orgId: any, objectKey: string, values: Record<string, string>) => t.run(async (ctx: any) => {
+    const principal = await requireAgent(ctx, (await ctx.db.get(agentId)).keyHash, "intake");
+    const object = (await ctx.db.query("objects").collect()).find((o: any) => o.orgId === orgId && o.key === objectKey);
+    const fields = await ctx.db.query("fields").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", object._id)).collect();
+    const ids = Object.fromEntries(Object.entries(values).map(([key, value]) => [fields.find((f: any) => f.key === key)._id, value]));
+    return applyChange(ctx, principal, { action: "create", orgId, objectId: object._id, values: ids, reason: "test" }, { writeOnly: true });
+  });
+
+  it("writes fields the intake key holds a direct field grant for", async () => {
+    const { t, orgId, intake } = await intakeSetup();
+    expect((await writeOnly(t, intake.agentId, orgId, "person", { name: "Granted" })).recordId).toBeTruthy();
+  });
+
+  it("refuses a field outside the intake key's field grants, and an object it has no grant on", async () => {
+    const { t, orgId, intake } = await intakeSetup();
+    const before = await counts(t);
+    await expect(writeOnly(t, intake.agentId, orgId, "person", { name: "X", title: "CEO" })).rejects.toThrow(/Direct field grant required/);
+    await expect(writeOnly(t, intake.agentId, orgId, "task", { title: "X" })).rejects.toThrow(/Direct field grant required/);
+    expect(await counts(t)).toEqual(before);
+  });
+
+  it("refuses a signed-in member, who has no field grants", async () => {
+    const { t, orgId } = await userAndOrg();
+    await expect(t.run(async (ctx: any) => {
+      const member = (await ctx.db.query("members").collect()).find((m: any) => m.orgId === orgId);
+      const principal = { user: await ctx.db.get(member.userId), actor: { kind: "user" as const, id: member.userId }, member, org: await ctx.db.get(orgId) };
+      const person = (await ctx.db.query("objects").collect()).find((o: any) => o.orgId === orgId && o.key === "person");
+      const name = (await ctx.db.query("fields").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", person._id)).collect()).find((f: any) => f.key === "name");
+      return applyChange(ctx, principal, { action: "create", orgId, objectId: person._id, values: { [name._id]: "Member" }, reason: "test" }, { writeOnly: true });
+    })).rejects.toThrow(/Direct field grant required/);
   });
 });

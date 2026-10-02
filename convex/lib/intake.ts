@@ -21,7 +21,6 @@ type Item = { object: Doc<"objects">; fields: Record<string, Doc<"fields">> };
 // The intake key holds exactly these direct field grants and no read scope.
 const GRANTS = [
   { action: "create", object: "person", fields: ["name", "email", "phone", "company"] },
-  { action: "update", object: "person", fields: ["email", "phone", "company"] },
   { action: "create", object: "company", fields: ["name"] },
   { action: "create", object: "opportunity", fields: ["name", "stage", "person", "company"] },
   { action: "create", object: "note", fields: ["body", "about"] },
@@ -31,8 +30,8 @@ const GRANT_MS = 5 * 365 * DAY;
 export const normalEmail = (value: string) => value.trim().toLowerCase();
 export const normalPhone = (value: string) => { const digits = value.replace(/\D/g, ""); return digits ? (value.trim().startsWith("+") ? "+" : "") + digits : undefined; };
 const text = (value: string | undefined, label: string, max = 200) => { const t = value?.trim() ?? ""; if (t.length > max) fail("VALIDATION", `${label} is too long`); return t || undefined; };
-// Missing means the documented default of 50; anything unreadable fails closed.
-const dailyCap = () => { const raw = process.env.REMOLD_INTAKE_DAILY_CAP; if (raw === undefined || raw.trim() === "") return 50; const n = Number(raw); return Number.isSafeInteger(n) && n >= 0 ? n : 0; };
+// A missing or unreadable cap means zero (AGENTS.md), so intake takes no leads until it is set.
+const dailyCap = () => { const raw = process.env.REMOLD_INTAKE_DAILY_CAP?.trim(), n = Number(raw); return raw && Number.isSafeInteger(n) && n > 0 ? n : 0; };
 
 async function intakeScopes(ctx: MutationCtx, orgId: Id<"orgs">) {
   const items: Record<string, Item> = {};
@@ -115,14 +114,10 @@ export async function submitLead(ctx: MutationCtx, principal: AgentMembership, i
 
   const companyId = company ? (await companyNamed(ctx, companies, company))?._id ?? await create(companies, { name: company }) : undefined;
   const { byEmail, byPhone } = await matches(ctx, person, email, phone);
-  // Email wins. A phone that belongs to someone else is flagged, never merged or copied.
-  const conflict = byEmail && byPhone && byEmail._id !== byPhone._id ? byPhone : null, match = byEmail ?? byPhone;
-  let personId: Id<"records">;
-  if (match) {
-    const fill = Object.fromEntries(Object.entries({ email, phone: conflict ? undefined : phone, company: companyId }).filter(([key, value]) => value !== undefined && (match.values[person.fields[key]!._id] ?? "") === ""));
-    if (Object.keys(fill).length) await applyChange(ctx, principal, { action: "update", orgId, recordId: match._id, values: ids(person, fill), reason }, { writeOnly: true });
-    personId = match._id;
-  } else personId = await create(person, { name, email, phone, company: companyId });
+  // Email wins. A public form never changes an existing Person: a match is only linked,
+  // and what was submitted stays in the Note. A phone that belongs to someone else is flagged.
+  const conflict = byEmail && byPhone && byEmail._id !== byPhone._id ? byPhone : null;
+  const personId = (byEmail ?? byPhone)?._id ?? await create(person, { name, email, phone, company: companyId });
 
   const opportunityId = await create(opportunity, { name: `${name} (${source})`, stage: "new", person: personId, company: companyId });
   const body = [message ?? "(no message)", "", `Source: ${source}`, ...(campaign ? [`Campaign: ${campaign}`] : []), `Submitted: ${[name, email, phone, company].filter(Boolean).join(", ")}`,
