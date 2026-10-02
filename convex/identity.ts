@@ -49,6 +49,14 @@ export async function requireMember(ctx: Ctx, orgId: Id<"orgs">, minRole: Role =
   return { ...principal, member, org };
 }
 
+// CLI paths (`convex run`) have no signed-in identity, so the user is named explicitly.
+export async function memberAs(ctx: Ctx, orgId: Id<"orgs">, userId: Id<"users">, minRole: Role): Promise<Membership> {
+  const user = await ctx.db.get(userId), org = await ctx.db.get(orgId);
+  const member = await ctx.db.query("members").withIndex("by_org_user", (q) => q.eq("orgId", orgId).eq("userId", userId)).unique();
+  if (!user || !org || !member || rank[member.role] < rank[minRole]) fail("FORBIDDEN", `${minRole[0]!.toUpperCase()}${minRole.slice(1)} membership required`);
+  return { user, member, org, actor: { kind: "user", id: user._id } };
+}
+
 // Internal domain helpers receive server-derived principals, then re-read their
 // membership/epoch at the write boundary rather than trusting an earlier snapshot.
 export async function currentPrincipal(ctx: Ctx, principal: Principal): Promise<Principal> {

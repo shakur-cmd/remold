@@ -4,7 +4,7 @@ import { internal } from "./_generated/api";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { v, type ObjectType } from "convex/values";
-import { requireMember } from "./identity";
+import { memberAs, requireMember } from "./identity";
 import { fail } from "./errors";
 import { expand, snapshot } from "./authority/migration";
 import { writable } from "./authority/readonly";
@@ -43,28 +43,22 @@ const mint = async () => {
 const insertArgs = { orgId: v.id("orgs"), name: v.string(), role: v.optional(role), grants: v.optional(grants), scoped: v.optional(v.boolean()), intake: v.optional(v.boolean()), origin: v.optional(v.union(v.literal("hosted"), v.literal("external"))), keyHash: v.string(), keyPrefix: v.string(), asUserId: v.optional(v.id("users")) };
 export const insert = internalMutation({ args: insertArgs, handler: (ctx, args) => insertAgent(ctx, args) });
 async function insertAgent(ctx: MutationCtx, args: ObjectType<typeof insertArgs>): Promise<Id<"agents">> {
-  // CLI creation (`convex run agents:createAs`) has no signed-in identity, so
+  // CLI creation (`convex run agents:createAs`, or agents:insert for the intake key) has no signed-in identity, so
   // the admin is named explicitly, the same way seed:demoAs works.
-  const userId = args.asUserId ? await adminId(ctx, args.orgId, args.asUserId) : (await requireMember(ctx, args.orgId, "admin")).user._id;
+  const userId = args.asUserId ? (await memberAs(ctx, args.orgId, args.asUserId, "admin")).user._id : (await requireMember(ctx, args.orgId, "admin")).user._id;
   if (!args.name.trim()) fail("VALIDATION", "Agent name is required");
   await writable(ctx, args.orgId);
   if (!args.scoped) await legacyCeiling(ctx, args.orgId, userId);
   const objects = await snapshot(ctx, args.orgId);
   const agentId = await ctx.db.insert("agents", { orgId: args.orgId, name: args.name.trim(), role: args.role ?? "member", createdBy: userId, keyHash: args.keyHash, keyPrefix: args.keyPrefix, grants: expand(args.grants ?? [], objects), readObjectIds: args.scoped ? [] : objects.map(o => o._id), authorityVersion: 1, origin: args.origin ?? "external", state: "active", authorityEpoch: 0, ...(args.intake ? { purpose: "intake" as const } : {}) });
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: { kind: "user", id: userId }, action: args.scoped ? "scopedAgentCreated" : "legacyGrantsFrozen", targetId: agentId, objectIds: args.scoped ? [] : objects.map(o => o._id), epoch: 0 });
-  if (args.intake) await grantIntake(ctx, args.orgId, agentId);
+  if (args.intake) await grantIntake(ctx, args.orgId, agentId, args.asUserId);
   return agentId;
 }
 
 async function legacyCeiling(ctx: { db: any }, orgId: Id<"orgs">, userId: Id<"users">) {
   const member = await ctx.db.query("members").withIndex("by_org_user", (q: any) => q.eq("orgId", orgId).eq("userId", userId)).unique();
   if (!member || member.readScopes !== undefined || member.hiddenFieldIds?.length) fail("FORBIDDEN", "Restricted administrators must use createScoped and bounded grants");
-}
-
-async function adminId(ctx: { db: any }, orgId: Id<"orgs">, userId: Id<"users">) {
-  const member = await ctx.db.query("members").withIndex("by_org_user", (q: any) => q.eq("orgId", orgId).eq("userId", userId)).unique();
-  if (!member || member.role === "member") fail("FORBIDDEN", "Admin membership required");
-  return userId;
 }
 
 export const createAs = internalAction({ args: { orgId: v.id("orgs"), userId: v.id("users"), name: v.string(), role: v.optional(role), grants: v.optional(grants) }, handler: async (ctx, args): Promise<{ agentId: Id<"agents">; key: string }> => {
