@@ -21,6 +21,12 @@ function senderOf(from) {
   return cleanEmail(angle ? angle[1] : addressesIn(text)[0]);
 }
 
+// A Script Property that must be a count of days: "1.5", "1e1", "-3" or "0x10" mean the default.
+function wholeDays(value, fallback) {
+  const text = String(value == null ? "" : value).trim();
+  return /^\d+$/.test(text) && Number(text) > 0 ? Number(text) : fallback;
+}
+
 function ownerAddresses(user, aliases, extra) {
   const owners = {};
   [user].concat(aliases || [], String(extra || "").split(",")).forEach(function (value) { const email = cleanEmail(value); if (email) owners[email] = true; });

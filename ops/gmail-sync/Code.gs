@@ -14,7 +14,7 @@ function syncGmail(startedAt, options) {
   const base = String(props.getProperty("REMOLD_BASE_URL") || "").replace(/\/+$/, ""), key = props.getProperty("REMOLD_KEY");
   if (!base || !key) throw new Error("Set REMOLD_BASE_URL and REMOLD_KEY in Script Properties first");
   try {
-    const watermark = props.getProperty("WATERMARK"), windowDays = Number(props.getProperty("WINDOW_DAYS")) || cfg.windowDays;
+    const watermark = props.getProperty("WATERMARK"), windowDays = wholeDays(props.getProperty("WINDOW_DAYS"), cfg.windowDays);
     const left = function () { return cfg.budgetMs - (now() - started); }, late = function () { return left() < 0; };
     const owners = ownerAddresses(Session.getEffectiveUser().getEmail(), GmailApp.getAliases(), props.getProperty("OWNER_EMAILS"));
     // The owner's own addresses never count as contact, so searching them would only read the whole mailbox.
@@ -22,9 +22,9 @@ function syncGmail(startedAt, options) {
     const save = function (at) { if (at > (Number(props.getProperty("WATERMARK")) || 0)) props.setProperty("WATERMARK", String(at)); };
     // Windows of WINDOW_DAYS, oldest first, until time runs out: a long backlog is read in pieces
     // that each fit a run, and the watermark moves only over pieces whose posts all went through.
-    let since = startFrom(watermark, started, Number(props.getProperty("LOOKBACK_DAYS")) || cfg.lookbackDays, cfg.overlapMs);
+    let since = startFrom(watermark, started, wholeDays(props.getProperty("LOOKBACK_DAYS"), cfg.lookbackDays), cfg.overlapMs);
     let messages = 0, posted = 0, windows = 0, mark = null, complete = false;
-    const first = since;
+    const first = since, before = Number(watermark) || 0;
     for (;;) {
       const until = Math.min(started, since + windowDays * DAY), read = readMessages(emails, since, until < started ? until : null, late, cfg);
       messages += read.messages.length;
@@ -56,7 +56,9 @@ function syncGmail(startedAt, options) {
     if (mark !== null) save(mark);
     const summary = { people: emails.reduce(function (n, email) { return n + people[email].length; }, 0), messages: messages, posted: posted, complete: complete, from: new Date(first).toISOString(), through: new Date(Number(props.getProperty("WATERMARK")) || first).toISOString() };
     props.setProperty("LAST_RUN", new Date(started).toISOString() + " " + JSON.stringify(summary));
-    props.setProperty("LAST_ERROR", "");
+    // A run that moved nothing is stuck, and the next one would be too: say so where the owner looks.
+    const moved = complete || (Number(props.getProperty("WATERMARK")) || 0) > before;
+    props.setProperty("LAST_ERROR", moved ? "" : new Date(started).toISOString() + " No progress: read " + messages + " messages and posted " + posted + "; the watermark stayed at " + summary.through);
     console.log(JSON.stringify(summary));
     return summary;
   } catch (error) {

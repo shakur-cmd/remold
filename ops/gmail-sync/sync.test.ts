@@ -202,6 +202,41 @@ describe("gmail-sync run", () => {
     for (const query of w.searches) for (const own of [OWNER, ALIAS]) expect(query).not.toContain(own);
   });
 
+  it("posts only Ada's activity for mail from the owner to Ada with the owner cc'd, when the owner is also a Person", () => {
+    const w = world({ messages: [{ id: "c1", date: "2026-09-30T13:05:00Z", from: `Me <${OWNER}>`, to: "Ada <ada@example.com>", cc: `${OWNER}, ${ALIAS}` }], people: [...people, { id: "p_me", email: OWNER }, { id: "p_alias", email: ALIAS }] });
+    expect(w.sync(NOW)).toMatchObject({ posted: 1, complete: true });
+    expect(w.posts().map((c) => c.body.values.about)).toEqual(["p_ada"]);
+  });
+
+  for (const raw of ["0", "-3", "1.5", "1e1", "0x10", "+5", "abc", " "]) {
+    it(`reads in default 14-day windows when WINDOW_DAYS is ${JSON.stringify(raw)}: only a positive whole number counts`, () => {
+      // A clock that moves with each search, so a window that never advances runs out of time instead of looping.
+      let clock = NOW;
+      const w = world({ messages, people, props: { LOOKBACK_DAYS: "30", WINDOW_DAYS: raw }, onSearch: () => { clock += 1000; } });
+      expect(w.sync(NOW, { now: () => clock })).toMatchObject({ posted: 4, complete: true });
+      expect(w.searches[0]).toContain(`after:${(NOW - 30 * 86400000) / 1000} before:${(NOW - 16 * 86400000) / 1000}`);
+    });
+  }
+
+  it("reads the default 90-day lookback when LOOKBACK_DAYS is not a positive whole number", () => {
+    for (const raw of ["-5", "2.5", "1e1"]) expect(world({ messages, people, props: { LOOKBACK_DAYS: raw } }).sync(NOW).from).toBe(new Date(NOW - 90 * 86400000).toISOString());
+  });
+
+  it("records LAST_ERROR when a run makes no progress, and clears it once a run moves the watermark", () => {
+    let clock = NOW;
+    const mark = String(Date.UTC(2026, 8, 29));
+    const w = world({ messages, people, props: { WATERMARK: mark, LAST_ERROR: "" }, onSearch: () => { clock += 200000; } });
+    expect(w.sync(NOW, { now: () => clock, budgetMs: 150000 })).toMatchObject({ posted: 0, complete: false });
+    expect(w.props.WATERMARK).toBe(mark);
+    expect(w.props.LAST_ERROR).toMatch(/^2026-10-02T06:00:00.000Z No progress/);
+    const stuck = world({ messages, people, onSleep: () => {}, props: { WATERMARK: mark }, respond: () => ({ status: 429, body: { error: { code: "RATE_LIMITED" } }, headers: { "Retry-After": "1000" } }) });
+    expect(stuck.sync(NOW)).toMatchObject({ posted: 0, complete: false });
+    expect(stuck.props.LAST_ERROR).toMatch(/No progress/);
+    const next = world({ messages, people, props: { WATERMARK: mark, LAST_ERROR: w.props.LAST_ERROR! } });
+    next.sync(NOW);
+    expect(next.props.LAST_ERROR).toBe("");
+  });
+
   it("never sleeps a Retry-After past the run's remaining time: it stops early and keeps what went through", () => {
     let clock = NOW;
     const w = world({ messages, people, onSleep: (ms) => { clock += ms; }, respond: (_call, n) => (n >= 2 ? { status: 429, body: { error: { code: "RATE_LIMITED" } }, headers: { "Retry-After": "100" } } : undefined) });
