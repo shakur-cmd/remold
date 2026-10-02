@@ -4,6 +4,7 @@ import { currentPrincipal, recordGranted, type Membership, type Principal } from
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
+import { agentGuard } from "../authority/agentGuards";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 import { dateValue } from "./values";
@@ -90,6 +91,9 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       checkScope(approver);
     } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
   }
+  // Also on reference cleanup: an agent's delete must not clear a protected
+  // lookup or link elsewhere, so the whole deletion is refused instead.
+  agentGuard(membership, object, fields, record, change.action === "delete" ? "delete" : change.values);
   if (change.action === "delete") {
     // Records that link to this one drop it from their links value through an
     // attributed update, which also removes the rows; then this record's own rows go.

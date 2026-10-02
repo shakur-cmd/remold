@@ -40,11 +40,11 @@ describe("agent safety", () => {
     expect((await call("POST", "/api/v1/changes", { action: "update", record: deal.recordId, values: { stage: "won" }, reason: "no grant" })).status).toBe(403);
     expect(await snapshot(t)).toBe(before);
     const proposal = await call("POST", "/api/v1/suggestions", { action: "update", record: deal.recordId, values: { stage: "won" }, reason: "ready" });
-    await client.mutation(api.records.update, { orgId, recordId: deal.recordId, values: { [opp.fields.stage._id]: "lost" } });
+    await client.mutation(api.records.update, { orgId, recordId: deal.recordId, values: { [opp.fields.stage._id]: "contacted" } });
     const edited = await snapshot(t);
     const events = (await client.query(api.events.forRecord, { orgId, recordId: deal.recordId })).length;
     expect((await client.mutation(api.suggestions.apply, { orgId, suggestionId: proposal.json.suggestion.id })).status).toBe("conflicted");
-    expect((await client.query(api.records.get, { orgId, recordId: deal.recordId }))!.record.values[opp.fields.stage._id]).toBe("lost");
+    expect((await client.query(api.records.get, { orgId, recordId: deal.recordId }))!.record.values[opp.fields.stage._id]).toBe("contacted");
     expect((await client.query(api.events.forRecord, { orgId, recordId: deal.recordId })).length).toBe(events);
     expect(JSON.parse(await snapshot(t))[0]).toEqual(JSON.parse(edited)[0]);
     const fresh = await call("POST", "/api/v1/suggestions", { action: "update", record: deal.recordId, values: { stage: "qualified" }, reason: "again" });
