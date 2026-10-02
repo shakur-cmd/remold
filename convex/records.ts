@@ -6,7 +6,8 @@ import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { listRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
-import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
+import type { Doc } from "./_generated/dataModel";
+import { canReadObject, canReadField, canReadRecord, canQueryField, firstVisible, listedRecords, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
 
 const values = v.record(v.string(), v.any());
 const direction = v.union(v.literal("asc"), v.literal("desc"));
@@ -57,4 +58,31 @@ export const search = query({ args: { orgId: v.id("orgs"), objectId: v.optional(
     if (object && masked) result.push({ _id: record._id, title: masked.title, ref: record.ref, objectKey: object.key, objectLabel: object.label });
   }
   return result;
+} });
+// Last contact: the newest past When of an Activity about each record, counting only
+// activities whose About and When the caller can read. Nothing is stored for it.
+export const lastContact = query({ args: { orgId: v.id("orgs"), recordIds: v.array(v.id("records")) }, handler: async (ctx, args) => {
+  const principal = await requireMember(ctx, args.orgId), out: Record<string, number> = {};
+  if (args.recordIds.length > 100) fail("VALIDATION", "At most 100 records");
+  const activity = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", args.orgId).eq("key", "activity")).unique();
+  if (!activity || !canReadObject(principal, activity)) return out;
+  const fields = (await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", activity._id)).collect()).filter((f) => !f.retired);
+  const about = fields.find((f) => f.key === "about"), when = fields.find((f) => f.key === "when");
+  if (!about?.slot || about.type !== "lookup" || about.targetObjectId || !canQueryField(principal, activity, about) || !when?.slot || when.type !== "date") return out;
+  const now = Date.now(), name = slotName(about.slot.kind, about.slot.index), fast = name === "s2" && slotName(when.slot.kind, when.slot.index) === "d0" && canQueryField(principal, activity, when);
+  const at = (r: Doc<"records">) => { const value = r.values[when._id]; return canReadRecord(principal, activity, r) && canReadField(principal, activity, when, r._id) && canReadField(principal, activity, about, r._id) && typeof value === "number" && value <= now ? value : null; };
+  // A record-scoped reader is answered from their own activity list, as in listedRelated.
+  const listed = await listedRecords(ctx, principal, activity);
+  for (const id of new Set(args.recordIds)) {
+    const record = await ctx.db.get(id), object = record && record.orgId === args.orgId ? await ctx.db.get(record.objectId) : null;
+    if (!record || !object || !canReadRecord(principal, object, record)) continue;
+    // The standard Activity keeps About in s2 and When in d0, so the newest dated row comes straight off by_s2_d0.
+    // Only when every scope shows When: otherwise rows with a hidden When would count toward the scan cap.
+    const found = listed ? listed.filter((r) => (r as Record<string, unknown>)[name] === id).map(at) : fast
+      ? await firstVisible(ctx.db.query("records").withIndex("by_s2_d0", (q) => q.eq("orgId", args.orgId).eq("objectId", activity._id).eq("s2", id).gte("d0", -8.64e15).lte("d0", now)).order("desc"), 1, at)
+      : ((await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", args.orgId).eq("objectId", activity._id).eq(name, id)).collect()) as Doc<"records">[]).map(at);
+    const newest = Math.max(...found.filter((value): value is number => value !== null));
+    if (Number.isFinite(newest)) out[id] = newest;
+  }
+  return out;
 } });

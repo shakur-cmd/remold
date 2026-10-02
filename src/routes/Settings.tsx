@@ -24,7 +24,7 @@ export function Settings() {
       <OrgCard org={org} admin={admin} />
       <RemindersCard orgId={org._id} />
       <MembersCard orgId={org._id} admin={admin} />
-      <AgentsCard orgId={org._id} objects={objects} admin={admin} />
+      <AgentsCard orgId={org._id} objects={objects} admin={admin} owner={role === "owner"} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
     </div>
   );

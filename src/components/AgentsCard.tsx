@@ -17,16 +17,17 @@ const ACTIONS = ["create", "update", "delete"] as const;
 // The REST and MCP surface lives on the deployment's site URL.
 const siteUrl = (import.meta.env.VITE_CONVEX_URL as string).replace(".convex.cloud", ".convex.site");
 
-export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Doc<"objects">[]; admin: boolean }) {
+export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">; objects: Doc<"objects">[]; admin: boolean; owner: boolean }) {
   const agents = useQuery(api.agents.list, { orgId });
   const create = useAction(api.agents.create);
+  const createGmailSync = useAction(api.agents.createGmailSync);
   const setGrants = useMutation(api.agents.setGrants);
   const setSharedInbox = useMutation(api.agents.setSharedInbox);
   const revoke = useMutation(api.agents.revoke);
   const [name, setName] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
   const [grants, setGrantsDraft] = useState<Grant[]>([]);
-  const [issued, setIssued] = useState<{ name: string; key: string } | null>(null);
+  const [issued, setIssued] = useState<{ name: string; key: string; gmail?: true } | null>(null);
 
   async function add(e: FormEvent) {
     e.preventDefault();
@@ -54,7 +55,7 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
                 <span className={agent.revokedAt ? "text-muted-foreground line-through" : "font-medium"}>{agent.name}</span>
                 <code className="text-xs text-muted-foreground">{agent.keyPrefix}…</code>
                 <Badge variant="outline">{agent.role}</Badge>
-                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "all pre-migration objects" : g.objectKey}`).join(", ")}` : "proposes only"}</span>
+                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "all pre-migration objects" : g.objectKey}`).join(", ")}` : agent.access.length ? `can ${agent.access.join(", ")}` : "proposes only"}</span>
                 {admin && !agent.revokedAt && (
                   <span className="ml-auto flex gap-1">
                     <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => attempt(() => setSharedInbox({ orgId, agentId: agent._id, enabled: !agent.sharedInbox }), agent.sharedInbox ? "Shared inbox disabled" : "Shared inbox enabled for eligible reads")}>
@@ -78,12 +79,30 @@ export function AgentsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objec
           <div className="grid gap-2 rounded-md border border-primary/30 bg-accent/60 p-3 text-sm">
             <p className="font-medium">Key for {issued.name}. Copy it now; it is not shown again.</p>
             <CopyBlock text={issued.key} label="Agent key" />
-            <p className="text-muted-foreground">Connect Claude Code:</p>
-            <CopyBlock text={`claude mcp add remold -e REMOLD_URL=${siteUrl} -e REMOLD_KEY=${issued.key} -- node <path to remold>/packages/mcp/dist/index.js`} label="Claude Code command" />
-            <p className="text-muted-foreground">Or call REST directly:</p>
-            <CopyBlock text={`curl -H "Authorization: Bearer ${issued.key}" ${siteUrl}/api/v1/me`} label="REST example" />
+            {issued.gmail ? (
+              <>
+                <p className="text-muted-foreground">In the Apps Script project's Script Properties, set REMOLD_KEY to the key above and REMOLD_BASE_URL to:</p>
+                <CopyBlock text={siteUrl} label="Base URL" />
+                <p className="text-muted-foreground">The script and setup steps are in ops/gmail-sync in the Remold repository. Installing it needs your Google sign-in.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground">Connect Claude Code:</p>
+                <CopyBlock text={`claude mcp add remold -e REMOLD_URL=${siteUrl} -e REMOLD_KEY=${issued.key} -- node <path to remold>/packages/mcp/dist/index.js`} label="Claude Code command" />
+                <p className="text-muted-foreground">Or call REST directly:</p>
+                <CopyBlock text={`curl -H "Authorization: Bearer ${issued.key}" ${siteUrl}/api/v1/me`} label="REST example" />
+              </>
+            )}
             <Button size="sm" variant="outline" className="justify-self-start" onClick={() => setIssued(null)}>
               I saved it
+            </Button>
+          </div>
+        )}
+        {owner && (
+          <div className="flex flex-wrap items-center gap-2 border-t pt-4 text-sm">
+            <span className="min-w-0 flex-1 text-muted-foreground">Gmail sync: a key for the Apps Script that logs your emails as activities. It reads people's names and emails, reads and creates activities, and nothing else.</span>
+            <Button size="sm" variant="outline" onClick={() => attempt(async () => setIssued({ name: "Gmail sync", key: (await createGmailSync({ orgId })).key, gmail: true }))}>
+              Create Gmail sync key
             </Button>
           </div>
         )}

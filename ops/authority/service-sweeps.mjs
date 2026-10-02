@@ -45,6 +45,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
     const human = {
       'agents:create': () => t.human.action(fn('agents:create'), { orgId, name: 'denied', grants: [] }),
       'agents:createScoped': () => t.human.action(fn('agents:createScoped'), { orgId, name: 'denied', origin: 'external' }),
+      'agents:createGmailSync': () => t.human.action(fn('agents:createGmailSync'), { orgId }),
       'agents:setGrants': () => t.human.mutation(fn('agents:setGrants'), { orgId, agentId: w.agent.agentId, grants: [{ action: 'create', objectKey: 'person' }] }),
       'agents:setSharedInbox': () => t.human.mutation(fn('agents:setSharedInbox'), { orgId, agentId: w.agent.agentId, enabled: true }),
       'agents:revoke': () => t.human.mutation(fn('agents:revoke'), { orgId, agentId: w.target.agentId }),

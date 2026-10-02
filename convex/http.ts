@@ -57,7 +57,7 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "GET" && path[0] === "today" && path.length === 1) return json(await query(internal.agentApi.today, {}));
   if (request.method === "GET" && path[0] === "suggestions" && path.length === 1) return json(await query(internal.agentApi.listSuggestions, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "suggestions" && path.length === 1) return json(await mutation(internal.agentApi.propose, body), 201);
-  if (request.method === "POST" && path[0] === "changes" && path.length === 1) return json(await mutation(internal.agentApi.change, body));
+  if (request.method === "POST" && path[0] === "changes" && path.length === 1) return json(await mutation(internal.agentApi.change, { ...body, idempotencyKey: request.headers.get("idempotency-key") ?? undefined }));
   if (request.method === "GET" && path[0] === "inbox" && path.length === 1) return json(await query(internal.agentApi.inbox, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "inbox" && path.length === 1) return json(await mutation(internal.agentApi.inboxAdd, body), 201);
   if (request.method === "POST" && path[0] === "inbox" && path[2] === "resolve" && path.length === 3) return json(await mutation(internal.agentApi.inboxResolve, { id: path[1], ...body }));
