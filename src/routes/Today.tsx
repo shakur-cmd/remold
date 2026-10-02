@@ -9,6 +9,7 @@ import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
 import { localSpan } from "@/lib/calendar";
+import { uniqueById, useFollow } from "@/lib/pages";
 import { localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
@@ -19,6 +20,8 @@ export function Today() {
   const data = useQuery(api.today.get, { orgId: org._id, today, start, end });
   const waiting = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
   const update = useMutation(api.records.update);
+  // The first page of today's posts comes with the day; a busy day continues here.
+  const rest = useFollow<{ posts: Doc<"records">[]; done: boolean; cursor: string | null }>(api.today.posts, data && !data.postsDone && data.postsCursor ? { orgId: org._id, today, start, end } : null, data?.postsCursor ?? undefined);
   if (!data) return <Loading />;
   const { task } = data;
   const at = (record: Doc<"records">) => (task ? (record.values[task.dueFieldId] as number) : 0);
@@ -29,7 +32,7 @@ export function Today() {
     { label: "This week", rows: data.tasks.filter((r) => due(r) > today) },
   ];
   const planned = (record: Doc<"records">) => (data.post ? (record.values[data.post.plannedFieldId] as number) : 0);
-  const { posts } = data;
+  const posts = uniqueById([...data.posts, ...rest.pages.flatMap((page) => page?.posts ?? [])]);
   const complete = (recordId: Id<"records">) => task?.doneFieldId && attempt(() => update({ orgId: org._id, recordId, values: { [task.doneFieldId!]: true } }), "Done");
 
   return (
@@ -69,7 +72,7 @@ export function Today() {
           )}
         </CardContent>
       </Card>
-      {data.post && posts.length > 0 && (
+      {data.post && (posts.length > 0 || rest.loading || rest.more) && (
         <Card>
           <CardHeader>
             <CardTitle>Posts today</CardTitle>
@@ -91,6 +94,12 @@ export function Today() {
                 </Link>
               );
             })}
+            {rest.loading && <p className="px-2 text-xs text-muted-foreground">Looking for more…</p>}
+            {rest.more && (
+              <button type="button" className="px-2 py-1 text-left text-xs text-primary hover:underline" onClick={rest.loadMore}>
+                Look for more posts today
+              </button>
+            )}
           </CardContent>
         </Card>
       )}

@@ -6,7 +6,7 @@ import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { listRecords, listedRelated } from "./lib/list";
-import { datedRecords, daysBounds, localDays, onDays } from "./lib/daily";
+import { datedRecords, dayIntervals, localDays } from "./lib/daily";
 import { searchRecords } from "./lib/search";
 import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
 
@@ -16,15 +16,16 @@ const slotName = (kind: string, index: number) => `${kind}${index}` as const;
 
 // A filter value of null matches records where the field is empty.
 export const list = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), sort: v.optional(v.object({ fieldId: v.id("fields"), direction })), filter: v.optional(v.object({ fieldId: v.id("fields"), value: v.any() })), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); return listRecords(ctx, args.orgId, args.objectId, args.paginationOpts, args.sort, args.filter, principal); } });
-// Records whose date field falls on the viewer's local days, earliest first, for the calendar.
+// Records whose date field falls on the viewer's local days, earliest first, for
+// the calendar: a page of up to RANGE_CAP. Until `done`, pass `cursor` back for more.
 const RANGE_CAP = 500;
-export const inRange = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), fieldId: v.id("fields"), ...localDays }, handler: async (ctx, args) => {
+export const inRange = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), fieldId: v.id("fields"), ...localDays, cursor: v.optional(v.string()) }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId); const object = await ctx.db.get(args.objectId); const field = await ctx.db.get(args.fieldId);
   if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); requireObjectRead(principal, object);
   if (!field || field.objectId !== object._id) fail("NOT_FOUND", "Field not found"); requireQueryField(principal, object, field);
   if (field.type !== "date" || !field.slot) fail("VALIDATION", "Calendar needs an indexed date field");
-  const rows = await datedRecords(ctx, principal, object, field, [], r => onDays(args)(r.values[field._id]), ...daysBounds(args), RANGE_CAP + 1);
-  return { records: (await Promise.all(rows.slice(0, RANGE_CAP).map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null), truncated: rows.length > RANGE_CAP };
+  const page = await datedRecords(ctx, principal, object, field, [], () => true, dayIntervals(args), RANGE_CAP, args.cursor);
+  return { records: (await Promise.all(page.rows.map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null), done: page.done, cursor: page.cursor };
 } });
 export const get = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const record = await ctx.db.get(args.recordId); if (!record || record.orgId !== args.orgId) return null; const object = await ctx.db.get(record.objectId); if (!object) return null; const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect(); const masked = await projectRecord(ctx, principal, record); return masked ? { record: masked, object, fields: fields.filter(f => canReadField(principal, object, f, record._id)) } : null; } });
 export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), fieldId: v.id("fields"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {

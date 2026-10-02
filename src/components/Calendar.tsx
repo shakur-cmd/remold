@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { DndContext, PointerSensor, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "cn";
@@ -9,6 +9,7 @@ import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { attempt } from "@/lib/errors";
+import { uniqueById, useFollow } from "@/lib/pages";
 import { byDay, dayKey, localSpan, monthDays, moveToDay, parseDay, shiftAnchor, swatch, weekDays } from "@/lib/calendar";
 import { type Field, isSlotted, localToday, optionLabel, timeOfDay } from "@/lib/fields";
 
@@ -33,7 +34,9 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
   const today = localToday();
   const anchor = parseDay(params.get("at")) ?? today;
   const days = mode === "month" ? monthDays(anchor) : weekDays(anchor);
-  const result = useQuery(api.records.inRange, dateField ? { orgId, objectId: object._id, fieldId: dateField._id, ...localSpan(days[0]!, days.at(-1)!) } : "skip");
+  // Each page reads a bounded number of rows; the rest of a busy range follows by cursor.
+  const range = useFollow<{ records: Doc<"records">[]; done: boolean; cursor: string | null }>(api.records.inRange, dateField ? { orgId, objectId: object._id, fieldId: dateField._id, ...localSpan(days[0]!, days.at(-1)!) } : null);
+  const records = uniqueById(range.pages.flatMap((page) => page?.records ?? []));
   const set = (changes: Record<string, string>) => setParams((current) => { const next = new URLSearchParams(current); for (const [k, v] of Object.entries(changes)) next.set(k, v); return next; }, { replace: true });
   if (!dateField)
     return (
@@ -48,7 +51,7 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
     : `${first.toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric" })} – ${last.toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" })}`;
 
   function onMove(recordId: Id<"records">, day: number) {
-    const record = result?.records.find((r) => r._id === recordId), at = record?.values[dateField!._id];
+    const record = records.find((r) => r._id === recordId), at = record?.values[dateField!._id];
     if (typeof at !== "number") return;
     const value = moveToDay(dateField!, at, day);
     if (value !== at) void attempt(() => update({ orgId, recordId, values: { [dateField!._id]: value } }));
@@ -112,8 +115,16 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
           ))}
         </div>
       )}
-      <CalendarGrid orgId={orgId} objectKey={object.key} mode={mode} days={days} month={shown.getUTCMonth()} records={result?.records ?? []} dateField={dateField} colorField={colorField} today={today} onMove={onMove} />
-      {result?.truncated && <p className="text-xs text-muted-foreground">Showing the first 500 in this range.</p>}
+      <CalendarGrid orgId={orgId} objectKey={object.key} mode={mode} days={days} month={shown.getUTCMonth()} records={records} dateField={dateField} colorField={colorField} today={today} onMove={onMove} onShowDay={(day) => set({ cal: "week", at: dayKey(day) })} />
+      {range.loading && records.length > 0 && <p className="text-xs text-muted-foreground">Loading more…</p>}
+      {range.more && (
+        <p className="text-xs text-muted-foreground">
+          Showing the first {records.length} in this range.{" "}
+          <button type="button" className="text-primary hover:underline" onClick={range.loadMore}>
+            Load more
+          </button>
+        </p>
+      )}
     </div>
   );
 }
@@ -124,11 +135,14 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
 const swallow = (event: Event) => event.preventDefault();
 const release = () => setTimeout(() => document.removeEventListener("click", swallow, true), 50);
 
-type GridProps = { orgId: Id<"orgs">; objectKey: string; mode: Mode; days: number[]; month: number; records: Doc<"records">[]; dateField: Field; colorField?: Field; today: number; onMove: (recordId: Id<"records">, day: number) => void };
+// A month cell shows this many; the rest are a click away in that day's week.
+const MONTH_CHIPS = 3;
+
+type GridProps = { orgId: Id<"orgs">; objectKey: string; mode: Mode; days: number[]; month: number; records: Doc<"records">[]; dateField: Field; colorField?: Field; today: number; onMove: (recordId: Id<"records">, day: number) => void; onShowDay?: (day: number) => void };
 
 // A month is a 7-column grid; on a phone its cells show dots and a tapped day is
 // listed below. A week is seven columns, stacked into a list on a phone.
-export function CalendarGrid({ orgId, objectKey, mode, days, month, records, dateField, colorField, today, onMove }: GridProps) {
+export function CalendarGrid({ orgId, objectKey, mode, days, month, records, dateField, colorField, today, onMove, onShowDay }: GridProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }));
   const placed = byDay(records, dateField);
   const [picked, setPicked] = useState<number | null>(null);
@@ -159,7 +173,12 @@ export function CalendarGrid({ orgId, objectKey, mode, days, month, records, dat
                   </button>
                   <div className="hidden gap-0.5 md:grid">
                     <DayNumber day={day} today={today} />
-                    {placed.get(day)?.map((r) => <Chip key={r._id} record={r} {...chip} />)}
+                    {placed.get(day)?.slice(0, MONTH_CHIPS).map((r) => <Chip key={r._id} record={r} {...chip} />)}
+                    {(placed.get(day)?.length ?? 0) > MONTH_CHIPS && (
+                      <button type="button" className="px-1.5 text-left text-xs text-muted-foreground hover:text-foreground" onClick={() => onShowDay?.(day)}>
+                        +{placed.get(day)!.length - MONTH_CHIPS} more
+                      </button>
+                    )}
                   </div>
                 </Day>
               ))}

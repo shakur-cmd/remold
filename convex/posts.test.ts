@@ -119,7 +119,7 @@ describe("posts", () => {
     const range = (window: { firstDay: number; lastDay: number; start: number; end: number }) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...window });
     const result = await range(nyDay(2026, 9, 5));
     expect(result.records.map((r: any) => r.title)).toEqual(["All day Oct 5", "Oct 5, 12:00 AM", "Oct 5, 8:00 PM", "Oct 5, last ms"]);
-    expect(result.truncated).toBe(false);
+    expect(result.done).toBe(true);
     // Nov 1 is 25 hours long in New York; 11:30 PM EST is already Nov 2 in UTC.
     await make("Nov 1, 11:30 PM", Date.UTC(2026, 10, 2, 4, 30));
     expect((await range({ firstDay: Date.UTC(2026, 10, 1), lastDay: Date.UTC(2026, 10, 1), start: Date.UTC(2026, 10, 1, 4), end: Date.UTC(2026, 10, 2, 5) - 1 })).records.map((r: any) => r.title)).toEqual(["Nov 1, 11:30 PM"]);
@@ -144,4 +144,78 @@ describe("posts", () => {
     const { recordId } = await w.create({ title: "Approved", status: "approved" });
     await expect(w.update(recordId, { status: "published" })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
   });
+
+  describe("read budget", () => {
+    // `n` copies of a real post, inserted directly so a test can hold a thousand quickly.
+    async function clones(w: any, n: number, v: Record<string, unknown>) {
+      const { recordId } = await w.create(v);
+      const slot = `${w.post.fields.planned.slot.kind}${w.post.fields.planned.slot.index}`;
+      await w.t.run(async (ctx: any) => {
+        const { _id, _creationTime, ...doc } = await ctx.db.get(recordId);
+        for (let i = 1; i < n; i++) await ctx.db.insert("records", { ...doc, ref: `${doc.ref}-${i}`, title: `${doc.title} ${i}`, values: { ...doc.values }, [slot]: doc[slot] });
+      });
+    }
+    const oct5 = nyDay(2026, 9, 5);
+    // Follows continuation cursors to the end; a page that is not done must say where to go on.
+    async function allRange(w: any) {
+      const out: string[] = [];
+      let cursor: string | undefined;
+      for (let page = 0; page < 20; page++) {
+        const r = await w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, ...(cursor ? { cursor } : {}) });
+        out.push(...r.records.map((x: any) => x.title));
+        if (r.done === true) return out;
+        expect(typeof r.cursor).toBe("string");
+        cursor = r.cursor;
+      }
+      throw new Error("never done");
+    }
+    async function allToday(w: any) {
+      const first = await w.client.query(api.today.get, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end });
+      const out: string[] = first.posts.map((x: any) => x.title);
+      let done = first.postsDone, cursor = first.postsCursor;
+      for (let page = 0; page < 20 && done !== true; page++) {
+        expect(typeof cursor).toBe("string");
+        const r = await w.client.query(api.today.posts, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end, cursor });
+        out.push(...r.posts.map((x: any) => x.title));
+        done = r.done; cursor = r.cursor;
+      }
+      expect(done).toBe(true);
+      return out;
+    }
+
+    for (const n of [999, 1000]) {
+      it(`finds the one post on the day after ${n} posts late the evening before`, async () => {
+        const w = await world();
+        await clones(w, n, { title: "Evening before", status: "drafted", planned: Date.UTC(2026, 9, 5) + 1 });
+        await w.create({ title: "On the day", status: "drafted", planned: Date.UTC(2026, 9, 5, 12) });
+        expect(await allRange(w)).toEqual(["On the day"]);
+        expect(await allToday(w)).toEqual(["On the day"]);
+        // The index is read with the day's exact bounds, so the evening before costs no reads.
+        expect(await w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5 })).toMatchObject({ done: true, cursor: null });
+        expect(await w.client.query(api.today.get, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end })).toMatchObject({ postsDone: true, postsCursor: null });
+      });
+    }
+
+    it("refuses a malformed cursor and a range longer than a calendar shows", async () => {
+      const w = await world();
+      const range = (extra: object) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, ...extra });
+      await expect(range({ cursor: "list:5" })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      await expect(range({ lastDay: oct5.firstDay + 100 * DAY, end: oct5.end + 100 * DAY })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      await expect(range({ start: oct5.firstDay - 10 * DAY })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+    });
+
+    it("pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar", async () => {
+      const w = await world();
+      await clones(w, 1000, { title: "Out", status: "published", publishedLink: "https://x.com/s/1", planned: Date.UTC(2026, 9, 5, 12) });
+      await w.create({ title: "Still to go", status: "approved", planned: Date.UTC(2026, 9, 5, 13) });
+      const first = await w.client.query(api.today.get, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end });
+      expect(first.postsDone).toBe(false);
+      expect(await allToday(w)).toEqual(["Still to go"]);
+      const titles = await allRange(w);
+      expect(titles).toHaveLength(1001);
+      expect(new Set(titles).size).toBe(1001);
+      expect(titles.at(-1)).toBe("Still to go");
+    });
+  });
 });
+

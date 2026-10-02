@@ -1482,6 +1482,16 @@
     "proof": "operator-only: internal function with no HTTP route or public caller"
   },
   {
+    "id": "today:posts",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "later pages of the posts on Today keep hidden fields hidden and serve a record-scoped reader only their records"
+  },
+  {
     "id": "today:get",
     "kind": "query",
     "visibility": "public",

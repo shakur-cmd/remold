@@ -37,4 +37,12 @@ describe("CalendarGrid", () => {
     expect(week["2026-10-05"]).toContain('href="/o/org/post/r1"');
     expect(week["2026-10-05"]).toContain("Drafted");
   });
+  it("shows three posts in a busy month cell and counts the rest", () => {
+    const busy = Array.from({ length: 5 }, (_, i) => ({ _id: `b${i}`, title: `Busy ${i}`, values: { planned: new Date(2026, 9, 20, 9 + i).getTime(), status: "idea" } })) as any;
+    const html = renderToStaticMarkup(<MemoryRouter><CalendarGrid orgId={"org" as any} objectKey="post" mode="month" days={monthDays(Date.UTC(2026, 9, 1))} month={9} records={busy} dateField={planned} colorField={status} today={Date.UTC(2026, 9, 1)} onMove={() => {}} /></MemoryRouter>);
+    const cell = cells(html)["2026-10-20"]!;
+    expect(cell).toContain("Busy 2");
+    expect(cell).not.toContain("Busy 3");
+    expect(cell).toContain("+2 more");
+  });
 });

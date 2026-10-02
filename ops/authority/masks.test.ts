@@ -73,3 +73,18 @@ it('the calendar range keeps hidden fields hidden and serves a record-scoped rea
   await b.client.mutation(anyApi['authority/policies'].setMember, { orgId: b.orgId, memberId: bMember, hiddenFieldIds: [bPost.fields.planned._id] });
   await expect(b.client.query(api.records.inRange, { orgId: b.orgId, objectId: bPost.object._id, fieldId: bPost.fields.planned._id, firstDay: day, lastDay: day, start: day, end: day + 86400000 - 1 })).rejects.toMatchObject({ data: { code: 'NOT_FOUND' } });
 });
+it('later pages of the posts on Today keep hidden fields hidden and serve a record-scoped reader only their records', async () => {
+  const { t, client, orgId } = await userAndOrg();
+  const post = await objectFields(client, orgId, 'post'), day = { today: Date.UTC(2026, 9, 5), start: Date.UTC(2026, 9, 5, 4), end: Date.UTC(2026, 9, 6, 4) - 1 };
+  const ids = [];
+  for (let i = 0; i < 55; i++) ids.push((await client.mutation(api.records.create, { orgId, objectId: post.object._id, values: { [post.fields.title._id]: `Post ${i}`, [post.fields.text._id]: 'Secret Text', [post.fields.planned._id]: Date.UTC(2026, 9, 5, 12) + i } })).recordId);
+  const mine = ids.slice(0, 52);
+  const memberId = await t.run(async ctx => (await ctx.db.query('members').collect())[0]!._id);
+  await client.mutation(anyApi['authority/policies'].setMember, { orgId, memberId, scopes: [{ objectId: post.object._id, records: mine, fields: 'all' }], hiddenFieldIds: [post.fields.text._id] });
+  const first = await client.query(api.today.get, { orgId, ...day });
+  expect(first.postsDone).toBe(false);
+  const rest = await client.query(api.today.posts, { orgId, ...day, cursor: first.postsCursor! });
+  expect(rest.done).toBe(true);
+  expect([...first.posts, ...rest.posts].map((r: any) => r._id).sort()).toEqual([...mine].sort());
+  expect.soft(JSON.stringify([first, rest])).not.toMatch(/Secret/);
+});
