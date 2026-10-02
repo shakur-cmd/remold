@@ -138,6 +138,11 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   // later does not lock every older record. Clearing references on delete may
   // empty a required lookup; a dangling id would be worse.
   requireFilled(fields, values, (field) => change.action === "create" || (field._id in validated && !options.clearingReference));
+  // Remold never publishes a post; a person posts it and pastes the link back first.
+  // Without a usable link field (retired before retiring it was refused) nothing can be published.
+  const status = object.isStandard && object.key === "post" ? fields.find((f) => f.key === "status") : undefined, link = status && fields.find((f) => f.key === "publishedLink");
+  const linked = !!link && !link.retired && typeof values[link._id] === "string" && !!(values[link._id] as string).trim();
+  if (status && values[status._id] === "published" && !linked && (change.action === "create" || status._id in validated || (!!link && link._id in validated))) fail("VALIDATION", "A published post needs its published link", { fieldId: link?._id ?? status._id });
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;

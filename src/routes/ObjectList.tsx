@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useOutletContext, useParams, useSearchParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Columns3, ListFilter, Plus, Rows3, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarDays, Columns3, ListFilter, Plus, Rows3, X } from "lucide-react";
 import { cn } from "cn";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Board, type Range } from "@/components/Board";
+import { Calendar } from "@/components/Calendar";
 import { CsvTools } from "@/components/CsvTools";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
@@ -46,11 +47,11 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [firstPage, setFirstPage] = useState<Id<"fields">[] | null>(null);
-  const board = params.get("view") === "board";
+  const board = params.get("view") === "board", calendar = params.get("view") === "calendar";
   const applied = filters.filter((f) => f.value !== undefined);
   const dateField = days && detail?.fields.find((f) => f._id === days.fieldId);
   const range: Range | undefined = days && dateField && (days.from || days.to) ? { fieldId: days.fieldId, ...dayRange(dateField, days.from, days.to) } : undefined;
-  const { results, status, loadMore } = usePaginatedQuery(api.records.list, board ? "skip" : { orgId, objectId, sort, filters: applied, range }, { initialNumItems: 50 });
+  const { results, status, loadMore } = usePaginatedQuery(api.records.list, board || calendar ? "skip" : { orgId, objectId, sort, filters: applied, range }, { initialNumItems: 50 });
 
   if (!detail) return <Loading />;
   const { object, fields } = detail;
@@ -63,8 +64,9 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   // Chosen once from the first page, so the header does not shift on Load more or while editing.
   const used = firstPage ?? candidates.filter((f) => f.type === "boolean" || results.some((r) => !isEmpty(r.values[f._id]))).map((f) => f._id);
   const columns = (used.length ? candidates.filter((f) => used.includes(f._id)) : candidates).slice(0, 6);
-  if (!firstPage && status !== "LoadingFirstPage" && !board) setFirstPage(used);
+  if (!firstPage && status !== "LoadingFirstPage" && !board && !calendar) setFirstPage(used);
   const groupBy = selectFields[0];
+  const dated = fields.some((f) => f.type === "date" && !f.retired);
 
   function toggleSort(fieldId: Id<"fields">) {
     setSort((current) =>
@@ -77,14 +79,21 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-semibold tracking-tight">{object.labelPlural}</h1>
         <div className="ml-auto flex items-center gap-2">
-          {groupBy && (
+          {(groupBy || dated) && (
             <div className="flex rounded-md border bg-card p-0.5">
-              <Button variant={board ? "ghost" : "secondary"} size="icon-sm" aria-label="Table view" onClick={() => setParams({}, { replace: true })}>
+              <Button variant={board || calendar ? "ghost" : "secondary"} size="icon-sm" aria-label="Table view" onClick={() => setParams({}, { replace: true })}>
                 <Rows3 />
               </Button>
-              <Button variant={board ? "secondary" : "ghost"} size="icon-sm" aria-label={`Board by ${groupBy.label}`} onClick={() => setParams({ view: "board" }, { replace: true })}>
-                <Columns3 />
-              </Button>
+              {groupBy && (
+                <Button variant={board ? "secondary" : "ghost"} size="icon-sm" aria-label={`Board by ${groupBy.label}`} onClick={() => setParams({ view: "board" }, { replace: true })}>
+                  <Columns3 />
+                </Button>
+              )}
+              {dated && (
+                <Button variant={calendar ? "secondary" : "ghost"} size="icon-sm" aria-label="Calendar view" onClick={() => setParams({ view: "calendar" }, { replace: true })}>
+                  <CalendarDays />
+                </Button>
+              )}
             </div>
           )}
           <CsvTools orgId={orgId} object={object} fields={fields} filters={applied} range={range} />
@@ -116,9 +125,11 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
         </div>
       </div>
 
-      <FilterBar orgId={orgId} fields={fields} titleFieldId={object.titleFieldId} filters={filters} onFilters={setFilters} days={days} onDays={setDays} />
+      {!calendar && <FilterBar orgId={orgId} fields={fields} titleFieldId={object.titleFieldId} filters={filters} onFilters={setFilters} days={days} onDays={setDays} />}
 
-      {board && groupBy ? (
+      {calendar && dated ? (
+        <Calendar orgId={orgId} object={object} fields={fields} />
+      ) : board && groupBy ? (
         <Board orgId={orgId} object={object} groupBy={groupBy} fields={fields} filters={applied} range={range} />
       ) : (
         <div className="overflow-x-auto rounded-lg border bg-card">

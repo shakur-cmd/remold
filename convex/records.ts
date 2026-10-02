@@ -1,10 +1,12 @@
 import { mutation, query } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { listRecords, listedRelated, totals as groupTotals, steps as stepsOf, filter, whereArgs } from "./lib/list";
+import { datedRecords, dayIntervals, localDays } from "./lib/daily";
 import { searchRecords } from "./lib/search";
 import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
 
@@ -16,6 +18,18 @@ const slotName = (kind: string, index: number) => `${kind}${index}` as const;
 export const list = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), sort: v.optional(v.object({ fieldId: v.id("fields"), direction })), filter: v.optional(filter), ...whereArgs, paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); return listRecords(ctx, args.orgId, args.objectId, args.paginationOpts, args.sort, { filters: [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])], range: args.range }, principal); } });
 // Board column headers: count and summed number per option, for the whole board, not just the loaded cards.
 export const totals = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), groupFieldId: v.id("fields"), sumFieldId: v.optional(v.id("fields")), ...whereArgs }, handler: async (ctx, args) => groupTotals(ctx, await requireMember(ctx, args.orgId), args.orgId, args.objectId, args.groupFieldId, args.sumFieldId, { filters: args.filters, range: args.range }) });
+// Records whose date field falls on the viewer's local days, earliest first, for
+// the calendar, paged like Convex's paginate (endCursor included) for usePinnedPages.
+const RANGE_CAP = 500;
+export const inRange = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), fieldId: v.id("fields"), ...localDays, paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {
+  const principal = await requireMember(ctx, args.orgId); const object = await ctx.db.get(args.objectId); const field = await ctx.db.get(args.fieldId);
+  if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); requireObjectRead(principal, object);
+  if (!field || field.objectId !== object._id) fail("NOT_FOUND", "Field not found"); requireQueryField(principal, object, field);
+  if (field.type !== "date" || !field.slot) fail("VALIDATION", "Calendar needs an indexed date field");
+  const { cursor, endCursor, numItems } = args.paginationOpts;
+  const result = await datedRecords(ctx, principal, object, field, [], () => true, dayIntervals(args), { cursor, endCursor, numItems: Math.min(numItems, RANGE_CAP) });
+  return { ...result, page: (await Promise.all(result.page.map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null) };
+} });
 export const get = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const record = await ctx.db.get(args.recordId); if (!record || record.orgId !== args.orgId) return null; const object = await ctx.db.get(record.objectId); if (!object) return null; const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect(); const masked = await projectRecord(ctx, principal, record); return masked ? { record: masked, object, fields: fields.filter(f => canReadField(principal, object, f, record._id)) } : null; } });
 export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), fieldId: v.id("fields"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId); const target = await ctx.db.get(args.recordId); const field = await ctx.db.get(args.fieldId);

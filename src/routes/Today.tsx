@@ -10,16 +10,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
-import { formatMoney, localDay, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
+import { localSpan } from "@/lib/calendar";
+import { useAllPages } from "@/lib/pages";
+import { formatMoney, localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
-
-// Date fields hold UTC midnight of the chosen day, so "today" is encoded the same way.
-const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
 
 export function Today() {
   const { org, objects } = useOutletContext<OrgContext>();
   const today = localToday();
-  const data = useQuery(api.today.get, { orgId: org._id, today });
+  const { start, end } = localSpan(today, today);
+  const data = useQuery(api.today.get, { orgId: org._id, today, start, end });
   const waiting = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
   const update = useMutation(api.records.update);
   if (!data) return <Loading />;
@@ -76,6 +76,7 @@ export function Today() {
         </CardContent>
       </Card>
       <UnpaidInvoices orgId={org._id} invoice={objects.find((o) => o.key === "invoice")} today={today} />
+      {data.post && <PostsToday orgId={org._id} post={data.post} day={{ today, start, end }} />}
       {data.quiet.length > 0 && data.dealKey && (
         <Card>
           <CardHeader>
@@ -141,6 +142,46 @@ function UnpaidInvoices({ orgId, invoice, today }: { orgId: Id<"orgs">; invoice?
           <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => loadMore(PAGE)}>
             Load more
           </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+type PostMeta = { objectKey: string; plannedFieldId: Id<"fields">; plannedField: Doc<"fields">; statusField: Doc<"fields"> | null };
+
+// Posts planned for the viewer's day that are still to go out, every page, pinned.
+function PostsToday({ orgId, post, day }: { orgId: Id<"orgs">; post: PostMeta; day: { today: number; start: number; end: number } }) {
+  const posts = useAllPages<Doc<"records">>(api.today.posts, { orgId, ...day }, 50);
+  if (!posts.results.length && !posts.loading && !posts.more) return null;
+  const status = post.statusField;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Posts today</CardTitle>
+        <CardDescription>
+          Planned for today and not yet published. Post them, then paste the link back.{" "}
+          <Link to={`/o/${orgId}/${post.objectKey}?view=calendar`} className="text-primary hover:underline">
+            Social calendar
+          </Link>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-0.5">
+        {posts.results.map((record) => {
+          const value = status && record.values[status._id];
+          return (
+            <Link key={record._id} to={`/o/${orgId}/${post.objectKey}/${record._id}`} className="flex h-8 items-center gap-3 rounded-md px-2 text-sm hover:bg-muted">
+              <span className="min-w-0 flex-1 truncate">{record.title || "Untitled"}</span>
+              {status && value !== undefined && <span className="text-xs text-muted-foreground">{optionLabel(status, value)}</span>}
+              <span className="text-xs text-muted-foreground tabular-nums">{timeOfDay(post.plannedField, record.values[post.plannedFieldId] as number) ?? "Today"}</span>
+            </Link>
+          );
+        })}
+        {posts.loading && <p className="px-2 text-xs text-muted-foreground">Looking for more…</p>}
+        {posts.more && (
+          <button type="button" className="px-2 py-1 text-left text-xs text-primary hover:underline" onClick={posts.loadMore}>
+            Look for more posts today
+          </button>
         )}
       </CardContent>
     </Card>

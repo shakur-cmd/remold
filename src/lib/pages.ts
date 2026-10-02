@@ -57,3 +57,27 @@ export function usePinnedPages<T>(query: FunctionReference<"query">, args: Recor
   const view = pageView(pages, results);
   return { results: view.items, status: view.status, loadMore: (numItems: number) => { if (view.next) setState({ key, pages: [...pages, { cursor: view.next, numItems }] }); } };
 }
+
+// Every page of a pinned paged query: while the last page says there is more, the
+// next is asked for, up to `max` pages (loadMore raises it). Pages stay pinned, so
+// rows never shift across page boundaries as the data changes.
+export function useAllPages<T>(query: FunctionReference<"query">, args: Record<string, any>, numItems: number, max = 10) {
+  const pages = usePinnedPages<T>(query, args, numItems);
+  const key = JSON.stringify(args);
+  const [asked, setAsked] = useState({ key, count: 1, max });
+  const now = asked.key === key ? asked : { key, count: 1, max };
+  const follow = pages.status === "CanLoadMore" && now.count < now.max;
+  useEffect(() => {
+    if (!follow) return;
+    pages.loadMore(numItems);
+    setAsked({ ...now, count: now.count + 1 });
+  }, [follow, key, now.count]); // eslint-disable-line react-hooks/exhaustive-deps
+  return {
+    results: pages.results,
+    loading: pages.status === "LoadingFirstPage" || pages.status === "LoadingMore" || follow,
+    // Pages left that were not asked for, because `max` was reached.
+    more: pages.status === "CanLoadMore" && !follow,
+    loadMore: () => setAsked({ ...now, max: now.max + max }),
+  };
+}
+

@@ -1149,6 +1149,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "records:inRange",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the calendar range keeps hidden fields hidden and serves a record-scoped reader only their records"
+  },
+  {
     "id": "records:totals",
     "kind": "query",
     "visibility": "public",
@@ -1541,6 +1551,16 @@
     "readonly": "not-a-write",
     "masks": "projected",
     "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "today:posts",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "later pages of the posts on Today keep hidden fields hidden and serve a record-scoped reader only their records"
   },
   {
     "id": "invoices:forCompany",

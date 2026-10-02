@@ -54,7 +54,7 @@ describe("activity and timeline", () => {
     const taskId = once.objects.find((o: any) => o.key === "task")._id;
     expect(once.fields.find((f: any) => f.objectId === taskId && f.key === "dueDate").withTime).toBe(true);
     // Only additions: every field that existed before is unchanged apart from the new flag.
-    for (const before of old.fields) expect((({ withTime, ...rest }: any) => rest)(once.fields.find((f: any) => f._id === before._id))).toEqual(before);
+    for (const before of old.fields) { const after = once.fields.find((f: any) => f._id === before._id); expect(after).toEqual(before.withTime === undefined && after.withTime ? { ...before, withTime: true } : before); }
     await t.mutation(internal.seed.ensureStandard, { orgId });
     expect(await metadata(t, orgId)).toEqual(once);
   });

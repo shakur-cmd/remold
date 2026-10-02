@@ -9,5 +9,5 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
   // Fixtures run with the production gates open; workspaces.test.ts and paymentCallbacks.test.ts cover them closed.
-  test: { include: ["convex/**/*.test.ts", "src/**/*.test.ts", "ops/import/*.test.ts"], env: { REMOLD_OPEN_SIGNUP: "1", REMOLD_PAYMENT_CALLBACKS: "1" } },
+  test: { include: ["convex/**/*.test.ts", "src/**/*.test.ts", "ops/import/*.test.ts", "src/**/*.test.tsx"], env: { REMOLD_OPEN_SIGNUP: "1", REMOLD_PAYMENT_CALLBACKS: "1" } },
 });
