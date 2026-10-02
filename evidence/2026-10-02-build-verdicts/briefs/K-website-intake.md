@@ -1,0 +1,12 @@
+# Job K: codemyvibe.com sends each lead to Remold too (website side of M6)
+Repo: github.com/shakur-cmd/codemyvibe-website (clone it to ~/work/jobs/K-web; branch main is live on Cloudflare Pages project "codemyvibe"). Work on a new branch remold-intake. Do not deploy, do not touch Cloudflare, do not push to main. Commit on the branch; the coordinator fetches it. Read the repo's CLAUDE.md first and follow its conventions (it has its own test runner; see tests/intake.test.js).
+
+Context: functions/api/intake.js receives /start form leads and emails each one to Shakur through Resend. That stays exactly as is: the email is the fallback that must never break. Remold (his CRM) now has POST https://nautical-viper-899.convex.site/api/v1/intake/lead. Contract (from Remold docs/spec/agents-v1.md): Bearer intake key; header Idempotency-Key required; JSON body { name, email, phone?, company?, message?, source?, campaign? }; 201 { opportunity: { id, ref } }; 400/401/403/404/422 are permanent (do not retry); 429 has Retry-After; 503 is temporary. Same key + same body within 24h replays the original.
+
+Build:
+1. After the Resend email has been sent successfully (or after it failed: the Remold call must not depend on the email outcome), send the lead to Remold when env REMOLD_INTAKE_URL and REMOLD_INTAKE_KEY are both set. Use context.waitUntil so the visitor's response never waits on Remold; never throw into the request path; log one JSON line per outcome (event "remold_intake" with status, never the key or contact data).
+2. Idempotency-Key: the same stable request key the email path already uses for Resend (so a retried form submission maps to one Remold lead). Map the form fields to the contract (source "codemyvibe.com/<path or lead kind>"). One retry on 429/503/network error honoring Retry-After up to 5 s; no retry on other 4xx.
+3. Missing env = skip silently except one log line (so the site works before the key exists).
+4. Tests (stub fetch): email still sent and visitor gets the same response when Remold is down, returns 500, or hangs; correct headers/body/Idempotency-Key; no call when env missing; no retry on 400/422; one retry on 503; key never logged. Each new test must fail before the change.
+
+Done when: tests pass (run the repo's whole suite), handover at ~/work/handover/K-web/handover.md lists the two env vars the coordinator sets as Pages secrets and the exact deploy command the repo uses, plus fail-before/pass-after evidence.

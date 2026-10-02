@@ -1,0 +1,13 @@
+# Job D: M4 your funnels
+Branch: m4/funnels. Job id: D-m4. Base: integ/m3 (origin), which merges M3 part 1 (date fields with time via the field flag withTime, Activity object, record timeline, history paging) and M3 part 2 (email helper convex/lib/email.ts, daily reminder, agent guards incl. protectedFromAgents and forward-only stage in convex/authority/agentGuards.ts). Reuse them; diff against origin/integ/m3.
+
+Context: read docs/unified-launch/remaining-work-2026-10-01.html section M4. Shakur's daily work is planning, managing and executing funnels. A funnel = one Campaign record (the standard Campaign object exists: status, channel, start date, goal, people, companies; see convex/lib/standard.ts). Board view by any select field exists (src/components/Board.tsx). REST list takes one exact filter today (convex/http.ts, convex/agentApi.ts, convex/lib/list.ts). Opportunity has only a few free filterable slots (convex/lib/slots.ts); do not waste them.
+
+Build:
+1. Link deals to funnels: an Opportunity has a "campaign" lookup to Campaign (add to standard set + idempotent additive migration for existing workspaces). The campaign carries the lead's source, so no separate source text field on Opportunity.
+2. A funnel page: open a Campaign and see (a) its goal and status, (b) its deals on a board by stage with count and total value per column, (c) its steps: Tasks about the campaign, with due date/time and done, in order of due, and a quick "add step" input, (d) its timeline (reuse the record timeline from M3). From the campaign list, a "New funnel" action creates a Campaign and lets the user add steps right away.
+3. The board shows count and summed value per column wherever it is used, not only on the funnel page.
+4. Filters: REST list accepts several field filters combined with AND, plus a date range on a date field (from/to, inclusive, ISO), e.g. `?filter[stage]=new&filter[campaign]=<id>&range[due]=2026-10-01..2026-10-31`. The app's list view can filter by up to three fields and a date range, using the same query path. Filters must respect read permissions exactly like today (an unreadable field cannot be filtered on).
+5. Today shows due funnel steps with the funnel name.
+
+Done when: tests prove per-column counts and sums equal a filtered export for two funnels; a two-field plus date-range filter returns exactly the matching records (and a record just outside the range is excluded); an unreadable field cannot be used to filter; migration idempotent. pnpm build passes; screenshots of a funnel page and a filtered list if you get a local backend running (else say so). Full suites pass.

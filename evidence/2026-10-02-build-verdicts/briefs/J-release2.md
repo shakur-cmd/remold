@@ -1,0 +1,17 @@
+# Job J: integrate release 2 and apply verifier follow-ups
+Branch: release/2026-10-03. Job id: J-rel2. Base: origin/release/2026-10-02 (what is LIVE now: integ/m3b + m3/time-activity r3 + m0/safe-floor + m2/import + m7/invoices + m4/funnels, plus coordinator fixes; rollback target 188f617).
+
+Goal: one branch that adds three independently verified features to the live release, with every suite green, ready for `pnpm deploy:prod`. Do not deploy. Do not push (coordinator fetches).
+
+1. Merge, in this order, resolving every conflict by keeping BOTH features' behavior (never drop either side's logic or tests): origin/m5/social-calendar (verified r5, 5601b36), origin/m6/lead-intake (verified r4, 5d5cfe9), origin/m8/gmail-dates (verified, 66271ba). Expect conflicts in standard.ts, schema.ts, applyChange.ts, records.ts, today.ts, Today.tsx, ObjectList.tsx, inventory.json, identity.test.ts, vite.config.ts (union the test include/env), notes.json, api.d.ts. Where two branches built the same thing twice, keep one:
+   - /changes idempotency: m6 and m8 both added one. Keep m6's (it was verified through four rounds: request-hash mismatch 422, replay returns original values filtered by current permissions). Port m8's Gmail sync onto it (its key format gmail:<msg>:<person> stays) and delete m8's duplicate table/code if unused; keep the schema additive (an unused table may stay in the schema; just stop using it).
+   - Date/page helpers: m5 already merged m3/time-activity; keep src/lib/pages.ts usePinnedPages as on the live release.
+2. Follow-ups from the verifiers (each with a failing-first test):
+   a. Public intake must never modify an existing Person: on any match (email or phone), link the Opportunity to the existing Person and put the submitted contact details only in the Note. (Coordinator decision 2026-10-02.)
+   b. Add tests that catch the surviving mutants Fable listed for m6: conflict case leaves the email-matched Person's phone empty; REMOLD_INTAKE_DAILY_CAP of "abc", "-1", "1.5", "0" handled (unreadable means 0 per AGENTS.md: missing numeric cap means zero; document the change from default 50); the inner write-only field-grant check in applyChange has its own test.
+   c. Update docs/spec/agents-v1.md: Idempotency-Key on POST /api/v1/changes (422 on mismatch, 24-hour window) and the intake route with its status codes incl. 404.
+   d. Gmail sync (ops/gmail-sync): a test where Shakur's own address is a Person (sent-to-self must not log); cap any Retry-After sleep so the run stays inside its 270 s budget, and save the watermark after each finished window; README lists WINDOW_DAYS.
+3. Schema and rollback: compute the merged convex/schema.ts; create a schema-only commit on top of 3c4e789 with exactly that schema (pre-release code + final schema), check it typechecks and passes its own tests, and name it as rollbackTarget in ops/release/notes.json (merge it into the branch with -s ours so it is an ancestor), as was done for 188f617.
+4. Run everything: pnpm typecheck, pnpm test --maxWorkers=2 --testTimeout=15000, pnpm test:authority, pnpm verify:release, pnpm build. All green.
+
+Handover: ~/work/handover/J-rel2/handover.md with the merge decisions, follow-up fail-before/pass-after, rollback target sha, suite lines, and the post-deploy steps the coordinator must run (e.g. seed:ensureStandard for the Post object; any idempotent migrations; new env vars such as REMOLD_INTAKE_DAILY_CAP).

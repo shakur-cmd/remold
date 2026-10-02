@@ -1,0 +1,15 @@
+# Job B2: M3 part 2, email notices, daily reminder, alerts by email, agent stage and field guards
+Branch: m3/reminders-guards. Job id: B2-m3.
+
+Context: read docs/unified-launch/remaining-work-2026-10-01.html section M3 and M0 (alerts). Key files: convex/alerts.ts (operator alerts, delivered to a webhook from env REMOLD_ALERT_WEBHOOK_URL, see channel()), convex/crons.ts, convex/today.ts (due/overdue/gone-quiet logic), convex/lib/applyChange.ts, convex/identity.ts, convex/agentApi.ts, convex/suggestions.ts, convex/authority/*, convex/integrations/outcomes.ts.
+
+Build:
+1. Email sender. One small helper that sends plain-text email through the Resend HTTP API (POST https://api.resend.com/emails, bearer env RESEND_API_KEY, from env REMOLD_EMAIL_FROM). Safety rule enforced in code: it sends only to addresses listed in env REMOLD_EMAIL_ALLOWLIST (comma-separated, case-insensitive); anything else is refused and logged, never sent. Missing key = no send, logged once, nothing throws into user paths. Tests use a stubbed fetch (see how alerts.test.ts stubs delivery); no real network.
+2. Daily reminder. A cron once a day at 11:00 UTC. For each workspace whose owner has turned reminders on (an additive per-member or per-workspace setting with a Settings toggle; default off), email that owner (subject to the allowlist) the list of their open tasks due today, overdue tasks, and records gone quiet, reusing today.ts logic rather than duplicating it. Nothing from another workspace may appear. A task marked done drops out of the next email. Include a link to the Today page (base URL from env REMOLD_APP_URL). If B1 lands date-with-time first that is fine; your logic must work whether "due" carries a time or not.
+3. Alerts by email. Operator alerts (alerts.ts) can deliver to an email address from env REMOLD_ALERT_EMAIL_TO through the same helper, in addition to or instead of the webhook. Keep the existing dedupe/resolve behavior and its tests green.
+4. Agent guards, humans unaffected:
+   a. Forward-only stage: an agent (API key principal) may not move an Opportunity's stage to an earlier option than its current one, and may not change it once it is won or lost. Order is the select option order. Applies to direct writes and to proposals being applied. 403 with a clear message.
+   b. Protected fields: an additive optional field flag (e.g. `protectedFromAgents`) that makes agent writes to that field fail with 403 even when the agent has a grant. Settings shows a toggle for it on each field. Humans can still edit.
+5. Audit fix: in convex/integrations/outcomes.ts the "late" classification ignores the workspace read-only state (decisions log 2026-09-26 P6: audit misclassification, not a write bypass). Fix it with a test that fails before.
+
+Done when: each item has fail-before/pass-after evidence (including: removing the allowlist check makes a test fail; turning the reminder sender off makes the reminder test fail), full suites pass, pnpm build passes, and the handover lists the env vars to set in production with example (non-secret) values.

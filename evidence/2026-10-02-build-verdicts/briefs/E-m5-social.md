@@ -1,0 +1,12 @@
+# Job E: M5 your social calendar
+Branch: m5/social-calendar. Job id: E-m5. Base: integ/m3 (origin), which merges M3 part 1 (date fields with time via the field flag withTime, Activity object, record timeline, history paging) and M3 part 2 (email helper convex/lib/email.ts, daily reminder, agent guards incl. protectedFromAgents and forward-only stage in convex/authority/agentGuards.ts). Reuse them; diff against origin/integ/m3.
+
+Context: read docs/unified-launch/remaining-work-2026-10-01.html section M5. Shakur runs his own social media across TikTok, Instagram, a Facebook Page, X and LinkedIn. In this milestone Remold publishes nothing: he plans posts, drafts them (agents may draft), approves, posts by hand, and pastes the link back.
+
+Build:
+1. Post object (standard set + idempotent additive migration): title, channel (select: tiktok, instagram, facebook, x, linkedin, youtube, other), planned (date with time), status (select in order: idea, drafted, approved, published, skipped), text (long text if the codebase has it, else text), media link, published link, campaign (lookup to Campaign), and the existing timeline.
+2. Rules enforced in the backend: status "published" is refused without a published link; agents cannot set status to approved or published (only humans), even with a write grant (reuse the agent-guard mechanism if M3 added one; otherwise add the narrowest check).
+3. A calendar view, generic over any object that has a date field: month view and week view, records placed by the chosen date field in the user's local time, colored by a chosen select field (for posts: status or channel), click to open, drag a record to another day to change its date (keep the time of day). Reachable from the object list view as a view switch, and as "Social calendar" in the app navigation pointing at Posts. Must work on a phone-width screen (week view as a list is fine on small screens).
+4. Today shows posts planned for today that are not yet published.
+
+Done when: tests prove the published-link rule and the agent rule (each fails before); a post planned for a given local date/time appears on that day in month and week views (component or Playwright test); dragging changes the date and keeps the time; no code path publishes to any provider (state it). pnpm build passes; screenshots of month and week views at desktop and phone width if you get a local backend running (else say so). Full suites pass.

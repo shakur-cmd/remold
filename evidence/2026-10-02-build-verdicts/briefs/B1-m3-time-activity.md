@@ -1,0 +1,15 @@
+# Job B1: M3 part 1, time of day, activities, task updates, history paging
+Branch: m3/time-activity. Job id: B1-m3.
+
+Context: Shakur will run his business from Remold: clients, tasks, funnels, social posts. Read docs/unified-launch/remaining-work-2026-10-01.html section M3. Key files: convex/lib/values.ts (date values are truncated to a UTC day; readable returns YYYY-MM-DD), convex/lib/slots.ts, convex/lib/standard.ts (standard objects incl. Task, Note, Opportunity, Campaign), convex/today.ts and src/routes/Today.tsx, src/routes/RecordPage.tsx, src/components/RecordForm.tsx, src/components/FieldValue.tsx, convex/events.ts, convex/agentApi.ts, convex/http.ts.
+
+Build:
+1. Time of day. A date field can be marked to keep time (prefer an additive optional flag on the field, e.g. `withTime`, over a new type, unless the code shows a new type is simpler). Such fields accept ISO 8601 with time and offset (and plain dates, which mean midnight UTC as today), store epoch ms, and read back over REST as ISO 8601 UTC with time; the UI edits them with a date-time input in the browser's local time and shows local time. Plain date fields behave exactly as today (prove with the existing tests plus one new). Mark Task "due" as with-time for new workspaces and via an idempotent additive migration for existing ones. Settings must let a user mark a date field with time when creating it.
+2. Activity object. Add a standard object Activity (calls, emails, meetings, payments, messages) with fields: title, type (select: call, email, meeting, payment, message, other), when (date with time), about (lookup to any record, the same polymorphic way Task/Note link), source (text, e.g. "gmail", "manual", "agent"). Seed it for new workspaces and add it to existing ones with the same idempotent migration. Watch the slot limits in slots.ts.
+3. Timeline on a record. On a record page, show one timeline merging: activities about it, notes about it, tasks about it (with due/done), and its change history, newest first, with real times. For a Task record specifically, notes about the task show there, so "updates on tasks" are visible on the task.
+4. History paging. REST record history returns only the latest 20 and the app 200, with no way to go further. Add cursor paging to both (REST: `?cursor=` + `nextCursor` in the response; app: "Load more"). Test: a record with 250 events can be paged to the first one, with no duplicates or gaps.
+
+Done when: each item has fail-before/pass-after evidence, full suites pass, pnpm build passes, migration is idempotent, and screenshots of a task page with a timeline and a date-time field exist if you got a local backend running (else say so).
+
+## Coordinator amendment (2026-10-02, after round 2)
+On a with-time date field, a plain date (an all-day value) reads back over REST as `YYYY-MM-DD`, and an instant reads back as ISO 8601 UTC with time. This replaces "plain dates mean midnight UTC" in item 1 for read-back purposes: the all-day distinction is deliberate so a date entered as a day stays that day in every time zone. Document it in the README REST section.
