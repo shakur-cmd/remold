@@ -7,10 +7,13 @@ export type ImportRecord = { tmpId: string; object: string; values: Record<strin
 export const importFields: Record<string, Record<string, string>> = {
   company: { name: "", domain: "", city: "", notes: "", street: "", state: "", postalCode: "", country: "" },
   person: { name: "", email: "", phone: "", title: "", company: "company", linkedin: "" },
-  opportunity: { name: "", amount: "", stage: "", closeDate: "", company: "company", person: "person" },
+  opportunity: { name: "", amount: "", stage: "", closeDate: "", company: "company", person: "person", campaign: "campaign" },
   project: { name: "", status: "", company: "company" },
   task: { title: "", dueDate: "", done: "", project: "project", blockedBy: "task[]", about: "*" },
   note: { body: "", about: "*" },
+  activity: { title: "", type: "", when: "", about: "*", source: "" },
+  campaign: { name: "", status: "", channel: "", startDate: "", goal: "", people: "person[]", companies: "company[]" },
+  invoice: { number: "", company: "company", amount: "", sent: "", due: "", paidOn: "", monthly: "", document: "" },
 };
 const aliases: Record<string, Record<string, string>> = {
   company: { website: "domain" },
