@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { internal } from "./_generated/api";
 import { api, objectFields, userAndOrg } from "./test.helpers";
 import { standard } from "./lib/standard";
-import { importFields } from "./lib/importCheck";
+import { checkBatch, importFields } from "./lib/importCheck";
 
 const clients = {
   records: [
@@ -89,5 +89,39 @@ describe("client import", () => {
       const definition = standard.find((d) => d.key === object)!;
       expect(Object.fromEntries(definition.fields.map((f) => [f.key, f.type === "lookup" ? f.target ?? "*" : f.type === "links" ? `${f.target}[]` : ""])), object).toEqual(fields);
     }
+  });
+
+  it("dry run refuses exactly what the import refuses, with the same message", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const person = await objectFields(client, orgId, "person");
+    await t.run((ctx: any) => ctx.db.patch(person.fields.company._id, { retired: true }));
+    const cases = {
+      retiredLookup: [{ tmpId: "c", object: "company", values: { name: "C" } }, { tmpId: "p", object: "person", values: { name: "P", company: "@c" } }],
+      linksNotAList: [{ tmpId: "t1", object: "task", values: { title: "A" } }, { tmpId: "t2", object: "task", values: { title: "B", blockedBy: "@t1" } }],
+      missingTitle: [{ tmpId: "n", object: "note", values: { about: null } }],
+      badOption: [{ tmpId: "o", object: "opportunity", values: { name: "O", stage: "someday" } }],
+    };
+    for (const [name, records] of Object.entries(cases)) {
+      const dry = await t.query(internal.imports.check, { orgId, batch: { records } }).then(() => "ready", (e: any) => e.data?.message);
+      const real = await t.mutation(internal.imports.batch, { orgId, batch: { records } }).then(() => "imported", (e: any) => e.data?.message);
+      expect(dry, name).not.toBe("ready");
+      expect(dry, name).toBe(real);
+    }
+    await t.run(async (ctx: any) => ctx.db.patch(orgId, { flags: { readonly: true } }));
+    const records = [{ tmpId: "c", object: "company", values: { name: "C" } }];
+    const dry = await t.query(internal.imports.check, { orgId, batch: { records } }).then(() => "ready", (e: any) => e.data?.message);
+    expect(dry).toBe(await t.mutation(internal.imports.batch, { orgId, batch: { records } }).then(() => "imported", (e: any) => e.data?.message));
+  });
+
+  it("refuses long base64 runs with no digits or with slashes, but allows ordinary URLs and paths", () => {
+    const body = (text: string) => checkBatch({ records: [{ tmpId: "n", object: "note", values: { body: text } }] }).problems;
+    for (const secret of ["YWJjZGVm".repeat(8), "aGVsbG8v/d29ybGQr/YWJjZGVmZ2hpams+/YWJjZGVm", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb3NhIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"]) expect(body(`value ${secret}`), secret).toEqual([expect.stringContaining("looks like a credential")]);
+    for (const fine of ["https://www.linkedin.com/in/rosa-lin-bakery-owner-portland", "/Users/Shakur/Documents/Clients/Harbor Bakery/Proposal Final.pdf", "https://example.com/blog/how-we-rebuilt-the-harbor-bakery-website-in-two-weeks", "HarborBakeryWebsiteRedesignProject"]) expect(body(fine), fine).toEqual([]);
+  });
+
+  it("does not take object, alias or field names from the object prototype", () => {
+    expect(checkBatch({ records: [{ tmpId: "x", object: "constructor", values: {} }] }).problems).toEqual([expect.stringContaining('x: unknown object "constructor"')]);
+    expect(checkBatch({ records: [{ tmpId: "x", object: "note", values: { body: "b", toString: "y" } }] }).problems).toEqual([expect.stringContaining('unknown keys "toString"')]);
+    expect(checkBatch({ records: [{ tmpId: "x", object: "task", values: { title: "b", constructor: "y" } }] }).problems).toEqual([expect.stringContaining('unknown keys "constructor"')]);
   });
 });

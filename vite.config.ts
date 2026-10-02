@@ -8,5 +8,5 @@ export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
-  test: { include: ["convex/**/*.test.ts", "src/**/*.test.ts"] },
+  test: { include: ["convex/**/*.test.ts", "src/**/*.test.ts", "ops/import/*.test.ts"] },
 });

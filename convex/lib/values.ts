@@ -1,4 +1,4 @@
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { fail } from "../errors";
 import { findReadableByTitle } from "./find";
@@ -12,10 +12,14 @@ const empty = (value: unknown) => value === null || value === undefined;
 const pad = (value: number) => String(value).padStart(2, "0");
 const dateText = (value: number) => { const d = new Date(value); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
 
-async function related(ctx: Ctx, principal: Principal, field: Doc<"fields">, value: unknown, fieldKey: string) {
+// Turns a "@name" reference into a record id, or into a stand-in when the record does not exist yet (import dry run).
+export type Pending = (field: Doc<"fields">, name: string, fieldKey: string) => { id: string } | { standIn: string };
+
+async function related(ctx: Ctx, principal: Principal, field: Doc<"fields">, value: unknown, fieldKey: string, pending?: Pending): Promise<Id<"records">> {
   const orgId = principal.org._id;
   if (field.targetObjectId) { const target = await ctx.db.get(field.targetObjectId); if (!target) fail("NOT_FOUND"); requireObjectRead(principal, target); }
   if (typeof value !== "string") fail("VALIDATION", "Expected record", { fieldKey });
+  if (pending && value.startsWith("@")) { const resolved = pending(field, value.slice(1), fieldKey); return "standIn" in resolved ? resolved.standIn as Id<"records"> : related(ctx, principal, field, resolved.id, fieldKey); }
   const id = ctx.db.normalizeId("records", value);
   const direct = id && await ctx.db.get(id);
   // Unreadable matches fall through, so every miss ends in the same error as a record that does not exist.
@@ -45,14 +49,14 @@ function scalar(field: Doc<"fields">, value: unknown, fieldKey: string) {
   return value;
 }
 
-export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc<"objects">, fields: Doc<"fields">[], input: Record<string, unknown>) {
+export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc<"objects">, fields: Doc<"fields">[], input: Record<string, unknown>, pending?: Pending) {
   const byKey = new Map(fields.map((field) => [field.key, field]));
   const values: Record<string, unknown> = {};
   for (const [fieldKey, inputValue] of Object.entries(input)) {
     const field = byKey.get(fieldKey);
     if (!field || field.retired || !canReadField(principal, _object, field)) fail("VALIDATION", `Unknown field \"${fieldKey}\"`, { fieldKey });
-    if (field.type === "lookup") values[field._id] = empty(inputValue) ? null : await related(ctx, principal, field, inputValue, fieldKey);
-    else if (field.type === "links") { if (empty(inputValue)) values[field._id] = null; else { if (!Array.isArray(inputValue)) fail("VALIDATION", "Expected record array", { fieldKey }); values[field._id] = await Promise.all(inputValue.map((value) => related(ctx, principal, field, value, fieldKey))); } }
+    if (field.type === "lookup") values[field._id] = empty(inputValue) ? null : await related(ctx, principal, field, inputValue, fieldKey, pending);
+    else if (field.type === "links") { if (empty(inputValue)) values[field._id] = null; else { if (!Array.isArray(inputValue)) fail("VALIDATION", "Expected record array", { fieldKey }); values[field._id] = await Promise.all(inputValue.map((value) => related(ctx, principal, field, value, fieldKey, pending))); } }
     else values[field._id] = scalar(field, inputValue, fieldKey);
   }
   return values;

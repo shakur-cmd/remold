@@ -4,9 +4,9 @@ import { readFileSync } from "node:fs";
 import { checkBatch, batchKey } from "../../convex/lib/importCheck.ts";
 import { convexRun, options } from "./convex.mjs";
 
-const flags = options(process.argv.slice(2), "Usage: node ops/import/records.mjs <file.json> --org <orgId> [--prod] [--dry-run]");
-const [file] = flags.rest;
-if (!file) { console.error("Name the JSON file to import"); process.exit(2); }
+const flags = options(process.argv.slice(2), { usage: "Usage: node ops/import/records.mjs <file.json> --org <orgId> [--prod] [--dry-run]", positional: 1 });
+const [file] = flags.positional;
+if (!file) flags.usage("Name the JSON file to import");
 let batch;
 try { batch = JSON.parse(readFileSync(file, "utf8")); } catch (error) { console.error(`Cannot read ${file}: ${error.message}`); process.exit(2); }
 const { records, problems } = checkBatch(batch);

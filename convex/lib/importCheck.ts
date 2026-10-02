@@ -22,8 +22,11 @@ const MAX = 500;
 
 const secretWord = /password|passwd|secret|token|api[\s_-]?key/i;
 const secretPrefix = /(?:^|[^A-Za-z0-9])(?:(?:sk|pk|re)_|sk-)[A-Za-z0-9]/;
-// Long unbroken letter-and-digit runs (keys, hashes, base64). URL paths split on "/" and "." first.
-const longRun = (text: string) => text.split(/[^A-Za-z0-9+=_-]+/).some((part) => part.length >= 32 && /\d/.test(part) && /[A-Za-z]/.test(part));
+// Long unbroken key-like runs: letters mixed with digits (hex, keys), or base64 with
+// its "/" and "+", told apart from paths and CamelCase by adjacent capitals ("YW", "GV").
+const longRun = (text: string) =>
+  text.split(/[^A-Za-z0-9+=_-]+/).some((part) => part.length >= 32 && /\d/.test(part) && /[A-Za-z]/.test(part)) ||
+  (text.match(/[A-Za-z0-9+/=]{32,}/g) ?? []).some((run) => /[A-Z]{2}/.test(run) && /[a-z]/.test(run));
 export function credentialReason(text: string): string | null {
   const word = secretWord.exec(text)?.[0];
   if (word) return `mentions "${word.toLowerCase()}"`;
@@ -32,6 +35,7 @@ export function credentialReason(text: string): string | null {
   return null;
 }
 
+const own = <T>(map: Record<string, T>, key: string) => (Object.hasOwn(map, key) ? map[key] : undefined);
 const isPlain = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 const strings = (value: unknown): string[] => typeof value === "string" ? [value] : Array.isArray(value) ? value.flatMap(strings) : isPlain(value) ? Object.values(value).flatMap(strings) : [];
 
@@ -47,14 +51,14 @@ export function checkBatch(batch: unknown): { records: ImportRecord[]; problems:
     if (!tmpId) { problems.push(`${label}: needs a tmpId`); continue; }
     if (objectOf.has(tmpId)) problems.push(`${label}: tmpId used twice`);
     const object = (raw as Record<string, unknown>).object, values = (raw as Record<string, unknown>).values;
-    const fields = typeof object === "string" ? importFields[object] : undefined;
+    const fields = typeof object === "string" ? own(importFields, object) : undefined;
     if (!fields) { problems.push(`${label}: unknown object ${JSON.stringify(object)}; use one of ${Object.keys(importFields).join(", ")}`); continue; }
     if (!isPlain(values)) { problems.push(`${label}: values must be an object`); continue; }
     const normalized: Record<string, unknown> = {}, unknown: string[] = [];
     for (const [rawKey, value] of Object.entries(values)) {
-      const key = aliases[object as string]?.[rawKey] ?? rawKey;
-      if (!(key in fields)) { unknown.push(rawKey); continue; }
-      if (key in normalized) problems.push(`${label}.${key}: given twice (as ${rawKey} and an alias)`);
+      const key = own(own(aliases, object as string) ?? {}, rawKey) ?? rawKey;
+      if (!Object.hasOwn(fields, key)) { unknown.push(rawKey); continue; }
+      if (Object.hasOwn(normalized, key)) problems.push(`${label}.${key}: given twice (as ${rawKey} and an alias)`);
       normalized[key] = value;
       const target = fields[key]!;
       for (const ref of target ? strings(value).filter((text) => text.startsWith("@")) : []) {

@@ -1,5 +1,5 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { currentPrincipal, recordGranted, type Actor, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
@@ -13,7 +13,7 @@ export type Change =
   | { action: "delete"; orgId: Id<"orgs">; recordId: Id<"records">; reason?: string };
 const empty = (value: unknown) => value === null || value === undefined;
 
-async function fieldsFor(ctx: MutationCtx, orgId: Id<"orgs">, objectId: Id<"objects">) {
+async function fieldsFor(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">) {
   return ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
 }
 
@@ -39,27 +39,30 @@ async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unkn
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-// Returns eventId null only when an update changed nothing, so no event is written.
-// Lookups store the target id in `values`, not in `links`, so a delete has to
-// find them by field: through the slot index when the lookup has one, else by
-// reading the source object's records.
-async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">, actor: Actor) {
+// Lookups store the target id in `values`, not in `links`, so referrers are found
+// by field: through the slot index when the lookup has one, else by reading the
+// source object's records.
+export async function lookupReferrers(ctx: QueryCtx, orgId: Id<"orgs">, target: Doc<"records">) {
+  const found: { record: Doc<"records">; field: Doc<"fields"> }[] = [];
   const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
   for (const source of objects) {
-    const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === deleted.objectId));
+    const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === target.objectId));
     for (const field of lookups) {
       const slot = field.slot;
       const referrers: Doc<"records">[] = slot
-        ? await (ctx.db.query("records") as any).withIndex(`by_${slot.kind}${slot.index}`, (q: any) => q.eq("orgId", orgId).eq("objectId", source._id).eq(`${slot.kind}${slot.index}`, deleted._id)).collect()
-        : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === deleted._id);
-      for (const record of referrers) {
-        if (record._id === deleted._id) continue;
-        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
-      }
+        ? await (ctx.db.query("records") as any).withIndex(`by_${slot.kind}${slot.index}`, (q: any) => q.eq("orgId", orgId).eq("objectId", source._id).eq(`${slot.kind}${slot.index}`, target._id)).collect()
+        : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === target._id);
+      for (const record of referrers) if (record._id !== target._id) found.push({ record, field });
     }
   }
+  return found;
 }
 
+async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">, actor: Actor) {
+  for (const { record, field } of await lookupReferrers(ctx, orgId, deleted)) await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
+}
+
+// Returns eventId null only when an update changed nothing, so no event is written.
 export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
   // Operator tools write as the owner but name themselves in history.

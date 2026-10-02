@@ -3,8 +3,9 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { ConvexError, v } from "convex/values";
 import { fail } from "./errors";
 import { ownerOf, type Membership } from "./identity";
+import { writable } from "./authority/readonly";
 import { applyChange } from "./lib/applyChange";
-import { resolveValues } from "./lib/values";
+import { resolveValues, type Pending } from "./lib/values";
 import { batchKey, checkBatch, type ImportRecord } from "./lib/importCheck";
 
 // Operator import of drafted records (ops/import/records.mjs): the whole batch
@@ -17,6 +18,7 @@ async function prepare(ctx: Ctx, orgId: Id<"orgs">, batch: unknown) {
   const { records, problems } = checkBatch(batch);
   if (problems.length) fail("VALIDATION", `Import refused:\n${problems.join("\n")}`);
   const principal = await ownerOf(ctx, orgId);
+  await writable(ctx, orgId);
   const items = new Map<string, Item>();
   for (const key of new Set(records.map((record) => record.object))) {
     const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", key)).unique();
@@ -30,21 +32,18 @@ async function prepare(ctx: Ctx, orgId: Id<"orgs">, batch: unknown) {
   return { records, principal, items, key, done, counts };
 }
 
-// "@tmpId" in a lookup becomes the id written earlier in this batch. A dry run
-// has no ids yet, so it leaves those out and counts them as filled.
-async function valuesFor(ctx: Ctx, principal: Membership, item: Item, record: ImportRecord, ids: Map<string, Id<"records">> | null) {
-  const input: Record<string, unknown> = {}, pending = new Set<string>();
-  const swap = (value: unknown) => (typeof value === "string" && value.startsWith("@") ? ids?.get(value.slice(1)) : value);
-  for (const [key, value] of Object.entries(record.values)) {
-    const type = item.fields.find((field) => field.key === key)?.type;
-    if (type === "lookup" || type === "links") {
-      const swapped = Array.isArray(value) ? value.map(swap).filter((id) => id !== undefined) : swap(value);
-      if (!ids && JSON.stringify(swapped) !== JSON.stringify(value)) pending.add(key);
-      if (swapped !== undefined) input[key] = swapped;
-    } else input[key] = value;
-  }
-  const values = await resolveValues(ctx, principal, item.object, item.fields, input);
-  for (const field of item.fields) if (field.required && !field.retired && values[field._id] == null && !pending.has(field.key)) fail("VALIDATION", "Required field is empty", { fieldKey: field.key });
+// The real import and its dry run share this path. "@tmpId" in a lookup or list
+// is checked against the live field's target, then becomes the id written
+// earlier in this batch; a dry run has no ids, so a stand-in fills its place.
+async function valuesFor(ctx: Ctx, principal: Membership, item: Item, record: ImportRecord, earlier: Map<string, { objectId: Id<"objects">; id?: Id<"records"> }>) {
+  const pending: Pending = (field, tmpId, fieldKey) => {
+    const target = earlier.get(tmpId);
+    if (!target) fail("VALIDATION", `"@${tmpId}" is not an earlier record in this file`, { fieldKey });
+    if (field.targetObjectId && field.targetObjectId !== target.objectId) fail("VALIDATION", `@${tmpId} is not a record this field can link to`, { fieldKey });
+    return target.id ? { id: target.id } : { standIn: `@${tmpId}` };
+  };
+  const values = await resolveValues(ctx, principal, item.object, item.fields, record.values, pending);
+  for (const field of item.fields) if (field.required && !field.retired && values[field._id] == null) fail("VALIDATION", "Required field is empty", { fieldKey: field.key });
   return values;
 }
 
@@ -62,18 +61,19 @@ export const batch = internalMutation({ args, handler: async (ctx, { orgId, batc
   const plan = await prepare(ctx, orgId, batch);
   if (plan.done) return { status: "already imported", batchKey: plan.key, counts: plan.done.counts };
   const actor = { kind: "automation" as const, id: `import ${new Date().toISOString().slice(0, 10)}` };
-  const ids = new Map<string, Id<"records">>();
+  const earlier = new Map<string, { objectId: Id<"objects">; id: Id<"records"> }>();
   for (const record of plan.records) {
     const item = plan.items.get(record.object)!;
-    const recordId = await tagged(record, item, async () => (await applyChange(ctx, plan.principal, { action: "create", orgId, objectId: item.object._id, values: await valuesFor(ctx, plan.principal, item, record, ids), reason: `Imported from batch ${plan.key}` }, { actor })).recordId);
-    ids.set(record.tmpId, recordId);
+    const recordId = await tagged(record, item, async () => (await applyChange(ctx, plan.principal, { action: "create", orgId, objectId: item.object._id, values: await valuesFor(ctx, plan.principal, item, record, earlier), reason: `Imported from batch ${plan.key}` }, { actor })).recordId);
+    earlier.set(record.tmpId, { objectId: item.object._id, id: recordId });
   }
   await ctx.db.insert("imports", { orgId, key: plan.key, counts: plan.counts });
-  return { status: "imported", batchKey: plan.key, counts: plan.counts, ids: Object.fromEntries(ids) };
+  return { status: "imported", batchKey: plan.key, counts: plan.counts, ids: Object.fromEntries([...earlier].map(([tmpId, { id }]) => [tmpId, id])) };
 } });
 
 export const check = internalQuery({ args, handler: async (ctx, { orgId, batch }) => {
   const plan = await prepare(ctx, orgId, batch);
-  if (!plan.done) for (const record of plan.records) { const item = plan.items.get(record.object)!; await tagged(record, item, () => valuesFor(ctx, plan.principal, item, record, null)); }
+  const earlier = new Map<string, { objectId: Id<"objects"> }>();
+  if (!plan.done) for (const record of plan.records) { const item = plan.items.get(record.object)!; await tagged(record, item, () => valuesFor(ctx, plan.principal, item, record, earlier)); earlier.set(record.tmpId, { objectId: item.object._id }); }
   return { status: plan.done ? "already imported" : "ready", batchKey: plan.key, counts: plan.counts };
 } });

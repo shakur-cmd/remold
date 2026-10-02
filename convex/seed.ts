@@ -1,9 +1,9 @@
 import { internalMutation, internalQuery, mutation } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { ownerOf, requireMember, type Membership } from "./identity";
-import { applyChange } from "./lib/applyChange";
+import { applyChange, lookupReferrers } from "./lib/applyChange";
 import { seedStandard, standard } from "./lib/standard";
 import { releaseSlot } from "./lib/slots";
 import { uniqueRef } from "./lib/ref";
@@ -44,49 +44,78 @@ async function seedDemo(ctx: MutationCtx, member: Membership, orgId: Id<"orgs">)
   await create("note", { body: "Sample project note", about: project });
 }
 
-// What seedDemo creates, in order. Its rows are written in one transaction, so
-// their create events are consecutive in the workspace history.
+// What seedDemo creates, in order. Cleanup is a reviewed one-off: the dry run
+// plans the rows with these titles, and the real run deletes only the ids it is
+// given, refusing all of them if any one fails the same checks.
 const demoRows: [string, string][] = [["company", "Fictional Plumbing Co"], ["company", "Atlas Imaginary Works"], ["company", "Example Electric LLC"], ["person", "Ava Example"], ["person", "Ben Sample"], ["person", "Casey Fiction"], ["person", "Drew Placeholder"], ["opportunity", "Fictional Plumbing Website"], ["opportunity", "Atlas Demo Proposal"], ["opportunity", "Plumbing Sample Renewal"], ["project", "Fictional Plumbing Refresh"], ["task", "Review fictional brief"], ["task", "Prepare sample draft"], ["task", "Send imaginary update"], ["note", "Fictional customer note"], ["note", "Sample project note"]];
-type Row = { id: Id<"records">; object: string; title: string };
+const seedIndex = (key: string | undefined, title: string) => demoRows.findIndex(([k, t]) => k === key && t === title);
 
-// Finds the seed's run of create events, then sorts its surviving rows into
-// untouched (remove) and edited since (kept). A row a person made later with a
-// demo title is outside the run and never listed.
-async function demoPlanFor(ctx: QueryCtx, orgId: Id<"orgs">) {
-  const remove: Row[] = [], kept: (Row & { reason: string })[] = [];
-  const objects = new Map((await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect()).map((object) => [object._id, object]));
-  const company = [...objects.values()].find((object) => object.key === "company");
-  const titleOf = (event: { objectId: Id<"objects">; after: Record<string, unknown> | null }) => { const object = objects.get(event.objectId); return object?.titleFieldId ? event.after?.[object.titleFieldId] : undefined; };
-  const creates = company ? await ctx.db.query("events").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", company._id)).filter((q) => q.eq(q.field("action"), "create")).collect() : [];
-  const anchor = creates.find((event) => titleOf(event) === demoRows[0]![1]);
-  if (!anchor) return { remove, kept };
-  const run = await ctx.db.query("events").withIndex("by_org", (q) => q.eq("orgId", orgId).gte("_creationTime", anchor._creationTime)).take(demoRows.length);
-  for (const [index, event] of run.entries()) {
-    const [key, title] = demoRows[index]!;
-    if (event.action !== "create" || objects.get(event.objectId)?.key !== key || titleOf(event) !== title) break;
-    const record = await ctx.db.get(event.recordId);
-    if (!record) continue;
-    const history = await ctx.db.query("events").withIndex("by_record", (q) => q.eq("orgId", orgId).eq("recordId", record._id)).collect();
-    const row = { id: record._id, object: key, title: record.title };
-    if (history.some((other) => other._id !== event._id && other.reason !== "Linked record was deleted")) kept.push({ ...row, reason: "edited after seeding" });
-    else remove.push(row);
-  }
-  return { remove, kept };
+// Why a record must stay, given the set of ids planned to go with it. Deleting a
+// record rewrites every record that links to it, so any referrer outside the set keeps it.
+async function keepReasons(ctx: QueryCtx, orgId: Id<"orgs">, record: Doc<"records">, planned: Set<string>) {
+  const reasons: string[] = [];
+  if (seedIndex((await ctx.db.get(record.objectId))?.key, record.title) < 0) reasons.push("title/object not in the seed list");
+  const history = await ctx.db.query("events").withIndex("by_record", (q) => q.eq("orgId", orgId).eq("recordId", record._id)).collect();
+  if (history.length !== 1 || history[0]!.action !== "create") reasons.push("has events other than its create");
+  const links = await ctx.db.query("links").withIndex("by_target_any", (q) => q.eq("orgId", orgId).eq("toRecordId", record._id)).collect();
+  const referrers = [...links.map((row) => row.fromRecordId), ...(await lookupReferrers(ctx, orgId, record)).map(({ record }) => record._id)];
+  if (referrers.some((id) => id !== record._id && !planned.has(id))) reasons.push("referenced by a record outside the plan");
+  return reasons;
 }
 
-// Dry run for removeDemo (`convex run seed:demoPlan`).
-export const demoPlan = internalQuery({ args: { orgId: v.id("orgs") }, handler: (ctx, args) => demoPlanFor(ctx, args.orgId) });
+async function summary(ctx: QueryCtx, record: Doc<"records">) {
+  return { id: record._id, ref: record.ref ?? null, object: (await ctx.db.get(record.objectId))?.key ?? "", title: record.title, createdAt: new Date(record._creationTime).toISOString() };
+}
 
-// Deletes the untouched demo rows as the owner, named "demo cleanup" in history (`convex run seed:removeDemo`).
-export const removeDemo = internalMutation({
+// Dry run (`convex run seed:demoPlan`): every record with a seed title and object,
+// split into removable and kept-with-reasons. Keeping one can keep others it links
+// to, so it repeats until nothing changes. Writes nothing.
+export const demoPlan = internalQuery({
   args: { orgId: v.id("orgs") },
-  handler: async (ctx, args) => {
-    const { remove, kept } = await demoPlanFor(ctx, args.orgId);
-    const owner = await ownerOf(ctx, args.orgId);
+  handler: async (ctx, { orgId }) => {
+    const candidates: Doc<"records">[] = [];
+    for (const object of await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect()) {
+      const titles = new Set(demoRows.filter(([key]) => key === object.key).map(([, title]) => title));
+      if (titles.size) candidates.push(...(await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", object._id)).collect()).filter((record) => titles.has(record.title)));
+    }
+    const planned = new Set<string>(candidates.map((record) => record._id)), reasons = new Map<string, string[]>();
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const record of candidates.filter((record) => planned.has(record._id))) {
+        const why = await keepReasons(ctx, orgId, record, planned);
+        if (why.length) { planned.delete(record._id); reasons.set(record._id, why); changed = true; }
+      }
+    }
+    const remove = [], kept = [];
+    for (const record of candidates) {
+      if (planned.has(record._id)) remove.push(await summary(ctx, record));
+      else kept.push({ ...(await summary(ctx, record)), reasons: reasons.get(record._id)! });
+    }
+    return { remove, kept };
+  },
+});
+
+// Deletes exactly the reviewed ids from demoPlan as the owner, named "demo cleanup"
+// in history (`convex run seed:removeDemo`). Nothing outside the list is updated or deleted.
+export const removeDemo = internalMutation({
+  args: { orgId: v.id("orgs"), ids: v.array(v.string()) },
+  handler: async (ctx, { orgId, ids }) => {
+    const planned = new Set(ids), records: Doc<"records">[] = [], problems: string[] = [];
+    for (const id of planned) {
+      const recordId = ctx.db.normalizeId("records", id), record = recordId && await ctx.db.get(recordId);
+      if (!record || record.orgId !== orgId) { problems.push(`${id}: not found in this workspace`); continue; }
+      const why = await keepReasons(ctx, orgId, record, planned);
+      if (why.length) problems.push(`${record.title} (${(await ctx.db.get(record.objectId))?.key}): ${why.join("; ")}`);
+      records.push(record);
+    }
+    if (problems.length) fail("VALIDATION", `Demo cleanup refused, nothing deleted:\n${problems.join("\n")}`);
+    const owner = await ownerOf(ctx, orgId);
     const actor = { kind: "automation" as const, id: `demo cleanup ${new Date().toISOString().slice(0, 10)}` };
-    // Dependents first, so rows about to go get no reference-clearing updates.
-    for (const row of [...remove].reverse()) await applyChange(ctx, owner, { action: "delete", orgId: args.orgId, recordId: row.id, reason: "Demo cleanup" }, { actor });
-    return { removed: remove, kept };
+    const removed = await Promise.all(records.map((record) => summary(ctx, record)));
+    // Dependents first, so listed rows about to go get no reference-clearing updates.
+    const order = removed.map((row, index) => ({ index, at: seedIndex(row.object, row.title) })).sort((a, b) => b.at - a.at);
+    for (const { index } of order) await applyChange(ctx, owner, { action: "delete", orgId, recordId: records[index]!._id, reason: "Demo cleanup" }, { actor });
+    return { removed };
   },
 });
 
