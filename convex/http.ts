@@ -15,6 +15,17 @@ const hash = async (key: string) => [...new Uint8Array(await crypto.subtle.diges
 const bad = (code: string, message: string, status = statusFor[code] ?? 400) => json({ error: { code, message } }, status);
 const number = (value: string | null) => { const n = value === null ? NaN : Number(value); return Number.isFinite(n) ? n : undefined; };
 
+// filter[field]=value (repeatable, AND) and range[field]=from..to (either end may be empty; one date alone is that day).
+function listQuery(q: URLSearchParams) {
+  const named = (kind: string) => [...q].flatMap(([key, value]) => { const field = new RegExp(`^${kind}\\[(.+)\\]$`).exec(key)?.[1]; return field ? [{ field, value }] : []; });
+  const filters = named("filter"), ranges = named("range");
+  if (ranges.length > 1) throw { data: { code: "UNSUPPORTED", message: "One range per request" } };
+  const parts = ranges[0]?.value.split(".."), [from, to = from] = parts ?? [];
+  if (parts && parts.length > 2) throw { data: { code: "VALIDATION", message: "Expected range[field]=from..to" } };
+  const range = ranges[0] && { field: ranges[0].field, ...(from ? { from } : {}), ...(to ? { to } : {}) };
+  return { ...(filters.length ? { filters } : {}), ...(range ? { range } : {}) };
+}
+
 async function auth(request: Request) {
   const token = /^Bearer (rm_[0-9a-f]{40})$/.exec(request.headers.get("authorization") ?? "")?.[1];
   if (!token) throw { data: { code: "UNAUTHENTICATED", message: "Missing or malformed agent key" } };
@@ -49,7 +60,7 @@ async function dispatch(ctx: any, request: Request) {
   }
   if (request.method === "GET" && path[0] === "me" && path.length === 1) return json(await query(internal.agentApi.me, {}));
   if (request.method === "GET" && path[0] === "objects" && path.length === 1) return json(await query(internal.agentApi.objects, {}));
-  if (request.method === "GET" && path[0] === "records" && path.length === 1) return json(await query(internal.agentApi.listRecords, { object: q.get("object") ?? "", cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), ...(q.get("sort") ? { sort: { field: q.get("sort"), direction: q.get("direction") ?? "asc" } } : {}), ...(q.get("filter") ? { filter: { field: q.get("filter"), value: q.get("value") } } : {}) }));
+  if (request.method === "GET" && path[0] === "records" && path.length === 1) return json(await query(internal.agentApi.listRecords, { object: q.get("object") ?? "", cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), ...(q.get("sort") ? { sort: { field: q.get("sort"), direction: q.get("direction") ?? "asc" } } : {}), ...(q.get("filter") ? { filter: { field: q.get("filter"), value: q.get("value") } } : {}), ...listQuery(q) }));
   if (request.method === "GET" && path[0] === "records" && path.length === 2) return json(await query(internal.agentApi.getRecord, { idOrRef: path[1] }));
   if (request.method === "GET" && path[0] === "records" && path[2] === "events" && path.length === 3) return json(await query(internal.agentApi.getRecord, { idOrRef: path[1], cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")) }).then(({ events, nextCursor }) => ({ events, nextCursor })));
   if (request.method === "GET" && path[0] === "records" && path[2] === "related" && path.length === 3) return json(await query(internal.agentApi.related, { idOrRef: path[1], field: q.get("field") ?? "" }));

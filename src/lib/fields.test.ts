@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { type Field, dateToInput, formatDate, formatFieldDate, formatMoney, formatNumber, inputToDate, localDay, relativeDay, timeOfDay, toKey } from "./fields";
+import { type Field, dateToInput, dayRange, formatDate, formatFieldDate, formatMoney, formatNumber, inputToDate, localDay, relativeDay, timeOfDay, toKey } from "./fields";
 
 const day = 86400000;
 const today = Date.UTC(2026, 8, 25); // a Friday
@@ -116,5 +116,29 @@ describe("formatMoney", () => {
   it("keeps cents when an amount has them and drops them when it does not", () => {
     expect(formatMoney(450.5)).toBe((450.5).toLocaleString(undefined, { style: "currency", currency: "USD", minimumFractionDigits: 2 }));
     expect(formatMoney(1200)).toBe((1200).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
+  });
+});
+
+describe("dayRange", () => {
+  // The viewer's calendar days: local midnight to the next local midnight minus 1 ms;
+  // all-day values (whole UTC midnights) are matched by their calendar date instead.
+  beforeAll(() => { vi.stubEnv("TZ", "America/New_York"); });
+  afterAll(() => { vi.unstubAllEnvs(); });
+  const plain = { type: "date" } as Field, timed = { type: "date", withTime: true } as Field;
+  it("bounds a plain date range by the stored UTC midnights, both ends inclusive", () => {
+    expect(dayRange(plain, "2026-10-01", "2026-10-31")).toEqual({ from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 9, 31) });
+  });
+  it("bounds a with-time range by local midnights, and all-day values by calendar date", () => {
+    expect(dayRange(timed, "2026-10-01", "2026-10-01")).toEqual({ from: Date.UTC(2026, 9, 1, 4), to: Date.UTC(2026, 9, 2, 4) - 1, days: { from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 9, 1) } });
+  });
+  it("ends a with-time range at the next local midnight across both DST changes", () => {
+    // Nov 1, 2026 has 25 hours in New York; Mar 8, 2026 has 23.
+    expect(dayRange(timed, "2026-11-01", "2026-11-01")).toMatchObject({ from: Date.UTC(2026, 10, 1, 4), to: Date.UTC(2026, 10, 2, 5) - 1 });
+    expect(dayRange(timed, "2026-03-08", "2026-03-08")).toMatchObject({ from: Date.UTC(2026, 2, 8, 5), to: Date.UTC(2026, 2, 9, 4) - 1 });
+  });
+  it("leaves an open end open", () => {
+    expect(dayRange(plain, "", "2026-10-31")).toEqual({ to: Date.UTC(2026, 9, 31) });
+    expect(dayRange(plain, "2026-10-01", "")).toEqual({ from: Date.UTC(2026, 9, 1) });
+    expect(dayRange(timed, "2026-10-01", "")).toEqual({ from: Date.UTC(2026, 9, 1, 4), days: { from: Date.UTC(2026, 9, 1) } });
   });
 });

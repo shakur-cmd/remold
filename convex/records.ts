@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
-import { listRecords, listedRelated } from "./lib/list";
+import { listRecords, listedRelated, totals as groupTotals, steps as stepsOf, filter, whereArgs } from "./lib/list";
 import { searchRecords } from "./lib/search";
 import { canReadObject, canReadField, canReadRecord, projectRecord, requireObjectRead, requireQueryField, pageList, paginateIndex } from "./authority/reads";
 
@@ -13,7 +13,9 @@ const direction = v.union(v.literal("asc"), v.literal("desc"));
 const slotName = (kind: string, index: number) => `${kind}${index}` as const;
 
 // A filter value of null matches records where the field is empty.
-export const list = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), sort: v.optional(v.object({ fieldId: v.id("fields"), direction })), filter: v.optional(v.object({ fieldId: v.id("fields"), value: v.any() })), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); return listRecords(ctx, args.orgId, args.objectId, args.paginationOpts, args.sort, args.filter, principal); } });
+export const list = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), sort: v.optional(v.object({ fieldId: v.id("fields"), direction })), filter: v.optional(filter), ...whereArgs, paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); return listRecords(ctx, args.orgId, args.objectId, args.paginationOpts, args.sort, { filters: [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])], range: args.range }, principal); } });
+// Board column headers: count and summed number per option, for the whole board, not just the loaded cards.
+export const totals = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), groupFieldId: v.id("fields"), sumFieldId: v.optional(v.id("fields")), ...whereArgs }, handler: async (ctx, args) => groupTotals(ctx, await requireMember(ctx, args.orgId), args.orgId, args.objectId, args.groupFieldId, args.sumFieldId, { filters: args.filters, range: args.range }) });
 export const get = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const record = await ctx.db.get(args.recordId); if (!record || record.orgId !== args.orgId) return null; const object = await ctx.db.get(record.objectId); if (!object) return null; const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect(); const masked = await projectRecord(ctx, principal, record); return masked ? { record: masked, object, fields: fields.filter(f => canReadField(principal, object, f, record._id)) } : null; } });
 export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), fieldId: v.id("fields"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId); const target = await ctx.db.get(args.recordId); const field = await ctx.db.get(args.fieldId);
@@ -29,6 +31,8 @@ export const related = query({ args: { orgId: v.id("orgs"), recordId: v.id("reco
   const page = await paginateIndex((ctx.db.query("records") as any).withIndex(index, (q: any) => q.eq("orgId", args.orgId).eq("objectId", field.objectId).eq(slotName(field.slot!.kind, field.slot!.index), args.recordId)), args.paginationOpts);
   return { ...page, page: (await Promise.all(page.page.map((r: any) => projectRecord(ctx, principal, r)))).filter(Boolean) };
 } });
+// A funnel's steps in due order, for the funnel page.
+export const steps = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => stepsOf(ctx, await requireMember(ctx, args.orgId), args.orgId, args.recordId, args.paginationOpts) });
 export const reverseFields = query({ args: { orgId: v.id("orgs"), objectId: v.id("objects") }, handler: async (ctx, args) => { const principal = await requireMember(ctx, args.orgId); const object = await ctx.db.get(args.objectId); if (!object || object.orgId !== args.orgId) fail("NOT_FOUND", "Object not found"); const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect(); const result = []; for (const source of objects.filter(o => canReadObject(principal, o))) { const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", source._id)).collect(); for (const field of fields) if (!field.retired && canReadField(principal, source, field) && (field.type === "lookup" || field.type === "links") && (!field.targetObjectId || field.targetObjectId === args.objectId)) result.push({ field, object: source }); } return result; } });
 export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), values, reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "create", ...args }) });
 export const update = mutation({ args: { orgId: v.id("orgs"), recordId: v.id("records"), values, reason: v.optional(v.string()) }, handler: async (ctx, args) => applyChange(ctx, await requireMember(ctx, args.orgId), { action: "update", ...args }) });

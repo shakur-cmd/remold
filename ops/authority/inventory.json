@@ -1149,6 +1149,26 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "records:totals",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "refuses to filter, range, total or export by a field the caller cannot read"
+  },
+  {
+    "id": "records:steps",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "With the due date hidden, steps come in creation order"
+  },
+  {
     "id": "records:get",
     "kind": "query",
     "visibility": "public",

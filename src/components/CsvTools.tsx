@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { parseCsv, toCsv } from "@/lib/csv";
 import { errorMessage } from "@/lib/errors";
 import type { Field } from "@/lib/fields";
+import type { Filter, Range } from "@/components/Board";
 
 const BATCH = 100;
 const SKIP = "skip";
@@ -30,7 +31,8 @@ const matches = (field: Field, header: string) => {
   return h === norm(field.label) || h === norm(field.key) || (ALIASES[field.key] ?? []).includes(h);
 };
 
-export function CsvTools({ orgId, object, fields }: { orgId: Id<"orgs">; object: Doc<"objects">; fields: Field[] }) {
+// An export carries the list's filters, so it holds exactly the rows on screen.
+export function CsvTools({ orgId, object, fields, filters, range }: { orgId: Id<"orgs">; object: Doc<"objects">; fields: Field[]; filters?: Filter[]; range?: Range }) {
   const convex = useConvex();
   const [importing, setImporting] = useState(false);
 
@@ -39,7 +41,7 @@ export function CsvTools({ orgId, object, fields }: { orgId: Id<"orgs">; object:
       const rows: string[][] = [];
       let header: string[] = [], cursor: string | null = null;
       for (;;) {
-        const page: { header: string[]; rows: string[][]; cursor: string; done: boolean } = await convex.query(api.csv.exportPage, { orgId, objectId: object._id, cursor });
+        const page: { header: string[]; rows: string[][]; cursor: string; done: boolean } = await convex.query(api.csv.exportPage, { orgId, objectId: object._id, cursor, filters, range });
         header = page.header;
         rows.push(...page.rows);
         if (page.done) break;

@@ -32,6 +32,17 @@ export const inputToDate = (value: string, field?: Field) => {
   return sinceMidnight(ms) === 0 ? ms + 0.5 : ms;
 };
 
+// A range of the viewer's calendar days on a date field, inclusive; an empty end stays open.
+// Plain dates are UTC midnights. On with-time fields an instant counts from local midnight
+// to the next local midnight minus 1 ms (23 or 25 hours across DST), and an all-day value
+// counts by its calendar date, which `days` bounds.
+export const dayRange = (field: Field, from: string, to: string) => {
+  const utc = (day: string) => Date.parse(`${day}T00:00:00Z`);
+  const local = (day: string, plus = 0) => { const [y, m, d] = day.split("-").map(Number); return new Date(y!, m! - 1, d! + plus).getTime(); };
+  if (!field.withTime) return { ...(from ? { from: utc(from) } : {}), ...(to ? { to: utc(to) } : {}) };
+  return { ...(from ? { from: local(from) } : {}), ...(to ? { to: local(to, 1) - 1 } : {}), ...(from || to ? { days: { ...(from ? { from: utc(from) } : {}), ...(to ? { to: utc(to) } : {}) } } : {}) };
+};
+
 // The local day a date falls on, encoded as UTC midnight like plain dates and "today".
 export const localDay = (field: Field | undefined, ms: number) => {
   if (allDay(field, ms)) return ms;

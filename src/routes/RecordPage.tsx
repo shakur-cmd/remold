@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, useNavigate, useOutletContext, useParams } from "react-router";
+import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { cn } from "cn";
 import { Copy, ExternalLink, Mail, MoreHorizontal, Phone, Plus } from "lucide-react";
@@ -13,7 +13,9 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Board } from "@/components/Board";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
@@ -21,7 +23,7 @@ import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
 import { usePinnedPages } from "@/lib/pages";
 import { invoiceStatus } from "@/lib/invoices";
-import { contactHref, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { contactHref, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, isSlotted, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -52,19 +54,25 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
   const { record, object, fields } = detail;
   const live = fields.filter((f) => !f.retired);
   const titleField = live.find((f) => f._id === object.titleFieldId);
-  const rest = live.filter((f) => f._id !== object.titleFieldId);
+  // A campaign is a funnel: its status and goal lead, its deals show as a board and its tasks as steps.
+  const funnel = object.key === "campaign";
+  const headline = funnel ? live.filter((f) => f.key === "status" || f.key === "goal") : [];
+  const rest = live.filter((f) => f._id !== object.titleFieldId && !headline.includes(f));
   const empty = rest.filter((f) => isEmpty(record.values[f._id]));
   const shown = showEmpty ? rest : rest.filter((f) => !isEmpty(record.values[f._id]));
-  // Tasks pointing at this record through a single lookup feed the next step; "blocked by" lists are not next steps.
-  const taskSources = (reverse ?? []).filter((r) => r.object.key === "task" && r.field.type === "lookup").slice(0, 2);
   // Notes and activities about this record live in the timeline, not in panels of their own.
   const about = (key: string) => reverse?.find((r) => r.object.key === key && r.field.key === "about" && r.field.type === "lookup" && !r.field.targetObjectId);
   const inTimeline = [about("note"), about("activity")];
+  const steps = funnel ? about("task") : undefined;
+  const deals = funnel ? reverse?.find((r) => r.object.key === "opportunity" && r.field.key === "campaign" && r.field.type === "lookup") : undefined;
+  // Tasks pointing at this record through a single lookup feed the next step; "blocked by" lists are not next steps.
+  const taskSources = steps ? [] : (reverse ?? []).filter((r) => r.object.key === "task" && r.field.type === "lookup").slice(0, 2);
 
   // What needs a decision comes first: beside the record on wide screens, under its header on phones.
   const act = (
     <>
       <PendingSuggestions orgId={orgId} recordId={recordId} />
+      {steps && <Steps orgId={orgId} recordId={recordId} entry={steps} />}
       {taskSources.length > 0 && <NextStep orgId={orgId} recordId={recordId} sources={taskSources} />}
     </>
   );
@@ -108,7 +116,20 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
           </DropdownMenu>
         </div>
 
+        {headline.length > 0 && (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-2 rounded-lg border bg-card p-3 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
+            {headline.map((field) => (
+              <div key={field._id} className="grid min-w-0 gap-0.5">
+                <span className="px-2 text-xs text-muted-foreground">{field.label}</span>
+                <InlineField orgId={orgId} recordId={recordId} field={field} value={record.values[field._id]} />
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="grid gap-5 lg:hidden">{act}</div>
+
+        {deals && <FunnelDeals orgId={orgId} recordId={recordId} entry={deals} />}
 
         <div className="grid gap-1">
           <dl className="grid grid-cols-1 gap-x-6 gap-y-2 rounded-lg border bg-card p-3 sm:grid-cols-2">
@@ -130,7 +151,7 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
         </div>
 
         {/* Tasks that feed the next step are listed there, not twice. */}
-        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry)).map((entry) =>
+        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry) && entry !== steps && entry !== deals).map((entry) =>
           entry.object.key === "invoice" && entry.field.key === "company" ? (
             <InvoicesPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} />
           ) : (
@@ -438,6 +459,115 @@ function NextStep({ orgId, recordId, sources }: { orgId: Id<"orgs">; recordId: I
         {all.length > open.length && <p className="px-2 pt-1 text-xs text-muted-foreground">{all.length - open.length} done</p>}
       </CardContent>
       <AddRelatedDialog orgId={orgId} recordId={recordId} entry={first!} open={adding} onOpenChange={setAdding} />
+    </Card>
+  );
+}
+
+// A funnel's deals on a board by stage, each column counted and summed over the whole funnel.
+function FunnelDeals({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"records">; entry: Reverse }) {
+  const deal = useQuery(api.objects.get, { orgId, objectId: entry.object._id });
+  const [adding, setAdding] = useState(false);
+  if (!deal) return null;
+  const selects = deal.fields.filter((f) => f.type === "select" && !f.retired && isSlotted(f));
+  const stage = selects.find((f) => f.key === "stage") ?? selects[0];
+  return (
+    <section className="grid min-w-0 gap-2">
+      <div className="flex items-center">
+        <h2 className="text-sm font-semibold">{entry.object.labelPlural}</h2>
+        <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground" onClick={() => setAdding(true)}>
+          <Plus /> Add
+        </Button>
+      </div>
+      {stage && isSlotted(entry.field) ? (
+        <Board orgId={orgId} object={deal.object} groupBy={stage} fields={deal.fields} filters={[{ fieldId: entry.field._id, value: recordId }]} />
+      ) : (
+        <RelatedPanel orgId={orgId} recordId={recordId} entry={entry} showVia={false} />
+      )}
+      <AddRelatedDialog orgId={orgId} recordId={recordId} entry={entry} open={adding} onOpenChange={setAdding} />
+    </section>
+  );
+}
+
+// A funnel's steps: tasks about it in the server's due order (undated last), done ones
+// included and crossed out. Typing a title and Enter adds one; the due date is optional.
+function Steps({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"records">; entry: Reverse }) {
+  const { results: rows, status, loadMore } = usePaginatedQuery(api.records.steps, { orgId, recordId }, { initialNumItems: 100 });
+  const task = useQuery(api.objects.get, { orgId, objectId: entry.object._id });
+  const create = useMutation(api.records.create);
+  const update = useMutation(api.records.update);
+  const [params] = useSearchParams();
+  const [title, setTitle] = useState("");
+  const [when, setWhen] = useState<unknown>(null);
+  if (!task) return null;
+  const titleField = task.fields.find((f) => f._id === task.object.titleFieldId);
+  const due = task.fields.find((f) => f.key === "dueDate" && f.type === "date" && !f.retired);
+  const done = task.fields.find((f) => f.key === "done" && f.type === "boolean" && !f.retired);
+  const dueOf = (r: Doc<"records">) => (due ? (r.values[due._id] as number | undefined) : undefined) ?? Infinity;
+  const now = new Date();
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const open = rows.filter((r) => !done || r.values[done._id] !== true).length;
+
+  async function add(event: FormEvent) {
+    event.preventDefault();
+    if (!titleField || !title.trim()) return;
+    const values = { [titleField._id]: title.trim(), [entry.field._id]: recordId, ...(due && when != null ? { [due._id]: when } : {}) };
+    if (await attempt(() => create({ orgId, objectId: entry.object._id, values }))) {
+      setTitle("");
+      setWhen(null);
+    }
+  }
+
+  return (
+    <Card className="min-w-0">
+      <CardHeader>
+        <CardTitle>
+          Steps
+          {rows.length > 0 && <span className="ml-2 font-normal text-muted-foreground tabular-nums">{rows.length - open}/{rows.length} done</span>}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-0.5">
+        {status !== "LoadingFirstPage" && rows.length === 0 && <p className="px-2 pb-1 text-sm text-muted-foreground">No steps yet. Add the first one below.</p>}
+        {rows.map((item) => {
+          const finished = !!done && item.values[done._id] === true;
+          const at = dueOf(item), day = localDay(due, at);
+          return (
+            <div key={item._id} className="flex min-h-8 items-center gap-3 rounded-md px-2 py-1 hover:bg-muted">
+              {done && <Checkbox checked={finished} aria-label={`Mark ${item.title} ${finished ? "not done" : "done"}`} onCheckedChange={(checked) => attempt(() => update({ orgId, recordId: item._id, values: { [done._id]: checked === true } }))} />}
+              <Link to={`/o/${orgId}/${entry.object.key}/${item._id}`} className={cn("min-w-0 flex-1 truncate text-sm", finished && "text-muted-foreground line-through")}>
+                {item.title || "Untitled"}
+              </Link>
+              {at !== Infinity && (
+                <span className={cn("shrink-0 text-xs tabular-nums", !finished && day < today ? "font-medium text-destructive" : "text-muted-foreground")}>
+                  {relativeDay(day, today)}
+                  {timeOfDay(due, at) && ` ${timeOfDay(due, at)}`}
+                </span>
+              )}
+            </div>
+          );
+        })}
+        {status === "CanLoadMore" && (
+          <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => loadMore(100)}>
+            Load more
+          </Button>
+        )}
+        {titleField && (
+          <form onSubmit={add} className="mt-2 grid gap-2 border-t pt-3">
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Add a step" aria-label="New step" autoFocus={params.has("steps")} />
+            {title.trim() && (
+              <div className="flex items-center gap-2">
+                {due && (
+                  <div className="min-w-0 flex-1" aria-label="Step due">
+                    <FieldInput orgId={orgId} field={due} value={when} onChange={setWhen} />
+                  </div>
+                )}
+                <Button size="sm" variant="outline" className="ml-auto">
+                  Add step
+                </Button>
+              </div>
+            )}
+          </form>
+        )}
+      </CardContent>
     </Card>
   );
 }
