@@ -1492,6 +1492,26 @@
     "proof": "a company's invoice totals never show hidden amounts or invoices outside the caller's scope"
   },
   {
+    "id": "invoices:totals",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "a company's invoice totals never show hidden amounts or invoices outside the caller's scope"
+  },
+  {
+    "id": "invoices:pastDue",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "a company's invoice totals never show hidden amounts or invoices outside the caller's scope"
+  },
+  {
     "id": "today:get",
     "kind": "query",
     "visibility": "public",

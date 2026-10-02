@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { Link, useOutletContext } from "react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { cn } from "cn";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
@@ -16,7 +17,7 @@ import type { OrgContext } from "@/routes/OrgLayout";
 const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
 
 export function Today() {
-  const { org } = useOutletContext<OrgContext>();
+  const { org, objects } = useOutletContext<OrgContext>();
   const today = localToday();
   const data = useQuery(api.today.get, { orgId: org._id, today });
   const waiting = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
@@ -31,8 +32,6 @@ export function Today() {
     { label: "This week", rows: data.tasks.filter((r) => due(r) > today) },
   ];
   const complete = (recordId: Id<"records">) => task?.doneFieldId && attempt(() => update({ orgId: org._id, recordId, values: { [task.doneFieldId!]: true } }), "Done");
-  const { invoice } = data;
-  const paid = (recordId: Id<"records">) => invoice?.paidFieldId && attempt(() => update({ orgId: org._id, recordId, values: { [invoice.paidFieldId!]: today } }), "Marked paid today");
 
   return (
     <div className="grid max-w-2xl gap-5">
@@ -71,33 +70,7 @@ export function Today() {
           )}
         </CardContent>
       </Card>
-      {invoice && data.invoices.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Unpaid invoices</CardTitle>
-            <CardDescription>Past their due date with no paid date.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-0.5">
-            {data.invoices.map((record) => {
-              const amount = invoice.amountFieldId ? record.values[invoice.amountFieldId] : undefined;
-              return (
-                <div key={record._id} className="flex h-8 items-center gap-3 rounded-md px-2 hover:bg-muted">
-                  <Link to={`/o/${org._id}/${invoice.objectKey}/${record._id}`} className="min-w-0 flex-1 truncate text-sm">
-                    {record.title || "Untitled"}
-                  </Link>
-                  {typeof amount === "number" && <span className="text-sm tabular-nums">{formatMoney(amount)}</span>}
-                  <span className="text-xs font-medium text-destructive tabular-nums">due {relativeDay(record.values[invoice.dueFieldId] as number, today).toLowerCase()}</span>
-                  {invoice.paidFieldId && (
-                    <Button size="sm" variant="ghost" className="h-7 text-muted-foreground" onClick={() => paid(record._id)}>
-                      Mark paid
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
+      <UnpaidInvoices orgId={org._id} invoice={objects.find((o) => o.key === "invoice")} today={today} />
       {data.quiet.length > 0 && data.dealKey && (
         <Card>
           <CardHeader>
@@ -117,5 +90,54 @@ export function Today() {
       )}
       <InboxCard orgId={org._id} />
     </div>
+  );
+}
+
+const PAGE = 200, SHOW = 20;
+
+// Unpaid invoices past due. Pages can hold only paid history and come back empty,
+// so it keeps loading until it has enough to show or has looked at every invoice.
+function UnpaidInvoices({ orgId, invoice, today }: { orgId: Id<"orgs">; invoice?: Doc<"objects">; today: number }) {
+  const detail = useQuery(api.objects.get, invoice ? { orgId, objectId: invoice._id } : "skip");
+  const { results, status, loadMore } = usePaginatedQuery(api.invoices.pastDue, invoice ? { orgId, today } : "skip", { initialNumItems: PAGE });
+  const update = useMutation(api.records.update);
+  useEffect(() => { if (status === "CanLoadMore" && results.length < SHOW) loadMore(PAGE); }, [status, results.length, loadMore]);
+  const field = (key: string) => detail?.fields.find((f) => f.key === key);
+  const due = field("due"), paidOn = field("paidOn"), amount = field("amount");
+  const searching = status === "LoadingMore" || (status === "CanLoadMore" && results.length < SHOW);
+  if (!invoice || !due || (results.length === 0 && !searching)) return null;
+  const paid = (recordId: Id<"records">) => paidOn && attempt(() => update({ orgId, recordId, values: { [paidOn._id]: today } }), "Marked paid today");
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Unpaid invoices</CardTitle>
+        <CardDescription>Past their due date with no paid date.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-0.5">
+        {results.map((record) => {
+          const value = amount ? record.values[amount._id] : undefined;
+          return (
+            <div key={record._id} className="flex h-8 items-center gap-3 rounded-md px-2 hover:bg-muted">
+              <Link to={`/o/${orgId}/${invoice.key}/${record._id}`} className="min-w-0 flex-1 truncate text-sm">
+                {record.title || "Untitled"}
+              </Link>
+              {typeof value === "number" && <span className="text-sm tabular-nums">{formatMoney(value)}</span>}
+              <span className="text-xs font-medium text-destructive tabular-nums">due {relativeDay(record.values[due._id] as number, today).toLowerCase()}</span>
+              {paidOn && (
+                <Button size="sm" variant="ghost" className="h-7 text-muted-foreground" onClick={() => paid(record._id)}>
+                  Mark paid
+                </Button>
+              )}
+            </div>
+          );
+        })}
+        {searching && <p className="px-2 text-sm text-muted-foreground">Checking older invoices…</p>}
+        {status === "CanLoadMore" && !searching && (
+          <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => loadMore(PAGE)}>
+            Load more
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }

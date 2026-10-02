@@ -14,6 +14,32 @@ async function world() {
   return { ...f, company, invoice, companyNamed, bill };
 }
 
+// Copies one stored invoice `count` times straight into the table, keeping its
+// slot projections, so history of a thousand rows does not take a thousand mutations.
+const clone = (t: any, recordId: any, count: number) => t.run(async (ctx: any) => {
+  const { _id, _creationTime, ref, ...rest } = await ctx.db.get(recordId);
+  for (let i = 0; i < count; i += 1) await ctx.db.insert("records", rest);
+});
+// What the company panel shows once it has finished counting: page sums added up.
+const totalsOf = async (w: any, recordId: any) => {
+  let billed = 0, paid = 0, known = true, cursor: string | null = null;
+  for (;;) {
+    const page: any = await w.client.query(api.invoices.totals, { orgId: w.orgId, recordId, paginationOpts: { numItems: 200, cursor } });
+    for (const part of page.page) { billed += part.billed; paid += part.paid; known &&= part.known; }
+    if (page.isDone) break; cursor = page.continueCursor;
+  }
+  return known ? { billed, paid, open: billed - paid } : { billed: null, paid: null, open: null };
+};
+// What Today shows once it has finished looking.
+const pastDueOf = async (w: any, today: number) => {
+  const titles: string[] = []; let cursor: string | null = null;
+  for (;;) {
+    const page: any = await w.client.query(api.invoices.pastDue, { orgId: w.orgId, today, paginationOpts: { numItems: 100, cursor } });
+    titles.push(...page.page.map((r: any) => r.title));
+    if (page.isDone) return titles; cursor = page.continueCursor;
+  }
+};
+
 async function metadata(t: any, orgId: any) {
   return t.run(async (ctx: any) => ({ objects: await ctx.db.query("objects").withIndex("by_org", (q: any) => q.eq("orgId", orgId)).collect(), fields: await ctx.db.query("fields").collect() }));
 }
@@ -58,10 +84,10 @@ describe("invoices", () => {
     await w.bill({ number: "INV-4", company: acme, amount: 99.5, due: day("2026-09-10"), paidOn: day("2026-09-09"), monthly: true });
     await w.bill({ number: "INV-5", company: acme });
     await w.bill({ number: "INV-6", company: other, amount: 5000 });
+    expect(await totalsOf(w, acme)).toEqual({ billed: 1200 + 450.5 + 300 + 99.5, paid: 1200 + 99.5, open: 450.5 + 300 });
     const totals = await w.client.query(api.invoices.forCompany, { orgId: w.orgId, recordId: acme });
-    expect(totals).toMatchObject({ objectKey: "invoice", billed: 1200 + 450.5 + 300 + 99.5, paid: 1200 + 99.5, open: 450.5 + 300 });
     expect(totals!.invoices.map((r: any) => r.title).sort()).toEqual(["INV-1", "INV-2", "INV-3", "INV-4", "INV-5"]);
-    expect(await w.client.query(api.invoices.forCompany, { orgId: w.orgId, recordId: other })).toMatchObject({ billed: 5000, paid: 0, open: 5000 });
+    expect(await totalsOf(w, other)).toEqual({ billed: 5000, paid: 0, open: 5000 });
   });
 
   it("an unpaid invoice past due shows on Today and drops off once paid on is set", async () => {
@@ -70,7 +96,7 @@ describe("invoices", () => {
     await w.bill({ number: "DUE-TODAY", company: acme, amount: 100, due: TODAY });
     await w.bill({ number: "PAID-LATE", company: acme, amount: 100, due: day("2026-09-01"), paidOn: day("2026-09-25") });
     await w.bill({ number: "NO-DUE", company: acme, amount: 100 });
-    const listed = async () => (await w.client.query(api.today.get, { orgId: w.orgId, today: TODAY })).invoices.map((r: any) => r.title);
+    const listed = () => pastDueOf(w, TODAY);
     expect(await listed()).toEqual(["LATE"]);
     await w.client.mutation(api.records.update, { orgId: w.orgId, recordId: late, values: { [w.invoice.fields.paidOn._id]: TODAY } });
     expect(await listed()).toEqual([]);
@@ -109,14 +135,34 @@ describe("invoices", () => {
     const masked = await setup();
     await masked.policy({ hiddenFieldIds: [masked.w.invoice.fields.amount._id] });
     const hidden = await masked.w.client.query(api.invoices.forCompany, { orgId: masked.w.orgId, recordId: masked.acme });
-    expect(hidden).toMatchObject({ billed: null, paid: null, open: null });
     expect(hidden!.invoices).toHaveLength(2);
     expect(JSON.stringify(hidden)).not.toMatch(/9001|:70\b/);
+    expect(await totalsOf(masked.w, masked.acme)).toEqual({ billed: null, paid: null, open: null });
+    expect(JSON.stringify(await masked.w.client.query(api.invoices.totals, { orgId: masked.w.orgId, recordId: masked.acme, paginationOpts: { numItems: 10, cursor: null } }))).not.toMatch(/9001|9071|:70\b/);
+    expect(await pastDueOf(masked.w, TODAY)).toEqual(["SEEN", "UNSEEN"]);
+    expect(JSON.stringify(await masked.w.client.query(api.invoices.pastDue, { orgId: masked.w.orgId, today: TODAY, paginationOpts: { numItems: 10, cursor: null } }))).not.toMatch(/9001|:70\b/);
     const { w, acme, seen, policy } = await setup();
     await policy({ hiddenFieldIds: [], scopes: [{ objectId: w.company.object._id, records: [acme], fields: "all" }, { objectId: w.invoice.object._id, records: [seen], fields: "all" }] });
     const scoped = await w.client.query(api.invoices.forCompany, { orgId: w.orgId, recordId: acme });
     expect(scoped!.invoices.map((r: any) => r.title)).toEqual(["SEEN"]);
-    expect(scoped).toMatchObject({ billed: 70, paid: 0, open: 70 });
-    expect((await w.client.query(api.today.get, { orgId: w.orgId, today: TODAY })).invoices.map((r: any) => r.title)).toEqual(["SEEN"]);
+    expect(await totalsOf(w, acme)).toEqual({ billed: 70, paid: 0, open: 70 });
+    expect(await pastDueOf(w, TODAY)).toEqual(["SEEN"]);
   });
+  it("company totals count every invoice, however many there are", async () => {
+    const w = await world(), acme = await w.companyNamed("Acme");
+    await clone(w.t, await w.bill({ number: "PAID", company: acme, amount: 2, due: day("2026-01-01"), paidOn: day("2026-01-02") }), 299);
+    await clone(w.t, await w.bill({ number: "OPEN", company: acme, amount: 1, due: day("2026-02-01") }), 301);
+    await w.bill({ number: "NEWEST", company: acme });
+    expect(await totalsOf(w, acme)).toEqual({ billed: 300 * 2 + 302, paid: 300 * 2, open: 302 });
+    const listed = await w.client.query(api.invoices.forCompany, { orgId: w.orgId, recordId: acme });
+    expect([listed!.invoices.length, listed!.capped]).toEqual([500, true]);
+    expect(listed!.invoices.map((r: any) => r.title)).toContain("NEWEST");
+  }, 60000);
+
+  it("an overdue invoice behind a thousand paid ones still shows on Today", async () => {
+    const w = await world(), acme = await w.companyNamed("Acme");
+    await clone(w.t, await w.bill({ number: "OLD-PAID", company: acme, amount: 5, due: day("2025-01-01"), paidOn: day("2025-01-05") }), 1200);
+    await w.bill({ number: "STILL-OWED", company: acme, amount: 70, due: day("2026-09-01") });
+    expect(await pastDueOf(w, TODAY)).toEqual(["STILL-OWED"]);
+  }, 60000);
 });

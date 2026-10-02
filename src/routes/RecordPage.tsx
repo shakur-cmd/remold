@@ -258,16 +258,22 @@ function AddRelatedDialog({ orgId, recordId, entry, open, onOpenChange }: { orgI
 // A company's invoices with what was billed, what is paid and what is still open.
 function InvoicesPanel({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"records">; entry: Reverse }) {
   const data = useQuery(api.invoices.forCompany, { orgId, recordId });
+  // Totals add up every page, independent of how many invoices are listed.
+  const sums = usePaginatedQuery(api.invoices.totals, { orgId, recordId }, { initialNumItems: 500 });
+  const { status, loadMore } = sums;
+  useEffect(() => { if (status === "CanLoadMore") loadMore(500); }, [status, loadMore]);
   const [adding, setAdding] = useState(false);
   const today = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
   if (!data) return null;
   const { fields: f } = data;
   const number = (r: Doc<"records">, id: Id<"fields"> | null) => (id && typeof r.values[id] === "number" ? (r.values[id] as number) : null);
   const rows = [...data.invoices].sort((a, b) => (number(b, f.due) ?? b._creationTime) - (number(a, f.due) ?? a._creationTime));
+  const complete = status === "Exhausted", known = sums.results.every((s) => s.known);
+  const billed = sums.results.reduce((t, s) => t + s.billed, 0), paid = sums.results.reduce((t, s) => t + s.paid, 0);
   const totals = [
-    { label: "Billed", value: data.billed },
-    { label: "Paid", value: data.paid },
-    { label: "Open", value: data.open },
+    { label: "Billed", value: known ? billed : null },
+    { label: "Paid", value: known ? paid : null },
+    { label: "Open", value: known ? billed - paid : null },
   ];
   return (
     <Card className="min-w-0">
@@ -288,11 +294,12 @@ function InvoicesPanel({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId
             {totals.map((total) => (
               <div key={total.label} className="grid gap-0.5">
                 <dt className="text-xs text-muted-foreground">{total.label}</dt>
-                <dd className="text-sm font-medium tabular-nums">{total.value === null ? "Hidden" : formatMoney(total.value)}</dd>
+                <dd className={cn("text-sm font-medium tabular-nums", !complete && "text-muted-foreground")}>{total.value === null ? "Hidden" : formatMoney(total.value)}</dd>
               </div>
             ))}
           </dl>
         )}
+        {rows.length > 0 && !complete && <p className="-mt-2 px-1 text-xs text-muted-foreground">Still counting older invoices; totals so far.</p>}
         <div className="grid gap-0.5">
           {rows.map((r) => {
             const amount = number(r, f.amount), due = number(r, f.due), paidOn = number(r, f.paidOn);
