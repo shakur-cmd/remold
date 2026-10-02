@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -288,8 +289,13 @@ function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs"
       {isTitle && <Badge variant="secondary">title</Badge>}
       {/* Only unindexed fields need a note: they store values but cannot sort or filter. */}
       {!field.slot && field.type !== "links" && <Badge variant="outline" title="Stores values, cannot sort or filter">unindexed</Badge>}
+      {!admin && field.protectedFromAgents && <Badge variant="outline" title="Agents cannot change this field">protected from agents</Badge>}
       {admin && !field.retired && (
-        <span className="ml-auto flex gap-1">
+        <span className="ml-auto flex items-center gap-1">
+          <label className="mr-1 flex items-center gap-1.5 text-xs text-muted-foreground" title="Agents cannot change this field, even with a grant. People still can.">
+            <Checkbox checked={field.protectedFromAgents === true} onCheckedChange={(on) => attempt(() => update({ orgId, fieldId: field._id, protectedFromAgents: on === true }), on === true ? "Protected from agents" : "Agents may edit again")} aria-label={`Protect ${field.label} from agents`} />
+            Protect from agents
+          </label>
           <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setDraft(field.label)}>
             Rename
           </Button>

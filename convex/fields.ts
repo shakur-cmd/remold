@@ -27,7 +27,7 @@ export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("ob
   const fieldId = await ctx.db.insert("fields", { ...args, required: args.required ?? false, slot, encoding: 1, retired: false, order: existing.length });
   return { fieldId, slot };
 } });
-export const update = mutation({ args: { orgId: v.id("orgs"), fieldId: v.id("fields"), label: v.optional(v.string()), options: v.optional(options) }, handler: async (ctx, args) => {
+export const update = mutation({ args: { orgId: v.id("orgs"), fieldId: v.id("fields"), label: v.optional(v.string()), options: v.optional(options), protectedFromAgents: v.optional(v.boolean()) }, handler: async (ctx, args) => {
   const principal = await requireWriter(ctx, args.orgId, "admin");
   const field = await ctx.db.get(args.fieldId);
   if (!field || field.orgId !== args.orgId) fail("NOT_FOUND", "Field not found");
@@ -37,6 +37,6 @@ export const update = mutation({ args: { orgId: v.id("orgs"), fieldId: v.id("fie
     const old = new Set((field.options ?? []).map((option) => option.id));
     if ([...old].some((id) => !args.options!.some((option) => option.id === id))) fail("VALIDATION", "Options cannot be removed");
   }
-  await ctx.db.patch(args.fieldId, { ...(args.label === undefined ? {} : { label: args.label }), ...(args.options === undefined ? {} : { options: args.options }) });
+  await ctx.db.patch(args.fieldId, { ...(args.label === undefined ? {} : { label: args.label }), ...(args.options === undefined ? {} : { options: args.options }), ...(args.protectedFromAgents === undefined ? {} : { protectedFromAgents: args.protectedFromAgents }) });
 } });
 export const retire = mutation({ args: { orgId: v.id("orgs"), fieldId: v.id("fields") }, handler: async (ctx, args) => { const principal = await requireWriter(ctx, args.orgId, "admin"); const field = await ctx.db.get(args.fieldId); if (!field || field.orgId !== args.orgId) fail("NOT_FOUND", "Field not found"); const object = await ctx.db.get(field.objectId); if (!object) fail("NOT_FOUND"); await requireObjectAdministration(ctx, principal, object); if (object.titleFieldId === field._id) fail("VALIDATION", "Cannot retire title field"); await ctx.db.patch(field._id, { retired: true }); } });

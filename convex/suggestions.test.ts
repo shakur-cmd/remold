@@ -8,15 +8,15 @@ describe("suggestions", () => {
     const created = await client.mutation(api.records.create, { orgId, objectId: opportunity.object._id, values: { [opportunity.fields.name._id]: "Deal", [opportunity.fields.stage._id]: "new" } });
     const detail = await client.query(api.records.get, { orgId, recordId: created.recordId });
     const agent = await agentFor(client, orgId, { name: "Claude" });
-    const response = await rest(t, agent.key)("POST", "/api/v1/suggestions", { action: "update", record: detail!.record.ref, values: { stage: "Won" }, reason: "ready" });
+    const response = await rest(t, agent.key)("POST", "/api/v1/suggestions", { action: "update", record: detail!.record.ref, values: { stage: "Contacted" }, reason: "ready" });
     const applied = await client.mutation(api.suggestions.apply, { orgId, suggestionId: response.json.suggestion.id });
     expect(applied.status).toBe("applied");
     expect((await client.query(api.events.forRecord, { orgId, recordId: created.recordId }))[0]).toMatchObject({ actor: { kind: "agent", id: agent.agentId }, suggestionId: response.json.suggestion.id, actorName: "Claude", appliedByName: "A" });
     expect(await client.mutation(api.suggestions.apply, { orgId, suggestionId: response.json.suggestion.id })).toMatchObject({ status: "already" });
-    const second = await rest(t, agent.key)("POST", "/api/v1/suggestions", { action: "update", record: detail!.record.ref, values: { stage: "New" }, reason: "retry" });
-    await client.mutation(api.records.update, { orgId, recordId: created.recordId, values: { [opportunity.fields.stage._id]: "lost" } });
+    const second = await rest(t, agent.key)("POST", "/api/v1/suggestions", { action: "update", record: detail!.record.ref, values: { stage: "Qualified" }, reason: "retry" });
+    await client.mutation(api.records.update, { orgId, recordId: created.recordId, values: { [opportunity.fields.stage._id]: "proposal" } });
     const conflict = await client.mutation(api.suggestions.apply, { orgId, suggestionId: second.json.suggestion.id });
-    expect(conflict).toMatchObject({ status: "conflicted", conflicts: [{ expected: "won", actual: "lost" }] });
+    expect(conflict).toMatchObject({ status: "conflicted", conflicts: [{ expected: "contacted", actual: "proposal" }] });
     expect(await client.mutation(api.suggestions.dismiss, { orgId, suggestionId: second.json.suggestion.id })).toMatchObject({ status: "dismissed" });
   });
   it("creates one record when a create suggestion is applied twice", async () => {
