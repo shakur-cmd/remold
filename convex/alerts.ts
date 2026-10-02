@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { allowed, configured, sendEmail } from "./lib/email";
 
 // Operator alerts. A minute cron reads operational facts in small queries (queries
 // never conflict with the writes they read, such as telemetry:record), then applies
@@ -19,6 +20,8 @@ const LOOKBACK_MS = 60 * 60_000, RETAIN_MS = 7 * 24 * 60 * 60_000;
 const LAG_MS = 10_000, PAGE = 1000, MAX_PAGES = 10, MAX_WATCH_ADD = 2000, WATCH_PAGE = 100, WATCH_PAGES = 10, REST_ROWS = 3000;
 // Each claim covers one send; CLAIM_MS is far longer than SEND_TIMEOUT_MS.
 const SEND_TIMEOUT_MS = 10_000, CLAIM_MS = 5 * 60_000, MAX_SENDS = 20;
+// Email covers notices from the last day only, so configuring it later does not replay a week of history.
+const EMAIL_WINDOW_MS = 24 * 60 * 60_000;
 // Reads stop after this long; unread work carries over and the check reports it is behind.
 const READ_BUDGET_MS = 30_000;
 const setting = (name: string, fallback: number, min: number, max: number) => {
@@ -81,6 +84,12 @@ export function channel(raw = process.env.REMOLD_ALERT_WEBHOOK_URL): string | nu
   try { url = new URL(raw ?? ""); } catch { return null; }
   if (url.protocol === "http:") return url.hostname === "127.0.0.1" || url.hostname === "localhost" ? url.href : null;
   return url.protocol === "https:" && !internalHost(url.hostname) ? url.href : null;
+}
+
+// The operator address, when it is set, the sender is configured and the address is on the email allowlist.
+export function alertEmail(raw = process.env.REMOLD_ALERT_EMAIL_TO): string | null {
+  const to = raw?.trim();
+  return to && configured() && allowed(to) ? to : null;
 }
 
 export const scanState = internalQuery({ args: {}, handler: async (ctx) => (await ctx.db.query("opsAlertScan").first())?.scannedThrough ?? null });
@@ -164,10 +173,18 @@ export const apply = internalMutation({
   },
 });
 
+// The webhook and email sinks keep separate delivery state on the same notice.
+const sink = v.optional(v.union(v.literal("webhook"), v.literal("email")));
 export const claim = internalMutation({
-  args: {},
-  handler: async (ctx) => {
+  args: { sink },
+  handler: async (ctx, { sink }) => {
     const now = Date.now();
+    if (sink === "email") {
+      const next = (await ctx.db.query("opsNotices").withIndex("by_unemailed", (q) => q.eq("emailedAt", undefined).gt("_creationTime", now - EMAIL_WINDOW_MS)).take(100)).find((n) => (n.emailClaimedUntil ?? 0) <= now);
+      if (!next) return null;
+      await ctx.db.patch(next._id, { emailClaimedUntil: now + CLAIM_MS });
+      return { id: next._id, payload: next.payload };
+    }
     const next = (await ctx.db.query("opsNotices").withIndex("by_pending", (q) => q.eq("deliveredAt", undefined)).take(100)).find((n) => (n.claimedUntil ?? 0) <= now);
     if (!next) return null;
     await ctx.db.patch(next._id, { claimedUntil: now + CLAIM_MS });
@@ -176,15 +193,16 @@ export const claim = internalMutation({
 });
 
 export const settle = internalMutation({
-  args: { id: v.id("opsNotices"), delivered: v.boolean() },
-  handler: async (ctx, { id, delivered }) => {
+  args: { id: v.id("opsNotices"), delivered: v.boolean(), sink },
+  handler: async (ctx, { id, delivered, sink }) => {
     const row = await ctx.db.get(id);
+    if (sink === "email") { if (row && row.emailedAt === undefined) await ctx.db.patch(id, delivered ? { emailedAt: Date.now() } : { emailClaimedUntil: undefined }); return; }
     if (!row || row.deliveredAt !== undefined) return;
     await ctx.db.patch(id, delivered ? { deliveredAt: Date.now(), attempts: row.attempts + 1 } : { attempts: row.attempts + 1, claimedUntil: undefined });
   },
 });
 
-type CheckResult = { applied: boolean; behind: boolean; delivered: number; channel: "configured" | "unconfigured"; scanned?: number; watchAdded?: number; watchChecked?: number; readMs?: number };
+type CheckResult = { applied: boolean; behind: boolean; delivered: number; channel: "configured" | "unconfigured"; emailed?: number; email?: "configured" | "unconfigured"; scanned?: number; watchAdded?: number; watchChecked?: number; readMs?: number };
 export const check = internalAction({
   args: {},
   handler: async (ctx): Promise<CheckResult> => {
@@ -238,9 +256,19 @@ export const check = internalAction({
     let applied = false;
     try { applied = await ctx.runMutation(internal.alerts.apply, { from, through, functions: summarize(outcomes), watchAdd: added, watchDone, watchStalled, restErrors, behind }); }
     catch { behind = true; }
-    const url = channel();
+    const url = channel(), to = alertEmail();
     const counts = { scanned, watchAdded: added.length, watchChecked, readMs };
-    if (!url) return { applied, behind, delivered: 0, channel: "unconfigured", ...counts };
+    let emailed = 0;
+    for (let i = 0; to && i < MAX_SENDS; i++) {
+      const next = await ctx.runMutation(internal.alerts.claim, { sink: "email" });
+      if (!next) break;
+      const ok = (await sendEmail({ to, subject: `[Remold alert] ${next.payload.summary}`, text: [next.payload.summary, "", `Event: ${next.payload.event}`, `Kind: ${next.payload.kind}`, `Key: ${next.payload.key}`, `Count: ${next.payload.count}`, `At: ${next.payload.at}`, `Notice: ${next.id}`].join("\n") })) === "sent";
+      await ctx.runMutation(internal.alerts.settle, { id: next.id, delivered: ok, sink: "email" });
+      if (!ok) break;
+      emailed++;
+    }
+    const email = to ? "configured" as const : "unconfigured" as const;
+    if (!url) return { applied, behind, delivered: 0, channel: "unconfigured", emailed, email, ...counts };
     let delivered = 0;
     for (let i = 0; i < MAX_SENDS; i++) {
       const next = await ctx.runMutation(internal.alerts.claim, {});
@@ -252,7 +280,7 @@ export const check = internalAction({
       if (!ok) break;
       delivered++;
     }
-    return { applied, behind, delivered, channel: "configured", ...counts };
+    return { applied, behind, delivered, channel: "configured", emailed, email, ...counts };
   },
 });
 
@@ -263,5 +291,6 @@ export const status = internalQuery({
     undelivered: (await ctx.db.query("opsNotices").withIndex("by_pending", (q) => q.eq("deliveredAt", undefined)).take(101)).length,
     scannedThrough: (await ctx.db.query("opsAlertScan").first())?.scannedThrough ?? null,
     channel: channel() ? "configured" : "unconfigured",
+    email: alertEmail() ? "configured" : "unconfigured",
   }),
 });
