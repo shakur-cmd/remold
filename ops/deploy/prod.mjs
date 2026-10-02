@@ -50,6 +50,15 @@ export function rollbackFloor(cwd, sha, pinned) {
   if (!ok(cwd, 'merge-base', '--is-ancestor', pinned, sha)) throw new Error(`Refusing: ${sha} is older than the rollback target ${pinned} pinned in ops/release/notes.json; its schema may reject data written since`);
 }
 
+// Workspace deletion purges in scheduled batches. Code without that worker would leave a started
+// deletion half done, so a rollback to it waits until the backup shows no deletion in progress.
+export function deletionGate(cwd, sha, zip) {
+  if (/export const purge\b/.test(spawnSync('git', ['show', `${sha}:convex/workspace.ts`], { cwd, encoding: 'utf8' }).stdout ?? '')) return;
+  const orgs = spawnSync('unzip', ['-p', zip, 'orgs/documents.jsonl'], { encoding: 'utf8', maxBuffer: 1 << 30 }).stdout ?? '';
+  const pending = orgs.split('\n').filter(Boolean).map(line => JSON.parse(line)).filter(org => org.deletingAt != null);
+  if (pending.length) throw new Error(`Refusing: ${pending.length} workspace deletion(s) still in progress (${pending.map(org => org._id).join(', ')}) and ${sha} has no purge worker to finish them; wait for them to finish, take a new backup, then roll back`);
+}
+
 // The Convex client's own error messages use this example URL.
 const LIBRARY_EXAMPLES = ['happy-otter-123'];
 export function checkBundle(dist, target) {
@@ -76,6 +85,7 @@ async function main() {
     const authority = authorityFloorCheck(root, sha);
     if (authority !== true) throw new Error('Refusing: ' + authority);
     if (!args.snapshot) throw new Error('Refusing: a rollback needs --snapshot <latest backup zip> to prove its schema accepts current data (pnpm backup:prod first)');
+    deletionGate(root, sha, resolve(args.snapshot));
   }
   let key = 'not checked';
   if (dry) key = process.env.CONVEX_DEPLOY_KEY ? (() => { try { requireDeployKey(process.env.CONVEX_DEPLOY_KEY, target.deployment); return 'present, for this deployment'; } catch (error) { return 'WRONG: ' + error.message; } })() : 'not set (a real deploy refuses without it)';

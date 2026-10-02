@@ -10,7 +10,9 @@ import { listStream, mergePage, type Stream } from "./lib/merge";
 import { allDay } from "./lib/values";
 
 async function describe(ctx: QueryCtx, principal: Principal, event: Doc<"events">) {
-  const actor = event.actor.kind === "user" ? await ctx.db.get(event.actor.id as Id<"users">) : event.actor.kind === "agent" ? await ctx.db.get(event.actor.id as Id<"agents">) : null;
+  // An agent is named only if it belongs to this workspace; imported history carries its name as text.
+  const agentId = event.actor.kind === "agent" ? ctx.db.normalizeId("agents", event.actor.id) : null, agent = agentId && await ctx.db.get(agentId);
+  const actor = event.actor.kind === "imported" ? event.actor : event.actor.kind === "user" ? await ctx.db.get(event.actor.id as Id<"users">) : agent?.orgId === event.orgId ? agent : null;
   const suggestion = event.suggestionId ? await ctx.db.get(event.suggestionId) : null;
   const appliedBy = suggestion?.resolvedBy ? await ctx.db.get(suggestion.resolvedBy) : null;
   const masked = await projectEvent(ctx, principal, event);
@@ -43,7 +45,17 @@ const EARLIEST = -8.64e15;
 export const timeline = query({ args: { orgId: v.id("orgs"), recordId: v.id("records"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId);
   const target = await readableRecord(ctx, principal, args.orgId, args.recordId);
-  const streams: Stream<Row>[] = [async (until, take) => (await ctx.db.query("events").withIndex("by_record", (q) => { const b = q.eq("orgId", args.orgId).eq("recordId", target._id); return until === undefined ? b : b.lte("_creationTime", until); }).order("desc").take(take)).map(event => ({ _id: event._id, at: event._creationTime, createdAt: event._creationTime, event }))];
+  // Imported events sort by when they happened (at). Import fills an empty workspace in one transaction in
+  // original order, so per record creation order and `at` order agree; the scan only skips rows newer than `until`.
+  const streams: Stream<Row>[] = [async (until, take) => {
+    const rows: Row[] = [];
+    for await (const event of ctx.db.query("events").withIndex("by_record", (q) => q.eq("orgId", args.orgId).eq("recordId", target._id)).order("desc")) {
+      const at = event.at ?? event._creationTime;
+      if (until === undefined || at <= until) rows.push({ _id: event._id, at, createdAt: event._creationTime, event });
+      if (rows.length >= take) break;
+    }
+    return rows;
+  }];
   for (const kind of ["activity", "note", "task"] as const) {
     const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", args.orgId).eq("key", kind)).unique();
     if (!object || !canReadObject(principal, object)) continue;

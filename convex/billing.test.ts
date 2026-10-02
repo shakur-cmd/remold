@@ -84,4 +84,26 @@ describe("subscription billing (Stripe test mode only)", () => {
     expect((await b.query(api.billing.status, { orgId: orgB })).status).toBeNull();
     expect((await deliver(a.t, { id: "evt_x", type: "invoice.created", created: now, livemode: false, data: { object: {} } }, signed)).status).toBe(200);
   });
+
+  it("ignores redelivered and replayed events and records each flag change as an attributed billing event", async () => {
+    const a = await userAndOrg("A");
+    env(testEnv);
+    const now = Math.floor(Date.now() / 1000);
+    const event = (id: string, type: string, sub: string, status: string, created = now) => ({ id, type, created, livemode: false, data: { object: type === "checkout.session.completed" ? { client_reference_id: a.orgId, customer: "cus_1", subscription: sub } : { id: sub, customer: "cus_1", status, metadata: { orgId: a.orgId } } } });
+    const status = async () => (await a.client.query(api.billing.status, { orgId: a.orgId })).status;
+    const log = () => a.t.run(async (ctx: any) => (await ctx.db.query("billingEvents").collect()).map((e: any) => [e.eventId, e.from ?? null, e.to ?? null]));
+    // Same second: active, then canceled, then a replay of the first. Order is (created, event id).
+    for (const e of [event("evt_a", "checkout.session.completed", "sub_1", "active"), event("evt_b", "customer.subscription.deleted", "sub_1", "canceled"), event("evt_a", "checkout.session.completed", "sub_1", "active")]) expect((await deliver(a.t, e, signed)).status).toBe(200);
+    expect(await status()).toBe("canceled");
+    expect(await log()).toEqual([["evt_a", "none", "active"], ["evt_b", "active", "canceled"]]);
+    // A new subscription takes over through Checkout; a late event about the old one changes nothing.
+    await deliver(a.t, event("evt_c", "checkout.session.completed", "sub_2", "active", now + 60), signed);
+    await deliver(a.t, event("evt_d", "customer.subscription.updated", "sub_1", "past_due", now + 120), signed);
+    expect(await status()).toBe("active");
+    expect((await log()).slice(2)).toEqual([["evt_c", "canceled", "active"], ["evt_d", null, null]]);
+    // Same second, delivered out of order: the higher event id decides, whatever arrives last.
+    await deliver(a.t, event("evt_h", "customer.subscription.updated", "sub_2", "past_due", now + 200), signed);
+    await deliver(a.t, event("evt_g", "customer.subscription.updated", "sub_2", "active", now + 200), signed);
+    expect(await status()).toBe("past_due");
+  });
 });

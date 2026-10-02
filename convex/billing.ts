@@ -47,25 +47,33 @@ export async function verifySignature(body: string, header: string | null, secre
 }
 
 const fromStripe: Record<string, Status> = { active: "active", trialing: "active", past_due: "past_due", unpaid: "past_due", incomplete: "past_due", paused: "past_due", canceled: "canceled", incomplete_expired: "canceled" };
-export function billingChange(event: any): { orgId: string; status: Status; customerId?: string; subscriptionId?: string; eventAt: number } | null {
-  const object = event?.data?.object ?? {}, eventAt = Number(event?.created);
-  if (!Number.isFinite(eventAt)) return null;
+type Change = { orgId: string; eventId: string; type: string; status: Status; customerId?: string; subscriptionId?: string; eventAt: number };
+export function billingChange(event: any): Change | null {
+  const object = event?.data?.object ?? {}, eventAt = Number(event?.created), eventId = event?.id, type = event?.type;
+  if (!Number.isFinite(eventAt) || typeof eventId !== "string" || typeof type !== "string") return null;
   const ids = (customerId: unknown, subscriptionId: unknown) => ({ ...(typeof customerId === "string" ? { customerId } : {}), ...(typeof subscriptionId === "string" ? { subscriptionId } : {}) });
-  if (event.type === "checkout.session.completed") {
+  if (type === "checkout.session.completed") {
     const orgId = object.client_reference_id ?? object.metadata?.orgId;
-    return typeof orgId === "string" ? { orgId, status: "active", eventAt, ...ids(object.customer, object.subscription) } : null;
+    return typeof orgId === "string" ? { orgId, eventId, type, status: "active", eventAt, ...ids(object.customer, object.subscription) } : null;
   }
-  if (!/^customer\.subscription\.(created|updated|deleted)$/.test(event.type)) return null;
-  const orgId = object.metadata?.orgId, status = event.type === "customer.subscription.deleted" ? "canceled" : fromStripe[object.status];
-  return typeof orgId === "string" && status ? { orgId, status, eventAt, ...ids(object.customer, object.id) } : null;
+  if (!/^customer\.subscription\.(created|updated|deleted)$/.test(type)) return null;
+  const orgId = object.metadata?.orgId, status = type === "customer.subscription.deleted" ? "canceled" : fromStripe[object.status];
+  return typeof orgId === "string" && status ? { orgId, eventId, type, status, eventAt, ...ids(object.customer, object.id) } : null;
 }
 
-export const apply = internalMutation({ args: { orgId: v.string(), status: accessStatus, customerId: v.optional(v.string()), subscriptionId: v.optional(v.string()), eventAt: v.number() }, handler: async (ctx, args) => {
+// Every verified event is kept once by its Stripe id, so a redelivery or replay changes nothing.
+// The flag follows the workspace's current subscription in (created, event id) order; a new
+// subscription takes over only through a completed Checkout. A change writes its from/to row in
+// the same transaction as the flag.
+export const apply = internalMutation({ args: { orgId: v.string(), eventId: v.string(), type: v.string(), status: accessStatus, customerId: v.optional(v.string()), subscriptionId: v.optional(v.string()), eventAt: v.number() }, handler: async (ctx, args) => {
   const orgId = ctx.db.normalizeId("orgs", args.orgId), org = orgId && await ctx.db.get(orgId);
   if (!org || org.deletingAt) return;
-  // Stripe does not promise delivery order; an older event never overwrites a newer one.
-  if (org.billing && org.billing.eventAt > args.eventAt) return;
-  await ctx.db.patch(org._id, { billing: { status: args.status, customerId: args.customerId ?? org.billing?.customerId, subscriptionId: args.subscriptionId ?? org.billing?.subscriptionId, eventAt: args.eventAt } });
+  if (await ctx.db.query("billingEvents").withIndex("by_event", q => q.eq("eventId", args.eventId)).first()) return;
+  const now = org.billing, sameSubscription = !now?.subscriptionId || !args.subscriptionId || now.subscriptionId === args.subscriptionId;
+  const newer = !now || args.eventAt > now.eventAt || (args.eventAt === now.eventAt && args.eventId > (now.eventId ?? ""));
+  const applies = newer && (sameSubscription || args.type === "checkout.session.completed");
+  await ctx.db.insert("billingEvents", { orgId: org._id, eventId: args.eventId, type: args.type, created: args.eventAt, subscriptionId: args.subscriptionId, ...(applies ? { from: now?.status ?? "none", to: args.status } : {}) });
+  if (applies) await ctx.db.patch(org._id, { billing: { status: args.status, customerId: args.customerId ?? now?.customerId, subscriptionId: args.subscriptionId ?? now?.subscriptionId, eventAt: args.eventAt, eventId: args.eventId } });
 } });
 
 export const webhook = httpAction(async (ctx, request) => {

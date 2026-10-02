@@ -16,7 +16,7 @@ export const get = query({ args: { token: v.string() }, handler: async (ctx, arg
   const invite = await ctx.db.query("invites").withIndex("by_token", (q) => q.eq("token", args.token)).unique();
   if (!invite) return null;
   const org = await ctx.db.get(invite.orgId);
-  return org ? { orgName: org.name, role: invite.role, expired: invite.expiresAt < Date.now() || !!invite.acceptedAt } : null;
+  return org && !org.deletingAt ? { orgName: org.name, role: invite.role, expired: invite.expiresAt < Date.now() || !!invite.acceptedAt } : null;
 } });
 export const accept = mutation({ args: { token: v.string() }, handler: async (ctx, args) => {
   const principal = await getPrincipal(ctx);

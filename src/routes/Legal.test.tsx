@@ -12,7 +12,7 @@ describe("terms and privacy", () => {
   it.each(["/terms", "/privacy"])("%s is public, marked as an unreviewed draft, and names the contact", (path) => {
     const text = at(path);
     expect(text).not.toContain("signed-in app");
-    expect(text.trim().indexOf("Draft, not yet reviewed")).toBeLessThan(80);
+    expect(text.trim()).toMatch(/^Draft, not yet reviewed\./);
     expect(text).toContain("shakur@codemyvibe.com");
   });
 

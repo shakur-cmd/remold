@@ -33,7 +33,7 @@ export const mine = query({ args: {}, handler: async (ctx) => {
   if (!user) return [];
   const members = await ctx.db.query("members").withIndex("by_user", (q) => q.eq("userId", user._id)).collect();
   const orgs = await Promise.all(members.map(async (member) => ({ org: await ctx.db.get(member.orgId), role: member.role })));
-  return orgs.flatMap(({ org, role }) => (org ? [{ org, role }] : []));
+  return orgs.flatMap(({ org, role }) => (org && !org.deletingAt ? [{ org, role }] : []));
 } });
 export const get = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => (await requireMember(ctx, args.orgId)).org });
 export const rename = mutation({ args: { orgId: v.id("orgs"), name: v.string() }, handler: async (ctx, args) => { await requireWriter(ctx, args.orgId, "admin"); await ctx.db.patch(args.orgId, { name: args.name }); } });

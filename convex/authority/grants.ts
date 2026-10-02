@@ -12,7 +12,7 @@ import { writable } from './readonly';
 type Ctx = QueryCtx | MutationCtx;
 export const epoch = (p: Principal) => 'agent' in p ? p.agent.authorityEpoch ?? 0 : p.member.authorityEpoch ?? 0;
 export async function principalFor(ctx: Ctx, orgId: Id<'orgs'>, actor: Actor): Promise<Principal> {
-  const org = await ctx.db.get(orgId); if (!org) fail('NOT_FOUND');
+  const org = await ctx.db.get(orgId); if (!org || org.deletingAt) fail('NOT_FOUND');
   if (actor.kind === 'agent') {
     const id = ctx.db.normalizeId('agents', actor.id), agent = id ? await ctx.db.get(id) : null;
     if (!agent || agent.orgId !== orgId || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== 'active')) fail('FORBIDDEN', 'Agent inactive');

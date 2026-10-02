@@ -2083,88 +2083,18 @@
     "proof": "Callback, adapter, REST and ops logs reveal no secrets"
   },
   {
-    "id": "workspace:definitions",
-    "kind": "query",
-    "visibility": "internal",
-    "writes": false,
-    "principal": "human",
-    "readonly": "not-a-write",
-    "masks": "projected",
-    "proof": "Export is refused to an owner with hidden fields or record scopes"
-  },
-  {
-    "id": "workspace:page",
-    "kind": "query",
-    "visibility": "internal",
-    "writes": false,
-    "principal": "human",
-    "readonly": "not-a-write",
-    "masks": "projected",
-    "proof": "Export is refused to an owner with hidden fields or record scopes"
-  },
-  {
     "id": "workspace:exportAll",
-    "kind": "action",
+    "kind": "query",
     "visibility": "public",
-    "writes": true,
+    "writes": false,
     "principal": "human",
     "readonly": "not-a-write",
     "masks": "projected",
     "proof": "Export is refused to an owner with hidden fields or record scopes"
-  },
-  {
-    "id": "workspace:importDefinitions",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "refuses a workspace that already has records, and refuses non-owners"
-  },
-  {
-    "id": "workspace:importRecords",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "refuses a workspace that already has records, and refuses non-owners"
-  },
-  {
-    "id": "workspace:importValues",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "refuses a workspace that already has records, and refuses non-owners"
-  },
-  {
-    "id": "workspace:importEvents",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "refuses a workspace that already has records, and refuses non-owners"
-  },
-  {
-    "id": "workspace:importFinish",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "refuses a workspace that already has records, and refuses non-owners"
   },
   {
     "id": "workspace:importAll",
-    "kind": "action",
+    "kind": "mutation",
     "visibility": "public",
     "writes": true,
     "principal": "human",
@@ -2173,24 +2103,14 @@
     "proof": "refuses a workspace that already has records, and refuses non-owners"
   },
   {
-    "id": "workspace:beginDelete",
+    "id": "workspace:confirmDelete",
     "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "reduction-only",
-    "masks": "n/a",
-    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
-  },
-  {
-    "id": "workspace:remove",
-    "kind": "action",
     "visibility": "public",
     "writes": true,
     "principal": "human",
     "readonly": "reduction-only",
     "masks": "projected",
-    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+    "proof": "needs the owner, the exact name and the sha256 of the current export, then closes the workspace at once"
   },
   {
     "id": "workspace:purge",

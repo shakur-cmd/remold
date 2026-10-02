@@ -6,7 +6,7 @@ import { fail } from '../errors';
 // independently and must use this same boundary before creating new work.
 export async function writable(ctx: QueryCtx | MutationCtx, orgId: Id<'orgs'>) {
   const org = await ctx.db.get(orgId);
-  if (!org) fail('NOT_FOUND', 'Workspace not found');
+  if (!org || org.deletingAt) fail('NOT_FOUND', 'Workspace not found');
   if (org.flags?.readonly) fail('FORBIDDEN', 'Workspace is read only');
   return org;
 }

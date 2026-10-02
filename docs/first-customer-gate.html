@@ -4,18 +4,17 @@
 <meta charset="utf-8">
 <title>Remold: first paying customer gate</title>
 <style>
-  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 820px; margin: 32px auto; padding: 0 20px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
   .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
   .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
   .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
-  .decisions li { margin: 6px 0; }
   h2 { font-size: 18px; margin: 28px 0 8px; }
   table { border-collapse: collapse; width: 100%; font-size: 15px; }
   th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
   th { background: #f6f6f6; }
-  td.done { color: #1d6b2f; font-weight: 600; white-space: nowrap; }
-  td.not { color: #a32020; font-weight: 600; white-space: nowrap; }
+  tr[data-state="done"] td:nth-child(2) { color: #1d6b2f; font-weight: 600; }
+  tr[data-state="pending"] td:nth-child(2) { color: #a32020; font-weight: 600; }
   code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
 </style>
 </head>
@@ -27,39 +26,40 @@
 <h2>Your calls</h2>
 <ul>
   <li>The offer and price. The plan recommends US$49 per workspace per month with a 14-day trial; you have not confirmed it.</li>
-  <li>The wording of <code>/terms</code> and <code>/privacy</code>. Both are marked "Draft, not yet reviewed" until you approve them.</li>
+  <li>The wording of <code>/terms</code> and <code>/privacy</code>. Both say "Draft, not yet reviewed" until you approve them.</li>
   <li>Live billing. Nothing charges money until you give an explicit OK and the code is changed to allow live keys.</li>
 </ul>
 </div>
 
-<p>Every line must say done, with evidence a second person can rerun, before the first customer pays. "Done" below means done at the level stated. Today everything here was checked only by the builder, with local tests (convex-test, no hosted service). Nothing in this list has been checked independently yet.</p>
+<p>Every row must be <b>done</b> before the first customer pays. A done row names the tests that prove it (<code>data-tests</code>); a pending row names who owns it (<code>data-owner</code>). Rows that need Shakur's approval (<code>data-requires="shakur"</code>) stay pending until an approval date is recorded. <code>ops/release/gate.test.mjs</code> checks all of this. "Done" here means builder-run local tests (convex-test, no hosted service); nothing has been checked independently yet.</p>
 
 <h2>What the customer gets</h2>
 <table>
-<tr><th>Must be true</th><th>State</th><th>Evidence</th></tr>
-<tr><td>A written, bounded offer: what is included and what is not</td><td class="not">not done</td><td>Your call. Recommendation in <code>docs/unified-launch/remaining-work-2026-10-01.html</code>.</td></tr>
-<tr><td>A price</td><td class="not">not done</td><td>Your call. The code reads it from <code>REMOLD_PRICE_ID</code>; no price is set anywhere.</td></tr>
-<tr><td>Terms and privacy policy, approved</td><td class="not">not done</td><td>Drafts live at <code>/terms</code> and <code>/privacy</code>, linked from sign-in: <code>src/routes/Legal.tsx</code>, <code>src/routes/Legal.test.tsx</code>. Not yet approved by you.</td></tr>
-<tr><td>Sign-up reopened with a rate limit</td><td class="not">not done</td><td>Workspace creation is limited to an allowlist in a separate job (<code>REMOLD_WORKSPACE_CREATORS</code> / <code>REMOLD_OPEN_SIGNUP</code>).</td></tr>
-<tr><td>Simple onboarding</td><td class="not">not done</td><td>Not started.</td></tr>
-<tr><td>Subscription billing through Stripe Checkout, one access flag per workspace</td><td class="not">not done (test mode only)</td><td>Test-mode scaffold: <code>convex/billing.ts</code>, <code>convex/billing.test.ts</code>. Checkout session, signed webhook, status shown in Settings. Not enforced. No live charge.</td></tr>
-<tr><td>Full export: definitions, records with links by id, history</td><td class="done">done (local)</td><td><code>convex/workspace.ts</code> <code>exportAll</code>; <code>convex/workspace.test.ts</code> "writes definitions, records keyed by field key, links by record id and the whole history".</td></tr>
-<tr><td>Restore from an export</td><td class="done">done (local)</td><td><code>importAll</code>; test "restores an export into a fresh workspace with new ids, links intact, and re-exports the same". Not yet done into a scratch deployment.</td></tr>
-<tr><td>Deletion by the owner</td><td class="done">done (local)</td><td><code>remove</code> and <code>purge</code>; tests "needs the owner and the exact workspace name, and hands back the export first" and "removes every row of the workspace in batches and leaves the other workspace untouched".</td></tr>
-<tr><td>A support route</td><td class="not">not done</td><td>Only the contact address on the legal pages (shakur@codemyvibe.com). No in-app route.</td></tr>
-<tr><td>Scheduled backups</td><td class="not">not done</td><td>Part of M0 (daily export to a lasting folder).</td></tr>
+<tr><th>Must be true</th><th>State</th><th>Owner or evidence</th></tr>
+<tr data-state="pending" data-owner="Shakur" data-requires="shakur"><td>A written, bounded offer: what is included and what is not</td><td>pending</td><td>Shakur. Recommendation in <code>docs/unified-launch/remaining-work-2026-10-01.html</code>.</td></tr>
+<tr data-state="pending" data-owner="Shakur" data-requires="shakur"><td>A price</td><td>pending</td><td>Shakur. The code reads it from <code>REMOLD_PRICE_ID</code>; no price is set anywhere.</td></tr>
+<tr data-state="pending" data-owner="Shakur" data-requires="shakur"><td>Terms and privacy policy, approved</td><td>pending</td><td>Shakur. Drafts at <code>/terms</code> and <code>/privacy</code> (<code>src/routes/Legal.tsx</code>), linked from sign-in.</td></tr>
+<tr data-state="pending" data-owner="M10 follow-up: sign-up"><td>Sign-up reopened with a rate limit</td><td>pending</td><td>Creation is allowlisted today by M0 (<code>REMOLD_WORKSPACE_CREATORS</code> / <code>REMOLD_OPEN_SIGNUP</code>, <code>convex/workspaces.test.ts</code>); reopening with a limit is not built.</td></tr>
+<tr data-state="pending" data-owner="M10 follow-up: onboarding"><td>Simple onboarding</td><td>pending</td><td>Not started.</td></tr>
+<tr data-state="pending" data-owner="Shakur" data-requires="shakur"><td>Subscription billing through Stripe Checkout, one access flag per workspace, live</td><td>pending</td><td>Test-mode scaffold in <code>convex/billing.ts</code>. Live needs Shakur's OK; enforcement of the flag is a later decision.</td></tr>
+<tr data-state="done" data-tests="opens a subscription Checkout for the owner with the price from the environment|sets the workspace access flag only from correctly signed, fresh webhook events|ignores redelivered and replayed events and records each flag change as an attributed billing event|refuses a live Stripe key even with billing switched to test"><td>Billing scaffold in Stripe test mode: Checkout, signed webhook, replay-safe flag with an audit row</td><td>done (local)</td><td><code>convex/billing.test.ts</code></td></tr>
+<tr data-state="done" data-tests="writes definitions, records keyed by field key, links by record id and the whole history|exports and re-imports a workspace exactly at the size limit and refuses one row more"><td>Full export: definitions, records with links by id, history, one consistent snapshot</td><td>done (local)</td><td><code>convex/workspace.test.ts</code></td></tr>
+<tr data-state="done" data-tests="restores an export into a fresh workspace with new ids, links intact, and re-exports the same|rejects unknown fields, duplicate ids or keys and bad relations with the reason, and writes nothing"><td>Restore from an export, all or nothing</td><td>done (local)</td><td><code>convex/workspace.test.ts</code>. Not yet run against a scratch deployment.</td></tr>
+<tr data-state="done" data-tests="needs the owner, the exact name and the sha256 of the current export, then closes the workspace at once|removes every row of the workspace in batches and leaves the other workspace untouched"><td>Deletion by the owner, after the owner holds the export</td><td>done (local)</td><td><code>convex/workspace.test.ts</code></td></tr>
+<tr data-state="pending" data-owner="M10 follow-up: support"><td>A support route</td><td>pending</td><td>Only the contact address on the legal pages. No in-app route.</td></tr>
+<tr data-state="pending" data-owner="M0: daily backup"><td>Scheduled backups</td><td>pending</td><td>M0 adds <code>pnpm backup:prod</code> (<code>ops/backup/export.mjs</code>); nothing runs it on a schedule yet.</td></tr>
 </table>
 
 <h2>Checks that can fail, run by someone other than the builder</h2>
 <table>
-<tr><th>Check</th><th>State</th><th>Evidence so far</th></tr>
-<tr><td>Two separate customer workspaces</td><td class="not">not done</td><td>Local two-workspace tests exist for export and deletion (<code>convex/workspace.test.ts</code>) and for records (<code>convex/isolation.test.ts</code>). Not on a deployment.</td></tr>
-<tr><td>Onboarding</td><td class="not">not done</td><td>No onboarding yet.</td></tr>
-<tr><td>Removing a member's access</td><td class="not">not done</td><td>Existing local test: <code>convex/members.test.ts</code> "lets an owner change roles and remove people, and a removed person loses access".</td></tr>
-<tr><td>Reading the other workspace through the app, API and export is refused</td><td class="not">not done</td><td>Local: <code>convex/isolation.test.ts</code>, <code>convex/rest.test.ts</code>, <code>convex/workspace.test.ts</code> "contains nothing from another workspace and is refused to anyone but an unrestricted owner".</td></tr>
-<tr><td>Subscription retry, cancel and access change</td><td class="not">not done</td><td>Local: webhook moves the flag between active, past due and canceled and ignores stale events (<code>convex/billing.test.ts</code>). Retry is not exercised; access is not yet changed by the flag.</td></tr>
-<tr><td>Full export, and a restore into scratch</td><td class="not">not done</td><td>Local round trip passes. Needs a run against a throwaway deployment.</td></tr>
-<tr><td>A live charge you authorised is shown</td><td class="not">not done</td><td>Live billing is not claimed. Code refuses <code>sk_live_</code>/<code>rk_live_</code> keys and live-mode events.</td></tr>
+<tr><th>Check</th><th>State</th><th>Owner and evidence so far</th></tr>
+<tr data-state="pending" data-owner="M10 independent check"><td>Two separate customer workspaces</td><td>pending</td><td>Local two-workspace tests for export, import and deletion (<code>convex/workspace.test.ts</code>) and records (<code>convex/isolation.test.ts</code>).</td></tr>
+<tr data-state="pending" data-owner="M10 independent check"><td>Onboarding</td><td>pending</td><td>No onboarding yet.</td></tr>
+<tr data-state="pending" data-owner="M10 independent check"><td>Removing a member's access</td><td>pending</td><td>Local: <code>convex/members.test.ts</code>.</td></tr>
+<tr data-state="pending" data-owner="M10 independent check"><td>Reading the other workspace through the app, API and export is refused</td><td>pending</td><td>Local: <code>convex/isolation.test.ts</code>, <code>convex/rest.test.ts</code>, <code>convex/workspace.test.ts</code>.</td></tr>
+<tr data-state="pending" data-owner="M10 independent check"><td>Subscription retry, cancel and access change</td><td>pending</td><td>Local flag transitions in <code>convex/billing.test.ts</code>; retry not exercised; access not yet changed by the flag.</td></tr>
+<tr data-state="pending" data-owner="M10 independent check"><td>Full export, and a restore into scratch</td><td>pending</td><td>Local round trip passes; needs a throwaway deployment.</td></tr>
+<tr data-state="pending" data-owner="Shakur" data-requires="shakur"><td>A live charge you authorised is shown</td><td>pending</td><td>Not claimed. Code refuses live keys and live-mode events.</td></tr>
 </table>
 </body>
 </html>

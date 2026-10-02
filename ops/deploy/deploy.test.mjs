@@ -73,3 +73,17 @@ test('a rollback whose restore drill fails deploys nothing', t => {
   assert.deepEqual(deploys(result.log), []);
   assert.ok(!result.log.includes('build'));
 });
+
+test('a rollback to code without the purge worker waits while a backup shows a deletion in progress', t => {
+  const { dir, work, run } = fixture(t), target = JSON.parse(readFileSync(join(root, 'ops/release/notes.json'), 'utf8')).rollbackTarget;
+  const zip = (name, org) => { const src = join(dir, name), out = join(dir, `${name}.zip`); mkdirSync(join(src, 'orgs'), { recursive: true }); writeFileSync(join(src, 'orgs/documents.jsonl'), JSON.stringify({ _id: 'org1', name: 'A', ...org }) + '\n'); execFileSync('zip', ['-qr', out, '.'], { cwd: src }); return out; };
+  const pending = run(['--ref', target, '--snapshot', zip('pending', { deletingAt: 1 })]);
+  assert.equal(pending.status, 1);
+  assert.match(pending.stderr, /deletion\(s\) still in progress \(org1\)/);
+  assert.deepEqual(pending.log, [], 'nothing may run, not even the install');
+  // With no deletion pending the gate passes and the rollback goes on to its restore drill.
+  const settled = run(['--ref', target, '--snapshot', zip('settled', {})]);
+  assert.match(settled.stderr, /schema did not accept the backup/);
+  // Code that has the purge worker may roll back over a pending deletion.
+  assert.match(run(['--ref', git(work, 'rev-parse', 'HEAD'), '--snapshot', zip('newer', { deletingAt: 1 })]).stderr, /schema did not accept the backup/);
+});
