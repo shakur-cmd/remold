@@ -60,6 +60,8 @@ export async function withAuthority(check, { safetySim = false, safetyHang = fal
     }
     const config = readFileSync(join(scratch, '.env.local'), 'utf8'), url = /^(?:VITE_)?CONVEX_URL=(.+)$/m.exec(config)?.[1];
     assert.equal(url, 'http://127.0.0.1:3480');
+    // Synthetic fixtures need the gates production keeps closed: workspace creation and adapter callbacks.
+    for (const gate of ['REMOLD_OPEN_SIGNUP', 'REMOLD_PAYMENT_CALLBACKS']) execFileSync(process.execPath, [cli, 'env', 'set', gate, '1'], { cwd: scratch, env, stdio: 'ignore', timeout: 60000 });
     const client = (subject, extra) => { const c = new ConvexHttpClient(url, { logger: false }); c.setAuth(token(subject, extra)); return c; };
     const sourceManifest = () => { const manifest = {}; for (const dir of ['convex', 'packages/contracts']) for (const file of readdirSync(join(scratch, dir), { recursive: true }).filter(p => p.endsWith('.ts') || p.endsWith('.json'))) manifest[dir + '/' + file] = sha(readFileSync(join(scratch, dir, file))); return manifest; };
     const manifest = sourceManifest();
