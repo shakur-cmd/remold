@@ -18,6 +18,7 @@ import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
+import { invoiceStatus } from "@/lib/invoices";
 import { contactHref, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
@@ -303,12 +304,12 @@ function InvoicesPanel({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId
         <div className="grid gap-0.5">
           {rows.map((r) => {
             const amount = number(r, f.amount), due = number(r, f.due), paidOn = number(r, f.paidOn);
-            const status = paidOn !== null ? `Paid ${formatDate(paidOn)}` : due === null ? "Unpaid" : due < today ? `Overdue since ${formatDate(due)}` : `Due ${formatDate(due)}`;
+            const status = invoiceStatus({ due, paidOn, paymentHidden: data.paymentHidden.includes(r._id), today });
             return (
               <Link key={r._id} to={`/o/${orgId}/${data.objectKey}/${r._id}`} className="flex min-w-0 items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
                 <span className="shrink-0">{r.title || "Untitled"}</span>
                 {f.monthly && r.values[f.monthly] === true && <Badge variant="outline" className="shrink-0">Monthly</Badge>}
-                <span className={cn("ml-auto min-w-0 truncate text-xs tabular-nums", paidOn === null && due !== null && due < today ? "font-medium text-destructive" : "text-muted-foreground")}>{status}</span>
+                <span className={cn("ml-auto min-w-0 truncate text-xs tabular-nums", status.overdue ? "font-medium text-destructive" : "text-muted-foreground")}>{status.label}</span>
                 <span className="w-20 shrink-0 text-right tabular-nums">{amount === null ? "—" : formatMoney(amount)}</span>
               </Link>
             );

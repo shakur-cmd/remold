@@ -1,7 +1,7 @@
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
-import { paginationOptsValidator } from "convex/server";
+import { paginationOptsValidator, type PaginationResult } from "convex/server";
 import { v } from "convex/values";
 import { requireMember, type Principal } from "./identity";
 import { fail } from "./errors";
@@ -30,15 +30,19 @@ async function companyPage(ctx: QueryCtx, orgId: Id<"orgs">, recordId: Id<"recor
   const listed = await listedRelated(ctx, principal, invoice.object, company, target._id), name = slotName(company);
   const page = listed ? pageList(listed.reverse(), opts) : await paginateIndex((ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", invoice.object._id).eq(name, target._id)).order("desc"), opts);
   const rows = (await Promise.all((page.page as Doc<"records">[]).map((r) => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null);
-  return { principal, ...invoice, rows, isDone: page.isDone, continueCursor: page.continueCursor };
+  // splitCursor and pageStatus tell usePaginatedQuery to split a page that grew; dropping them would let a short sum pass as whole.
+  const { splitCursor, pageStatus } = page as Partial<PaginationResult<unknown>>;
+  return { principal, ...invoice, rows, paging: { isDone: page.isDone, continueCursor: page.continueCursor, ...(splitCursor !== undefined ? { splitCursor } : {}), ...(pageStatus !== undefined ? { pageStatus } : {}) } };
 }
 
 // The newest SHOWN invoices a company page lists; totals come from `totals`.
 export const forCompany = query({ args: { orgId: v.id("orgs"), recordId: v.id("records") }, handler: async (ctx, args) => {
   const page = await companyPage(ctx, args.orgId, args.recordId, { cursor: null, numItems: SHOWN });
   if (!page) return null;
-  const id = (key: string) => page.byKey.get(key)?._id ?? null;
-  return { objectKey: page.object.key, fields: { amount: id("amount"), due: id("due"), paidOn: id("paidOn"), monthly: id("monthly") }, invoices: page.rows, capped: !page.isDone };
+  const id = (key: string) => page.byKey.get(key)?._id ?? null, paidOn = page.byKey.get("paidOn");
+  // A hidden paid date is projected away like an empty one, so say which rows hide it.
+  const paymentHidden = paidOn ? page.rows.filter((r) => !canReadField(page.principal, page.object, paidOn, r._id)).map((r) => r._id) : [];
+  return { objectKey: page.object.key, fields: { amount: id("amount"), due: id("due"), paidOn: id("paidOn"), monthly: id("monthly") }, invoices: page.rows, paymentHidden, capped: !page.paging.isDone };
 } });
 
 // Billed and paid (paid on set) per page of a company's invoices; the caller adds
@@ -52,7 +56,7 @@ export const totals = query({ args: { orgId: v.id("orgs"), recordId: v.id("recor
   const known = !!amount && !!paidOn && page.rows.every((r) => canReadField(page.principal, page.object, amount, r._id) && canReadField(page.principal, page.object, paidOn, r._id));
   const sum = (rows: Doc<"records">[]) => rows.reduce((total, r) => total + (typeof r.values[amount!._id] === "number" ? r.values[amount!._id] as number : 0), 0);
   const summary = known ? { count: page.rows.length, known, billed: sum(page.rows), paid: sum(page.rows.filter((r) => r.values[paidOn!._id] != null)) } : { count: page.rows.length, known, billed: 0, paid: 0 };
-  return { page: [summary], isDone: page.isDone, continueCursor: page.continueCursor };
+  return { ...page.paging, page: [summary] };
 } });
 
 // Unpaid invoices due before `today`, earliest due first, one index page at a

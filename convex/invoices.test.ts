@@ -165,4 +165,38 @@ describe("invoices", () => {
     await w.bill({ number: "STILL-OWED", company: acme, amount: 70, due: day("2026-09-01") });
     expect(await pastDueOf(w, TODAY)).toEqual(["STILL-OWED"]);
   }, 60000);
+
+  it("a page that grows after loading is split, not summed short, and the split pages add up", async () => {
+    const w = await world(), acme = await w.companyNamed("Acme");
+    for (let i = 0; i < 6; i += 1) await w.bill({ number: `FIRST-${i}`, company: acme, amount: 1, due: day(`2026-09-1${i}`) });
+    const totals = (paginationOpts: any): Promise<any> => w.client.query(api.invoices.totals, { orgId: w.orgId, recordId: acme, paginationOpts });
+    const pastDue = (paginationOpts: any): Promise<any> => w.client.query(api.invoices.pastDue, { orgId: w.orgId, today: TODAY, paginationOpts });
+    const t1 = await totals({ numItems: 3, cursor: null }), t2 = await totals({ numItems: 3, cursor: t1.continueCursor });
+    const p1 = await pastDue({ numItems: 3, cursor: null });
+    expect([t1.isDone, t2.isDone]).toEqual([false, true]);
+    // Newer invoices land inside the first loaded page of both queries (newest first; earliest due first).
+    for (let i = 0; i < 5; i += 1) await w.bill({ number: `LATER-${i}`, company: acme, amount: 1, due: day("2026-09-01") });
+    // The client re-runs a loaded page with its end cursor; a small read budget forces Convex to ask for a split.
+    const grown = await totals({ numItems: 3, cursor: null, endCursor: t1.continueCursor, maximumRowsRead: 3 });
+    expect(grown.pageStatus).toBe("SplitRequired");
+    expect(grown.splitCursor).toEqual(expect.any(String));
+    const grownDue = await pastDue({ numItems: 3, cursor: null, endCursor: p1.continueCursor, maximumRowsRead: 3 });
+    expect(grownDue.pageStatus).toBe("SplitRequired");
+    expect(grownDue.splitCursor).toEqual(expect.any(String));
+    // After the client splits the grown page, every invoice is counted once.
+    const pages = [await totals({ numItems: 3, cursor: null, endCursor: grown.splitCursor }), await totals({ numItems: 3, cursor: grown.splitCursor, endCursor: t1.continueCursor }), await totals({ numItems: 3, cursor: t1.continueCursor, endCursor: t2.continueCursor })];
+    expect(pages.flatMap((p) => p.page).reduce((sum: number, part: any) => sum + part.billed, 0)).toBe(11);
+  });
+
+  it("a company page marks invoices whose paid date the caller cannot read", async () => {
+    const w = await world(), acme = await w.companyNamed("Acme");
+    const paid = await w.bill({ number: "PAID", company: acme, amount: 10, due: day("2026-09-01"), paidOn: day("2026-09-02") });
+    const memberId = await w.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]._id);
+    expect((await w.client.query(api.invoices.forCompany, { orgId: w.orgId, recordId: acme }))!.paymentHidden).toEqual([]);
+    await w.client.mutation(anyApi["authority/policies"].setMember, { orgId: w.orgId, memberId, hiddenFieldIds: [w.invoice.fields.paidOn._id] });
+    const listed = await w.client.query(api.invoices.forCompany, { orgId: w.orgId, recordId: acme });
+    expect(listed!.paymentHidden).toEqual([paid]);
+    expect(listed!.invoices[0]!.values[w.invoice.fields.paidOn._id]).toBeUndefined();
+    expect(await pastDueOf(w, TODAY)).toEqual([]);
+  });
 });
