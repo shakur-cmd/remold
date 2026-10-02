@@ -183,7 +183,7 @@ GET  /api/v1/me
 GET  /api/v1/objects
 GET  /api/v1/records?object=person&limit=25&cursor=...&sort=name&direction=asc&filter=stage&value=won
 GET  /api/v1/records/{idOrRef}
-GET  /api/v1/records/{idOrRef}/events
+GET  /api/v1/records/{idOrRef}/events?cursor=...&limit=20   { events, nextCursor }; was a bare array before M3 (breaking, 2026-10)
 GET  /api/v1/records/{idOrRef}/related?field=person.company
 GET  /api/v1/search?q=atlas&object=company&limit=10
 GET  /api/v1/today

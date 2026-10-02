@@ -19,7 +19,7 @@ describe("history paging", () => {
     const seen: any[] = [];
     let cursor: string | null = null;
     for (let guard = 0; guard < 20; guard += 1) {
-      const page: any = await client.query(api.events.page, { orgId, recordId, paginationOpts: { numItems: 60, cursor } });
+      const page: any = await client.query(api.events.timeline, { orgId, recordId, paginationOpts: { numItems: 60, cursor } });
       seen.push(...page.page);
       if (page.isDone) break;
       cursor = page.continueCursor;

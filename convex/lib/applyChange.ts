@@ -6,6 +6,7 @@ import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
+import { dateValue } from "./values";
 
 export type Change =
   | { action: "create"; orgId: Id<"orgs">; objectId: Id<"objects">; values: Record<string, unknown>; reason?: string }
@@ -23,7 +24,7 @@ async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unkn
   if (field.type === "number" && (typeof value !== "number" || !Number.isFinite(value))) invalid("Expected a finite number");
   if (field.type === "text" && typeof value !== "string") invalid("Expected text");
   if (field.type === "select" && (typeof value !== "string" || !field.options?.some((option) => option.id === value))) invalid("Invalid select option");
-  if (field.type === "date" && (typeof value !== "number" || !Number.isInteger(value))) invalid("Expected a date timestamp");
+  if (field.type === "date" && !dateValue(field, value)) invalid("Expected a date timestamp");
   if (field.type === "boolean" && typeof value !== "boolean") invalid("Expected boolean");
   if (field.type === "lookup" || field.type === "links") {
     const ids = field.type === "links" ? value : [value];
