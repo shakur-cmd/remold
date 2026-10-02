@@ -45,4 +45,7 @@ export default defineSchema({
   // Every verified Stripe event that names a workspace, once: duplicates are dropped by eventId, and a row with
   // from/to is the attributed record of the access-flag change it made in the same transaction.
   billingEvents: defineTable({ orgId: v.id("orgs"), eventId: v.string(), type: v.string(), created: v.number(), subscriptionId: v.optional(v.string()), from: v.optional(v.union(v.literal("active"), v.literal("past_due"), v.literal("canceled"), v.literal("none"))), to: v.optional(v.union(v.literal("active"), v.literal("past_due"), v.literal("canceled"))) }).index("by_event", ["eventId"]).index("by_org", ["orgId"]),
+  // Files in Convex storage that belong to a workspace export or an import upload, and who made them:
+  // an import reads only the caller's own upload, and an export file can never be imported by id.
+  workspaceFiles: defineTable({ storageId: v.id("_storage"), userId: v.id("users"), kind: v.union(v.literal("export"), v.literal("upload")), orgId: v.optional(v.id("orgs")) }).index("by_storage", ["storageId"]).index("by_org", ["orgId"]),
 });
