@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold build: what is live, what is proven, what needs you</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  .status { background: #f2f2f2; padding: 12px 16px; margin-bottom: 28px; }
+  .status h2 { margin: 0 0 8px; font-size: 16px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+  pre { background: #f2f2f2; padding: 10px; overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Remold build: what is live, what is proven, what needs you</h1>
+<div class="meta">2026-10-02 · scope: the remaining-work plan, M0 to M10 · status: awaiting your check</div>
+
+<div class="decisions">
+<h2>Your calls and your sign-ins</h2>
+<ul>
+  <li><b>Look at your clients in Remold</b> and fix what is wrong. 68 records came from your files (11 companies, 13 people, 9 deals, 8 projects, 16 tasks, 11 notes). The editable list is <code>hq/clients/remold-import-2026-10-02.html</code>. Then tell us what happened offline since the dates shown.</li>
+  <li><b>Resend key, one sitting:</b> in Resend, create a sending-only key for codemyvibe.com named <code>remold-notices</code>. Then reminders and alerts start emailing you. Everything else for email is already set. The browser profile I drive is not signed in to Resend.</li>
+  <li><b>Production sign-in, one sitting:</b> add a card in WorkOS to unlock production (AuthKit is free at your size), and create your own Google OAuth client (internal) in Google Cloud. Skip <code>auth.remoldcrm.com</code>: it costs $99 a month, twice the cap. Today sign-in still uses the WorkOS staging client.</li>
+  <li><b>Gmail "who replied", one sitting:</b> paste <code>ops/gmail-sync/Code.gs</code> into script.google.com under your account and authorize it (steps in <code>ops/gmail-sync/README.md</code>). The script only ever reads dates and addresses. Then create its key in Remold Settings, "Create Gmail sync key".</li>
+  <li><b>Daily reminder:</b> turn it on in Settings when the Resend key exists.</li>
+  <li><b>Legal pages and price</b> (only when you want a first customer): /terms and /privacy are drafts on a branch, not live. Billing is Stripe test mode only. The price on file is US$49 a month with a 14-day cardless trial. Confirm or change it.</li>
+  <li><b>Also pending from before:</b> settle the declined Google Workspace payment; export then delete Baserow; delete the old tawk.to webhook.</li>
+</ul>
+</div>
+
+<div class="status">
+<h2>Done and proven</h2>
+<ul>
+  <li><b>Live at app.remoldcrm.com, three releases today.</b> Every feature passed an independent check by a model that did not build it, before it was deployed. After each deploy, a fresh agent checked the live site read-only.</li>
+  <li><b>Your real clients are in Remold</b> and the demo data is gone, apart from 3 edited demo rows you can delete. The import was checked independently against the backup: 68 added, 13 removed, nothing else changed, no credentials in any text.</li>
+  <li><b>Website leads land in Remold</b> as a person, company, deal and note, and still email you. Proven live with one TEST lead: Remold got it, and Gmail shows the email in your inbox.</li>
+  <li><b>Backups:</b> a fresh export before every deploy, each restored into a throwaway copy and compared row by row. Last: 447 of 447 rows. They are in <code>~/Documents/CodeMyVibe/Backups/remold/</code>, with checksums.</li>
+  <li><b>Safe deploys:</b> <code>pnpm deploy:prod</code> builds only for the live database, and a rollback keeps your data. Only you can create a workspace.</li>
+</ul>
+</div>
+
+<h2>What Remold does for you now</h2>
+<table>
+<tr><th>Your work</th><th>In Remold</th><th>Evidence</th></tr>
+<tr><td>Clients</td><td>Companies, people, deals, projects; a timeline on every record (notes, activities, tasks, history, with "Load more")</td><td>M2, M3 verified; live check 2026-10-02</td></tr>
+<tr><td>Tasks and updates</td><td>Due date with time of day; Today shows overdue and due; notes on a task show on the task; daily reminder email (needs the Resend key)</td><td>M3 verified (3 rounds)</td></tr>
+<tr><td>Funnels</td><td>A funnel is a Campaign: a board of its deals by stage with count and value, its steps as tasks in due order, filters on several fields and dates</td><td>M4 verified (4 rounds)</td></tr>
+<tr><td>Social media</td><td>Post object and a Social calendar (month/week, drag to move); agents can draft but cannot approve or publish; nothing posts automatically</td><td>M5 verified (5 rounds)</td></tr>
+<tr><td>Website leads</td><td>One lead becomes one person, company, deal and note, with no duplicates on retry; existing contacts are never changed by a form; capped at 50 a day</td><td>M6 verified (4 rounds) + website verified (2 rounds) + live test</td></tr>
+<tr><td>Money</td><td>Invoice per client: billed, paid, open; past-due invoices on Today; tracking only</td><td>M7 verified (3 rounds)</td></tr>
+<tr><td>Who replied</td><td>Gmail dates become activities, and "last contact" on each person (needs the Apps Script install)</td><td>M8 verified</td></tr>
+<tr><td>Agents</td><td>Outside agents propose by default; cannot move a deal backward or edit fields you protect</td><td>M3 part 2 verified (2 rounds)</td></tr>
+</table>
+
+<h2>Independent checks, by milestone</h2>
+<table>
+<tr><th>Milestone</th><th>Builder</th><th>Checker</th><th>Rounds to pass</th><th>Level</th></tr>
+<tr><td>M0 safe floor</td><td>Opus 5.5, old HP</td><td>Astra</td><td>2</td><td>SIM + local SERVICE, live deploy used</td></tr>
+<tr><td>M2 client import</td><td>Opus 5.5, old HP</td><td>Astra</td><td>3</td><td>SIM, then LIVE import checked by Fable</td></tr>
+<tr><td>M3 time, timeline</td><td>Opus 5.5, old Mac Pro</td><td>Astra</td><td>3</td><td>SIM</td></tr>
+<tr><td>M3 reminders, agent guards</td><td>Opus 5.5, old Mac Pro</td><td>Astra</td><td>2</td><td>SIM</td></tr>
+<tr><td>M4 funnels</td><td>Opus 5.5, old Mac Pro</td><td>Astra</td><td>4</td><td>SIM</td></tr>
+<tr><td>M5 social calendar</td><td>Opus 5.5, old Mac Pro</td><td>Astra</td><td>5</td><td>SIM</td></tr>
+<tr><td>M6 lead intake</td><td>Opus 5.5, old HP</td><td>Astra, then Fable</td><td>4</td><td>SIM + local SERVICE, then LIVE test</td></tr>
+<tr><td>M7 invoices</td><td>Opus 5.5, old Mac Pro</td><td>Astra</td><td>3</td><td>SIM</td></tr>
+<tr><td>M8 Gmail dates</td><td>Opus 5.5, old Mac Pro</td><td>Fable</td><td>1</td><td>SIM (no real Gmail yet)</td></tr>
+<tr><td>Website side of M6</td><td>Opus 5.5, old HP</td><td>Fable</td><td>2</td><td>SIM, then LIVE test</td></tr>
+<tr><td>Release 2 integration</td><td>Opus 5.5, old HP</td><td>Fable</td><td>1</td><td>SIM, then LIVE check</td></tr>
+<tr><td>Polish, intake key CLI</td><td>Opus 5.5</td><td>Fable</td><td>2 each</td><td>SIM</td></tr>
+<tr><td>M10 first-customer groundwork</td><td>Opus 5.5, old HP</td><td>Astra, then Fable</td><td>see below</td><td>not merged, not live</td></tr>
+</table>
+<p>"Level" follows the pack: SIM is the simulator, SERVICE a local Convex backend, LIVE the real site. Verdicts and handovers are in <code>~/scratch/remold-build/</code> on this Mac (copied from the workers). Live checks are in <code>evidence/2026-10-02-go-live-iv/</code>, <code>evidence/2026-10-02-release-iv/</code>, <code>evidence/2026-10-03-release-iv/</code> and <code>evidence/2026-10-02-website-intake/</code>.</p>
+
+<h2>Releases</h2>
+<table>
+<tr><th>Release</th><th>Commit</th><th>Contents</th><th>Before-deploy backup and drill</th></tr>
+<tr><td>1</td><td><code>16138f9</code> (+ placeholder fix <code>e4775f0</code>)</td><td>M0, M2, M3, M4, M7; client import; demo cleanup</td><td>20261002T054759Z, 219/219</td></tr>
+<tr><td>2</td><td><code>e903fa4</code></td><td>M5, M6, M8, verifier follow-ups</td><td>20261002T072247Z, 438/438</td></tr>
+<tr><td>3</td><td><code>c42b04c</code></td><td>Polish (phone rows, $0 totals, README), operator path for the intake key</td><td>20261002T083925Z, 447/447</td></tr>
+</table>
+<p>Rollback: <code>pnpm backup:prod</code>, then <code>pnpm deploy:prod --ref &lt;sha&gt; --snapshot &lt;zip&gt;</code>. That puts older code on the same database, so nothing is lost. After a rollback past release 2, revoke the website intake key. Details are in <code>ops/deploy/README.md</code>.</p>
+
+<h2>What went wrong and was fixed on the way</h2>
+<ul>
+  <li><b>The independent checks did their job:</b> every milestone failed its first check, and every failure was reproduced before it was fixed. Examples: an agent could clear a protected field by deleting a linked record; demo cleanup could delete a real company that shared a demo name; a replayed request could show data after access was revoked; funnel date filters were off by a day around daylight saving.</li>
+  <li><b>One defect was mine:</b> a round-1 instruction I gave on request replay caused the round-3 lead intake defect. The corrected rule is in the decisions log.</li>
+  <li><b>Two real-world failures only showed up live.</b> The backup script ran the Convex CLI in an empty folder, which the real CLI refuses. Creating the intake key from the CLI was blocked by a signed-in-owner check. Both are fixed, the second through a reviewed change.</li>
+  <li><b>Codex hit its usage limit</b> (resets 2026-10-04 00:05). Astra checked most of the work; from then on Claude Fable 5.1 checked, which is still a different model from the Opus builders.</li>
+  <li><b>A worker script bug</b> (not executable, and an early exit) delayed five fix rounds and hid two finished builds for a while. Both are fixed.</li>
+</ul>
+
+<h2>Not done, stated plainly</h2>
+<ul>
+  <li><b>M1 production sign-in:</b> needs your WorkOS card and Google OAuth client (above).</li>
+  <li><b>Email reminders and alerts:</b> built and verified, but silent until the Resend key exists.</li>
+  <li><b>M8 Gmail sync:</b> built and verified in the simulator; not installed or run against your mailbox.</li>
+  <li><b>M9 "you work from Remold":</b> that is your daily use. Nothing to build until something gets in your way.</li>
+  <li><b>M10 first paying customer:</b> groundwork (export, staged import, deletion, draft legal pages, Stripe test mode, gate list) is on branch <code>m10/first-customer</code> and still in verification. It is not merged and not live. Live billing still needs your explicit OK.</li>
+  <li><b>Still waiting by your decision:</b> the marketing engine with automated sends, auto-posting to social platforms (needs developer approvals per platform), hosted agents, A1 and the impact tracker.</li>
+  <li><b>Not exercised live yet</b> because there is no data: funnel totals, invoice totals, task times on Today, social posts. Each passed in the simulator.</li>
+  <li><b>Leftover test data:</b> the TEST lead records in Remold and the 3 kept demo rows are yours to delete.</li>
+</ul>
+
+<h2>Who checked what</h2>
+<ul>
+  <li><b>Builders:</b> Claude Opus 5.5 sessions on old-hp and old-mac-pro. <b>Checkers:</b> Astra (gpt-6-astra via Codex) until the usage limit, then Claude Fable 5.1, run on the other machine where possible.</li>
+  <li><b>Live checks:</b> fresh Fable 5.1 agents, read-only, after each deploy.</li>
+  <li><b>Coordinator:</b> this Opus 5.5 session on mac-mini. It held the production key, made the merges and deploys, and ran the end-to-end lead test. Its own checks are builder evidence only.</li>
+  <li><b>This report</b> awaits your check.</li>
+</ul>
+</body>
+</html>
