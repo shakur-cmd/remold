@@ -1,12 +1,12 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { api, agentFor, objectFields, rest, userAndOrg } from "./test.helpers";
+import { api, agentFor, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
 
 async function noisyRecord() {
   const setup = await userAndOrg();
   const { client, orgId } = setup;
   const company = await objectFields(client, orgId, "company");
   const { recordId } = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Noisy 0" } });
-  for (let i = 1; i < 250; i += 1) await client.mutation(api.records.update, { orgId, recordId, values: { [company.fields.name._id]: `Noisy ${i}` } });
+  await bulk(setup.t, orgId, async (apply) => { for (let i = 1; i < 250; i += 1) await apply({ action: "update", recordId, values: { [company.fields.name._id]: `Noisy ${i}` } }); });
   return { ...setup, recordId, nameId: company.fields.name._id };
 }
 

@@ -17,7 +17,7 @@ import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
-import { contactHref, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { contactHref, formatDate, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -418,7 +418,7 @@ function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs
                   <span className="font-medium">{entry.kind === "activity" ? (entry.type ?? "Activity") : entry.kind === "note" ? "Note" : "Task"}</span>
                   {entry.kind === "activity" && entry.source && <span className="text-muted-foreground">via {entry.source}</span>}
                   {entry.kind === "task" && entry.done && <span className="text-muted-foreground">done</span>}
-                  <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(entry.at)}</time>
+                  <time className="ml-auto text-xs text-muted-foreground tabular-nums">{entry.kind === "activity" && entry.allDay ? formatDate(entry.at) : formatTime(entry.at)}</time>
                 </div>
                 <Link to={`/o/${orgId}/${entry.objectKey}/${entry._id}`} className={cn("min-w-0 break-words hover:underline", entry.kind === "note" && "whitespace-pre-wrap", entry.kind === "task" && entry.done && "text-muted-foreground line-through")}>
                   {entry.title || "Untitled"}

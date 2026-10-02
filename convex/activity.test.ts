@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { anyApi } from "convex/server";
 import { internal } from "./_generated/api";
-import { api, agentFor, objectFields, rest, userAndOrg } from "./test.helpers";
+import { api, agentFor, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
 
 async function timeline(client: any, orgId: any, recordId: any, numItems = 50) {
   const all: any[] = [];
@@ -72,6 +72,9 @@ describe("activity and timeline", () => {
     expect(items.map((i: any) => [i.kind, i.title]).sort()).toEqual([["activity", "Intro call"], ["note", "Met at the fair"], ["task", "Send proposal"]]);
     expect(items.find((i: any) => i.kind === "activity")).toMatchObject({ at: Date.UTC(2026, 8, 1, 15, 0), type: "Call", source: "manual" });
     expect(items.find((i: any) => i.kind === "task")).toMatchObject({ due: Date.UTC(2026, 9, 3, 18, 32), dueWithTime: true, done: false });
+    await create(activity, { title: "Paid in full", type: "payment", when: Date.UTC(2026, 10, 30), about: acme });
+    const marks = Object.fromEntries((await timeline(client, orgId, acme)).filter((i: any) => i.kind === "activity").map((i: any) => [i.title, i.allDay]));
+    expect(marks).toEqual({ "Intro call": false, "Paid in full": true });
     const onTask = (await timeline(client, orgId, followUp)).filter((i: any) => i.kind !== "event");
     expect(onTask.map((i: any) => [i.kind, i.title])).toEqual([["note", "Draft sent, waiting on Ada"]]);
   });
@@ -104,10 +107,10 @@ describe("activity and timeline", () => {
   });
 
   it("every related note stays reachable: 201 notes page through to the first", async () => {
-    const { client, orgId } = await userAndOrg();
+    const { t, client, orgId } = await userAndOrg();
     const [company, note] = await Promise.all(["company", "note"].map((key) => objectFields(client, orgId, key)));
     const acme = (await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Acme" } })).recordId;
-    for (let i = 0; i < 201; i += 1) await client.mutation(api.records.create, { orgId, objectId: note.object._id, values: { [note.fields.body._id]: `Note ${i}`, [note.fields.about._id]: acme } });
+    await bulk(t, orgId, async (apply) => { for (let i = 0; i < 201; i += 1) await apply({ action: "create", objectId: note.object._id, values: { [note.fields.body._id]: `Note ${i}`, [note.fields.about._id]: acme } }); });
     const notes = (await timeline(client, orgId, acme, 40)).filter((i: any) => i.kind === "note").map((i: any) => i.title);
     expect(notes).toEqual(Array.from({ length: 201 }, (_, i) => `Note ${200 - i}`));
   });

@@ -7,6 +7,7 @@ import { fail } from "./errors";
 import { canReadObject, canReadRecord, canQueryField, projectEvent, projectRecord, listedRecordIds, paginateIndex } from "./authority/reads";
 import { listedRelated } from "./lib/list";
 import { listStream, mergePage, type Stream } from "./lib/merge";
+import { allDay } from "./lib/values";
 
 async function describe(ctx: QueryCtx, principal: Principal, event: Doc<"events">) {
   const actor = event.actor.kind === "user" ? await ctx.db.get(event.actor.id as Id<"users">) : event.actor.kind === "agent" ? await ctx.db.get(event.actor.id as Id<"agents">) : null;
@@ -73,7 +74,7 @@ export const timeline = query({ args: { orgId: v.id("orgs"), recordId: v.id("rec
     const value = (key: string) => { const field = row.byKey.get(key); return field ? record.values[field._id] : undefined; };
     const due = value("dueDate"), type = row.byKey.get("type");
     return { kind: row.kind, _id: record._id, at: row.at, objectKey: row.kind, title: record.title, createdAt: record._creationTime,
-      ...(row.kind === "activity" ? { type: type && value("type") !== undefined ? type.options?.find((o) => o.id === value("type"))?.label ?? String(value("type")) : null, source: (value("source") as string | undefined) ?? null } : {}),
+      ...(row.kind === "activity" ? { type: type && value("type") !== undefined ? type.options?.find((o) => o.id === value("type"))?.label ?? String(value("type")) : null, allDay: typeof value("when") === "number" && row.at === value("when") && allDay(row.at), source: (value("source") as string | undefined) ?? null } : {}),
       ...(row.kind === "task" ? { due: typeof due === "number" ? due : null, dueWithTime: !!row.byKey.get("dueDate")?.withTime, done: value("done") === true } : {}) };
   }));
   return { ...page, page: entries.filter((entry): entry is NonNullable<typeof entry> => entry !== null) };
