@@ -54,20 +54,24 @@ export function Today() {
               <section key={group.label} className="grid grid-cols-1 gap-0.5">
                 <h2 className="px-2 pb-1 text-xs text-muted-foreground">{group.label}</h2>
                 {group.rows.map((record) => (
-                  <div key={record._id} className="flex h-8 items-center gap-3 rounded-md px-2 hover:bg-muted">
+                  <div key={record._id} className={ROW}>
                     {task?.doneFieldId && <Checkbox aria-label={`Mark ${record.title} done`} onCheckedChange={() => complete(record._id)} />}
-                    <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className="min-w-0 flex-1 truncate text-sm">
-                      {record.title || "Untitled"}
-                    </Link>
-                    {data.funnels[record._id] && (
-                      <Link to={`/o/${org._id}/campaign/${data.funnels[record._id]!._id}`} className="max-w-24 shrink-0 truncate rounded bg-muted sm:max-w-40 px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground" title="Funnel">
-                        {data.funnels[record._id]!.title || "Untitled funnel"}
+                    <div className={MAIN}>
+                      <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className={TITLE}>
+                        {record.title || "Untitled"}
                       </Link>
-                    )}
-                    <span className={cn("shrink-0 whitespace-nowrap text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>
-                      {relativeDay(due(record), today)}
-                      {task && timeOfDay(task.dueField, at(record)) && ` ${timeOfDay(task.dueField, at(record))}`}
-                    </span>
+                      <div className={META}>
+                        {data.funnels[record._id] && (
+                          <Link to={`/o/${org._id}/campaign/${data.funnels[record._id]!._id}`} className="min-w-0 max-w-40 truncate rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground" title="Funnel">
+                            {data.funnels[record._id]!.title || "Untitled funnel"}
+                          </Link>
+                        )}
+                        <span className={cn("shrink-0 whitespace-nowrap text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>
+                          {relativeDay(due(record), today)}
+                          {task && timeOfDay(task.dueField, at(record)) && ` ${timeOfDay(task.dueField, at(record))}`}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </section>
@@ -99,6 +103,12 @@ export function Today() {
   );
 }
 
+// Rows with a title and several labels: one line from sm up; on phones the title gets its own line and the labels go under it.
+const ROW = "flex items-center gap-3 rounded-md px-2 py-1 hover:bg-muted sm:h-8 sm:py-0";
+const MAIN = "flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3";
+const TITLE = "min-w-0 truncate text-sm sm:flex-1";
+const META = "flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 sm:shrink-0 sm:flex-nowrap";
+
 const PAGE = 200, SHOW = 20;
 
 // Unpaid invoices past due. Pages can hold only paid history and come back empty,
@@ -123,14 +133,18 @@ function UnpaidInvoices({ orgId, invoice, today }: { orgId: Id<"orgs">; invoice?
         {results.map((record) => {
           const value = amount ? record.values[amount._id] : undefined;
           return (
-            <div key={record._id} className="flex h-8 items-center gap-3 rounded-md px-2 hover:bg-muted">
-              <Link to={`/o/${orgId}/${invoice.key}/${record._id}`} className="min-w-0 flex-1 truncate text-sm">
-                {record.title || "Untitled"}
-              </Link>
-              {typeof value === "number" && <span className="shrink-0 whitespace-nowrap text-sm tabular-nums">{formatMoney(value)}</span>}
-              <span className="shrink-0 whitespace-nowrap text-xs font-medium text-destructive tabular-nums">due {relativeDay(record.values[due._id] as number, today).toLowerCase()}</span>
+            <div key={record._id} className={ROW}>
+              <div className={MAIN}>
+                <Link to={`/o/${orgId}/${invoice.key}/${record._id}`} className={TITLE}>
+                  {record.title || "Untitled"}
+                </Link>
+                <div className={META}>
+                  {typeof value === "number" && <span className="shrink-0 whitespace-nowrap text-sm tabular-nums">{formatMoney(value)}</span>}
+                  <span className="shrink-0 whitespace-nowrap text-xs font-medium text-destructive tabular-nums">due {relativeDay(record.values[due._id] as number, today).toLowerCase()}</span>
+                </div>
+              </div>
               {paidOn && (
-                <Button size="sm" variant="ghost" className="h-7 text-muted-foreground" onClick={() => paid(record._id)}>
+                <Button size="sm" variant="ghost" className="h-7 shrink-0 text-muted-foreground" onClick={() => paid(record._id)}>
                   Mark paid
                 </Button>
               )}
