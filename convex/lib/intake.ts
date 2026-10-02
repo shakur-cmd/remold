@@ -10,7 +10,6 @@ import { issue } from "../authority/grants";
 import { notice } from "../alerts";
 import { intakeLimiter } from "../rateLimit";
 import { applyChange } from "./applyChange";
-import { findByTitle } from "./find";
 import { remember, replay, type Idempotency } from "./idempotency";
 
 // Website lead intake: one call finds or creates the Person, creates an Opportunity
@@ -54,6 +53,14 @@ export async function grantIntake(ctx: MutationCtx, orgId: Id<"orgs">, agentId: 
 
 // Stored values keep whatever formatting people typed, so both sides are normalized
 // before comparing. A scan of People is fine at current scale; earliest record wins.
+// Find-or-create must prove absence, so this is an exhaustive exact match on the
+// normalized title within one object, never a ranked, truncated search.
+async function companyNamed(ctx: MutationCtx, item: Item, name: string) {
+  const want = name.trim().toLowerCase();
+  for await (const record of ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", item.object.orgId).eq("objectId", item.object._id))) if (record.title.trim().toLowerCase() === want) return record;
+  return null;
+}
+
 async function matches(ctx: MutationCtx, item: Item, email: string, phone?: string) {
   const emailId = item.fields.email!._id, phoneId = item.fields.phone!._id;
   let byEmail: Doc<"records"> | null = null, byPhone: Doc<"records"> | null = null;
@@ -106,7 +113,7 @@ export async function submitLead(ctx: MutationCtx, principal: AgentMembership, i
   const ids = (item: Item, values: Record<string, unknown>) => Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined).map(([key, value]) => [item.fields[key]!._id, value]));
   const create = async (item: Item, values: Record<string, unknown>) => (await applyChange(ctx, principal, { action: "create", orgId, objectId: item.object._id, values: ids(item, values), reason }, { writeOnly: true })).recordId;
 
-  const companyId = company ? (await findByTitle(ctx, orgId, companies.object._id, company))?._id ?? await create(companies, { name: company }) : undefined;
+  const companyId = company ? (await companyNamed(ctx, companies, company))?._id ?? await create(companies, { name: company }) : undefined;
   const { byEmail, byPhone } = await matches(ctx, person, email, phone);
   // Email wins. A phone that belongs to someone else is flagged, never merged or copied.
   const conflict = byEmail && byPhone && byEmail._id !== byPhone._id ? byPhone : null, match = byEmail ?? byPhone;

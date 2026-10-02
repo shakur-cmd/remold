@@ -222,6 +222,17 @@ describe("POST /api/v1/intake/lead", () => {
     expect((await counts(t)).company).toBe(1);
   });
 
+  it("reuses an exact company name even when many similar names crowd the search", async () => {
+    const { t, client, orgId, send } = await intakeSetup();
+    const company = await objectFields(client, orgId, "company");
+    for (let i = 0; i < 25; i++) await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: `Acme Branch ${i}` } });
+    const acme = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Acme" } });
+    expect((await send({ ...lead, company: "Acme" }, "crowded")).status).toBe(201);
+    expect((await counts(t)).company).toBe(26);
+    const [opp] = await recordsOf(t, "opportunity");
+    expect(opp.values[(await objectFields(client, orgId, "opportunity")).fields.company._id]).toBe(acme.recordId);
+  });
+
   it("leaves no partial records when a later write fails", async () => {
     const { t, client, orgId, send } = await intakeSetup();
     const opportunity = await objectFields(client, orgId, "opportunity");
@@ -258,6 +269,17 @@ describe("website intake key", () => {
     const grants: any[] = await t.run((ctx: any) => ctx.db.query("capabilityGrants").withIndex("by_agent", (q: any) => q.eq("orgId", orgId).eq("agentId", intake.agentId)).collect());
     for (const g of grants) await client.mutation(api.authority.grants.grant, { orgId, target: normal.agentId, capability: g.capability, scope: g.scope, mode: g.mode, delegate: false, expiresAt: g.expiresAt });
     expect((await post(t, normal.key, "/api/v1/intake/lead", lead, "h")).status).toBe(201);
+  });
+
+  it("refuses a replay once an intake grant is revoked", async () => {
+    const { t, client, orgId, intake, send } = await intakeSetup();
+    expect((await send(lead, "revoked-replay")).status).toBe(201);
+    const grants: any[] = await t.run((ctx: any) => ctx.db.query("capabilityGrants").withIndex("by_agent", (q: any) => q.eq("orgId", orgId).eq("agentId", intake.agentId)).collect());
+    await client.mutation(api.authority.grants.revoke, { orgId, id: grants[0]._id });
+    const before = await counts(t);
+    const replayed = await send(lead, "revoked-replay");
+    expect(replayed.status).toBe(403);
+    expect(await counts(t)).toEqual(before);
   });
 
   it("refuses leads while the workspace is read only", async () => {
