@@ -38,10 +38,13 @@ async function plan(ctx: QueryCtx, orgId: Id<"orgs">, object: Doc<"objects">, so
   const eqs = await Promise.all(filters.map(async (filter) => ({ name: (await slot(filter.fieldId)).name, value: filter.value ?? undefined })));
   let bounds: { name: string; from?: number; to?: number; days?: Bounds; low?: number; high?: number; outside: number[]; inside: number[] } | undefined;
   if (range) {
-    const { field, name } = await slot(range.fieldId), { from, to, days } = range;
+    const { field, name } = await slot(range.fieldId), { from, days } = range;
     if (field.type !== "date") fail("VALIDATION", "A range needs a date field");
-    if (from === undefined && to === undefined) fail("VALIDATION", "A range needs a start or an end");
-    if (from !== undefined && to !== undefined && from > to) fail("VALIDATION", "A range must start before it ends");
+    if (from === undefined && range.to === undefined) fail("VALIDATION", "A range needs a start or an end");
+    if (from !== undefined && range.to !== undefined && from > range.to) fail("VALIDATION", "A range must start before it ends");
+    // A with-time instant at 00:00Z is stored as midnight + 0.5 ms, so an inclusive end reaches
+    // half a millisecond further; no other stored value lies in that half millisecond.
+    const to = range.to !== undefined && field.withTime ? range.to + 0.5 : range.to;
     if (days && (!field.withTime || (days.from === undefined) !== (from === undefined) || (days.to === undefined) !== (to === undefined) || [days.from, days.to].some((d) => d !== undefined && !allDay(d)) || (days.from! > days.to!))) fail("VALIDATION", "Invalid all-day bounds");
     // Index bounds cover both; `outside` are all-day values inside from..to but not within days, `inside` the reverse.
     const low = days?.from === undefined ? from : Math.min(from!, days.from), high = days?.to === undefined ? to : Math.max(to!, days.to);

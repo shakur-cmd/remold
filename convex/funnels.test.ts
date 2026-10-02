@@ -229,6 +229,16 @@ describe("funnels", () => {
     const tasks = await titles("object=task&range[dueDate]=2026-10-01..2026-10-01");
     expect(tasks).toEqual(["All-day first", "At midnight"]);
     expect(await titles(`object=task&range[dueDate]=${encodeURIComponent("2026-10-01T00:00:00Z..2026-10-01T23:59:59.999Z")}`)).toEqual(tasks);
+    // An instant at 00:00Z is stored as midnight + 0.5 ms; an inclusive upper bound at that midnight still holds it.
+    expect(await titles(`object=task&range[dueDate]=${encodeURIComponent("2026-09-30T23:59:59Z..2026-10-01T00:00:00Z")}`)).toEqual(["All-day first", "At midnight"]);
+    const upTo = { fieldId: task.fields.dueDate._id, from: Date.UTC(2026, 8, 30, 23, 59, 59), to: Date.UTC(2026, 9, 1) };
+    const app = async (sort?: any) => (await client.query(api.records.list, { orgId, objectId: task.object._id, range: upTo, ...(sort ? { sort } : {}), paginationOpts: { cursor: null, numItems: 50 } })).page.map((r: any) => r.title).sort();
+    expect(await app()).toEqual(["All-day first", "At midnight"]);
+    expect(await app({ fieldId: task.fields.title._id, direction: "asc" })).toEqual(["All-day first", "At midnight"]);
+    const ids = (await client.query(api.records.list, { orgId, objectId: task.object._id, paginationOpts: { cursor: null, numItems: 50 } })).page.map((r: any) => r._id);
+    const memberId = await f.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]!._id);
+    await client.mutation(anyApi["authority/policies"].setMember, { orgId, memberId, scopes: [{ objectId: task.object._id, records: ids, fields: "all" }], hiddenFieldIds: [] });
+    expect(await app()).toEqual(["All-day first", "At midnight"]);
   });
 
   it("pages every step in due order through an index, an urgent step after 1,000 others first", async () => {
