@@ -47,6 +47,9 @@ async function insertAgent(ctx: MutationCtx, args: ObjectType<typeof insertArgs>
   // the admin is named explicitly, the same way seed:demoAs works.
   const userId = args.asUserId ? (await memberAs(ctx, args.orgId, args.asUserId, "admin")).user._id : (await requireMember(ctx, args.orgId, "admin")).user._id;
   if (!args.name.trim()) fail("VALIDATION", "Agent name is required");
+  // CLI callers supply the hash themselves; a duplicate would make every lookup of that key fail.
+  if (!/^[0-9a-f]{64}$/.test(args.keyHash) || !args.keyPrefix) fail("VALIDATION", "keyHash must be a SHA-256 hex digest and keyPrefix non-empty");
+  if (await ctx.db.query("agents").withIndex("by_key_hash", (q) => q.eq("keyHash", args.keyHash)).first()) fail("CONFLICT", "An agent with this key already exists");
   await writable(ctx, args.orgId);
   if (!args.scoped) await legacyCeiling(ctx, args.orgId, userId);
   const objects = await snapshot(ctx, args.orgId);
