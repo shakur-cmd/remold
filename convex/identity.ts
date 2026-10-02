@@ -74,3 +74,12 @@ export function recordGranted(principal: Principal, action: "create" | "update" 
   if (granted(principal.agent, action, object, principal.org)) return true;
   return principal.capabilities?.some(g => g.mode === "direct" && g.capability === `record.${action}` && g.scope.kind === "records" && g.scope.objectId === object._id && (g.scope.records === "all" || (recordId !== undefined && g.scope.records.includes(recordId))) && fieldIds.every(id => g.scope.kind === "records" && g.scope.fields.includes(id as Id<"fields">))) ?? false;
 }
+
+// Operator tools (`convex run`) have no signed-in user; they act for the workspace owner.
+export async function ownerOf(ctx: Ctx, orgId: Id<"orgs">): Promise<Membership> {
+  const org = await ctx.db.get(orgId);
+  const member = (await ctx.db.query("members").withIndex("by_org_user", (q) => q.eq("orgId", orgId)).collect()).find((m) => m.role === "owner");
+  const user = member && await ctx.db.get(member.userId);
+  if (!org || !member || !user) fail("NOT_FOUND", "Workspace or its owner not found");
+  return { user, member, org, actor: { kind: "user", id: user._id } };
+}

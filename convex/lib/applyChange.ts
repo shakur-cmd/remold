@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
-import { currentPrincipal, recordGranted, type Membership, type Principal } from "../identity";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { currentPrincipal, recordGranted, type Actor, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
@@ -15,7 +15,7 @@ export type Change =
   | { action: "delete"; orgId: Id<"orgs">; recordId: Id<"records">; reason?: string };
 const empty = (value: unknown) => value === null || value === undefined;
 
-async function fieldsFor(ctx: MutationCtx, orgId: Id<"orgs">, objectId: Id<"objects">) {
+async function fieldsFor(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">) {
   return ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
 }
 
@@ -41,29 +41,52 @@ async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unkn
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-// Returns eventId null only when an update changed nothing, so no event is written.
-// Lookups store the target id in `values`, not in `links`, so a delete has to
-// find them by field: through the slot index when the lookup has one, else by
-// reading the source object's records.
-async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">) {
+// Lookups store the target id in `values`, not in `links`, so referrers are found
+// by field: through the slot index when the lookup has one, else by reading the
+// source object's records.
+export async function lookupReferrers(ctx: QueryCtx, orgId: Id<"orgs">, target: Doc<"records">) {
+  const found: { record: Doc<"records">; field: Doc<"fields"> }[] = [];
   const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
   for (const source of objects) {
-    const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === deleted.objectId));
+    const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === target.objectId));
     for (const field of lookups) {
       const slot = field.slot;
       const referrers: Doc<"records">[] = slot
-        ? await (ctx.db.query("records") as any).withIndex(`by_${slot.kind}${slot.index}`, (q: any) => q.eq("orgId", orgId).eq("objectId", source._id).eq(`${slot.kind}${slot.index}`, deleted._id)).collect()
-        : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === deleted._id);
-      for (const record of referrers) {
-        if (record._id === deleted._id) continue;
-        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true });
-      }
+        ? await (ctx.db.query("records") as any).withIndex(`by_${slot.kind}${slot.index}`, (q: any) => q.eq("orgId", orgId).eq("objectId", source._id).eq(`${slot.kind}${slot.index}`, target._id)).collect()
+        : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === target._id);
+      for (const record of referrers) if (record._id !== target._id) found.push({ record, field });
     }
+  }
+  return found;
+}
+
+async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">, actor: Actor) {
+  for (const { record, field } of await lookupReferrers(ctx, orgId, deleted)) await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
+}
+
+// Whether a principal's read scopes let it make this change to these fields. The
+// import dry run calls it too, so its preview refuses what the write refuses.
+export function authorize(principal: Principal, action: Change["action"], object: Doc<"objects">, record: Doc<"records"> | null, fields: Doc<"fields">[], touched: string[]) {
+  requireObjectRead(principal, object);
+  if (record) requireRecordRead(principal, object, record);
+  const createScopes = scopes(principal, object).filter(scope => scope.records === "all");
+  if (action === "create" && !createScopes.length) fail("FORBIDDEN", "Record scope does not authorize new records");
+  for (const id of touched) {
+    const field = fields.find(f => f._id === id);
+    if (field && (!canReadField(principal, object, field, record?._id) || (action === "create" && !createScopes.some(scope => scope.fields === "all" || scope.fields.includes(field._id))))) fail("NOT_FOUND", "Field not found");
   }
 }
 
-export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+// Retired fields cannot be written, so they are never required.
+export function requireFilled(fields: Doc<"fields">[], values: Record<string, unknown>, checked: (field: Doc<"fields">) => boolean = () => true) {
+  for (const field of fields) if (checked(field) && field.required && !field.retired && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
+}
+
+// Returns eventId null only when an update changed nothing, so no event is written.
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
+  // Operator tools write as the owner but name themselves in history.
+  const actor = options.actor ?? membership.actor;
   await writable(ctx, change.orgId);
   if (membership.org._id !== change.orgId) fail("FORBIDDEN", "Workspace mismatch");
   let record: Doc<"records"> | null = null;
@@ -74,21 +97,11 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const fields = await fieldsFor(ctx, change.orgId, object._id);
   if (!options.clearingReference) {
     const touched = change.action === "delete" ? Object.keys(record!.values) : Object.keys(change.values);
-    const checkScope = (principal: Principal) => {
-      requireObjectRead(principal, object!);
-      if (record) requireRecordRead(principal, object!, record);
-      const createScopes = scopes(principal, object!).filter(scope => scope.records === "all");
-      if (change.action === "create" && !createScopes.length) fail("FORBIDDEN", "Record scope does not authorize new records");
-      for (const id of touched) {
-        const field = fields.find(f => f._id === id);
-        if (field && (!canReadField(principal, object!, field, record?._id) || (change.action === "create" && !createScopes.some(scope => scope.fields === "all" || scope.fields.includes(field._id))))) fail("NOT_FOUND", "Field not found");
-      }
-    };
-    checkScope(membership);
+    authorize(membership, change.action, object, record, fields, touched);
     if (options.approvedBy) {
       const approver = await currentPrincipal(ctx, options.approvedBy);
       if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
-      checkScope(approver);
+      authorize(approver, change.action, object, record, fields, touched);
     } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
   }
   // Also on reference cleanup: an agent's delete must not clear a protected
@@ -102,13 +115,13 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (row.fromRecordId === record!._id) continue;
       const source = await ctx.db.get(row.fromRecordId);
       const current = (source?.values[row.fieldId] as string[] | undefined) ?? [];
-      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true });
+      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
     }
     const rows = await ctx.db.query("links").withIndex("by_record_any", (q) => q.eq("orgId", change.orgId).eq("fromRecordId", record!._id)).collect();
     for (const row of rows) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
-    await clearReferencesTo(ctx, membership, change.orgId, record!);
-    const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
+    await clearReferencesTo(ctx, membership, change.orgId, record!, actor);
+    const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
     return { recordId: record!._id, eventId };
   }
   const byId = new Map(fields.map((field) => [field._id, field]));
@@ -124,10 +137,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   // An update only checks the fields it touches, so adding a required field
   // later does not lock every older record. Clearing references on delete may
   // empty a required lookup; a dangling id would be worse.
-  for (const field of fields) {
-    const checked = change.action === "create" || (field._id in validated && !options.clearingReference);
-    if (checked && field.required && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
-  }
+  requireFilled(fields, values, (field) => change.action === "create" || (field._id in validated && !options.clearingReference));
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;
@@ -147,6 +157,6 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   }
   const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
-  const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
+  const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
   return { recordId, eventId };
 }
