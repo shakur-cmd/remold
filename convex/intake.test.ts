@@ -362,6 +362,19 @@ describe("POST /api/v1/intake/lead", () => {
 });
 
 describe("website intake key", () => {
+  it("answers 404 for other intake paths and methods, and when the workspace lacks a field intake writes, writing nothing", async () => {
+    const { t, client, orgId, intake, send } = await intakeSetup();
+    const before = await counts(t);
+    expect((await post(t, intake.key, "/api/v1/intake/leads", lead, "p1")).status).toBe(404);
+    expect((await t.fetch("/api/v1/intake/lead", { headers: { authorization: `Bearer ${intake.key}` } })).status).toBe(404);
+    const opportunity = await objectFields(client, orgId, "opportunity");
+    await client.mutation(api.fields.retire, { orgId, fieldId: opportunity.fields.stage._id });
+    const missing = await send(lead, "p2");
+    expect(missing.status).toBe(404);
+    expect(missing.json.error.code).toBe("NOT_FOUND");
+    expect(await counts(t)).toEqual(before);
+  });
+
   it("can submit leads and nothing else", async () => {
     const { t, intake, send } = await intakeSetup();
     await send(lead, "g");

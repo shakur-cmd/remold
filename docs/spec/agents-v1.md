@@ -248,7 +248,7 @@ REST v1 POST requests have a first-party Convex token-bucket limit per authentic
 | 201 | Lead written, or a replay of the same key and body within 24 hours |
 | 400 | `VALIDATION`: missing `Idempotency-Key`, missing name, invalid email, an over-long field, or a body that is not JSON |
 | 401 | `UNAUTHENTICATED`: missing, unknown or revoked key |
-| 403 | `FORBIDDEN`: a key without the intake field grants (any non-intake key), or the workspace is read only. An intake key gets 403 on every other route |
+| 403 | `FORBIDDEN`: a key without the intake field grants (any non-intake key), or the workspace is read only. An intake key gets 403 on every other existing route |
 | 404 | `NOT_FOUND`: the workspace lacks the Person, Company, Opportunity or Note object, or one of the fields intake writes; also any other `/api/v1/intake/*` path or method |
 | 422 | `IDEMPOTENCY_MISMATCH`: the key was used with a different body |
 | 429 | `RATE_LIMITED` with `Retry-After` seconds and nothing written: 10 per minute per key, 3 per hour per email, or the workspace's daily cap. The operator gets one notice per hour per limit, with no contact data |
