@@ -414,10 +414,10 @@ function FunnelDeals({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: 
   );
 }
 
-// A funnel's steps: tasks about it, earliest due first and undated last, done ones
+// A funnel's steps: tasks about it in the server's due order (undated last), done ones
 // included and crossed out. Typing a title and Enter adds one; the due date is optional.
 function Steps({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"records">; entry: Reverse }) {
-  const { results, status, loadMore } = usePaginatedQuery(api.records.related, { orgId, recordId, fieldId: entry.field._id }, { initialNumItems: 100 });
+  const { results: rows, status, loadMore } = usePaginatedQuery(api.records.steps, { orgId, recordId }, { initialNumItems: 100 });
   const task = useQuery(api.objects.get, { orgId, objectId: entry.object._id });
   const create = useMutation(api.records.create);
   const update = useMutation(api.records.update);
@@ -429,7 +429,6 @@ function Steps({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"re
   const due = task.fields.find((f) => f.key === "dueDate" && f.type === "date" && !f.retired);
   const done = task.fields.find((f) => f.key === "done" && f.type === "boolean" && !f.retired);
   const dueOf = (r: Doc<"records">) => (due ? (r.values[due._id] as number | undefined) : undefined) ?? Infinity;
-  const rows = [...results].sort((x, y) => dueOf(x) - dueOf(y) || x._creationTime - y._creationTime);
   const now = new Date();
   const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
   const open = rows.filter((r) => !done || r.values[done._id] !== true).length;

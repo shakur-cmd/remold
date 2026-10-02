@@ -1,19 +1,27 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { v } from "convex/values";
+import { allDay } from "./values";
 import { fail } from "../errors";
 import type { Principal } from "../identity";
-import { requireObjectRead, requireQueryField, canQueryField, projectRecord, listedRecords, compareIndexValues, pageList, paginateIndex } from "../authority/reads";
+import { canReadObject, canReadRecord, requireObjectRead, requireQueryField, canQueryField, projectRecord, listedRecords, compareIndexValues, pageList, paginateIndex } from "../authority/reads";
 
 const slotName = (kind: string, index: number) => `${kind}${index}`;
 type PageOpts = { cursor: string | null; numItems: number; endCursor?: string | null };
 type Sort = { fieldId: Id<"fields">; direction: "asc" | "desc" };
-export type Where = { filters?: { fieldId: Id<"fields">; value: unknown }[]; range?: { fieldId: Id<"fields">; from?: number; to?: number } };
+type Bounds = { from?: number; to?: number };
+export type Where = { filters?: { fieldId: Id<"fields">; value: unknown }[]; range?: { fieldId: Id<"fields">; days?: Bounds } & Bounds };
 export const filter = v.object({ fieldId: v.id("fields"), value: v.any() });
+const bounds = { from: v.optional(v.number()), to: v.optional(v.number()) };
 // Argument validators for Where: several filters combine with AND; the range is inclusive and needs a date field.
-export const whereArgs = { filters: v.optional(v.array(filter)), range: v.optional(v.object({ fieldId: v.id("fields"), from: v.optional(v.number()), to: v.optional(v.number()) })) };
+// On a with-time field `days` bounds all-day values (whole UTC midnights) by calendar date,
+// while from/to bound instants, so a range can follow the viewer's local days.
+export const whereArgs = { filters: v.optional(v.array(filter)), range: v.optional(v.object({ fieldId: v.id("fields"), ...bounds, days: v.optional(v.object(bounds)) })) };
 export const MAX_FILTERS = 5;
 const TOTALS_CAP = 4000;
+const DAY = 86400000;
+// Whole UTC midnights in [lo, hi]: the all-day values a range edge can disagree about.
+const midnights = (lo: number, hi: number) => { const out: number[] = []; for (let m = Math.ceil(lo / DAY) * DAY; m <= hi; m += DAY) { out.push(m); if (out.length > 3) fail("VALIDATION", "All-day bounds must be within a day of the time bounds"); } return out; };
 
 // Checks every field the query names and picks one index for it: the sort field,
 // else the range field, else the first filter. The other conditions are checked on
@@ -28,17 +36,23 @@ async function plan(ctx: QueryCtx, orgId: Id<"orgs">, object: Doc<"objects">, so
     return { field, name: slotName(field.slot.kind, field.slot.index) };
   };
   const eqs = await Promise.all(filters.map(async (filter) => ({ name: (await slot(filter.fieldId)).name, value: filter.value ?? undefined })));
-  let bounds: { name: string; from?: number; to?: number } | undefined;
+  let bounds: { name: string; from?: number; to?: number; days?: Bounds; low?: number; high?: number; outside: number[]; inside: number[] } | undefined;
   if (range) {
-    const { field, name } = await slot(range.fieldId);
+    const { field, name } = await slot(range.fieldId), { from, to, days } = range;
     if (field.type !== "date") fail("VALIDATION", "A range needs a date field");
-    if (range.from === undefined && range.to === undefined) fail("VALIDATION", "A range needs a start or an end");
-    if (range.from !== undefined && range.to !== undefined && range.from > range.to) fail("VALIDATION", "A range must start before it ends");
-    bounds = { name, from: range.from, to: range.to };
+    if (from === undefined && to === undefined) fail("VALIDATION", "A range needs a start or an end");
+    if (from !== undefined && to !== undefined && from > to) fail("VALIDATION", "A range must start before it ends");
+    if (days && (!field.withTime || (days.from === undefined) !== (from === undefined) || (days.to === undefined) !== (to === undefined) || [days.from, days.to].some((d) => d !== undefined && !allDay(d)) || (days.from! > days.to!))) fail("VALIDATION", "Invalid all-day bounds");
+    // Index bounds cover both; `outside` are all-day values inside from..to but not within days, `inside` the reverse.
+    const low = days?.from === undefined ? from : Math.min(from!, days.from), high = days?.to === undefined ? to : Math.max(to!, days.to);
+    const outside = days ? [...(from !== undefined ? midnights(from, days.from! - 1) : []), ...(to !== undefined ? midnights(days.to! + 1, to) : [])] : [];
+    const inside = days ? [...(from !== undefined ? midnights(days.from!, Math.min(from - 1, days.to ?? Infinity)) : []), ...(to !== undefined ? midnights(Math.max(to + 1, days.from ?? -Infinity), days.to!) : [])] : [];
+    bounds = { name, from, to, days, low, high, outside, inside };
   }
   const lead = sort ? (await slot(sort.fieldId)).name : bounds?.name ?? eqs[0]?.name;
   const at = (row: Doc<"records">, name: string) => (row as Record<string, unknown>)[name];
-  const inRange = (value: unknown) => typeof value === "number" && (bounds!.from === undefined || value >= bounds!.from) && (bounds!.to === undefined || value <= bounds!.to);
+  const within = (value: number, b: Bounds) => (b.from === undefined || value >= b.from) && (b.to === undefined || value <= b.to);
+  const inRange = (value: unknown) => typeof value === "number" && (bounds!.days && allDay(value) ? within(value, bounds!.days) : within(value, bounds!));
   const match = (row: Doc<"records">) => eqs.every(({ name, value }) => compareIndexValues(at(row, name), value) === 0) && (!bounds || inRange(at(row, bounds.name)));
   const listed = principal ? await listedRecords(ctx, principal, object) : null;
   if (listed) {
@@ -54,12 +68,15 @@ async function plan(ctx: QueryCtx, orgId: Id<"orgs">, object: Doc<"objects">, so
     const base = q.eq("orgId", orgId).eq("objectId", object._id);
     if (leadEq) return base.eq(lead, leadEq.value);
     if (!leadRange) return base;
-    const low = leadRange.from === undefined ? base.gt(lead, null) : base.gte(lead, leadRange.from);
-    return leadRange.to === undefined ? low : low.lte(lead, leadRange.to);
+    const low = leadRange.low === undefined ? base.gt(lead, null) : base.gte(lead, leadRange.low);
+    return leadRange.high === undefined ? low : low.lte(lead, leadRange.high);
   }).order(sort?.direction ?? "asc");
   if (eqs.length || bounds) query = query.filter((q: any) => q.and(
     ...eqs.map(({ name, value }) => q.eq(q.field(name), value)),
-    ...(bounds ? [bounds.from === undefined ? q.gt(q.field(bounds.name), null) : q.gte(q.field(bounds.name), bounds.from), ...(bounds.to === undefined ? [] : [q.lte(q.field(bounds.name), bounds.to)])] : []),
+    ...(bounds ? [((b) => { const value = q.field(b.name);
+      const timed = q.and(b.from === undefined ? q.gt(value, null) : q.gte(value, b.from), ...(b.to === undefined ? [] : [q.lte(value, b.to)]), ...b.outside.map((m) => q.neq(value, m)));
+      return q.or(timed, ...b.inside.map((m) => q.eq(value, m)));
+    })(bounds)] : []),
   ));
   return { query };
 }
@@ -99,7 +116,27 @@ export async function totals(ctx: QueryCtx, principal: Principal, orgId: Id<"org
     entry.count += 1; if (typeof amount === "number") entry.sum += amount;
     out.set(key, entry);
   }
-  return { groups: [...out].map(([value, entry]) => ({ value, count: entry.count, sum: summed ? entry.sum : null })), partial: rows.length > TOTALS_CAP };
+  return { groups: [...out].map(([value, entry]) => ({ value, count: entry.count, sum: summed ? entry.sum : null })), partial: rows.length > TOTALS_CAP, cap: TOTALS_CAP };
+}
+
+const STEPS_CAP = 1000;
+// A record's steps: tasks whose About points at it, earliest due first, undated last,
+// ties by creation. All of them are ordered before a page is cut, so a step created
+// late but due soon is on the first page. A caller who cannot query the due field gets
+// creation order, since ordering by a hidden value would reveal it.
+export async function steps(ctx: QueryCtx, principal: Principal, orgId: Id<"orgs">, recordId: Id<"records">, paginationOpts: PageOpts) {
+  const target = await ctx.db.get(recordId), targetObject = target && target.orgId === orgId ? await ctx.db.get(target.objectId) : null;
+  if (!target || !targetObject || !canReadRecord(principal, targetObject, target)) fail("NOT_FOUND", "Record not found");
+  const task = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", "task")).unique();
+  const fields = task && canReadObject(principal, task) ? await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", task._id)).collect() : [];
+  const about = fields.find((f) => f.key === "about" && f.type === "lookup" && !f.targetObjectId && !f.retired && f.slot && canQueryField(principal, task!, f));
+  if (!task || !about) return { page: [], isDone: true, continueCursor: "list:0" };
+  const due = fields.find((f) => f.key === "dueDate" && f.type === "date" && !f.retired && canQueryField(principal, task, f));
+  const name = slotName(about.slot!.kind, about.slot!.index);
+  const rows: Doc<"records">[] = await listedRelated(ctx, principal, task, about, target._id) ?? await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", task._id).eq(name, target._id)).take(STEPS_CAP);
+  const dueOf = (r: Doc<"records">) => { const value = due ? r.values[due._id] : undefined; return typeof value === "number" ? value : Infinity; };
+  const page = pageList([...rows].sort((a, b) => (dueOf(a) === dueOf(b) ? 0 : dueOf(a) < dueOf(b) ? -1 : 1) || a._creationTime - b._creationTime), paginationOpts);
+  return { ...page, page: (await Promise.all(page.page.map((r) => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null) };
 }
 
 // Records of `source` that point at `targetId` through a lookup or links field, from a

@@ -32,12 +32,15 @@ export const inputToDate = (value: string, field?: Field) => {
   return sinceMidnight(ms) === 0 ? ms + 0.5 : ms;
 };
 
-// A day range on a date field as inclusive bounds; an empty end stays open. Plain dates
-// are UTC midnights. With-time fields hold timed values as instants and all-day values at
-// UTC midnight, so each end takes whichever of the local and the UTC day reaches further.
+// A range of the viewer's calendar days on a date field, inclusive; an empty end stays open.
+// Plain dates are UTC midnights. On with-time fields an instant counts from local midnight
+// to the next local midnight minus 1 ms (23 or 25 hours across DST), and an all-day value
+// counts by its calendar date, which `days` bounds.
 export const dayRange = (field: Field, from: string, to: string) => {
-  const utc = (day: string) => Date.parse(`${day}T00:00:00Z`), local = (day: string) => new Date(`${day}T00:00`).getTime();
-  return { ...(from ? { from: field.withTime ? Math.min(utc(from), local(from)) : utc(from) } : {}), ...(to ? { to: field.withTime ? Math.max(utc(to), local(to)) + DAY - 1 : utc(to) } : {}) };
+  const utc = (day: string) => Date.parse(`${day}T00:00:00Z`);
+  const local = (day: string, plus = 0) => { const [y, m, d] = day.split("-").map(Number); return new Date(y!, m! - 1, d! + plus).getTime(); };
+  if (!field.withTime) return { ...(from ? { from: utc(from) } : {}), ...(to ? { to: utc(to) } : {}) };
+  return { ...(from ? { from: local(from) } : {}), ...(to ? { to: local(to, 1) - 1 } : {}), ...(from || to ? { days: { ...(from ? { from: utc(from) } : {}), ...(to ? { to: utc(to) } : {}) } } : {}) };
 };
 
 // The local day a date falls on, encoded as UTC midnight like plain dates and "today".

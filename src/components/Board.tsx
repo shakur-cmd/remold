@@ -40,6 +40,7 @@ export function Board({ orgId, object, groupBy, fields, filters = [], range }: P
 
   return (
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+      {totals?.partial && <p className="text-xs text-muted-foreground">Counts and totals cover the first {totals.cap.toLocaleString()} matching records; narrow the filters for exact numbers.</p>}
       <div className="-mx-3 flex snap-x gap-3 overflow-x-auto px-3 pb-4 md:mx-0 md:px-0">
         {columns.map((column) => (
           <Column key={column.id} orgId={orgId} object={object} groupBy={groupBy} column={column} preview={preview} filters={filters} range={range} total={totalOf(column.id)} partial={totals?.partial ?? false} />

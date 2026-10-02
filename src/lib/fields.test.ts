@@ -113,23 +113,25 @@ describe("plain dates on with-time fields", () => {
 });
 
 describe("dayRange", () => {
-  // West of UTC, a local day starts after the UTC midnight that marks an all-day value.
+  // The viewer's calendar days: local midnight to the next local midnight minus 1 ms;
+  // all-day values (whole UTC midnights) are matched by their calendar date instead.
   beforeAll(() => { vi.stubEnv("TZ", "America/New_York"); });
   afterAll(() => { vi.unstubAllEnvs(); });
   const plain = { type: "date" } as Field, timed = { type: "date", withTime: true } as Field;
   it("bounds a plain date range by the stored UTC midnights, both ends inclusive", () => {
     expect(dayRange(plain, "2026-10-01", "2026-10-31")).toEqual({ from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 9, 31) });
   });
-  it("covers the whole local last day and all-day values of a with-time range", () => {
-    const { from, to } = dayRange(timed, "2026-10-01", "2026-10-31");
-    expect(from).toBeLessThanOrEqual(Date.UTC(2026, 9, 1));
-    expect(from).toBeLessThanOrEqual(new Date(2026, 9, 1).getTime());
-    expect(to).toBeGreaterThanOrEqual(new Date(2026, 9, 31, 23, 59, 59, 999).getTime());
-    expect(to).toBeGreaterThanOrEqual(Date.UTC(2026, 9, 31));
-    expect(to).toBeLessThan(Math.max(new Date(2026, 10, 1).getTime(), Date.UTC(2026, 10, 1)));
+  it("bounds a with-time range by local midnights, and all-day values by calendar date", () => {
+    expect(dayRange(timed, "2026-10-01", "2026-10-01")).toEqual({ from: Date.UTC(2026, 9, 1, 4), to: Date.UTC(2026, 9, 2, 4) - 1, days: { from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 9, 1) } });
+  });
+  it("ends a with-time range at the next local midnight across both DST changes", () => {
+    // Nov 1, 2026 has 25 hours in New York; Mar 8, 2026 has 23.
+    expect(dayRange(timed, "2026-11-01", "2026-11-01")).toMatchObject({ from: Date.UTC(2026, 10, 1, 4), to: Date.UTC(2026, 10, 2, 5) - 1 });
+    expect(dayRange(timed, "2026-03-08", "2026-03-08")).toMatchObject({ from: Date.UTC(2026, 2, 8, 5), to: Date.UTC(2026, 2, 9, 4) - 1 });
   });
   it("leaves an open end open", () => {
     expect(dayRange(plain, "", "2026-10-31")).toEqual({ to: Date.UTC(2026, 9, 31) });
     expect(dayRange(plain, "2026-10-01", "")).toEqual({ from: Date.UTC(2026, 9, 1) });
+    expect(dayRange(timed, "2026-10-01", "")).toEqual({ from: Date.UTC(2026, 9, 1, 4), days: { from: Date.UTC(2026, 9, 1) } });
   });
 });

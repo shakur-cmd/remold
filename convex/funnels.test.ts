@@ -151,4 +151,64 @@ describe("funnels", () => {
     expect(data.tasks.map((r: any) => r._id).sort()).toEqual([step, plain].sort());
     expect(data.funnels).toEqual({ [step]: { _id: spring, title: "Spring webinar" } });
   });
+
+  it("matches a with-time range by the viewer's local days, all-day values by date, across DST", async () => {
+    const f = await funnels(), { client, orgId, task } = f;
+    const at = (text: string) => Date.parse(text);
+    for (const [title, due] of [
+      ["Outside September 30", at("2026-10-01T02:00:00Z")], // 10 PM Sep 30 in New York
+      ["Inside October 1", at("2026-10-01T15:00:00Z")],
+      ["All-day October 1", Date.UTC(2026, 9, 1)],
+      ["All-day October 2", Date.UTC(2026, 9, 2)], // falls inside Oct 1 local time as an instant, but is a different date
+      ["All-day September 30", Date.UTC(2026, 8, 30)],
+      ["Inside November 1", at("2026-11-02T04:30:00Z")], // 11:30 PM Nov 1, the 25-hour day
+      ["Outside November 2", at("2026-11-02T05:00:00Z")],
+    ] as const) await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: title, [task.fields.dueDate._id]: due } });
+    // What the app sends for New York local days (see dayRange in src/lib/fields.ts).
+    const october1 = { fieldId: task.fields.dueDate._id, from: Date.UTC(2026, 9, 1, 4), to: Date.UTC(2026, 9, 2, 4) - 1, days: { from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 9, 1) } };
+    const november1 = { fieldId: task.fields.dueDate._id, from: Date.UTC(2026, 10, 1, 4), to: Date.UTC(2026, 10, 2, 5) - 1, days: { from: Date.UTC(2026, 10, 1), to: Date.UTC(2026, 10, 1) } };
+    const titles = async (range: any, sort?: any) => (await client.query(api.records.list, { orgId, objectId: task.object._id, range, ...(sort ? { sort } : {}), paginationOpts: page })).page.map((r: any) => r.title).sort();
+    expect(await titles(october1)).toEqual(["All-day October 1", "Inside October 1"]);
+    expect(await titles(november1)).toEqual(["Inside November 1"]);
+    // The range as a re-check behind another index gives the same rows.
+    expect(await titles(october1, { fieldId: task.fields.title._id, direction: "asc" })).toEqual(["All-day October 1", "Inside October 1"]);
+    // An agent names local days with offset bounds; the calendar date written in each bound bounds all-day values.
+    const call = rest(f.t, (await agentFor(client, orgId, { name: "reader" })).key);
+    const viaRest = await call("GET", `/api/v1/records?object=task&range[dueDate]=${encodeURIComponent("2026-10-01T00:00:00-04:00..2026-10-01T23:59:59.999-04:00")}`);
+    expect(viaRest.json.records.map((r: any) => r.title).sort()).toEqual(["All-day October 1", "Inside October 1"]);
+    // A record-scoped reader is served from their own list with the same rule.
+    const ids = (await client.query(api.records.list, { orgId, objectId: task.object._id, paginationOpts: page })).page.map((r: any) => r._id);
+    const memberId = await f.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]!._id);
+    await client.mutation(anyApi["authority/policies"].setMember, { orgId, memberId, scopes: [{ objectId: task.object._id, records: ids, fields: "all" }], hiddenFieldIds: [] });
+    expect(await titles(october1)).toEqual(["All-day October 1", "Inside October 1"]);
+    expect(await titles(november1)).toEqual(["Inside November 1"]);
+  });
+
+  it("orders a funnel's steps by due date on the server before paging, undated last", async () => {
+    const f = await funnels(), { client, orgId, task, newCampaign } = f;
+    const spring = await newCampaign("Spring webinar"), other = await newCampaign("Other");
+    const step = (title: string, about: string, due?: number) => client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: title, [task.fields.about._id]: about, ...(due !== undefined ? { [task.fields.dueDate._id]: due } : {}) } });
+    await step("Undated", spring);
+    for (let i = 0; i < 30; i += 1) await step(`Future ${i}`, spring, Date.UTC(2026, 11, 1) + i);
+    await step("Urgent", spring, Date.UTC(2026, 9, 1, 13));
+    await step("Not this funnel", other, Date.UTC(2026, 8, 1));
+    const first = await client.query(api.records.steps, { orgId, recordId: spring, paginationOpts: { cursor: null, numItems: 10 } });
+    expect(first.page.map((r: any) => r.title).slice(0, 3)).toEqual(["Urgent", "Future 0", "Future 1"]);
+    const all = await client.query(api.records.steps, { orgId, recordId: spring, paginationOpts: { cursor: null, numItems: 100 } });
+    expect(all.page).toHaveLength(32);
+    expect(all.page.at(-1)!.title).toBe("Undated");
+    // With the due date hidden, steps come in creation order: their order never reveals it.
+    const memberId = await f.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]!._id);
+    await client.mutation(anyApi["authority/policies"].setMember, { orgId, memberId, hiddenFieldIds: [task.fields.dueDate._id] });
+    expect((await client.query(api.records.steps, { orgId, recordId: spring, paginationOpts: { cursor: null, numItems: 3 } })).page.map((r: any) => r.title)).toEqual(["Undated", "Future 0", "Future 1"]);
+  });
+
+  it("flags board totals as partial past the cap and says where it stopped", async () => {
+    const { t, client, orgId, deal } = await funnels();
+    const stage = deal.fields.stage, slot = `${stage.slot.kind}${stage.slot.index}`;
+    await t.run(async (ctx: any) => { for (let i = 0; i < 4001; i += 1) await ctx.db.insert("records", { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: `D${i}`, [stage._id]: "new" }, title: `D${i}`, createdBy: (await ctx.db.query("users").first())._id, updatedAt: 0, [slot]: "new" }); });
+    const totals = await client.query(api.records.totals, { orgId, objectId: deal.object._id, groupFieldId: stage._id });
+    expect(totals).toMatchObject({ partial: true, cap: 4000 });
+    expect(totals.groups.find((g: any) => g.value === "new")!.count).toBe(4000);
+  }, 60000);
 });
