@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { type Field, dateToInput, formatDate, formatFieldDate, formatNumber, inputToDate, localDay, relativeDay, toKey } from "./fields";
+import { type Field, dateToInput, formatDate, formatFieldDate, formatNumber, dayRange, inputToDate, localDay, relativeDay, toKey } from "./fields";
 
 const day = 86400000;
 const today = Date.UTC(2026, 8, 25); // a Friday
@@ -76,5 +76,27 @@ describe("date fields with time", () => {
     expect(inputToDate("2026-10-03", plain)).toBe(day);
     expect(formatFieldDate(plain, day)).toBe(formatDate(day));
     expect(localDay(plain, day)).toBe(day);
+  });
+});
+
+describe("dayRange", () => {
+  // West of UTC, a local day starts after the UTC midnight that marks an all-day value.
+  beforeAll(() => { vi.stubEnv("TZ", "America/New_York"); });
+  afterAll(() => { vi.unstubAllEnvs(); });
+  const plain = { type: "date" } as Field, timed = { type: "date", withTime: true } as Field;
+  it("bounds a plain date range by the stored UTC midnights, both ends inclusive", () => {
+    expect(dayRange(plain, "2026-10-01", "2026-10-31")).toEqual({ from: Date.UTC(2026, 9, 1), to: Date.UTC(2026, 9, 31) });
+  });
+  it("covers the whole local last day and all-day values of a with-time range", () => {
+    const { from, to } = dayRange(timed, "2026-10-01", "2026-10-31");
+    expect(from).toBeLessThanOrEqual(Date.UTC(2026, 9, 1));
+    expect(from).toBeLessThanOrEqual(new Date(2026, 9, 1).getTime());
+    expect(to).toBeGreaterThanOrEqual(new Date(2026, 9, 31, 23, 59, 59, 999).getTime());
+    expect(to).toBeGreaterThanOrEqual(Date.UTC(2026, 9, 31));
+    expect(to).toBeLessThan(Math.max(new Date(2026, 10, 1).getTime(), Date.UTC(2026, 10, 1)));
+  });
+  it("leaves an open end open", () => {
+    expect(dayRange(plain, "", "2026-10-31")).toEqual({ to: Date.UTC(2026, 9, 31) });
+    expect(dayRange(plain, "2026-10-01", "")).toEqual({ from: Date.UTC(2026, 9, 1) });
   });
 });

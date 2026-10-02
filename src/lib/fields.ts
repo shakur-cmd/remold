@@ -25,6 +25,14 @@ export const dateToInput = (ms: unknown, field?: Field) => {
 };
 export const inputToDate = (value: string, field?: Field) => (!value ? null : field?.withTime ? new Date(value).getTime() : Date.parse(`${value}T00:00:00Z`));
 
+// A day range on a date field as inclusive bounds; an empty end stays open. Plain dates
+// are UTC midnights. With-time fields hold timed values as instants and all-day values at
+// UTC midnight, so each end takes whichever of the local and the UTC day reaches further.
+export const dayRange = (field: Field, from: string, to: string) => {
+  const utc = (day: string) => Date.parse(`${day}T00:00:00Z`), local = (day: string) => new Date(`${day}T00:00`).getTime();
+  return { ...(from ? { from: field.withTime ? Math.min(utc(from), local(from)) : utc(from) } : {}), ...(to ? { to: field.withTime ? Math.max(utc(to), local(to)) + DAY - 1 : utc(to) } : {}) };
+};
+
 // The local day a date falls on, encoded as UTC midnight like plain dates and "today".
 export const localDay = (field: Field | undefined, ms: number) => {
   if (allDay(field, ms)) return ms;

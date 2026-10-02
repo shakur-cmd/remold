@@ -57,6 +57,11 @@ export function Today() {
                     <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className="min-w-0 flex-1 truncate text-sm">
                       {record.title || "Untitled"}
                     </Link>
+                    {data.funnels[record._id] && (
+                      <Link to={`/o/${org._id}/campaign/${data.funnels[record._id]!._id}`} className="max-w-40 shrink-0 truncate rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground" title="Funnel">
+                        {data.funnels[record._id]!.title || "Untitled funnel"}
+                      </Link>
+                    )}
                     <span className={cn("text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>
                       {relativeDay(due(record), today)}
                       {task && timeOfDay(task.dueField, at(record)) && ` ${timeOfDay(task.dueField, at(record))}`}
