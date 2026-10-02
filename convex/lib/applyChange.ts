@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { currentPrincipal, recordGranted, type Membership, type Principal } from "../identity";
+import { currentPrincipal, recordGranted, type Actor, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
@@ -43,7 +43,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stri
 // Lookups store the target id in `values`, not in `links`, so a delete has to
 // find them by field: through the slot index when the lookup has one, else by
 // reading the source object's records.
-async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">) {
+async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">, actor: Actor) {
   const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
   for (const source of objects) {
     const lookups = (await fieldsFor(ctx, orgId, source._id)).filter((field) => field.type === "lookup" && (!field.targetObjectId || field.targetObjectId === deleted.objectId));
@@ -54,14 +54,16 @@ async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId:
         : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", source._id)).collect()).filter((record) => record.values[field._id] === deleted._id);
       for (const record of referrers) {
         if (record._id === deleted._id) continue;
-        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true });
+        await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
       }
     }
   }
 }
 
-export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
+  // Operator tools write as the owner but name themselves in history.
+  const actor = options.actor ?? membership.actor;
   await writable(ctx, change.orgId);
   if (membership.org._id !== change.orgId) fail("FORBIDDEN", "Workspace mismatch");
   let record: Doc<"records"> | null = null;
@@ -97,13 +99,13 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (row.fromRecordId === record!._id) continue;
       const source = await ctx.db.get(row.fromRecordId);
       const current = (source?.values[row.fieldId] as string[] | undefined) ?? [];
-      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true });
+      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
     }
     const rows = await ctx.db.query("links").withIndex("by_record_any", (q) => q.eq("orgId", change.orgId).eq("fromRecordId", record!._id)).collect();
     for (const row of rows) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
-    await clearReferencesTo(ctx, membership, change.orgId, record!);
-    const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
+    await clearReferencesTo(ctx, membership, change.orgId, record!, actor);
+    const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
     return { recordId: record!._id, eventId };
   }
   const byId = new Map(fields.map((field) => [field._id, field]));
@@ -142,6 +144,6 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   }
   const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
-  const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor: membership.actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
+  const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
   return { recordId, eventId };
 }

@@ -18,7 +18,7 @@ export const forRecord = query({ args: { orgId: v.id("orgs"), recordId: v.id("re
     const suggestion = event.suggestionId ? await ctx.db.get(event.suggestionId) : null;
     const appliedBy = suggestion?.resolvedBy ? await ctx.db.get(suggestion.resolvedBy) : null;
     const masked = await projectEvent(ctx, principal, event);
-    return masked ? { ...masked, actorName: actor?.name ?? null, appliedByName: appliedBy?.name ?? null } : null;
+    return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? event.actor.id : null), appliedByName: appliedBy?.name ?? null } : null;
   }))).filter((event): event is NonNullable<typeof event> => event !== null);
 } });
 export const forOrg = query({ args: { orgId: v.id("orgs"), paginationOpts: paginationOptsValidator }, handler: async (ctx, args) => {

@@ -1209,6 +1209,26 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "imports:batch",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "imports:check",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
     "id": "seed:demo",
     "kind": "mutation",
     "visibility": "public",
@@ -1250,6 +1270,27 @@
   },
   {
     "id": "seed:releaseStandardSlots",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller"
+  },
+  {
+    "id": "seed:demoPlan",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "n/a",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "operator dry run; lists the fictional demo rows it would delete"
+  },
+  {
+    "id": "seed:removeDemo",
     "kind": "mutation",
     "visibility": "internal",
     "writes": true,

@@ -1,8 +1,8 @@
-import { internalMutation, mutation } from "./_generated/server";
+import { internalMutation, internalQuery, mutation } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
-import { requireMember, type Membership } from "./identity";
+import { ownerOf, requireMember, type Membership } from "./identity";
 import { applyChange } from "./lib/applyChange";
 import { seedStandard, standard } from "./lib/standard";
 import { releaseSlot } from "./lib/slots";
@@ -43,6 +43,52 @@ async function seedDemo(ctx: MutationCtx, member: Membership, orgId: Id<"orgs">)
   await create("note", { body: "Fictional customer note", about: fictional });
   await create("note", { body: "Sample project note", about: project });
 }
+
+// What seedDemo creates, in order. Its rows are written in one transaction, so
+// their create events are consecutive in the workspace history.
+const demoRows: [string, string][] = [["company", "Fictional Plumbing Co"], ["company", "Atlas Imaginary Works"], ["company", "Example Electric LLC"], ["person", "Ava Example"], ["person", "Ben Sample"], ["person", "Casey Fiction"], ["person", "Drew Placeholder"], ["opportunity", "Fictional Plumbing Website"], ["opportunity", "Atlas Demo Proposal"], ["opportunity", "Plumbing Sample Renewal"], ["project", "Fictional Plumbing Refresh"], ["task", "Review fictional brief"], ["task", "Prepare sample draft"], ["task", "Send imaginary update"], ["note", "Fictional customer note"], ["note", "Sample project note"]];
+type Row = { id: Id<"records">; object: string; title: string };
+
+// Finds the seed's run of create events, then sorts its surviving rows into
+// untouched (remove) and edited since (kept). A row a person made later with a
+// demo title is outside the run and never listed.
+async function demoPlanFor(ctx: QueryCtx, orgId: Id<"orgs">) {
+  const remove: Row[] = [], kept: (Row & { reason: string })[] = [];
+  const objects = new Map((await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect()).map((object) => [object._id, object]));
+  const company = [...objects.values()].find((object) => object.key === "company");
+  const titleOf = (event: { objectId: Id<"objects">; after: Record<string, unknown> | null }) => { const object = objects.get(event.objectId); return object?.titleFieldId ? event.after?.[object.titleFieldId] : undefined; };
+  const creates = company ? await ctx.db.query("events").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", company._id)).filter((q) => q.eq(q.field("action"), "create")).collect() : [];
+  const anchor = creates.find((event) => titleOf(event) === demoRows[0]![1]);
+  if (!anchor) return { remove, kept };
+  const run = await ctx.db.query("events").withIndex("by_org", (q) => q.eq("orgId", orgId).gte("_creationTime", anchor._creationTime)).take(demoRows.length);
+  for (const [index, event] of run.entries()) {
+    const [key, title] = demoRows[index]!;
+    if (event.action !== "create" || objects.get(event.objectId)?.key !== key || titleOf(event) !== title) break;
+    const record = await ctx.db.get(event.recordId);
+    if (!record) continue;
+    const history = await ctx.db.query("events").withIndex("by_record", (q) => q.eq("orgId", orgId).eq("recordId", record._id)).collect();
+    const row = { id: record._id, object: key, title: record.title };
+    if (history.some((other) => other._id !== event._id && other.reason !== "Linked record was deleted")) kept.push({ ...row, reason: "edited after seeding" });
+    else remove.push(row);
+  }
+  return { remove, kept };
+}
+
+// Dry run for removeDemo (`convex run seed:demoPlan`).
+export const demoPlan = internalQuery({ args: { orgId: v.id("orgs") }, handler: (ctx, args) => demoPlanFor(ctx, args.orgId) });
+
+// Deletes the untouched demo rows as the owner, named "demo cleanup" in history (`convex run seed:removeDemo`).
+export const removeDemo = internalMutation({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    const { remove, kept } = await demoPlanFor(ctx, args.orgId);
+    const owner = await ownerOf(ctx, args.orgId);
+    const actor = { kind: "automation" as const, id: `demo cleanup ${new Date().toISOString().slice(0, 10)}` };
+    // Dependents first, so rows about to go get no reference-clearing updates.
+    for (const row of [...remove].reverse()) await applyChange(ctx, owner, { action: "delete", orgId: args.orgId, recordId: row.id, reason: "Demo cleanup" }, { actor });
+    return { removed: remove, kept };
+  },
+});
 
 export const demo = mutation({
   args: { orgId: v.id("orgs") },
