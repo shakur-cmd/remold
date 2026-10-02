@@ -33,7 +33,7 @@ export function InboxCard({ orgId }: { orgId: Id<"orgs"> }) {
       </CardHeader>
       <CardContent className="grid gap-3">
         <form onSubmit={submit} className="grid gap-2">
-          <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Spoke with Dana at Atlas, wants a proposal by Friday, budget around 4k" rows={2} aria-label="Note for your agent" />
+          <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. Call went well, they want a proposal by Friday" rows={2} aria-label="Note for your agent" />
           <label className="flex items-start gap-2 text-sm text-muted-foreground">
             <Checkbox checked={shareWithAgents} disabled={!audience?.canShare} onCheckedChange={(v) => setShareWithAgents(v === true)} className="mt-0.5" />
             <span>Also share with agents that have shared inbox permission. Agents limited to selected records or fields are excluded.</span>
