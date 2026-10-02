@@ -1,3 +1,4 @@
+declare const process: { env: Record<string, string | undefined> };
 import { httpAction } from '../_generated/server';
 import { makeFunctionReference } from 'convex/server';
 import { argumentsConform } from '../lib/shape';
@@ -20,6 +21,8 @@ const mutations: Record<string, string> = {
   'resolve-unknown': 'integrations/outcomes:resolveUnknown', bind: 'integrations/bindings:bind', page: 'integrations/callbacks:page',
 };
 export const route = httpAction(async (ctx, request) => {
+  // No payment or provider adapter is live yet; production answers as if the route did not exist.
+  if (process.env.REMOLD_PAYMENT_CALLBACKS !== '1') return json({ error: { code: 'NOT_FOUND' } }, 404);
   try {
     const key = /^Bearer (ra_[0-9a-f]{64})$/.exec(request.headers.get('authorization') ?? '')?.[1];
     if (!key) return json({ error: { code: 'UNAUTHENTICATED', message: 'Adapter credential required' } }, 401);

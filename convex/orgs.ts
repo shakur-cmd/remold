@@ -1,5 +1,6 @@
+declare const process: { env: Record<string, string | undefined> };
 import { pauseWork } from './integrations/lifecycle';
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getPrincipal, requireMember, requireWriter } from "./identity";
@@ -7,8 +8,17 @@ import { seedStandard } from "./lib/standard";
 import { fail } from "./errors";
 import { writable } from "./authority/readonly";
 
+// Only an email the token marks verified counts; users.store keeps whatever profile email the app sent.
+// WorkOS access tokens carry email and email_verified only when a JWT template adds them.
+async function mayCreate(ctx: QueryCtx) {
+  if (process.env.REMOLD_OPEN_SIGNUP === "1") return true;
+  const identity = await ctx.auth.getUserIdentity(), email = identity?.emailVerified !== true ? undefined : identity.email?.trim().toLowerCase();
+  return !!email && (process.env.REMOLD_WORKSPACE_CREATORS ?? "").split(",").some((creator) => creator.trim().toLowerCase() === email);
+}
+export const canCreate = query({ args: {}, handler: async (ctx) => mayCreate(ctx) });
 export const create = mutation({ args: { name: v.string() }, handler: async (ctx, args) => {
   const principal = await getPrincipal(ctx);
+  if (!await mayCreate(ctx)) fail("FORBIDDEN", "New organisations are invite-only. Ask an organisation owner for an invite link.");
   const orgId = await ctx.db.insert("orgs", { name: args.name, createdBy: principal.user._id });
   await ctx.db.insert("members", { orgId, userId: principal.user._id, role: "owner" });
   await seedStandard(ctx, orgId);

@@ -10,6 +10,7 @@ import { attempt } from "@/lib/errors";
 
 export function Home() {
   const orgs = useQuery(api.orgs.mine);
+  const canCreate = useQuery(api.orgs.canCreate);
   const create = useMutation(api.orgs.create);
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -19,7 +20,7 @@ export function Home() {
     if (orgs?.length === 1) navigate(`/o/${orgs[0]!.org._id}`, { replace: true });
   }, [orgs, navigate]);
 
-  if (orgs === undefined) return <Loading page />;
+  if (orgs === undefined || canCreate === undefined) return <Loading page />;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -41,7 +42,12 @@ export function Home() {
           ))}
         </section>
       )}
-      <form onSubmit={submit} className="grid gap-4 rounded-lg border bg-card p-5">
+      {!canCreate ? (
+        <section className="grid gap-1 rounded-lg border bg-card p-5">
+          <h1 className="font-semibold">{orgs.length ? "New organisations are invite-only" : "You're signed in, but not in an organisation yet"}</h1>
+          <p className="text-sm text-muted-foreground">Remold is invite-only for now. Ask an organisation owner to send you an invite link, then open it while signed in.</p>
+        </section>
+      ) : <form onSubmit={submit} className="grid gap-4 rounded-lg border bg-card p-5">
         <div className="grid gap-1">
           <h1 className="font-semibold">{orgs.length ? "Create another organisation" : "Create your organisation"}</h1>
           <p className="text-sm text-muted-foreground">It starts with People, Companies, Opportunities, Projects, Tasks and Notes. Add your own objects in Settings.</p>
@@ -53,7 +59,7 @@ export function Home() {
         <Button type="submit" disabled={busy || !name.trim()}>
           Create
         </Button>
-      </form>
+      </form>}
     </div>
   );
 }

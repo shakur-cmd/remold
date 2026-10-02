@@ -103,13 +103,14 @@ it("keeps a running job's stall open, and drops the stall when the job's record 
   expect(resolves(await allNotices(t), "stalled")).toHaveLength(1);
 });
 
+// 1100 scheduled runs take ~1.5 s alone but exceeded 5 s when other suites shared the CPU.
 it("counts each failed run exactly once across page boundaries", async () => {
   const t = makeTest();
   await t.run(async (ctx: any) => { for (let i = 0; i < 1100; i++) await ctx.scheduler.runAfter(0, record, { minute: 0, route: "probe", status: 200, durationMs: 1, release: "unknown" }); });
   await run(t);
   await later(t);
   expect(opens(await allNotices(t), "background-error").map((n) => n.payload.count)).toEqual([1100]);
-});
+}, 15000);
 
 it("resolves a failing function after an hour without further runs", async () => {
   const t = makeTest();
