@@ -290,7 +290,7 @@ function FilterValue({ orgId, field, value, onChange }: { orgId: Id<"orgs">; fie
     );
   }
   return (
-    <div className="w-44">
+    <div className="w-56">
       <FieldInput orgId={orgId} field={field} value={value ?? null} onChange={(next) => onChange(next === "" ? undefined : (next ?? undefined))} />
     </div>
   );
