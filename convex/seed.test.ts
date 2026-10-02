@@ -91,4 +91,16 @@ describe("demo cleanup", () => {
     expect(await refused(planned)).toContain("has events other than its create");
     expect(await snapshot(t, orgId)).toEqual(afterEdit);
   });
+
+  // The approved boundary is the reviewed id list, not proof of seed origin.
+  it("deletes a record only when its id is in the reviewed list, even one that merely looks like seed data", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const company = await objectFields(client, orgId, "company");
+    const { recordId } = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Fictional Plumbing Co" } });
+    expect((await t.query(internal.seed.demoPlan, { orgId })).remove.map((row: any) => row.id)).toEqual([recordId]);
+    expect((await t.mutation(internal.seed.removeDemo, { orgId, ids: [] })).removed).toEqual([]);
+    expect(await client.query(api.records.get, { orgId, recordId })).not.toBeNull();
+    await t.mutation(internal.seed.removeDemo, { orgId, ids: [recordId] });
+    expect(await client.query(api.records.get, { orgId, recordId })).toBeNull();
+  });
 });

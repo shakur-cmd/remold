@@ -22,11 +22,12 @@ const MAX = 500;
 
 const secretWord = /password|passwd|secret|token|api[\s_-]?key/i;
 const secretPrefix = /(?:^|[^A-Za-z0-9])(?:(?:sk|pk|re)_|sk-)[A-Za-z0-9]/;
-// Long unbroken key-like runs: letters mixed with digits (hex, keys), or base64 with
-// its "/" and "+", told apart from paths and CamelCase by adjacent capitals ("YW", "GV").
-const longRun = (text: string) =>
-  text.split(/[^A-Za-z0-9+=_-]+/).some((part) => part.length >= 32 && /\d/.test(part) && /[A-Za-z]/.test(part)) ||
-  (text.match(/[A-Za-z0-9+/=]{32,}/g) ?? []).some((run) => /[A-Z]{2}/.test(run) && /[a-z]/.test(run));
+// Any unbroken run of 40+ base64, base64url or hex characters, whatever its mix,
+// unless the word holding it is clearly a path or URL: it starts with ~/, /Users/
+// or http(s)://, or with a dotted lowercase host.
+const encoded = /[A-Za-z0-9+/=_-]{40,}/;
+const pathOrUrl = /^(?:~\/|\/Users\/|https?:\/\/|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:[/:?#]|$))/;
+const longRun = (text: string) => text.split(/\s+/).some((word) => encoded.test(word) && !pathOrUrl.test(word.replace(/^[("'<[]+/, "")));
 export function credentialReason(text: string): string | null {
   const word = secretWord.exec(text)?.[0];
   if (word) return `mentions "${word.toLowerCase()}"`;

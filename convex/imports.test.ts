@@ -63,7 +63,7 @@ describe("client import", () => {
 
   it("refuses values that look like credentials without echoing them", async () => {
     const { t, orgId } = await userAndOrg();
-    for (const body of ["wifi password is hunter2", "key sk_live_abc123", "token: 9f8e7d6c5b4a39281706f5e4d3c2b1a0aa", "aGVsbG8gd29ybGQgdGhpcyBpcyBhIHNlY3JldCBrZXk1MjM0NQ", "Their API key: x"]) {
+    for (const body of ["wifi password is hunter2", "key sk_live_abc123", "token: 9f8e7d6c5b4a39281706f5e4d3c2b1a0aa", "aGVsbG8gd29ybGQgdGhpcyBpcyBhIHNlY3JldCBrZXk1MjM0NQ", "Their API key: x", "deadbeef".repeat(8), "/".repeat(64)]) {
       const error = await t.mutation(internal.imports.batch, { orgId, batch: { records: [{ tmpId: "n1", object: "note", values: { body } }] } }).catch((e: any) => e);
       expect(error.data?.message, body).toContain("n1.body: looks like a credential");
       expect(error.data.message).not.toContain(body);
@@ -113,15 +113,35 @@ describe("client import", () => {
     expect(dry).toBe(await t.mutation(internal.imports.batch, { orgId, batch: { records } }).then(() => "imported", (e: any) => e.data?.message));
   });
 
-  it("refuses long base64 runs with no digits or with slashes, but allows ordinary URLs and paths", () => {
+  it("refuses any unbroken 40+ character base64, base64url or hex run unless it is a path or URL", () => {
     const body = (text: string) => checkBatch({ records: [{ tmpId: "n", object: "note", values: { body: text } }] }).problems;
-    for (const secret of ["YWJjZGVm".repeat(8), "aGVsbG8v/d29ybGQr/YWJjZGVmZ2hpams+/YWJjZGVm", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb3NhIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"]) expect(body(`value ${secret}`), secret).toEqual([expect.stringContaining("looks like a credential")]);
-    for (const fine of ["https://www.linkedin.com/in/rosa-lin-bakery-owner-portland", "/Users/Shakur/Documents/Clients/Harbor Bakery/Proposal Final.pdf", "https://example.com/blog/how-we-rebuilt-the-harbor-bakery-website-in-two-weeks", "HarborBakeryWebsiteRedesignProject"]) expect(body(fine), fine).toEqual([]);
+    for (const secret of ["deadbeef".repeat(8), "/".repeat(64), "harbor-bakery-website-redesign-final-draft", "YWJjZGVm".repeat(8), "aGVsbG8v/d29ybGQr/YWJjZGVmZ2hpams+/YWJjZGVm", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyb3NhIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"]) expect(body(`value ${secret}`), secret).toEqual([expect.stringContaining("looks like a credential")]);
+    for (const fine of ["https://www.linkedin.com/in/rosa-lin-bakery-owner-portland", "/Users/Shakur/Documents/Clients/Harbor Bakery/Proposal Final.pdf", "https://example.com/blog/how-we-rebuilt-the-harbor-bakery-website-in-two-weeks", "HarborBakeryWebsiteRedesignProject",
+      "/Users/Shakur/Documents/Clients/Harbor-Bakery/Website-Proposal-Final-Draft-v2.pdf", "~/Documents/clients/harbor-bakery/website_proposal_final_draft_2026.md",
+      "https://docs.google.com/document/d/1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdef/edit", "see (docs.example.com/projects/harbor-bakery-website-redesign-final-draft)"]) expect(body(fine), fine).toEqual([]);
   });
 
   it("does not take object, alias or field names from the object prototype", () => {
     expect(checkBatch({ records: [{ tmpId: "x", object: "constructor", values: {} }] }).problems).toEqual([expect.stringContaining('x: unknown object "constructor"')]);
     expect(checkBatch({ records: [{ tmpId: "x", object: "note", values: { body: "b", toString: "y" } }] }).problems).toEqual([expect.stringContaining('unknown keys "toString"')]);
     expect(checkBatch({ records: [{ tmpId: "x", object: "task", values: { title: "b", constructor: "y" } }] }).problems).toEqual([expect.stringContaining('unknown keys "constructor"')]);
+  });
+
+  it("dry run applies the write's creation scope and required-field checks; a retired required field blocks neither", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const company = await objectFields(client, orgId, "company");
+    const records = [{ tmpId: "c", object: "company", values: { name: "Scoped" } }];
+    const dry = () => t.query(internal.imports.check, { orgId, batch: { records } }).then(() => "ready", (e: any) => e.data?.message);
+    const real = () => t.mutation(internal.imports.batch, { orgId, batch: { records } }).then(() => "imported", (e: any) => e.data?.message);
+    const { fieldId } = await client.mutation(api.fields.create, { orgId, objectId: company.object._id, key: "archivedRequired", label: "Archived", type: "text", required: true });
+    await client.mutation(api.fields.retire, { orgId, fieldId });
+    const owner = () => t.run(async (ctx: any) => (await ctx.db.query("members").collect()).find((m: any) => m.orgId === orgId && m.role === "owner"));
+    const { _id } = await owner();
+    await t.run((ctx: any) => ctx.db.patch(_id, { readScopes: [{ objectId: company.object._id, records: [], fields: "all" }] }));
+    expect(await dry()).toBe("c (company): Record scope does not authorize new records");
+    expect(await real()).toBe(await dry());
+    await t.run((ctx: any) => ctx.db.patch(_id, { readScopes: undefined }));
+    expect(await dry()).toBe("ready");
+    expect(await real()).toBe("imported");
   });
 });

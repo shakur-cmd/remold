@@ -4,7 +4,7 @@ import { ConvexError, v } from "convex/values";
 import { fail } from "./errors";
 import { ownerOf, type Membership } from "./identity";
 import { writable } from "./authority/readonly";
-import { applyChange } from "./lib/applyChange";
+import { applyChange, authorize, requireFilled } from "./lib/applyChange";
 import { resolveValues, type Pending } from "./lib/values";
 import { batchKey, checkBatch, type ImportRecord } from "./lib/importCheck";
 
@@ -42,9 +42,7 @@ async function valuesFor(ctx: Ctx, principal: Membership, item: Item, record: Im
     if (field.targetObjectId && field.targetObjectId !== target.objectId) fail("VALIDATION", `@${tmpId} is not a record this field can link to`, { fieldKey });
     return target.id ? { id: target.id } : { standIn: `@${tmpId}` };
   };
-  const values = await resolveValues(ctx, principal, item.object, item.fields, record.values, pending);
-  for (const field of item.fields) if (field.required && !field.retired && values[field._id] == null) fail("VALIDATION", "Required field is empty", { fieldKey: field.key });
-  return values;
+  return resolveValues(ctx, principal, item.object, item.fields, record.values, pending);
 }
 
 // Names the record and field in every error, since the drafter only knows tmpIds and keys.
@@ -74,6 +72,15 @@ export const batch = internalMutation({ args, handler: async (ctx, { orgId, batc
 export const check = internalQuery({ args, handler: async (ctx, { orgId, batch }) => {
   const plan = await prepare(ctx, orgId, batch);
   const earlier = new Map<string, { objectId: Id<"objects"> }>();
-  if (!plan.done) for (const record of plan.records) { const item = plan.items.get(record.object)!; await tagged(record, item, () => valuesFor(ctx, plan.principal, item, record, earlier)); earlier.set(record.tmpId, { objectId: item.object._id }); }
+  if (!plan.done) for (const record of plan.records) {
+    const item = plan.items.get(record.object)!;
+    // The checks applyChange makes before it writes a create, without writing.
+    await tagged(record, item, async () => {
+      const values = await valuesFor(ctx, plan.principal, item, record, earlier);
+      authorize(plan.principal, "create", item.object, null, item.fields, Object.keys(values));
+      requireFilled(item.fields, values);
+    });
+    earlier.set(record.tmpId, { objectId: item.object._id });
+  }
   return { status: plan.done ? "already imported" : "ready", batchKey: plan.key, counts: plan.counts };
 } });

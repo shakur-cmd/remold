@@ -62,6 +62,24 @@ async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId:
   for (const { record, field } of await lookupReferrers(ctx, orgId, deleted)) await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
 }
 
+// Whether a principal's read scopes let it make this change to these fields. The
+// import dry run calls it too, so its preview refuses what the write refuses.
+export function authorize(principal: Principal, action: Change["action"], object: Doc<"objects">, record: Doc<"records"> | null, fields: Doc<"fields">[], touched: string[]) {
+  requireObjectRead(principal, object);
+  if (record) requireRecordRead(principal, object, record);
+  const createScopes = scopes(principal, object).filter(scope => scope.records === "all");
+  if (action === "create" && !createScopes.length) fail("FORBIDDEN", "Record scope does not authorize new records");
+  for (const id of touched) {
+    const field = fields.find(f => f._id === id);
+    if (field && (!canReadField(principal, object, field, record?._id) || (action === "create" && !createScopes.some(scope => scope.fields === "all" || scope.fields.includes(field._id))))) fail("NOT_FOUND", "Field not found");
+  }
+}
+
+// Retired fields cannot be written, so they are never required.
+export function requireFilled(fields: Doc<"fields">[], values: Record<string, unknown>, checked: (field: Doc<"fields">) => boolean = () => true) {
+  for (const field of fields) if (checked(field) && field.required && !field.retired && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
+}
+
 // Returns eventId null only when an update changed nothing, so no event is written.
 export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
@@ -77,21 +95,11 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const fields = await fieldsFor(ctx, change.orgId, object._id);
   if (!options.clearingReference) {
     const touched = change.action === "delete" ? Object.keys(record!.values) : Object.keys(change.values);
-    const checkScope = (principal: Principal) => {
-      requireObjectRead(principal, object!);
-      if (record) requireRecordRead(principal, object!, record);
-      const createScopes = scopes(principal, object!).filter(scope => scope.records === "all");
-      if (change.action === "create" && !createScopes.length) fail("FORBIDDEN", "Record scope does not authorize new records");
-      for (const id of touched) {
-        const field = fields.find(f => f._id === id);
-        if (field && (!canReadField(principal, object!, field, record?._id) || (change.action === "create" && !createScopes.some(scope => scope.fields === "all" || scope.fields.includes(field._id))))) fail("NOT_FOUND", "Field not found");
-      }
-    };
-    checkScope(membership);
+    authorize(membership, change.action, object, record, fields, touched);
     if (options.approvedBy) {
       const approver = await currentPrincipal(ctx, options.approvedBy);
       if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
-      checkScope(approver);
+      authorize(approver, change.action, object, record, fields, touched);
     } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
   }
   if (change.action === "delete") {
@@ -124,10 +132,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   // An update only checks the fields it touches, so adding a required field
   // later does not lock every older record. Clearing references on delete may
   // empty a required lookup; a dangling id would be worse.
-  for (const field of fields) {
-    const checked = change.action === "create" || (field._id in validated && !options.clearingReference);
-    if (checked && field.required && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
-  }
+  requireFilled(fields, values, (field) => change.action === "create" || (field._id in validated && !options.clearingReference));
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;
