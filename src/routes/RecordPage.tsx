@@ -17,7 +17,7 @@ import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
-import { contactHref, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { contactHref, formatDate, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -385,22 +385,16 @@ const TIMELINE_PREVIEW = 5;
 
 // Change history merged with the activities, notes and tasks about this record, newest first.
 function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs">; recordId: Id<"records">; fields: Field[]; note?: Reverse; activity?: Reverse }) {
-  const history = usePaginatedQuery(api.events.page, { orgId, recordId }, { initialNumItems: 50 });
-  const items = useQuery(api.records.timeline, { orgId, recordId });
+  // The server merges and orders history with related activities, notes and tasks; pages arrive in order.
+  const { results: entries, status, loadMore } = usePaginatedQuery(api.events.timeline, { orgId, recordId }, { initialNumItems: 20 });
   const [expanded, setExpanded] = useState(false);
   const [logging, setLogging] = useState(false);
   const byId = new Map(fields.map((f) => [f._id, f]));
   const show = (field: Field | undefined, value: unknown) =>
     isEmpty(value) ? <span className="italic">empty</span> : field ? <FieldValue orgId={orgId} field={field} value={value} plain /> : String(value);
-  const more = history.status === "CanLoadMore" || history.status === "LoadingMore";
-  // Items older than the oldest loaded change wait until history reaches them, so nothing shows out of order.
-  const oldest = history.results.at(-1)?._creationTime ?? Infinity;
-  const entries = [
-    ...history.results.map((event) => ({ key: event._id as string, at: event._creationTime, event, item: undefined })),
-    ...(items ?? []).filter((item) => !more || item.at >= oldest).map((item) => ({ key: item._id as string, at: item.at, event: undefined, item })),
-  ].sort((a, b) => b.at - a.at);
+  const more = status === "CanLoadMore" || status === "LoadingMore";
   const visible = expanded ? entries : entries.slice(0, TIMELINE_PREVIEW);
-  const loading = history.status === "LoadingFirstPage" || items === undefined;
+  const loading = status === "LoadingFirstPage";
   return (
     <Card className="min-w-0">
       <CardHeader>
@@ -416,47 +410,45 @@ function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs
       <CardContent className="grid gap-3">
         {note && <NoteComposer orgId={orgId} note={note.object} about={note.field} recordId={recordId} />}
         {loading && <span className="text-sm text-muted-foreground">Loading</span>}
-        {visible.map(({ key, at, event, item }) => (
-          <div key={key} className="grid min-w-0 gap-0.5 border-l-2 pl-3 text-[13px]">
-            {item ? (
+        {visible.map((entry) => (
+          <div key={entry._id} className="grid min-w-0 gap-0.5 border-l-2 pl-3 text-[13px]">
+            {entry.kind !== "event" ? (
               <>
                 <div className="flex flex-wrap items-baseline gap-x-1.5">
-                  <span className="font-medium">{item.kind === "activity" ? (item.type ?? "Activity") : item.kind === "note" ? "Note" : "Task"}</span>
-                  {item.kind === "activity" && item.source && <span className="text-muted-foreground">via {item.source}</span>}
-                  {item.kind === "task" && item.done && <span className="text-muted-foreground">done</span>}
-                  <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(at)}</time>
+                  <span className="font-medium">{entry.kind === "activity" ? (entry.type ?? "Activity") : entry.kind === "note" ? "Note" : "Task"}</span>
+                  {entry.kind === "activity" && entry.source && <span className="text-muted-foreground">via {entry.source}</span>}
+                  {entry.kind === "task" && entry.done && <span className="text-muted-foreground">done</span>}
+                  <time className="ml-auto text-xs text-muted-foreground tabular-nums">{entry.kind === "activity" && entry.allDay ? formatDate(entry.at) : formatTime(entry.at)}</time>
                 </div>
-                <Link to={`/o/${orgId}/${item.objectKey}/${item._id}`} className={cn("min-w-0 break-words hover:underline", item.kind === "note" && "whitespace-pre-wrap", item.kind === "task" && item.done && "text-muted-foreground line-through")}>
-                  {item.title || "Untitled"}
+                <Link to={`/o/${orgId}/${entry.objectKey}/${entry._id}`} className={cn("min-w-0 break-words hover:underline", entry.kind === "note" && "whitespace-pre-wrap", entry.kind === "task" && entry.done && "text-muted-foreground line-through")}>
+                  {entry.title || "Untitled"}
                 </Link>
-                {item.kind === "task" && typeof item.due === "number" && <span className="text-muted-foreground">Due {formatFieldDate({ withTime: item.dueWithTime } as Field, item.due)}</span>}
+                {entry.kind === "task" && typeof entry.due === "number" && <span className="text-muted-foreground">Due {formatFieldDate({ withTime: entry.dueWithTime } as Field, entry.due)}</span>}
               </>
             ) : (
-              event && (
-                <>
-                  <div className="flex flex-wrap items-baseline gap-x-1.5">
-                    <span className="font-medium">{event.actorName ?? (event.actor.kind === "agent" ? "An agent" : "Automation")}</span>
-                    <span className="text-muted-foreground">
-                      {event.action === "create" ? "created this" : event.action === "delete" ? "deleted this" : "changed"}
-                      {event.appliedByName && `, applied by ${event.appliedByName}`}
-                    </span>
-                    <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(at)}</time>
-                  </div>
-                  {event.action === "update" && event.after && (
-                    <ul className="grid gap-0.5 text-muted-foreground">
-                      {Object.keys(event.after).map((fieldId) => {
-                        const field = byId.get(fieldId as Id<"fields">);
-                        return (
-                          <li key={fieldId} className="break-words">
-                            {field?.label ?? "Field"}: {show(field, event.before?.[fieldId])} → <span className="text-foreground">{show(field, event.after?.[fieldId])}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  {event.reason && <p className="text-muted-foreground">“{event.reason}”</p>}
-                </>
-              )
+              <>
+                <div className="flex flex-wrap items-baseline gap-x-1.5">
+                  <span className="font-medium">{entry.actorName ?? (entry.actor.kind === "agent" ? "An agent" : "Automation")}</span>
+                  <span className="text-muted-foreground">
+                    {entry.action === "create" ? "created this" : entry.action === "delete" ? "deleted this" : "changed"}
+                    {entry.appliedByName && `, applied by ${entry.appliedByName}`}
+                  </span>
+                  <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(entry.at)}</time>
+                </div>
+                {entry.action === "update" && entry.after && (
+                  <ul className="grid gap-0.5 text-muted-foreground">
+                    {Object.keys(entry.after).map((fieldId) => {
+                      const field = byId.get(fieldId as Id<"fields">);
+                      return (
+                        <li key={fieldId} className="break-words">
+                          {field?.label ?? "Field"}: {show(field, entry.before?.[fieldId])} → <span className="text-foreground">{show(field, entry.after?.[fieldId])}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                {entry.reason && <p className="text-muted-foreground">“{entry.reason}”</p>}
+              </>
             )}
           </div>
         ))}
@@ -467,7 +459,7 @@ function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs
             </Button>
           )}
           {expanded && more && (
-            <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={history.status === "LoadingMore"} onClick={() => history.loadMore(100)}>
+            <Button variant="ghost" size="sm" className="text-muted-foreground" disabled={status === "LoadingMore"} onClick={() => loadMore(100)}>
               Load more
             </Button>
           )}

@@ -45,14 +45,13 @@ it('the record timeline and history pages keep hidden fields hidden', async () =
   const { recordId } = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: 'Acme', [company.fields.city._id]: 'Hidden City' } });
   await client.mutation(api.records.create, { orgId, objectId: note.object._id, values: { [note.fields.body._id]: 'Secret Note', [note.fields.about._id]: recordId } });
   await client.mutation(api.records.create, { orgId, objectId: activity.object._id, values: { [activity.fields.title._id]: 'Secret Call', [activity.fields.source._id]: 'Secret Source', [activity.fields.about._id]: recordId } });
-  const before = JSON.stringify(await client.query(api.records.timeline, { orgId, recordId }));
+  const before = JSON.stringify(await client.query(api.events.timeline, { orgId, recordId, paginationOpts: { cursor: null, numItems: 50 } }));
   expect(before).toMatch(/Secret Note/); expect(before).toMatch(/Secret Call/);
   const agent = await agentFor(client, orgId, { name: 'reader' });
   await client.mutation(anyApi['authority/policies'].setAgentMasks, { orgId, agentId: agent.agentId, hiddenFieldIds: [company.fields.city._id] });
   const memberId = await t.run(async ctx => (await ctx.db.query('members').collect())[0]!._id);
   await client.mutation(anyApi['authority/policies'].setMember, { orgId, memberId, hiddenFieldIds: [company.fields.city._id, note.fields.body._id, activity.fields.title._id, activity.fields.source._id] });
-  expect.soft(JSON.stringify(await client.query(api.records.timeline, { orgId, recordId }))).not.toMatch(/Secret|Hidden City/);
-  expect.soft(JSON.stringify(await client.query(api.events.page, { orgId, recordId, paginationOpts: { cursor: null, numItems: 10 } }))).not.toMatch(/Hidden City/);
+  expect.soft(JSON.stringify(await client.query(api.events.timeline, { orgId, recordId, paginationOpts: { cursor: null, numItems: 50 } }))).not.toMatch(/Secret|Hidden City/);
   const page = await rest(t, agent.key)('GET', `/api/v1/records/${recordId}/events`);
   expect(page.status).toBe(200); expect(JSON.stringify(page.json)).not.toMatch(/Hidden City/);
 });

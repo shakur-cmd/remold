@@ -7,7 +7,7 @@ import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
 import { findReadableByTitle } from "./lib/find";
-import { instant } from "./lib/values";
+import { allDay, instant } from "./lib/values";
 import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQueryField, visibleTitle, listedRecords, pageList, paginateIndex } from "./authority/reads";
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
@@ -54,9 +54,9 @@ async function coerce(run: Run, field: Doc<"fields">, raw: string): Promise<unkn
     case "number": { const n = Number(text.replace(/[$,\s]/g, "")); return Number.isFinite(n) ? n : bad("is not a number"); }
     case "boolean": return TRUE.has(text.toLowerCase()) ? true : FALSE.has(text.toLowerCase()) ? false : bad("is not yes or no");
     case "date": {
-      const timed = field.withTime ? instant(text) : undefined;
-      if (timed !== undefined) return timed;
       const iso = ISO.exec(text), us = US.exec(text);
+      // With-time fields take only a real date or a real ISO 8601 instant; a bad time never falls back to its date.
+      if (field.withTime) { const value = us ? undefined : instant(text); if (value !== undefined) return value; if (!us) return bad("is not a date like 2026-09-22 or a time like 2026-09-22T14:30:00-04:00"); }
       if (iso) return Date.UTC(+iso[1]!, +iso[2]! - 1, +iso[3]!);
       if (us) { const year = +us[3]! < 100 ? 2000 + +us[3]! : +us[3]!; return Date.UTC(year, +us[1]! - 1, +us[2]!); }
       return bad("is not a date like 2026-09-22");
@@ -133,7 +133,7 @@ export const exportPage = query({
         const value = record.values[field._id];
         if (value === undefined || value === null) row.push("");
         else if (field.type === "select") row.push(field.options?.find((o) => o.id === value)?.label ?? String(value));
-        else if (field.type === "date") row.push(field.withTime ? new Date(value as number).toISOString() : isoDate(value as number));
+        else if (field.type === "date") row.push(field.withTime && !allDay(value as number) ? new Date(Math.floor(value as number)).toISOString() : isoDate(value as number));
         else if (field.type === "boolean") row.push(value ? "yes" : "no");
         else if (field.type === "lookup") row.push(await titleOf(value as string));
         else if (field.type === "links") row.push((await Promise.all((value as string[]).map(titleOf))).join("; "));

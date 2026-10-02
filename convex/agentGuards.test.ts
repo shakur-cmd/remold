@@ -77,3 +77,39 @@ it("only an admin can protect a field", async () => {
   await member.mutation(api.users.store, {}); await member.mutation(api.invites.accept, { token });
   await expect(member.mutation(api.fields.update, { orgId: w.orgId, fieldId: amount, protectedFromAgents: true })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
 });
+
+// Deleting a record clears lookups and links that point at it. When an agent
+// deletes, that cleanup must not change a field protected from agents.
+async function referenced(kind: "lookup" | "links") {
+  const f = await userAndOrg();
+  const company = await objectFields(f.client, f.orgId, "company"), person = await objectFields(f.client, f.orgId, "person");
+  const field = kind === "lookup" ? person.fields.company._id : (await f.client.mutation(api.fields.create, { orgId: f.orgId, objectId: person.object._id, key: "partners", label: "Partners", type: "links", targetObjectId: company.object._id })).fieldId;
+  const target = (await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Target" } })).recordId;
+  const source = (await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Source", [field]: kind === "lookup" ? target : [target] } })).recordId;
+  await f.client.mutation(api.fields.update, { orgId: f.orgId, fieldId: field, protectedFromAgents: true });
+  const agent = await agentFor(f.client, f.orgId, { name: "cleaner", grants: [{ action: "delete", objectKey: "company" }] });
+  const snapshot = () => f.t.run(async (ctx: any) => JSON.stringify(await Promise.all(["records", "events", "links"].map((table) => ctx.db.query(table).collect()))));
+  return { ...f, field, target, source, agent, call: rest(f.t, agent.key), snapshot, value: async () => ((await f.t.run((ctx: any) => ctx.db.get(source))) as any).values[field] };
+}
+
+for (const kind of ["lookup", "links"] as const) {
+  it(`an agent's direct delete is refused when cleanup would clear a protected ${kind} field`, async () => {
+    const w = await referenced(kind), before = await w.snapshot();
+    const response = await w.call("POST", "/api/v1/changes", { action: "delete", record: w.target, reason: "remove company" });
+    expect(response.status).toBe(403);
+    expect(response.json.error.message).toMatch(/protected/i);
+    expect(await w.snapshot()).toBe(before);
+  });
+
+  it(`an applied agent proposal to delete is refused when cleanup would clear a protected ${kind} field, and a person may still delete`, async () => {
+    const w = await referenced(kind);
+    const proposal = await w.call("POST", "/api/v1/suggestions", { action: "delete", record: w.target, reason: "remove company" });
+    expect(proposal.status).toBe(201);
+    const before = await w.snapshot();
+    await expect(w.client.mutation(api.suggestions.apply, { orgId: w.orgId, suggestionId: proposal.json.suggestion.id })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    expect(await w.snapshot()).toBe(before);
+    expect(await w.value()).toEqual(kind === "lookup" ? w.target : [w.target]);
+    await w.client.mutation(api.records.remove, { orgId: w.orgId, recordId: w.target });
+    expect(await w.value()).toEqual(kind === "lookup" ? undefined : []);
+  });
+}

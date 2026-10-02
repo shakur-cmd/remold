@@ -10,9 +10,11 @@ export const isEmpty = (value: unknown) =>
 
 const DAY = 86400000;
 const pad = (n: number) => String(n).padStart(2, "0");
-// A with-time value at exactly UTC midnight came from a plain date (or predates
-// time of day), so it is that calendar day everywhere, not the evening before.
-const allDay = (field: Field | undefined, ms: number) => !field?.withTime || ms % DAY === 0;
+// Same encoding as convex/lib/values.ts: on a with-time field a whole UTC midnight
+// is a plain date (that calendar day everywhere); an instant is never one, since
+// an instant at exactly 00:00Z is stored as midnight + 0.5 ms.
+const sinceMidnight = (ms: number) => ((ms % DAY) + DAY) % DAY;
+const allDay = (field: Field | undefined, ms: number) => !field?.withTime || (Number.isInteger(ms) && sinceMidnight(ms) === 0);
 
 // Plain dates are stored as UTC midnight so every machine shows the same day;
 // with-time dates are instants, edited and shown in the browser's zone.
@@ -20,10 +22,15 @@ export const dateToInput = (ms: unknown, field?: Field) => {
   if (typeof ms !== "number") return "";
   if (!field?.withTime) return new Date(ms).toISOString().slice(0, 10);
   if (allDay(field, ms)) return `${new Date(ms).toISOString().slice(0, 10)}T00:00`;
-  const d = new Date(ms);
+  const d = new Date(Math.floor(ms));
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
-export const inputToDate = (value: string, field?: Field) => (!value ? null : field?.withTime ? new Date(value).getTime() : Date.parse(`${value}T00:00:00Z`));
+export const inputToDate = (value: string, field?: Field) => {
+  if (!value) return null;
+  if (!field?.withTime) return Date.parse(`${value}T00:00:00Z`);
+  const ms = new Date(value).getTime();
+  return sinceMidnight(ms) === 0 ? ms + 0.5 : ms;
+};
 
 // The viewer's local date, encoded as UTC midnight like plain date fields.
 export const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
@@ -31,7 +38,7 @@ export const localToday = () => { const now = new Date(); return Date.UTC(now.ge
 // The local day a date falls on, encoded as UTC midnight like plain dates and "today".
 export const localDay = (field: Field | undefined, ms: number) => {
   if (allDay(field, ms)) return ms;
-  const d = new Date(ms);
+  const d = new Date(Math.floor(ms));
   return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
 };
 
@@ -57,10 +64,10 @@ export const formatDate = (ms: unknown) =>
 
 // "Oct 1, 2026, 2:32 PM" in the viewer's zone for with-time values; plain days as formatDate.
 export const formatFieldDate = (field: Field | undefined, ms: number) =>
-  allDay(field, ms) ? formatDate(ms) : new Date(ms).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  allDay(field, ms) ? formatDate(ms) : new Date(Math.floor(ms)).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 
 // Time of day alone, "2:32 PM", or null for an all-day value.
-export const timeOfDay = (field: Field | undefined, ms: number) => (allDay(field, ms) ? null : new Date(ms).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }));
+export const timeOfDay = (field: Field | undefined, ms: number) => (allDay(field, ms) ? null : new Date(Math.floor(ms)).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }));
 
 // Only the standard "amount" field is money; any other number is a plain count. USD for the US launch.
 export const isMoney = (field: Field) => field.type === "number" && field.key === "amount";

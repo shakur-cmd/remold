@@ -57,4 +57,15 @@ describe("CSV export", () => {
     expect(rows.find((r: any) => r.title === "Offset").values[f.dueDate._id]).toBe(Date.UTC(2026, 9, 1, 18, 32));
     expect(rows.find((r: any) => r.title === "Plain").values[f.dueDate._id]).toBe(Date.UTC(2026, 9, 2));
   });
+
+  it("refuses timed values that are not real ISO 8601 instants on with-time fields, and keeps plain dates as days", async () => {
+    const { client, orgId } = await userAndOrg();
+    const task = await objectFields(client, orgId, "task"), f = task.fields;
+    const result = await client.mutation(api.csv.importRows, { orgId, objectId: task.object._id, firstRow: 2, skipDuplicates: false, createMissing: false, columns: [f.title._id, f.dueDate._id], rows: [["Floating", "2026-10-02T09:00"], ["Hour 25", "2026-10-02T25:00:00Z"], ["Feb 30", "2026-02-30T09:00:00Z"], ["Bad day", "2026-02-30"], ["Midnight", "2026-10-02T00:00:00Z"], ["Day", "2026-11-30"], ["US day", "11/30/2026"]] });
+    expect(result.created).toBe(3);
+    expect(result.errors.map((e: any) => e.row)).toEqual([2, 3, 4, 5]);
+    const page = await client.query(api.csv.exportPage, { orgId, objectId: task.object._id, cursor: null });
+    const due = Object.fromEntries(page.rows.map((r: string[]) => [r[page.header.indexOf("Title")], r[page.header.indexOf("Due Date")]]));
+    expect(due).toEqual({ Midnight: "2026-10-02T00:00:00.000Z", Day: "2026-11-30", "US day": "2026-11-30" });
+  });
 });

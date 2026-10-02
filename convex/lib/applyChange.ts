@@ -7,6 +7,7 @@ import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../a
 import { agentGuard } from "../authority/agentGuards";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
+import { dateValue } from "./values";
 
 export type Change =
   | { action: "create"; orgId: Id<"orgs">; objectId: Id<"objects">; values: Record<string, unknown>; reason?: string }
@@ -24,7 +25,7 @@ async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unkn
   if (field.type === "number" && (typeof value !== "number" || !Number.isFinite(value))) invalid("Expected a finite number");
   if (field.type === "text" && typeof value !== "string") invalid("Expected text");
   if (field.type === "select" && (typeof value !== "string" || !field.options?.some((option) => option.id === value))) invalid("Invalid select option");
-  if (field.type === "date" && (typeof value !== "number" || !Number.isInteger(value))) invalid("Expected a date timestamp");
+  if (field.type === "date" && !dateValue(field, value)) invalid("Expected a date timestamp");
   if (field.type === "boolean" && typeof value !== "boolean") invalid("Expected boolean");
   if (field.type === "lookup" || field.type === "links") {
     const ids = field.type === "links" ? value : [value];
@@ -89,8 +90,10 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
       checkScope(approver);
     } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
-    agentGuard(membership, object, fields, record, change.action === "delete" ? "delete" : change.values);
   }
+  // Also on reference cleanup: an agent's delete must not clear a protected
+  // lookup or link elsewhere, so the whole deletion is refused instead.
+  agentGuard(membership, object, fields, record, change.action === "delete" ? "delete" : change.values);
   if (change.action === "delete") {
     // Records that link to this one drop it from their links value through an
     // attributed update, which also removes the rows; then this record's own rows go.
