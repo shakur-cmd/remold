@@ -36,7 +36,7 @@ function setup(source, prefix, permissive = false) {
   writeFileSync(join(scratch, 'package.json'), JSON.stringify({ name: 'remold-snapshot-local', private: true, type: 'module', dependencies: { convex: '1.46.0', '@convex-dev/rate-limiter': '0.4.0' } }));
   symlinkSync(join(root, 'node_modules'), join(scratch, 'node_modules'), 'dir'); return scratch;
 }
-async function local(source, prefix, ports, permissive, work) {
+export async function local(source, prefix, ports, permissive, work) {
   const scratch = setup(source, prefix, permissive), [cloud = 3460, site = 3461] = ports ?? [];
   const env = { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, CONVEX_AGENT_MODE: 'anonymous', CI: '1', CONVEX_DISABLE_METRICS: '1' };
   const cli = join(root, 'node_modules/convex/bin/main.js'), config = () => existsSync(join(root, '.env.local')) ? sha(readFileSync(join(root, '.env.local'))) : null, before = config(); let logs = '';

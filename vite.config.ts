@@ -8,5 +8,6 @@ export default defineConfig({
   base: process.env.VITE_BASE ?? "/",
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
-  test: { include: ["convex/**/*.test.ts", "src/**/*.test.ts", "src/**/*.test.tsx"] },
+  // Fixtures run with the production gates open; workspaces.test.ts and paymentCallbacks.test.ts cover them closed.
+  test: { include: ["convex/**/*.test.ts", "src/**/*.test.ts", "src/**/*.test.tsx"], env: { REMOLD_OPEN_SIGNUP: "1", REMOLD_PAYMENT_CALLBACKS: "1" } },
 });

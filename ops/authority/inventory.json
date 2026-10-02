@@ -1038,6 +1038,16 @@
     "reason": "sets or lifts the readonly flag itself; must stay available"
   },
   {
+    "id": "orgs:canCreate",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "n/a",
+    "proof": "Real JWT verification derives human identity and rejects invalid audience and expired tokens"
+  },
+  {
     "id": "orgs:create",
     "kind": "mutation",
     "visibility": "public",
