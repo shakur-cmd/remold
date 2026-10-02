@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remold: first paying customer gate</title>
+<style>
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; color: #1a1a1a; max-width: 760px; margin: 32px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+  .decisions { background: #fff7e0; border-left: 4px solid #e0a800; padding: 12px 16px; margin-bottom: 20px; }
+  .decisions h2 { margin: 0 0 8px; font-size: 16px; text-transform: uppercase; letter-spacing: .04em; }
+  .decisions li { margin: 6px 0; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f6f6f6; }
+  td.done { color: #1d6b2f; font-weight: 600; white-space: nowrap; }
+  td.not { color: #a32020; font-weight: 600; white-space: nowrap; }
+  code { background: #f2f2f2; padding: 1px 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>First paying customer gate</h1>
+<div class="meta">2026-10-02 · replaces V0 and L0 as written for the first customer (plan M10) · status: not passed</div>
+
+<div class="decisions">
+<h2>Your calls</h2>
+<ul>
+  <li>The offer and price. The plan recommends US$49 per workspace per month with a 14-day trial; you have not confirmed it.</li>
+  <li>The wording of <code>/terms</code> and <code>/privacy</code>. Both are marked "Draft, not yet reviewed" until you approve them.</li>
+  <li>Live billing. Nothing charges money until you give an explicit OK and the code is changed to allow live keys.</li>
+</ul>
+</div>
+
+<p>Every line must say done, with evidence a second person can rerun, before the first customer pays. "Done" below means done at the level stated. Today everything here was checked only by the builder, with local tests (convex-test, no hosted service). Nothing in this list has been checked independently yet.</p>
+
+<h2>What the customer gets</h2>
+<table>
+<tr><th>Must be true</th><th>State</th><th>Evidence</th></tr>
+<tr><td>A written, bounded offer: what is included and what is not</td><td class="not">not done</td><td>Your call. Recommendation in <code>docs/unified-launch/remaining-work-2026-10-01.html</code>.</td></tr>
+<tr><td>A price</td><td class="not">not done</td><td>Your call. The code reads it from <code>REMOLD_PRICE_ID</code>; no price is set anywhere.</td></tr>
+<tr><td>Terms and privacy policy, approved</td><td class="not">not done</td><td>Drafts live at <code>/terms</code> and <code>/privacy</code>, linked from sign-in: <code>src/routes/Legal.tsx</code>, <code>src/routes/Legal.test.tsx</code>. Not yet approved by you.</td></tr>
+<tr><td>Sign-up reopened with a rate limit</td><td class="not">not done</td><td>Workspace creation is limited to an allowlist in a separate job (<code>REMOLD_WORKSPACE_CREATORS</code> / <code>REMOLD_OPEN_SIGNUP</code>).</td></tr>
+<tr><td>Simple onboarding</td><td class="not">not done</td><td>Not started.</td></tr>
+<tr><td>Subscription billing through Stripe Checkout, one access flag per workspace</td><td class="not">not done (test mode only)</td><td>Test-mode scaffold: <code>convex/billing.ts</code>, <code>convex/billing.test.ts</code>. Checkout session, signed webhook, status shown in Settings. Not enforced. No live charge.</td></tr>
+<tr><td>Full export: definitions, records with links by id, history</td><td class="done">done (local)</td><td><code>convex/workspace.ts</code> <code>exportAll</code>; <code>convex/workspace.test.ts</code> "writes definitions, records keyed by field key, links by record id and the whole history".</td></tr>
+<tr><td>Restore from an export</td><td class="done">done (local)</td><td><code>importAll</code>; test "restores an export into a fresh workspace with new ids, links intact, and re-exports the same". Not yet done into a scratch deployment.</td></tr>
+<tr><td>Deletion by the owner</td><td class="done">done (local)</td><td><code>remove</code> and <code>purge</code>; tests "needs the owner and the exact workspace name, and hands back the export first" and "removes every row of the workspace in batches and leaves the other workspace untouched".</td></tr>
+<tr><td>A support route</td><td class="not">not done</td><td>Only the contact address on the legal pages (shakur@codemyvibe.com). No in-app route.</td></tr>
+<tr><td>Scheduled backups</td><td class="not">not done</td><td>Part of M0 (daily export to a lasting folder).</td></tr>
+</table>
+
+<h2>Checks that can fail, run by someone other than the builder</h2>
+<table>
+<tr><th>Check</th><th>State</th><th>Evidence so far</th></tr>
+<tr><td>Two separate customer workspaces</td><td class="not">not done</td><td>Local two-workspace tests exist for export and deletion (<code>convex/workspace.test.ts</code>) and for records (<code>convex/isolation.test.ts</code>). Not on a deployment.</td></tr>
+<tr><td>Onboarding</td><td class="not">not done</td><td>No onboarding yet.</td></tr>
+<tr><td>Removing a member's access</td><td class="not">not done</td><td>Existing local test: <code>convex/members.test.ts</code> "lets an owner change roles and remove people, and a removed person loses access".</td></tr>
+<tr><td>Reading the other workspace through the app, API and export is refused</td><td class="not">not done</td><td>Local: <code>convex/isolation.test.ts</code>, <code>convex/rest.test.ts</code>, <code>convex/workspace.test.ts</code> "contains nothing from another workspace and is refused to anyone but an unrestricted owner".</td></tr>
+<tr><td>Subscription retry, cancel and access change</td><td class="not">not done</td><td>Local: webhook moves the flag between active, past due and canceled and ignores stale events (<code>convex/billing.test.ts</code>). Retry is not exercised; access is not yet changed by the flag.</td></tr>
+<tr><td>Full export, and a restore into scratch</td><td class="not">not done</td><td>Local round trip passes. Needs a run against a throwaway deployment.</td></tr>
+<tr><td>A live charge you authorised is shown</td><td class="not">not done</td><td>Live billing is not claimed. Code refuses <code>sk_live_</code>/<code>rk_live_</code> keys and live-mode events.</td></tr>
+</table>
+</body>
+</html>
