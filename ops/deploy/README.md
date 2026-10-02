@@ -24,6 +24,8 @@ Backups are never deleted by these scripts. The drill trusts only a zip whose ch
     pnpm backup:prod
     pnpm deploy:prod --ref <older sha> --snapshot <the zip just made>
 
+Before the deploy, revoke every website intake key (Settings → Agents, each "Website intake key" → Revoke). This step is required: code from before the 2026-10-03 release does not check a key's purpose, so it would accept an intake key on every agent route instead of only `/api/v1/intake/lead`. Issue new intake keys after rolling forward again.
+
 This puts older code (functions and frontend) on the same database, so everything written since stays. It refuses a ref older than `rollbackTarget` in `ops/release/notes.json` or before the I1 authority floor, and a ref whose schema rejects the backup in a local restore.
 
 Do not use the 2026-09-29 Cloudflare rollback (`wrangler rollback 8f0763b2-…`) except as a last resort. It points the site back at the old `gallant-pika-581` database: everything written since the switch disappears from the app and would have to be copied back by hand.

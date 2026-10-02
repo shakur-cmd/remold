@@ -6,13 +6,13 @@ A CRM you reshape as you go: custom objects and fields without code, every chang
 
 ## Run it
 
-Node 24+, pnpm 11. You need a Convex project and a Clerk application with a JWT template named `convex`.
+Node 24+, pnpm 11. You need a Convex deployment of your own and a WorkOS AuthKit client (sign-in goes through `src/lib/identity.tsx` and `convex/auth.config.ts`).
 
 ```sh
 pnpm install
-cp .env.example .env.local        # fill VITE_CONVEX_URL and VITE_CLERK_PUBLISHABLE_KEY
+cp .env.example .env.local        # fill VITE_CONVEX_URL, VITE_WORKOS_CLIENT_ID, VITE_WORKOS_REDIRECT_URI
 pnpm exec convex dev              # first run creates the deployment and writes CONVEX_DEPLOYMENT
-pnpm exec convex env set CLERK_JWT_ISSUER_DOMAIN https://<your-instance>.clerk.accounts.dev
+pnpm exec convex env set WORKOS_CLIENT_ID client_...
 pnpm dev
 ```
 
@@ -40,7 +40,7 @@ pnpm --filter @remold/mcp build && pnpm --filter @remold/mcp test
 
 ## Layout
 
-- `convex/` backend: `identity.ts` (Clerk behind one module, `requireMember`, `requireAgent`), `http.ts` and `agentApi.ts` (the agent REST surface), `suggestions.ts`, `inbox.ts`, `agents.ts`, `lib/applyChange.ts` (the only record write path, appends `events`), `lib/slots.ts` (typed indexed slot allocation), `lib/standard.ts` (seeded objects), one file per public module.
+- `convex/` backend: `identity.ts` (WorkOS AuthKit behind one module, `requireMember`, `requireAgent`), `http.ts` and `agentApi.ts` (the agent REST surface), `suggestions.ts`, `inbox.ts`, `agents.ts`, `lib/applyChange.ts` (the only record write path, appends `events`), `lib/slots.ts` (typed indexed slot allocation), `lib/standard.ts` (seeded objects), one file per public module.
 - `src/` web app: Vite, React, Tailwind, shadcn. Routes under `src/routes`, generic form and value rendering under `src/components`.
 - `evidence/` before and after runs for every claim in the log.
 
@@ -48,9 +48,11 @@ The benchmark spike that chose the records design lives on branch `spike/records
 
 ## Deploy
 
-The web app is a Cloudflare Worker serving static assets (`wrangler.jsonc`), the backend is Convex.
+Production is `app.remoldcrm.com` (a Cloudflare Worker serving `dist/`) on Convex. Deploys, backups, restore drills and rollback go through scripts that check the commit and the target first; [ops/deploy/README.md](ops/deploy/README.md) has the details.
 
 ```sh
-pnpm build && pnpm dlx wrangler deploy     # https://remold.shakur-949.workers.dev
-pnpm exec convex deploy                    # production backend, when we get there
+pnpm deploy:prod --dry-run        # every check and the build, no deploy
+pnpm deploy:prod
+pnpm backup:prod                  # export the production database
+pnpm backup:drill <zip>           # restore it into a throwaway local backend and compare
 ```
