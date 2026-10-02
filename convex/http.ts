@@ -9,8 +9,8 @@ import { internal } from "./_generated/api";
 import { recordResponse, validProbe } from "./telemetryHttp";
 
 const router = httpRouter();
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
-const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400 };
+const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
+const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, IDEMPOTENCY_MISMATCH: 422, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400 };
 const hash = async (key: string) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 const bad = (code: string, message: string, status = statusFor[code] ?? 400) => json({ error: { code, message } }, status);
 const number = (value: string | null) => { const n = value === null ? NaN : Number(value); return Number.isFinite(n) ? n : undefined; };
@@ -32,13 +32,24 @@ async function auth(request: Request) {
   return hash(token);
 }
 
+// ADR 002: a key is bound to a hash of the route and canonical (key-sorted) body.
+const canonical = (value: unknown): string => Array.isArray(value) ? `[${value.map(canonical).join(",")}]` : value && typeof value === "object" ? `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical((value as any)[key])}`).join(",")}}` : JSON.stringify(value) ?? "null";
+async function idempotencyOf(request: Request, path: string, body: unknown) {
+  const key = request.headers.get("idempotency-key");
+  if (key === null) return undefined;
+  if (!/^[\x21-\x7e]{1,255}$/.test(key)) throw { data: { code: "VALIDATION", message: "Idempotency-Key must be 1 to 255 visible ASCII characters" } };
+  return { key, hash: await hash(`${path}\n${canonical(body)}`) };
+}
+const intakeReply = (result: any): [unknown, number, Record<string, string>?] => result.limited ? [{ error: { code: "RATE_LIMITED", message: "Lead intake limit reached. Retry after the indicated delay.", retryAfter: result.limited.retryAfter } }, 429, { "retry-after": String(result.limited.retryAfter) }] : [result, 201];
+
 async function dispatch(ctx: any, request: Request) {
   if(request.method === "GET" && new URL(request.url).pathname === "/api/v1/_probe") return await validProbe(request) ? json({ok:true}) : bad("UNAUTHENTICATED", "Invalid probe", 401);
   const keyHash = await auth(request), url = new URL(request.url), path = url.pathname.replace(/^\/api\/v1\/?/, "").split("/").filter(Boolean), q = url.searchParams;
-  const limit = request.method === "POST" ? await ctx.runMutation(internal.rateLimit.take, { keyHash }) : { allowed: true, retryAfter: 0 };
+  const limit = request.method === "POST" && path[0] !== "intake" ? await ctx.runMutation(internal.rateLimit.take, { keyHash }) : { allowed: true, retryAfter: 0 };
   if (!limit.allowed) return new Response(JSON.stringify({ error: { code: "RATE_LIMITED", message: "Agent write limit reached. Retry after the indicated delay.", retryAfter: limit.retryAfter } }), { status: 429, headers: { "content-type": "application/json", "retry-after": String(limit.retryAfter) } });
   const body = request.method === "POST" ? request.headers.get("content-type")?.includes("application/json") ? await request.json().catch(() => { throw { data: { code: "VALIDATION", message: "Expected JSON body" } }; }) : {} : undefined;
   // keyHash goes last so nothing in a request body can replace the identity the header proved.
+  // Intake keys are limited inside the intake call, where an over-limit lead can raise an alert.
   // Malformed bodies are refused before the call: Convex would log every argument, keyHash included.
   const modules: Record<string, Record<string, unknown>> = { agentApi, "integrations/commands": commands, "authority/grants": grants };
   const checked = async (reference: any, args: any) => {
@@ -68,10 +79,14 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "GET" && path[0] === "today" && path.length === 1) return json(await query(internal.agentApi.today, {}));
   if (request.method === "GET" && path[0] === "suggestions" && path.length === 1) return json(await query(internal.agentApi.listSuggestions, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "suggestions" && path.length === 1) return json(await mutation(internal.agentApi.propose, body), 201);
-  if (request.method === "POST" && path[0] === "changes" && path.length === 1) return json(await mutation(internal.agentApi.change, body));
+  if (request.method === "POST" && path[0] === "changes" && path.length === 1) return json(await mutation(internal.agentApi.change, { ...body, idempotency: await idempotencyOf(request, url.pathname, body) }));
   if (request.method === "GET" && path[0] === "inbox" && path.length === 1) return json(await query(internal.agentApi.inbox, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "inbox" && path.length === 1) return json(await mutation(internal.agentApi.inboxAdd, body), 201);
   if (request.method === "POST" && path[0] === "inbox" && path[2] === "resolve" && path.length === 3) return json(await mutation(internal.agentApi.inboxResolve, { id: path[1], ...body }));
+  if (path[0] === "intake" && request.method === "POST" && path.length === 2) {
+    const commands: Record<string, string> = { lead: "intakeLead" };
+    if (commands[path[1]]) return json(...intakeReply(await mutation(makeFunctionReference<'mutation'>("agentApi:" + commands[path[1]]), { ...body, idempotency: await idempotencyOf(request, url.pathname, body) })));
+  }
   return bad("NOT_FOUND", "Route not found", 404);
 }
 

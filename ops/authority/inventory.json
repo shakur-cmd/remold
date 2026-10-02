@@ -90,6 +90,16 @@
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
+    "id": "agentApi:intakeLead",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
     "id": "agentApi:listSuggestions",
     "kind": "query",
     "visibility": "internal",
@@ -201,6 +211,16 @@
   },
   {
     "id": "agents:createScoped",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:createIntake",
     "kind": "action",
     "visibility": "public",
     "writes": true,
@@ -1990,6 +2010,16 @@
     "principal": "agent",
     "readonly": "refused",
     "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP POST /api/v1/intake/lead",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {

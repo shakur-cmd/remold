@@ -22,9 +22,11 @@ export async function getPrincipal(ctx: Ctx): Promise<UserPrincipal> {
   return { user, actor: { kind: "user", id: user._id } };
 }
 
-export async function requireAgent(ctx: Ctx, keyHash: string): Promise<AgentMembership> {
+// A purpose key (the website intake key) works only on its own route.
+export async function requireAgent(ctx: Ctx, keyHash: string, purpose?: "intake"): Promise<AgentMembership> {
   const agent = await ctx.db.query("agents").withIndex("by_key_hash", (q) => q.eq("keyHash", keyHash)).unique();
   if (!agent || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active")) fail("UNAUTHENTICATED", "Invalid or revoked agent key");
+  if (agent.purpose !== undefined && agent.purpose !== purpose) fail("FORBIDDEN", "This key can only submit website leads");
   const org = await ctx.db.get(agent.orgId);
   if (!org) fail("UNAUTHENTICATED", "Invalid or revoked agent key");
   if (agent.authorityVersion !== 1 && org.authorityFrozenAt === undefined) fail("AUTHORITY_MIGRATING", "Workspace authority migration is pending; retry shortly", { retryable: true });
@@ -71,7 +73,10 @@ export async function requireWriter(ctx: Ctx, orgId: Id<"orgs">, minRole: Role =
 
 export function recordGranted(principal: Principal, action: "create" | "update" | "delete", object: Doc<"objects">, recordId?: Id<"records">, fieldIds: string[] = []) {
   if ("member" in principal) return true;
-  if (granted(principal.agent, action, object, principal.org)) return true;
+  return granted(principal.agent, action, object, principal.org) || fieldGranted(principal, action, object, recordId, fieldIds);
+}
+// New-style direct grants only: every touched field must be in one grant's scope.
+export function fieldGranted(principal: AgentMembership, action: "create" | "update" | "delete", object: Doc<"objects">, recordId?: Id<"records">, fieldIds: string[] = []) {
   return principal.capabilities?.some(g => g.mode === "direct" && g.capability === `record.${action}` && g.scope.kind === "records" && g.scope.objectId === object._id && (g.scope.records === "all" || (recordId !== undefined && g.scope.records.includes(recordId))) && fieldIds.every(id => g.scope.kind === "records" && g.scope.fields.includes(id as Id<"fields">))) ?? false;
 }
 

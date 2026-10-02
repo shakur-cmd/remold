@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { currentPrincipal, recordGranted, type Actor, type Membership, type Principal } from "../identity";
+import { currentPrincipal, fieldGranted, recordGranted, type Actor, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
@@ -83,7 +83,7 @@ export function requireFilled(fields: Doc<"fields">[], values: Record<string, un
 }
 
 // Returns eventId null only when an update changed nothing, so no event is written.
-export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor; writeOnly?: boolean } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
   // Operator tools write as the owner but name themselves in history.
   const actor = options.actor ?? membership.actor;
@@ -97,12 +97,17 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const fields = await fieldsFor(ctx, change.orgId, object._id);
   if (!options.clearingReference) {
     const touched = change.action === "delete" ? Object.keys(record!.values) : Object.keys(change.values);
-    authorize(membership, change.action, object, record, fields, touched);
-    if (options.approvedBy) {
-      const approver = await currentPrincipal(ctx, options.approvedBy);
-      if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
-      authorize(approver, change.action, object, record, fields, touched);
-    } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
+    // Write-only (website intake): a new-style field grant authorizes the write without any read scope.
+    if (options.writeOnly) {
+      if (!("agent" in membership) || !fieldGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct field grant required");
+    } else {
+      authorize(membership, change.action, object, record, fields, touched);
+      if (options.approvedBy) {
+        const approver = await currentPrincipal(ctx, options.approvedBy);
+        if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
+        authorize(approver, change.action, object, record, fields, touched);
+      } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
+    }
   }
   // Also on reference cleanup: an agent's delete must not clear a protected
   // lookup or link elsewhere, so the whole deletion is refused instead.

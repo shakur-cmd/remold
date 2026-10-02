@@ -10,7 +10,7 @@ import { allowed, configured, sendEmail } from "./lib/email";
 // the result in one mutation that touches only alert tables. Scheduled functions are
 // scanned incrementally from a saved watermark; work that has not finished when
 // scanned is watched by job id until it finishes, however long that takes.
-export type Kind = "background-error" | "rest-500" | "stalled" | "coverage";
+export type Kind = "background-error" | "rest-500" | "stalled" | "coverage" | "intake-limit";
 export type Condition = { key: string; kind: Kind; fn?: string; count: number };
 type Outcome = { fn: string; at: number; failed: boolean };
 type Summary = { fn: string; lastAt: number; lastFailed: boolean; trailing: number; sawSuccess: boolean };
@@ -60,6 +60,7 @@ export function notice(event: "open" | "resolve", c: Condition, at: number) {
     "rest-500": "REST API is returning internal errors (500)",
     stalled: `Scheduled function ${c.fn} is stalled`,
     coverage: "Alert checks are falling behind, so some scheduled work is not checked yet",
+    "intake-limit": `Website lead intake is refusing leads over its ${c.fn} limit`,
   }[c.kind];
   return { source: "remold" as const, event, kind: c.kind, key: c.key, count: c.count, at: new Date(at).toISOString(), summary: event === "open" ? `${subject} (${c.count} seen).` : `Resolved: ${subject.replace(" is ", " was ").replace(" are ", " were ")}.` };
 }
