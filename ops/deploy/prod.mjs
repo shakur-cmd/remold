@@ -40,6 +40,8 @@ export function releasable(cwd, ref) {
   if (git(cwd, 'status', '--porcelain', '--untracked-files=all')) throw new Error('Refusing: the working tree has uncommitted or untracked changes');
   if (!ref && !ok(cwd, 'symbolic-ref', '-q', 'HEAD')) throw new Error('Refusing: HEAD is detached; check out a branch or pass --ref');
   const sha = git(cwd, 'rev-parse', '--verify', `${ref ?? 'HEAD'}^{commit}`);
+  // Mirror origin's branches exactly; a ref left over from a branch deleted on origin proves nothing.
+  if (!ok(cwd, 'fetch', '--quiet', '--prune', 'origin', '+refs/heads/*:refs/remotes/origin/*')) throw new Error('Refusing: could not fetch origin to confirm the commit is pushed');
   if (!git(cwd, 'for-each-ref', '--contains', sha, 'refs/remotes/origin')) throw new Error(`Refusing: ${sha} is not on origin; push it first so the deployed code is recoverable`);
   return sha;
 }
@@ -59,7 +61,7 @@ export function checkBundle(dist, target) {
 
 const frontendEnv = target => ({ VITE_CONVEX_URL: target.convexUrl, VITE_WORKOS_CLIENT_ID: target.workosClientId, VITE_WORKOS_REDIRECT_URI: target.workosRedirectUri, VITE_AUTH_SESSION_MODE: target.authSessionMode, VITE_WORKOS_API_HOSTNAME: '', VITE_ROUTER: 'browser' });
 // Convex functions first: the new frontend may call functions the old backend lacks.
-export const deployCommands = () => [['pnpm', 'exec', 'convex', 'deploy', '-y'], ['bun', 'x', 'wrangler@4.138.0', 'deploy']];
+export const deployCommands = () => [['pnpm', 'exec', 'convex', 'deploy', '-y'], ['pnpm', 'dlx', 'wrangler@4.138.0', 'deploy']];
 const baseEnv = () => Object.fromEntries(['PATH', 'HOME', 'TMPDIR', 'PNPM_HOME', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME'].filter(key => process.env[key] !== undefined).map(key => [key, process.env[key]]));
 const run = (command, cwd, env) => { const result = spawnSync(command[0], command.slice(1), { cwd, env, stdio: 'inherit' }); if (result.error || result.status !== 0) throw new Error(`Failed: ${command.join(' ')}`); };
 
@@ -68,7 +70,6 @@ async function main() {
   const dry = !!args['dry-run'];
   if (args.config && !dry) throw new Error('--config is for dry runs; a real deploy always reads ops/deploy/prod.json');
   const target = readTarget(resolve(args.config ?? join(root, 'ops/deploy/prod.json')), { build: true });
-  if (!ok(root, 'fetch', '--quiet', 'origin')) throw new Error('Refusing: could not fetch origin to confirm the commit is pushed');
   const sha = releasable(root, args.ref);
   if (args.ref) {
     rollbackFloor(root, sha, JSON.parse(readFileSync(join(root, 'ops/release/notes.json'), 'utf8')).rollbackTarget);

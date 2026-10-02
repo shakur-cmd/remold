@@ -10,7 +10,7 @@ All commands need `CONVEX_DEPLOY_KEY` set to a production deploy key for `nautic
     pnpm deploy:prod --dry-run   # every check and the build; prints the deploy commands
     pnpm deploy:prod
 
-It refuses a dirty tree, a detached HEAD and a commit that is not on origin. It checks the commit out into a fresh worktree, runs typecheck, tests, test:authority and verify:release, builds with the `prod.json` values only, refuses a bundle that names any other deployment, then runs `convex deploy` and `wrangler deploy`.
+It refuses a dirty tree, a detached HEAD and a commit that no branch on origin contains (it fetches with --prune first). It checks the commit out into a fresh worktree, runs typecheck, tests, test:authority and verify:release, builds with the `prod.json` values only, refuses a bundle that names any other deployment, then runs `convex deploy` and `wrangler deploy`.
 
 ## Back up and drill
 

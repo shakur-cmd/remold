@@ -8,11 +8,11 @@ import { seedStandard } from "./lib/standard";
 import { fail } from "./errors";
 import { writable } from "./authority/readonly";
 
-// Only the token's verified email counts; users.store keeps whatever profile email the app sent.
-// WorkOS access tokens carry email only when a JWT template adds it.
+// Only an email the token marks verified counts; users.store keeps whatever profile email the app sent.
+// WorkOS access tokens carry email and email_verified only when a JWT template adds them.
 async function mayCreate(ctx: QueryCtx) {
   if (process.env.REMOLD_OPEN_SIGNUP === "1") return true;
-  const identity = await ctx.auth.getUserIdentity(), email = identity?.emailVerified === false ? undefined : identity?.email?.trim().toLowerCase();
+  const identity = await ctx.auth.getUserIdentity(), email = identity?.emailVerified !== true ? undefined : identity.email?.trim().toLowerCase();
   return !!email && (process.env.REMOLD_WORKSPACE_CREATORS ?? "").split(",").some((creator) => creator.trim().toLowerCase() === email);
 }
 export const canCreate = query({ args: {}, handler: async (ctx) => mayCreate(ctx) });

@@ -13,6 +13,8 @@ export const sha256 = path => createHash('sha256').update(readFileSync(path)).di
 
 export async function exportBackup({ dir, deployment, key, now, exportZip }) {
   requireDeployKey(key, deployment);
+  // The CLI runs from a temporary directory, so a relative path would land there and be deleted.
+  dir = resolve(dir);
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${deployment}-${now.toISOString().replace(/\.\d+Z$/, 'Z').replace(/[-:]/g, '')}.zip`);
   if (existsSync(path)) throw new Error(`${path} already exists`);

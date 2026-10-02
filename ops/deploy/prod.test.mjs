@@ -14,7 +14,7 @@ function repo(t) {
   const dir = temp(t), origin = join(dir, 'origin.git'), work = join(dir, 'work');
   git(dir, 'init', '-q', '--bare', '-b', 'main', origin); git(dir, 'clone', '-q', origin, work);
   const commit = name => { writeFileSync(join(work, name), name); git(work, 'add', name); git(work, 'commit', '-qm', name); return git(work, 'rev-parse', 'HEAD'); };
-  return { work, commit };
+  return { work, origin, commit };
 }
 
 test('a prod.json with a placeholder left in it refuses to build', t => {
@@ -52,6 +52,16 @@ test('a dirty tree, a detached HEAD or a commit missing from origin is refused',
   assert.throws(() => releasable(work), /not on origin/);
 });
 
+test('a commit whose only origin branch was deleted on origin is refused, even though a stale local ref still names it', t => {
+  const { work, origin, commit } = repo(t);
+  commit('a'); git(work, 'push', '-q', 'origin', 'main');
+  git(work, 'checkout', '-q', '-b', 'release'); const release = commit('b'); git(work, 'push', '-q', 'origin', 'release');
+  assert.equal(releasable(work), release);
+  git(origin, 'branch', '-D', 'release');
+  assert.ok(git(work, 'for-each-ref', 'refs/remotes/origin/release'), 'the local remote-tracking ref is still there');
+  assert.throws(() => releasable(work), /not on origin/);
+});
+
 test('a rollback ref older than the pinned rollback target is refused', t => {
   const { work, commit } = repo(t), older = commit('a'), pinned = commit('b'), newer = commit('c');
   assert.throws(() => rollbackFloor(work, older, pinned), /older than the rollback target/);
@@ -73,5 +83,5 @@ test('a bundle aimed at any deployment but the target is refused', t => {
 });
 
 test('deploy pushes Convex functions before the frontend that calls them', () => {
-  assert.deepEqual(deployCommands().map(command => command.slice(0, 4).join(' ')), ['pnpm exec convex deploy', 'bun x wrangler@4.138.0 deploy']);
+  assert.deepEqual(deployCommands().map(command => command.slice(0, 4).join(' ')), ['pnpm exec convex deploy', 'pnpm dlx wrangler@4.138.0 deploy']);
 });

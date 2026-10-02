@@ -27,12 +27,15 @@ describe("workspace creation", () => {
     const orgId = await owner.mutation(api.orgs.create, { name: "CodeMyVibe" });
     expect((await owner.query(api.orgs.get, { orgId })).name).toBe("CodeMyVibe");
   });
-  it("trusts only a verified email from the sign-in token, not the profile the app sends", async () => {
+  it("trusts only an email the sign-in token marks verified, not an unmarked one or the profile the app sends", async () => {
     const { t } = await userAndOrg("owner");
     vi.stubEnv("REMOLD_OPEN_SIGNUP", "");
     vi.stubEnv("REMOLD_WORKSPACE_CREATORS", "shakur@codemyvibe.com");
     const unverified = await signIn(t, "unverified", "shakur@codemyvibe.com", false);
     await expect(unverified.mutation(api.orgs.create, { name: "X" })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    const unproven = await signIn(t, "unproven", "shakur@codemyvibe.com");
+    expect(await unproven.query(api.orgs.canCreate, {})).toBe(false);
+    await expect(unproven.mutation(api.orgs.create, { name: "X" })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
     const spoof = t.withIdentity({ tokenIdentifier: "workos|spoof", name: "Spoof" });
     await spoof.mutation(api.users.store, { profile: { email: "shakur@codemyvibe.com" } });
     await expect(spoof.mutation(api.orgs.create, { name: "X" })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
