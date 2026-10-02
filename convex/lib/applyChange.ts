@@ -125,6 +125,9 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
     const checked = change.action === "create" || (field._id in validated && !options.clearingReference);
     if (checked && field.required && empty(values[field._id])) fail("VALIDATION", "Required field is empty", { fieldId: field._id });
   }
+  // Remold never publishes a post; a person posts it and pastes the link back first.
+  const status = object.isStandard && object.key === "post" ? fields.find((f) => f.key === "status") : undefined, link = status && fields.find((f) => f.key === "publishedLink" && !f.retired);
+  if (status && link && values[status._id] === "published" && !(typeof values[link._id] === "string" && (values[link._id] as string).trim()) && (change.action === "create" || status._id in validated || link._id in validated)) fail("VALIDATION", "A published post needs its published link", { fieldId: link._id });
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;

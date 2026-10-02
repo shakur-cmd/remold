@@ -5,20 +5,24 @@ import { canReadObject, canReadField, canReadRecord, canQueryField, firstVisible
 
 const slotOf = (field: Doc<"fields">) => `${field.slot!.kind}${field.slot!.index}`;
 
-// Open tasks due before `until`, earliest first. A record-scoped caller is served
-// from their list, keeping only records whose due and done fields they can read
-// before looking at those values. Anyone else must be able to read both fields on
-// every record, so the only rows skipped are tasks the caller can see are done.
-export async function dueTasks(ctx: QueryCtx, principal: Principal, task: Doc<"objects">, due: Doc<"fields"> | undefined, done: Doc<"fields"> | undefined, until: number, limit: number): Promise<Doc<"records">[]> {
-  if (!canReadObject(principal, task) || !due?.slot || !canReadField(principal, task, due) || (done && !canReadField(principal, task, done))) return [];
-  const open = (row: Doc<"records">) => !done || row.values[done._id] !== true;
-  const at = (row: Doc<"records">) => (row as Record<string, unknown>)[slotOf(due)];
-  const listed = await listedRecords(ctx, principal, task);
-  if (listed) return listed.filter(row => canReadField(principal, task, due, row._id) && (!done || canReadField(principal, task, done, row._id))).filter(row => typeof at(row) === "number" && (at(row) as number) > 0 && (at(row) as number) < until && open(row)).sort((a, b) => (at(a) as number) - (at(b) as number) || a._creationTime - b._creationTime).slice(0, limit);
-  if (!canQueryField(principal, task, due) || (done && !canQueryField(principal, task, done))) return [];
-  const rows = (ctx.db.query("records") as any).withIndex(`by_${slotOf(due)}`, (q: any) => q.eq("orgId", task.orgId).eq("objectId", task._id).gt(slotOf(due), 0).lt(slotOf(due), until));
-  return firstVisible<Doc<"records">, Doc<"records">>(rows, limit, row => open(row) && canReadRecord(principal, task, row) ? row : null);
+// Records whose `date` falls in [from, until) and that `keep` accepts, earliest
+// first. A record-scoped caller is served from their list, keeping only records
+// whose date and `gates` fields they can read before looking at those values.
+// Anyone else must be able to read and query them on every record, so the only
+// rows skipped are ones `keep` refuses on values the caller can see.
+export async function datedRecords(ctx: QueryCtx, principal: Principal, object: Doc<"objects">, date: Doc<"fields"> | undefined, gates: Doc<"fields">[], keep: (row: Doc<"records">) => boolean, from: number, until: number, limit: number): Promise<Doc<"records">[]> {
+  if (!canReadObject(principal, object) || !date?.slot || ![date, ...gates].every(f => canReadField(principal, object, f))) return [];
+  const at = (row: Doc<"records">) => (row as Record<string, unknown>)[slotOf(date)];
+  const listed = await listedRecords(ctx, principal, object);
+  if (listed) return listed.filter(row => [date, ...gates].every(f => canReadField(principal, object, f, row._id))).filter(row => typeof at(row) === "number" && (at(row) as number) >= from && (at(row) as number) < until && keep(row)).sort((a, b) => (at(a) as number) - (at(b) as number) || a._creationTime - b._creationTime).slice(0, limit);
+  if (![date, ...gates].every(f => canQueryField(principal, object, f))) return [];
+  const rows = (ctx.db.query("records") as any).withIndex(`by_${slotOf(date)}`, (q: any) => q.eq("orgId", object.orgId).eq("objectId", object._id).gte(slotOf(date), from).lt(slotOf(date), until));
+  return firstVisible<Doc<"records">, Doc<"records">>(rows, limit, row => keep(row) && canReadRecord(principal, object, row) ? row : null);
 }
+
+// Open tasks due before `until`, earliest first. Dates are integers, so from 1 is "after 0".
+export const dueTasks = (ctx: QueryCtx, principal: Principal, task: Doc<"objects">, due: Doc<"fields"> | undefined, done: Doc<"fields"> | undefined, until: number, limit: number) =>
+  datedRecords(ctx, principal, task, due, done ? [done] : [], row => !done || row.values[done._id] !== true, 1, until, limit);
 
 // Opportunities untouched since `before` that are not won or lost, longest untouched first.
 export async function quietDeals(ctx: QueryCtx, principal: Principal, deal: Doc<"objects">, stage: Doc<"fields"> | undefined, before: number, limit: number): Promise<Doc<"records">[]> {

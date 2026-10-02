@@ -4,7 +4,7 @@ import type { QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { requireMember, type Principal } from "./identity";
 import { canReadObject, canReadField, projectRecord } from "./authority/reads";
-import { dueTasks, quietDeals } from "./lib/daily";
+import { datedRecords, dueTasks, quietDeals } from "./lib/daily";
 
 const DAY = 24 * 60 * 60 * 1000;
 const QUIET_DAYS = 14;
@@ -16,21 +16,28 @@ async function standard(ctx: QueryCtx, orgId: Id<"orgs">, key: string) {
   return { object, byKey: new Map(fields.map((field) => [field.key, field])) };
 }
 
-// The daily list: open tasks due before `until` (overdue first), and open
-// opportunities nobody has touched in two weeks, as `principal` may see them.
-export async function daily(ctx: QueryCtx, principal: Principal, until: number) {
+// The daily list: open tasks due before `until` (overdue first), open
+// opportunities nobody has touched in two weeks, and posts planned around
+// `today` that are still to go out, as `principal` may see them. The post window
+// spans every time zone; the caller keeps the ones on its own local day.
+export async function daily(ctx: QueryCtx, principal: Principal, until: number, today?: number) {
   const task = await standard(ctx, principal.org._id, "task");
   const due = task?.byKey.get("dueDate"), done = task?.byKey.get("done");
   const tasks = task && !due?.retired ? await dueTasks(ctx, principal, task.object, due, done, until, 50) : [];
   const deal = await standard(ctx, principal.org._id, "opportunity");
   const quiet = deal ? await quietDeals(ctx, principal, deal.object, deal.byKey.get("stage"), Date.now() - QUIET_DAYS * DAY, 20) : [];
+  const post = today === undefined ? null : await standard(ctx, principal.org._id, "post");
+  const planned = post?.byKey.get("planned"), status = post?.byKey.get("status");
+  const posts = post && planned && !planned.retired ? await datedRecords(ctx, principal, post.object, planned, status ? [status] : [], r => !status || !["published", "skipped"].includes(r.values[status._id] as string), today! - DAY, today! + 2 * DAY, 50) : [];
   return {
     task: task && due && canReadObject(principal, task.object) && canReadField(principal, task.object, due) ? { objectKey: task.object.key, dueFieldId: due._id, dueField: due, doneFieldId: done?._id ?? null } : null,
     tasks: (await Promise.all(tasks.slice(0, 50).map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null),
     dealKey: deal && canReadObject(principal, deal.object) ? deal.object.key : null,
     quiet: (await Promise.all(quiet.map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null),
+    post: post && planned && posts.length ? { objectKey: post.object.key, plannedFieldId: planned._id, plannedField: planned } : null,
+    posts: (await Promise.all(posts.map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null),
   };
 }
 
 // `today` is the caller's local date as UTC midnight, the same encoding date fields use.
-export const get = query({ args: { orgId: v.id("orgs"), today: v.number() }, handler: async (ctx, args) => daily(ctx, await requireMember(ctx, args.orgId), args.today + 8 * DAY) });
+export const get = query({ args: { orgId: v.id("orgs"), today: v.number() }, handler: async (ctx, args) => daily(ctx, await requireMember(ctx, args.orgId), args.today + 8 * DAY, args.today) });
