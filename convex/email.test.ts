@@ -30,7 +30,8 @@ it("refuses and logs an address outside the allowlist without sending", async ()
 
 it("does not send without an API key or sender, and never throws on a failed send", async () => {
   delete process.env.RESEND_API_KEY;
-  expect(await sendEmail({ to: "owner@example.com", subject: "s", text: "t" })).toBe("unconfigured");
+  for (let i = 0; i < 3; i++) expect(await sendEmail({ to: "owner@example.com", subject: "s", text: "t" })).toBe("unconfigured");
+  expect(vi.mocked(console.warn).mock.calls.filter(([message]) => /not set/.test(String(message)))).toHaveLength(1);
   process.env.RESEND_API_KEY = env.RESEND_API_KEY; delete process.env.REMOLD_EMAIL_FROM;
   expect(await sendEmail({ to: "owner@example.com", subject: "s", text: "t" })).toBe("unconfigured");
   expect(sent).toEqual([]);

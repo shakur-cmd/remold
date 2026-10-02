@@ -74,11 +74,13 @@ it("drops a task marked done from the next email, and works whether due carries 
   expect(mails[0]!.text).toContain("Afternoon call");
   expect(mails[0]!.text).toContain("14:32");
   await a.done(first);
+  vi.setSystemTime(at11 + DAY);
   await t.action(send, {});
   expect(mails[1]!.text).not.toContain("Morning call");
   expect(mails[1]!.text).toContain("Afternoon call");
   // Nothing left: no email at all.
   await a.done(second);
+  vi.setSystemTime(at11 + 2 * DAY);
   await t.action(send, {});
   expect(mails).toHaveLength(2);
 });
@@ -91,17 +93,52 @@ it("does not email an address outside the allowlist, and turning reminders off s
   await t.action(send, {});
   expect(mails.map((m) => m.to)).toEqual([["a@example.com"]]);
   await a.client.mutation(api.reminders.set, { orgId: a.orgId, on: false });
+  vi.setSystemTime(at11 + DAY);
   await t.action(send, {});
   expect(mails).toHaveLength(1);
 });
 
-it("a member turns their own daily reminder on and off, and a read-only workspace refuses the change", async () => {
+it("a member can always turn their own reminder off, but a read-only workspace refuses turning it on", async () => {
   const t = makeTest(), a = await workspace(t, "A", "a@example.com");
+  await a.add("Mine", today);
   await a.client.mutation(api.reminders.set, { orgId: a.orgId, on: true });
   expect(await a.client.query(api.reminders.mine, { orgId: a.orgId })).toEqual({ on: true, email: "a@example.com" });
   await t.run((ctx: any) => ctx.db.patch(a.orgId, { flags: { readonly: true } }));
-  await expect(a.client.mutation(api.reminders.set, { orgId: a.orgId, on: false })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+  await a.client.mutation(api.reminders.set, { orgId: a.orgId, on: false });
+  expect(await a.client.query(api.reminders.mine, { orgId: a.orgId })).toEqual({ on: false, email: "a@example.com" });
+  await t.action(send, {});
+  expect(mails).toEqual([]);
+  await expect(a.client.mutation(api.reminders.set, { orgId: a.orgId, on: true })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
   const stranger = t.withIdentity({ tokenIdentifier: "clerk|S", name: "S", email: "b@example.com" });
   await stranger.mutation(api.users.store, {});
   await expect(stranger.query(api.reminders.mine, { orgId: a.orgId })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+  await expect(stranger.mutation(api.reminders.set, { orgId: a.orgId, on: false })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+});
+
+it("a second reminder run on the same UTC day sends nothing, and the next day sends again", async () => {
+  const t = makeTest(), a = await workspace(t, "A", "a@example.com");
+  await a.add("Mine", today);
+  await a.client.mutation(api.reminders.set, { orgId: a.orgId, on: true });
+  await t.action(send, {});
+  vi.setSystemTime(at11 + 12 * 3_600_000);
+  await Promise.all([t.action(send, {}), t.action(send, {})]);
+  expect(mails).toHaveLength(1);
+  vi.setSystemTime(at11 + DAY);
+  await t.action(send, {});
+  expect(mails).toHaveLength(2);
+  expect(mails[1]!.text).toContain("Overdue");
+});
+
+it("a failed send is retried by a later run the same day, then sends nothing more", async () => {
+  const t = makeTest(), a = await workspace(t, "A", "a@example.com");
+  await a.add("Mine", today);
+  await a.client.mutation(api.reminders.set, { orgId: a.orgId, on: true });
+  let up = false, attempts = 0;
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init: any) => { attempts++; if (up) mails.push(JSON.parse(init.body)); return new Response("{}", { status: up ? 200 : 503 }); }));
+  await t.action(send, {});
+  expect([attempts, mails.length]).toEqual([1, 0]);
+  up = true;
+  await t.action(send, {});
+  await t.action(send, {});
+  expect([attempts, mails.length]).toEqual([2, 1]);
 });

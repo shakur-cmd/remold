@@ -1,12 +1,12 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { api, agentFor, objectFields, rest, userAndOrg } from "./test.helpers";
+import { api, agentFor, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
 
 async function noisyRecord() {
   const setup = await userAndOrg();
   const { client, orgId } = setup;
   const company = await objectFields(client, orgId, "company");
   const { recordId } = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Noisy 0" } });
-  for (let i = 1; i < 250; i += 1) await client.mutation(api.records.update, { orgId, recordId, values: { [company.fields.name._id]: `Noisy ${i}` } });
+  await bulk(setup.t, orgId, async (apply) => { for (let i = 1; i < 250; i += 1) await apply({ action: "update", recordId, values: { [company.fields.name._id]: `Noisy ${i}` } }); });
   return { ...setup, recordId, nameId: company.fields.name._id };
 }
 
@@ -19,7 +19,7 @@ describe("history paging", () => {
     const seen: any[] = [];
     let cursor: string | null = null;
     for (let guard = 0; guard < 20; guard += 1) {
-      const page: any = await client.query(api.events.page, { orgId, recordId, paginationOpts: { numItems: 60, cursor } });
+      const page: any = await client.query(api.events.timeline, { orgId, recordId, paginationOpts: { numItems: 60, cursor } });
       seen.push(...page.page);
       if (page.isDone) break;
       cursor = page.continueCursor;
