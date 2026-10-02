@@ -6,6 +6,7 @@ import { Copy, ExternalLink, Mail, MoreHorizontal, Phone, Plus } from "lucide-re
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,7 +18,7 @@ import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
-import { contactHref, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { contactHref, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -126,9 +127,13 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
         </div>
 
         {/* Tasks that feed the next step are listed there, not twice. */}
-        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry)).map((entry) => (
-          <RelatedPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} showVia={reverse.filter((r) => r.object._id === entry.object._id).length > 1} />
-        ))}
+        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry)).map((entry) =>
+          entry.object.key === "invoice" && entry.field.key === "company" ? (
+            <InvoicesPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} />
+          ) : (
+            <RelatedPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} showVia={reverse.filter((r) => r.object._id === entry.object._id).length > 1} />
+          ),
+        )}
       </div>
 
       <div className="grid min-w-0 content-start gap-5">
@@ -247,6 +252,65 @@ function AddRelatedDialog({ orgId, recordId, entry, open, onOpenChange }: { orgI
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// A company's invoices with what was billed, what is paid and what is still open.
+function InvoicesPanel({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"records">; entry: Reverse }) {
+  const data = useQuery(api.invoices.forCompany, { orgId, recordId });
+  const [adding, setAdding] = useState(false);
+  const today = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  if (!data) return null;
+  const { fields: f } = data;
+  const number = (r: Doc<"records">, id: Id<"fields"> | null) => (id && typeof r.values[id] === "number" ? (r.values[id] as number) : null);
+  const rows = [...data.invoices].sort((a, b) => (number(b, f.due) ?? b._creationTime) - (number(a, f.due) ?? a._creationTime));
+  const totals = [
+    { label: "Billed", value: data.billed },
+    { label: "Paid", value: data.paid },
+    { label: "Open", value: data.open },
+  ];
+  return (
+    <Card className="min-w-0">
+      <CardHeader>
+        <CardTitle>
+          Invoices
+          {rows.length > 0 && <span className="ml-2 font-normal text-muted-foreground tabular-nums">{rows.length}{data.capped ? "+" : ""}</span>}
+        </CardTitle>
+        <CardAction>
+          <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setAdding(true)}>
+            <Plus /> Add
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {rows.length > 0 && (
+          <dl className="grid grid-cols-3 gap-2 rounded-lg border bg-muted/40 p-3">
+            {totals.map((total) => (
+              <div key={total.label} className="grid gap-0.5">
+                <dt className="text-xs text-muted-foreground">{total.label}</dt>
+                <dd className="text-sm font-medium tabular-nums">{total.value === null ? "Hidden" : formatMoney(total.value)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        <div className="grid gap-0.5">
+          {rows.map((r) => {
+            const amount = number(r, f.amount), due = number(r, f.due), paidOn = number(r, f.paidOn);
+            const status = paidOn !== null ? `Paid ${formatDate(paidOn)}` : due === null ? "Unpaid" : due < today ? `Overdue since ${formatDate(due)}` : `Due ${formatDate(due)}`;
+            return (
+              <Link key={r._id} to={`/o/${orgId}/${data.objectKey}/${r._id}`} className="flex min-w-0 items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                <span className="shrink-0">{r.title || "Untitled"}</span>
+                {f.monthly && r.values[f.monthly] === true && <Badge variant="outline" className="shrink-0">Monthly</Badge>}
+                <span className={cn("ml-auto min-w-0 truncate text-xs tabular-nums", paidOn === null && due !== null && due < today ? "font-medium text-destructive" : "text-muted-foreground")}>{status}</span>
+                <span className="w-20 shrink-0 text-right tabular-nums">{amount === null ? "—" : formatMoney(amount)}</span>
+              </Link>
+            );
+          })}
+          {rows.length === 0 && <span className="px-2 text-sm text-muted-foreground">None yet</span>}
+        </div>
+      </CardContent>
+      <AddRelatedDialog orgId={orgId} recordId={recordId} entry={entry} open={adding} onOpenChange={setAdding} />
+    </Card>
   );
 }
 

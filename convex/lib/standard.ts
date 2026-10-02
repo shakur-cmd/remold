@@ -2,7 +2,7 @@ import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { allocateSlot, kindFor } from "./slots";
 
-type FieldDef = { key: string; label: string; type: "text" | "number" | "select" | "date" | "boolean" | "lookup" | "links"; required?: boolean; indexed?: false; target?: string; withTime?: true; options?: { id: string; label: string }[] };
+type FieldDef = { key: string; label: string; type: "text" | "number" | "select" | "date" | "boolean" | "lookup" | "links"; required?: boolean; indexed?: false; target?: string; withTime?: true; protectedFromAgents?: true; options?: { id: string; label: string }[] };
 type ObjectDef = { key: string; label: string; plural: string; fields: FieldDef[] };
 // Only fields people sort or filter by get an indexed slot; an object has 8
 // text slots and notes or address lines would use them up.
@@ -15,6 +15,8 @@ const standard: ObjectDef[] = [
   { key: "note", label: "Note", plural: "Notes", fields: [{ key: "body", label: "Body", type: "text", required: true }, { key: "about", label: "About", type: "lookup" }] },
   { key: "activity", label: "Activity", plural: "Activities", fields: [{ key: "title", label: "Title", type: "text", required: true }, { key: "type", label: "Type", type: "select", options: ["call", "email", "meeting", "payment", "message", "other"].map((id) => ({ id, label: id[0]!.toUpperCase() + id.slice(1) })) }, { key: "when", label: "When", type: "date", withTime: true }, { key: "about", label: "About", type: "lookup" }, { key: "source", label: "Source", type: "text" }] },
   { key: "campaign", label: "Campaign", plural: "Campaigns", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "status", label: "Status", type: "select", options: ["planned", "active", "paused", "done"].map((id) => ({ id, label: id[0]!.toUpperCase() + id.slice(1) })) }, { key: "channel", label: "Channel", type: "select", options: [{ id: "email", label: "Email" }, { id: "phone", label: "Phone" }, { id: "inPerson", label: "In person" }, { id: "social", label: "Social" }] }, { key: "startDate", label: "Start Date", type: "date" }, { key: "goal", label: "Goal", type: "text" }, { key: "people", label: "People", type: "links", target: "person" }, { key: "companies", label: "Companies", type: "links", target: "company" }] },
+  // Tracking only: Remold records invoices and never charges. Agents may not mark one paid.
+  { key: "invoice", label: "Invoice", plural: "Invoices", fields: [{ key: "number", label: "Number", type: "text", required: true }, { key: "company", label: "Company", type: "lookup", target: "company" }, { key: "amount", label: "Amount", type: "number" }, { key: "sent", label: "Sent", type: "date" }, { key: "due", label: "Due", type: "date" }, { key: "paidOn", label: "Paid On", type: "date", protectedFromAgents: true }, { key: "monthly", label: "Monthly", type: "boolean" }, { key: "document", label: "Document", type: "text", indexed: false }] },
 ];
 
 // Idempotent: objects that already exist in the org are left alone, so a
@@ -33,7 +35,7 @@ export async function seedStandard(ctx: MutationCtx, orgId: Id<"orgs">) {
       // Older orgs gain time of day on standard dates; an explicit false is left alone.
       if (existing) { if (field.withTime && existing.type === "date" && existing.withTime === undefined) await ctx.db.patch(existing._id, { withTime: true }); continue; }
       const kind = field.indexed === false ? undefined : kindFor(field.type);
-      const fieldId = await ctx.db.insert("fields", { orgId, objectId, key: field.key, label: field.label, type: field.type, options: field.options, targetObjectId: field.target ? ids[field.target] : undefined, required: field.required ?? false, ...(field.withTime ? { withTime: true } : {}), slot: kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined, encoding: 1, retired: false, order });
+      const fieldId = await ctx.db.insert("fields", { orgId, objectId, key: field.key, label: field.label, type: field.type, options: field.options, targetObjectId: field.target ? ids[field.target] : undefined, required: field.required ?? false, ...(field.withTime ? { withTime: true } : {}), ...(field.protectedFromAgents ? { protectedFromAgents: true } : {}), slot: kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined, encoding: 1, retired: false, order });
       if (order === 0) await ctx.db.patch(objectId, { titleFieldId: fieldId });
     }
   }

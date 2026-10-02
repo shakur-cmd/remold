@@ -45,6 +45,7 @@ import type * as integrations_safetyAdapters from "../integrations/safetyAdapter
 import type * as integrations_safetyFinality from "../integrations/safetyFinality.js";
 import type * as integrations_tables from "../integrations/tables.js";
 import type * as invites from "../invites.js";
+import type * as invoices from "../invoices.js";
 import type * as lib_applyChange from "../lib/applyChange.js";
 import type * as lib_daily from "../lib/daily.js";
 import type * as lib_email from "../lib/email.js";
@@ -114,6 +115,7 @@ declare const fullApi: ApiFromModules<{
   "integrations/safetyFinality": typeof integrations_safetyFinality;
   "integrations/tables": typeof integrations_tables;
   invites: typeof invites;
+  invoices: typeof invoices;
   "lib/applyChange": typeof lib_applyChange;
   "lib/daily": typeof lib_daily;
   "lib/email": typeof lib_email;

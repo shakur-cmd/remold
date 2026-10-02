@@ -60,7 +60,7 @@ export const timeOfDay = (field: Field | undefined, ms: number) => (allDay(field
 
 // Only the standard "amount" field is money; any other number is a plain count. USD for the US launch.
 export const isMoney = (field: Field) => field.type === "number" && field.key === "amount";
-export const formatMoney = (amount: number) => amount.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+export const formatMoney = (amount: number) => amount.toLocaleString(undefined, { style: "currency", currency: "USD", ...(Number.isInteger(amount) ? { maximumFractionDigits: 0 } : { minimumFractionDigits: 2 }) });
 export const formatNumber = (field: Field, value: number) => (isMoney(field) ? formatMoney(value) : value.toLocaleString());
 
 // How long a record has gone untouched, in one phrase used everywhere: "20 days quiet".

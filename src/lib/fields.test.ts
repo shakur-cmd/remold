@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { type Field, dateToInput, formatDate, formatFieldDate, formatNumber, inputToDate, localDay, relativeDay, toKey } from "./fields";
+import { type Field, dateToInput, formatDate, formatFieldDate, formatMoney, formatNumber, inputToDate, localDay, relativeDay, toKey } from "./fields";
 
 const day = 86400000;
 const today = Date.UTC(2026, 8, 25); // a Friday
@@ -76,5 +76,12 @@ describe("date fields with time", () => {
     expect(inputToDate("2026-10-03", plain)).toBe(day);
     expect(formatFieldDate(plain, day)).toBe(formatDate(day));
     expect(localDay(plain, day)).toBe(day);
+  });
+});
+
+describe("formatMoney", () => {
+  it("keeps cents when an amount has them and drops them when it does not", () => {
+    expect(formatMoney(450.5)).toBe((450.5).toLocaleString(undefined, { style: "currency", currency: "USD", minimumFractionDigits: 2 }));
+    expect(formatMoney(1200)).toBe((1200).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
   });
 });
