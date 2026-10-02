@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getPrincipal, requireWriter } from "./identity";
 import { unrestrictedHuman } from './authority/inbox';
-import { writable } from './authority/readonly';
+import { closed, writable } from './authority/readonly';
 import { fail } from "./errors";
 
 export const create = mutation({ args: { orgId: v.id("orgs"), role: v.union(v.literal("admin"), v.literal("member")) }, handler: async (ctx, args) => {
@@ -16,7 +16,7 @@ export const get = query({ args: { token: v.string() }, handler: async (ctx, arg
   const invite = await ctx.db.query("invites").withIndex("by_token", (q) => q.eq("token", args.token)).unique();
   if (!invite) return null;
   const org = await ctx.db.get(invite.orgId);
-  return org && !org.deletingAt ? { orgName: org.name, role: invite.role, expired: invite.expiresAt < Date.now() || !!invite.acceptedAt } : null;
+  return org && !closed(org) ? { orgName: org.name, role: invite.role, expired: invite.expiresAt < Date.now() || !!invite.acceptedAt } : null;
 } });
 export const accept = mutation({ args: { token: v.string() }, handler: async (ctx, args) => {
   const principal = await getPrincipal(ctx);

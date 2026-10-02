@@ -50,14 +50,14 @@ export function rollbackFloor(cwd, sha, pinned) {
   if (!ok(cwd, 'merge-base', '--is-ancestor', pinned, sha)) throw new Error(`Refusing: ${sha} is older than the rollback target ${pinned} pinned in ops/release/notes.json; its schema may reject data written since`);
 }
 
-// Workspace deletion purges in scheduled batches. Code without that worker would leave a started
-// deletion half done, so a rollback to it waits until the backup shows no deletion in progress.
+// Workspace deletion purges in scheduled batches, and a failed import is purged the same way. Code without
+// that worker would leave either half done, so a rollback to it waits until the backup shows neither in progress.
 export function deletionGate(cwd, sha, zip) {
   if (/export const purge\b/.test(spawnSync('git', ['show', `${sha}:convex/workspace.ts`], { cwd, encoding: 'utf8' }).stdout ?? '')) return;
   const read = spawnSync('unzip', ['-p', zip, 'orgs/documents.jsonl'], { encoding: 'utf8', maxBuffer: 1 << 30 });
   if (read.status !== 0) throw new Error(`Refusing: cannot read the orgs table from ${zip}, so pending workspace deletions cannot be ruled out`);
-  const pending = read.stdout.split('\n').filter(Boolean).map(line => JSON.parse(line)).filter(org => org.deletingAt != null);
-  if (pending.length) throw new Error(`Refusing: ${pending.length} workspace deletion(s) still in progress (${pending.map(org => org._id).join(', ')}) and ${sha} has no purge worker to finish them; wait for them to finish, take a new backup, then roll back`);
+  const pending = read.stdout.split('\n').filter(Boolean).map(line => JSON.parse(line)).filter(org => org.deletingAt != null || org.importingAt != null);
+  if (pending.length) throw new Error(`Refusing: ${pending.length} workspace deletion(s) or import(s) still in progress (${pending.map(org => org._id).join(', ')}) and ${sha} has no purge worker to finish them; wait for them to finish, take a new backup, then roll back`);
 }
 
 // The Convex client's own error messages use this example URL.

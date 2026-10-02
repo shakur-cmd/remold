@@ -1,5 +1,6 @@
 declare const process: { env: Record<string, string | undefined> };
 import { v } from "convex/values";
+import { closed } from "./authority/readonly";
 import type { Doc } from "./_generated/dataModel";
 import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -46,7 +47,7 @@ export const compose = internalQuery({ args: { memberId: v.id("members") }, hand
   const member = await ctx.db.get(memberId);
   const [user, org] = member?.dailyReminder ? await Promise.all([ctx.db.get(member.userId), ctx.db.get(member.orgId)]) : [null, null];
   const today = utcMidnight(Date.now());
-  if (!member || !user?.email || !org || org.deletingAt || member.reminderSentOn === today) return null;
+  if (!member || !user?.email || !org || closed(org) || member.reminderSentOn === today) return null;
   const list = await daily(ctx, { user, member, org, actor: { kind: "user", id: user._id } }, today + DAY);
   const dueOf = (r: Doc<"records">) => (list.task ? r.values[list.task.dueFieldId] : undefined) as number;
   const overdue = list.tasks.filter((r) => dueOf(r) < today), dueToday = list.tasks.filter((r) => dueOf(r) >= today);

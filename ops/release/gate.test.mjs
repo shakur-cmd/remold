@@ -34,7 +34,7 @@ test('the first-customer gate rows are each backed by tests or owned', () => {
 test('the gate keeps the lines live billing and large workspaces depend on', () => {
   const text = gate.replace(/<[^>]+>/g, ' ');
   assert.match(text, /Cancel the Stripe subscription when a workspace is deleted, before live billing/);
-  assert.match(text, /export up to 15,000 rows; larger workspaces by request/);
+  assert.match(text, /export up to 64 MB per file; larger workspaces by request/);
   assert.ok(rows(gate).some(row => row.id === 'stripe-cancel'), 'the Stripe cancellation row is a tracked gate row');
 });
 test('marking a pending row done without tests, or a Shakur row without approval, is caught', () => {

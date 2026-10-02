@@ -2083,66 +2083,6 @@
     "proof": "Callback, adapter, REST and ops logs reveal no secrets"
   },
   {
-    "id": "workspace:exportAll",
-    "kind": "query",
-    "visibility": "public",
-    "writes": false,
-    "principal": "human",
-    "readonly": "not-a-write",
-    "masks": "projected",
-    "proof": "Export is refused to an owner with hidden fields or record scopes"
-  },
-  {
-    "id": "workspace:importAll",
-    "kind": "mutation",
-    "visibility": "public",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "refuses a workspace that already has records, and refuses non-owners"
-  },
-  {
-    "id": "workspace:confirmDelete",
-    "kind": "mutation",
-    "visibility": "public",
-    "writes": true,
-    "principal": "human",
-    "readonly": "reduction-only",
-    "masks": "projected",
-    "proof": "needs the owner, the exact name and the sha256 of the current export, then closes the workspace at once"
-  },
-  {
-    "id": "workspace:purge",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "reduction-only",
-    "masks": "n/a",
-    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
-  },
-  {
-    "id": "workspace:resumeDeletions",
-    "kind": "mutation",
-    "visibility": "internal",
-    "writes": true,
-    "principal": "human",
-    "readonly": "reduction-only",
-    "masks": "n/a",
-    "proof": "resumes a deletion whose purge chain stopped"
-  },
-  {
-    "id": "scheduled workspace:purge",
-    "kind": "scheduled",
-    "visibility": "scheduled",
-    "writes": true,
-    "principal": "scheduler",
-    "readonly": "reduction-only",
-    "masks": "n/a",
-    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
-  },
-  {
     "id": "billing:status",
     "kind": "query",
     "visibility": "public",
@@ -2202,5 +2142,215 @@
     "readonly": "reduction-only",
     "masks": "n/a",
     "proof": "resumes a deletion whose purge chain stopped"
+  },
+  {
+    "id": "workspace:exportBegin",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "n/a",
+    "proof": "pages through a workspace larger than one page and holds writes while it reads"
+  },
+  {
+    "id": "workspace:exportEnd",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "n/a",
+    "proof": "pages through a workspace larger than one page and holds writes while it reads"
+  },
+  {
+    "id": "workspace:exportDefinitions",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:exportRecords",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:exportEvents",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:dropFile",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "operator-only: scheduled removal of an export file an hour after it was made"
+  },
+  {
+    "id": "workspace:exportAll",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:importUploadUrl",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "follows the workspace-creation gate"
+  },
+  {
+    "id": "workspace:importStart",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importRecords",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importCycles",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importGhosts",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importEvents",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importPublish",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importAbort",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "stages into a hidden workspace only its import can write, and purges it when the import fails"
+  },
+  {
+    "id": "workspace:importAll",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "n/a",
+    "proof": "rejects unknown fields, duplicate ids or keys and bad relations with the reason, and creates nothing"
+  },
+  {
+    "id": "workspace:confirmDelete",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "needs the owner, the exact name and a fresh export or the typed phrase, then closes the workspace at once"
+  },
+  {
+    "id": "workspace:purge",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+  },
+  {
+    "id": "workspace:resumeDeletions",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "resumes a deletion whose purge chain stopped"
+  },
+  {
+    "id": "scheduled workspace:purge",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+  },
+  {
+    "id": "scheduled workspace:dropFile",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "operator-only: scheduled removal of an export file an hour after it was made"
   }
 ]

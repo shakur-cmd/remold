@@ -12,7 +12,7 @@ export const evidencePath = (...parts) => {
   mkdirSync(directory, { recursive: true });
   return join(directory, ...parts);
 };
-export async function withAuthority(check, { safetySim = false, safetyHang = false, sourceRevision } = {}) {
+export async function withAuthority(check, { safetySim = false, safetyHang = false, sourceRevision, fixtures = {} } = {}) {
   const scratch = mkdtempSync(join(tmpdir(), 'remold-authority-')), cli = join(root, 'node_modules/convex/bin/main.js');
   const sha = x => createHash('sha256').update(x).digest('hex');
   const envHash = () => existsSync(join(root, '.env.local')) ? sha(readFileSync(join(root, '.env.local'))) : null, before = envHash();
@@ -28,6 +28,8 @@ export async function withAuthority(check, { safetySim = false, safetyHang = fal
   cpSync(join(root, sourceRevision ? 'ops/authority/migration-fixture.ts' : 'ops/authority/fixture.ts'), join(scratch, 'convex/authorityFixture.ts'));
   // Suite-specific synthetic controls: ops/authority/fixture-<suite>.ts becomes convex/authorityFixture<Suite>.ts.
   if (!sourceRevision) for (const file of readdirSync(join(root, 'ops/authority'))) { const m = /^fixture-([a-z0-9]+)\.ts$/.exec(file); if (m) cpSync(join(root, 'ops/authority', file), join(scratch, 'convex/authorityFixture' + m[1][0].toUpperCase() + m[1].slice(1) + '.ts')); }
+  // Other harness users bring their own synthetic modules: { moduleName: path }.
+  for (const [name, path] of Object.entries(fixtures)) cpSync(path, join(scratch, 'convex', name + '.ts'));
   const safetyRegistry = join(scratch, 'convex/integrations/safetyAdapters.ts');
   const productionSafetyHash = existsSync(safetyRegistry) ? sha(readFileSync(safetyRegistry)) : null;
   if (safetySim) {

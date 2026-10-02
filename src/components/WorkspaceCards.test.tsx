@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter, Outlet, Route, Routes } from "react-router";
 import { getFunctionName } from "convex/server";
 import { describe, expect, it, vi } from "vitest";
-import { BillingCard, canDelete, DataCard } from "@/components/WorkspaceCards";
+import { BillingCard, DataCard, deleteArgs } from "@/components/WorkspaceCards";
 import { Settings } from "@/routes/Settings";
 
 const state = vi.hoisted(() => { import.meta.env.VITE_CONVEX_URL = "https://example.invalid"; return { billing: undefined as unknown }; });
@@ -30,20 +30,12 @@ describe("Settings: subscription", () => {
 });
 
 describe("Settings: your data", () => {
-  it("has export, import, and a delete that starts disabled and asks for the name and the export sha256", () => {
+  it("has export, import into a new workspace, and a delete that starts disabled and offers export first or the phrase", () => {
     const page = html(<DataCard org={org} />);
-    expect(text(<DataCard org={org} />)).toMatch(/Export workspace.*Import into this empty workspace.*Delete this workspace/);
+    expect(text(<DataCard org={org} />)).toMatch(/Export workspace.*Import into a new workspace.*Delete this workspace.*Export first.*DELETE WITHOUT EXPORT/);
     expect(page).toContain('aria-label="Workspace name to confirm deletion"');
-    expect(page).toContain('aria-label="Export sha256 to confirm deletion"');
+    expect(page).toContain('aria-label="Type DELETE WITHOUT EXPORT to delete without an export"');
     expect(page).toMatch(/<button[^>]*type="submit"[^>]*disabled=""[^>]*>Delete<\/button>/);
-  });
-
-  it("enables delete only for the exact name and a 64-hex sha256", () => {
-    const hash = "a".repeat(64);
-    expect(canDelete("Acme Ltd", "Acme Ltd", hash)).toBe(true);
-    expect(canDelete("Acme Ltd", "acme ltd", hash)).toBe(false);
-    expect(canDelete("Acme Ltd", "Acme Ltd", "a".repeat(63))).toBe(false);
-    expect(canDelete("Acme Ltd", "Acme Ltd", "")).toBe(false);
   });
 });
 
@@ -59,10 +51,15 @@ describe("Settings page", () => {
   });
 });
 
-describe("Deleting a workspace too large to export", () => {
-  it("accepts the typed phrase DELETE WITHOUT EXPORT in place of the sha256", () => {
-    expect(canDelete("Acme Ltd", "Acme Ltd", "DELETE WITHOUT EXPORT")).toBe(true);
-    expect(canDelete("Acme Ltd", "Acme Ltd", "delete without export")).toBe(false);
-    expect(text(<DataCard org={org} />)).toContain("DELETE WITHOUT EXPORT");
+describe("What the delete button sends", () => {
+  const id = "org1" as never;
+  it("sends the phrase as withoutExport, and nothing without the exact name", () => {
+    expect(deleteArgs(id, "Acme Ltd", "Acme Ltd", false, "DELETE WITHOUT EXPORT")).toEqual({ orgId: id, confirmName: "Acme Ltd", withoutExport: "DELETE WITHOUT EXPORT" });
+    expect(deleteArgs(id, "Acme Ltd", "acme ltd", false, "DELETE WITHOUT EXPORT")).toBeNull();
+    expect(deleteArgs(id, "Acme Ltd", "Acme Ltd", false, "delete without export")).toBeNull();
+  });
+  it("sends only the name once an export was downloaded here, and stays off before that", () => {
+    expect(deleteArgs(id, "Acme Ltd", "Acme Ltd", true, "")).toEqual({ orgId: id, confirmName: "Acme Ltd" });
+    expect(deleteArgs(id, "Acme Ltd", "Acme Ltd", false, "")).toBeNull();
   });
 });

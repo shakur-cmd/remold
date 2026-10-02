@@ -26,7 +26,7 @@ describe("terms and privacy", () => {
   });
 
   it("both pages say honestly how large an export can be and what deletion keeps", () => {
-    for (const path of ["/terms", "/privacy"]) expect(at(path)).toMatch(/15,000 rows.*larger workspaces.*by request/s);
+    for (const path of ["/terms", "/privacy"]) expect(at(path)).toMatch(/up to 64 MB per file; larger workspaces are exported by request.*delete the workspace at any time, with or without an export/s);
     expect(at("/privacy")).toMatch(/sign-in identity/);
   });
 

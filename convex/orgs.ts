@@ -6,11 +6,11 @@ import { v } from "convex/values";
 import { getPrincipal, requireMember, requireWriter } from "./identity";
 import { seedStandard } from "./lib/standard";
 import { fail } from "./errors";
-import { writable } from "./authority/readonly";
+import { closed, writable } from "./authority/readonly";
 
 // Only an email the token marks verified counts; users.store keeps whatever profile email the app sent.
 // WorkOS access tokens carry email and email_verified only when a JWT template adds them.
-async function mayCreate(ctx: QueryCtx) {
+export async function mayCreate(ctx: QueryCtx) {
   if (process.env.REMOLD_OPEN_SIGNUP === "1") return true;
   const identity = await ctx.auth.getUserIdentity(), email = identity?.emailVerified !== true ? undefined : identity.email?.trim().toLowerCase();
   return !!email && (process.env.REMOLD_WORKSPACE_CREATORS ?? "").split(",").some((creator) => creator.trim().toLowerCase() === email);
@@ -33,7 +33,7 @@ export const mine = query({ args: {}, handler: async (ctx) => {
   if (!user) return [];
   const members = await ctx.db.query("members").withIndex("by_user", (q) => q.eq("userId", user._id)).collect();
   const orgs = await Promise.all(members.map(async (member) => ({ org: await ctx.db.get(member.orgId), role: member.role })));
-  return orgs.flatMap(({ org, role }) => (org && !org.deletingAt ? [{ org, role }] : []));
+  return orgs.flatMap(({ org, role }) => (org && !closed(org) ? [{ org, role }] : []));
 } });
 export const get = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => (await requireMember(ctx, args.orgId)).org });
 export const rename = mutation({ args: { orgId: v.id("orgs"), name: v.string() }, handler: async (ctx, args) => { await requireWriter(ctx, args.orgId, "admin"); await ctx.db.patch(args.orgId, { name: args.name }); } });

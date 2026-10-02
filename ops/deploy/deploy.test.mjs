@@ -79,7 +79,10 @@ test('a rollback to code without the purge worker waits while a backup shows a d
   const zip = (name, org) => { const src = join(dir, name), out = join(dir, `${name}.zip`); mkdirSync(join(src, 'orgs'), { recursive: true }); writeFileSync(join(src, 'orgs/documents.jsonl'), JSON.stringify({ _id: 'org1', name: 'A', ...org }) + '\n'); execFileSync('zip', ['-qr', out, '.'], { cwd: src }); return out; };
   const pending = run(['--ref', target, '--snapshot', zip('pending', { deletingAt: 1 })]);
   assert.equal(pending.status, 1);
-  assert.match(pending.stderr, /deletion\(s\) still in progress \(org1\)/);
+  assert.match(pending.stderr, /deletion\(s\) or import\(s\) still in progress \(org1\)/);
+  const staging = run(['--ref', target, '--snapshot', zip('staging', { importingAt: 1 })]);
+  assert.match(staging.stderr, /still in progress \(org1\)/);
+  assert.deepEqual(staging.log, []);
   assert.deepEqual(pending.log, [], 'nothing may run, not even the install');
   // With no deletion pending the gate passes and the rollback goes on to its restore drill.
   const settled = run(['--ref', target, '--snapshot', zip('settled', {})]);

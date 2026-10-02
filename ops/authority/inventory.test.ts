@@ -67,12 +67,12 @@ function httpRoutes() {
 
 function scheduled() {
   const source = modules().map(file => readFileSync(file, 'utf8')).join('\n');
-  const targets = ['integrations/lifecycle:expire', 'integrations/lifecycle:sweep', 'integrations/safety:send', 'integrations/safety:unknown', 'telemetry:record', 'telemetry:purge', 'workspace:purge'];
+  const targets = ['integrations/lifecycle:expire', 'integrations/lifecycle:sweep', 'integrations/safety:send', 'integrations/safety:unknown', 'telemetry:record', 'telemetry:purge', 'workspace:purge', 'workspace:dropFile'];
   // A target must occur on a scheduler call, or be the named `expiry` reference
   // supplied to dispatch's two scheduler calls. This catches a changed target
   // while deliberately excluding ordinary makeFunctionReference calls.
   for (const target of targets) expect(source).toContain(target.replace(':', /^(telemetry|workspace):/.test(target) ? '.' : ':'));
-  for (const target of ['integrations/lifecycle:expire', 'integrations/lifecycle:sweep', 'integrations/safety:send', 'integrations/safety:unknown', 'telemetry:record', 'telemetry:purge', 'workspace:purge']) expect(targets).toContain(target);
+  for (const target of ['integrations/lifecycle:expire', 'integrations/lifecycle:sweep', 'integrations/safety:send', 'integrations/safety:unknown', 'telemetry:record', 'telemetry:purge', 'workspace:purge', 'workspace:dropFile']) expect(targets).toContain(target);
   const crons = readFileSync(join(root, 'convex/crons.ts'), 'utf8');
   for (const name of ['REST telemetry probe', 'Expire operational metrics', 'Operator alerts', 'Daily reminder email', 'Resume workspace deletions']) expect(crons).toContain(`"${name}"`);
   return targets.map(id => ({ id: `scheduled ${id}`, kind: 'scheduled', visibility: 'scheduled', writes: true, principal: 'scheduler' })).concat(['REST telemetry probe', 'Expire operational metrics', 'Operator alerts', 'Daily reminder email', 'Resume workspace deletions'].map(name => ({ id: `cron ${name}`, kind: 'cron', visibility: 'cron', writes: true, principal: 'scheduler' })));

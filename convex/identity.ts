@@ -1,7 +1,7 @@
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { fail } from "./errors";
-import { writable } from "./authority/readonly";
+import { closed, writable } from "./authority/readonly";
 import { validGrants } from "./authority/grants";
 import { frozenKey } from "./authority/migration";
 
@@ -26,7 +26,7 @@ export async function requireAgent(ctx: Ctx, keyHash: string): Promise<AgentMemb
   const agent = await ctx.db.query("agents").withIndex("by_key_hash", (q) => q.eq("keyHash", keyHash)).unique();
   if (!agent || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active")) fail("UNAUTHENTICATED", "Invalid or revoked agent key");
   const org = await ctx.db.get(agent.orgId);
-  if (!org || org.deletingAt) fail("UNAUTHENTICATED", "Invalid or revoked agent key");
+  if (!org || closed(org)) fail("UNAUTHENTICATED", "Invalid or revoked agent key");
   if (agent.authorityVersion !== 1 && org.authorityFrozenAt === undefined) fail("AUTHORITY_MIGRATING", "Workspace authority migration is pending; retry shortly", { retryable: true });
   return { agent, org, capabilities: await validGrants(ctx, agent), actor: { kind: "agent", id: agent._id } };
 }
@@ -44,7 +44,7 @@ export async function requireMember(ctx: Ctx, orgId: Id<"orgs">, minRole: Role =
   if (!member || rank[member.role] < rank[minRole]) fail("FORBIDDEN", "Membership required");
   const org = await ctx.db.get(orgId);
   // A workspace being deleted is closed to everyone at once, before its rows are purged.
-  if (!org || org.deletingAt) fail("FORBIDDEN", "Membership required");
+  if (!org || closed(org)) fail("FORBIDDEN", "Membership required");
   return { ...principal, member, org };
 }
 
@@ -52,7 +52,7 @@ export async function requireMember(ctx: Ctx, orgId: Id<"orgs">, minRole: Role =
 // membership/epoch at the write boundary rather than trusting an earlier snapshot.
 export async function currentPrincipal(ctx: Ctx, principal: Principal): Promise<Principal> {
   const org = await ctx.db.get(principal.org._id);
-  if (!org || org.deletingAt) fail("FORBIDDEN", "Workspace no longer exists");
+  if (!org || closed(org)) fail("FORBIDDEN", "Workspace no longer exists");
   if ("agent" in principal) {
     const agent = await ctx.db.get(principal.agent._id);
     if (!agent || agent.orgId !== org._id || principal.actor.kind !== "agent" || principal.actor.id !== agent._id || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active") || (agent.authorityEpoch ?? 0) !== (principal.agent.authorityEpoch ?? 0)) fail("FORBIDDEN", "Agent authority changed");
