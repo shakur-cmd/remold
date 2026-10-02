@@ -22,6 +22,7 @@ export function Settings() {
     <div className="grid max-w-3xl gap-5">
       <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
       <OrgCard org={org} admin={admin} />
+      <RemindersCard orgId={org._id} />
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
@@ -50,6 +51,25 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
             Rename
           </Button>
         </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RemindersCard({ orgId }: { orgId: Id<"orgs"> }) {
+  const mine = useQuery(api.reminders.mine, { orgId });
+  const set = useMutation(api.reminders.set);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Daily reminder</CardTitle>
+        <CardDescription>An email at 11:00 UTC with your overdue tasks, tasks due today and deals gone quiet in this organisation. Nothing is sent on days with nothing to list.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={mine?.on === true} disabled={!mine?.email} onCheckedChange={(on) => attempt(() => set({ orgId, on: on === true }), on === true ? "Daily reminder on" : "Daily reminder off")} aria-label="Email me a daily reminder" />
+          {mine?.email ? <>Email me at <span className="font-medium">{mine.email}</span></> : "Your account has no email address, so reminders cannot be sent."}
+        </label>
       </CardContent>
     </Card>
   );
