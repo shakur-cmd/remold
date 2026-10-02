@@ -22,7 +22,7 @@ describe("time of day", () => {
     const agent = await agentFor(client, orgId, { name: "Clock", grants: [{ action: "create", objectKey: "task" }] });
     const call = rest(t, agent.key);
     const plain = await call("POST", "/api/v1/changes", { action: "create", object: "task", values: { title: "All day", dueDate: "2026-10-02" }, reason: "test" });
-    expect(plain.json.record.values.dueDate).toBe("2026-10-02T00:00:00.000Z");
+    expect(plain.json.record.values.dueDate).toBe("2026-10-02");
     const floating = await call("POST", "/api/v1/changes", { action: "create", object: "task", values: { title: "Floating", dueDate: "2026-10-02T09:00" }, reason: "test" });
     expect(floating.status).toBe(400);
     expect(floating.json.error.fieldKey).toBe("dueDate");
@@ -44,5 +44,28 @@ describe("time of day", () => {
     const project = await objectFields(client, orgId, "project");
     expect(project.fields.kickoff.withTime).toBe(true);
     await expect(client.mutation(api.fields.create, { orgId, objectId, key: "count", label: "Count", type: "number", withTime: true })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+  });
+
+  it("an explicit instant at exactly 00:00Z round-trips as that instant, distinct from a plain date on the same day", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "Clock", grants: [{ action: "create", objectKey: "task" }] });
+    const call = rest(t, agent.key);
+    const midnight = await call("POST", "/api/v1/changes", { action: "create", object: "task", values: { title: "Midnight", dueDate: "2026-10-02T00:00:00Z" }, reason: "test" });
+    const day = await call("POST", "/api/v1/changes", { action: "create", object: "task", values: { title: "Day", dueDate: "2026-11-30" }, reason: "test" });
+    expect(midnight.json.record.values.dueDate).toBe("2026-10-02T00:00:00.000Z");
+    expect(day.json.record.values.dueDate).toBe("2026-11-30");
+    expect((await call("GET", `/api/v1/records/${midnight.json.record.id}`)).json.record.values.dueDate).toBe("2026-10-02T00:00:00.000Z");
+    expect((await call("GET", `/api/v1/records/${day.json.record.id}`)).json.record.values.dueDate).toBe("2026-11-30");
+  });
+
+  it("the app accepts the stored encodings for with-time fields and refuses other fractions", async () => {
+    const { client, orgId } = await userAndOrg();
+    const task = await objectFields(client, orgId, "task"), f = task.fields;
+    const instant = Date.UTC(2026, 9, 2) + 0.5;
+    const { recordId } = await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [f.title._id]: "Midnight", [f.dueDate._id]: instant } });
+    expect((await client.query(api.records.get, { orgId, recordId }))!.record.values[f.dueDate._id]).toBe(instant);
+    await expect(client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [f.title._id]: "Odd", [f.dueDate._id]: Date.UTC(2026, 9, 2, 5) + 0.25 } })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+    const deal = await objectFields(client, orgId, "opportunity");
+    await expect(client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Plain", [deal.fields.closeDate._id]: instant } })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
   });
 });

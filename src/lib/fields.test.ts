@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { type Field, dateToInput, formatDate, formatFieldDate, formatNumber, dayRange, inputToDate, localDay, relativeDay, toKey } from "./fields";
+import { type Field, dateToInput, dayRange, formatDate, formatFieldDate, formatNumber, inputToDate, localDay, relativeDay, timeOfDay, toKey } from "./fields";
 
 const day = 86400000;
 const today = Date.UTC(2026, 8, 25); // a Friday
@@ -76,6 +76,39 @@ describe("date fields with time", () => {
     expect(inputToDate("2026-10-03", plain)).toBe(day);
     expect(formatFieldDate(plain, day)).toBe(formatDate(day));
     expect(localDay(plain, day)).toBe(day);
+  });
+
+  it("an instant at exactly 00:00Z edits and shows as that instant, 8 PM the evening before in New York, and round-trips", () => {
+    const stored = Date.UTC(2026, 9, 2) + 0.5;
+    expect(inputToDate("2026-10-01T20:00", timed)).toBe(stored);
+    expect(dateToInput(stored, timed)).toBe("2026-10-01T20:00");
+    expect(formatFieldDate(timed, stored)).toMatch(/Oct 1, 2026.*8:00\sPM/);
+    expect(timeOfDay(timed, stored)).toMatch(/8:00\sPM/);
+    expect(localDay(timed, stored)).toBe(Date.UTC(2026, 9, 1));
+  });
+
+  it("files instants either side of local midnight under the right local day", () => {
+    expect(localDay(timed, Date.UTC(2026, 9, 2, 3, 59))).toBe(Date.UTC(2026, 9, 1));
+    expect(localDay(timed, Date.UTC(2026, 9, 2, 4, 0))).toBe(Date.UTC(2026, 9, 2));
+  });
+});
+
+describe("plain dates on with-time fields", () => {
+  afterAll(() => { vi.unstubAllEnvs(); });
+  const timed = { type: "date", withTime: true } as Field, day = Date.UTC(2026, 10, 30);
+  for (const zone of ["America/New_York", "Pacific/Pago_Pago", "Asia/Tokyo", "Pacific/Kiritimati"])
+    it(`show as that calendar day in ${zone}`, () => {
+      vi.stubEnv("TZ", zone);
+      expect(formatFieldDate(timed, day)).toBe(formatDate(day));
+      expect(formatFieldDate(timed, day)).toMatch(/Nov 30, 2026/);
+      expect(timeOfDay(timed, day)).toBeNull();
+      expect(localDay(timed, day)).toBe(day);
+      // Editing it as a time starts from that day, not from the local reading of UTC midnight.
+      expect(dateToInput(day, timed)).toBe("2026-11-30T00:00");
+    });
+  it("a local time that is not midnight UTC in Tokyo still shows in Tokyo time", () => {
+    vi.stubEnv("TZ", "Asia/Tokyo");
+    expect(formatFieldDate(timed, Date.UTC(2026, 9, 2) + 0.5)).toMatch(/Oct 2, 2026.*9:00\sAM/);
   });
 });
 
