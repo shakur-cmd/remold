@@ -45,6 +45,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
     const human = {
       'agents:create': () => t.human.action(fn('agents:create'), { orgId, name: 'denied', grants: [] }),
       'agents:createScoped': () => t.human.action(fn('agents:createScoped'), { orgId, name: 'denied', origin: 'external' }),
+      'agents:createIntake': () => t.human.action(fn('agents:createIntake'), { orgId }),
       'agents:setGrants': () => t.human.mutation(fn('agents:setGrants'), { orgId, agentId: w.agent.agentId, grants: [{ action: 'create', objectKey: 'person' }] }),
       'agents:setSharedInbox': () => t.human.mutation(fn('agents:setSharedInbox'), { orgId, agentId: w.agent.agentId, enabled: true }),
       'agents:revoke': () => t.human.mutation(fn('agents:revoke'), { orgId, agentId: w.target.agentId }),
@@ -88,6 +89,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
     };
     const rest = {
       'HTTP POST /api/v1/changes': ['/api/v1/changes', { action: 'create', object: 'company', values: { name: 'Denied' }, reason: 'readonly sweep' }],
+      'HTTP POST /api/v1/intake/lead': ['/api/v1/intake/lead', { name: 'Denied', email: 'denied@example.com' }],
       'HTTP POST /api/v1/suggestions': ['/api/v1/suggestions', { action: 'create', object: 'company', values: { name: 'Denied proposal' }, reason: 'readonly sweep' }],
       'HTTP POST /api/v1/inbox': ['/api/v1/inbox', { text: 'Denied inbox' }],
       'HTTP POST /api/v1/inbox/:id/resolve': ['/api/v1/inbox/' + w.inboxId + '/resolve', { note: 'Denied resolve' }],

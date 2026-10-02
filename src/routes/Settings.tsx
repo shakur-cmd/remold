@@ -22,7 +22,7 @@ export function Settings() {
       <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
       <OrgCard org={org} admin={admin} />
       <MembersCard orgId={org._id} admin={admin} />
-      <AgentsCard orgId={org._id} objects={objects} admin={admin} />
+      <AgentsCard orgId={org._id} objects={objects} admin={admin} owner={role === "owner"} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
     </div>
   );

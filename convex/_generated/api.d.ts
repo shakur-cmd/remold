@@ -47,6 +47,8 @@ import type * as invites from "../invites.js";
 import type * as lib_applyChange from "../lib/applyChange.js";
 import type * as lib_daily from "../lib/daily.js";
 import type * as lib_find from "../lib/find.js";
+import type * as lib_idempotency from "../lib/idempotency.js";
+import type * as lib_intake from "../lib/intake.js";
 import type * as lib_list from "../lib/list.js";
 import type * as lib_ref from "../lib/ref.js";
 import type * as lib_search from "../lib/search.js";
@@ -113,6 +115,8 @@ declare const fullApi: ApiFromModules<{
   "lib/applyChange": typeof lib_applyChange;
   "lib/daily": typeof lib_daily;
   "lib/find": typeof lib_find;
+  "lib/idempotency": typeof lib_idempotency;
+  "lib/intake": typeof lib_intake;
   "lib/list": typeof lib_list;
   "lib/ref": typeof lib_ref;
   "lib/search": typeof lib_search;

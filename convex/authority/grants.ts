@@ -60,7 +60,7 @@ export async function manage(ctx: Ctx, principal: Principal, target: Id<'agents'
 }
 const grantArgs = { target: v.id('agents'), capability, scope: capabilityScope, mode: v.union(v.literal('propose'), v.literal('direct')), delegate: v.boolean(), expiresAt: v.number(), parent: v.optional(v.id('capabilityGrants')) };
 type GrantInput = { target: Id<'agents'>; capability: Capability; scope: Doc<'capabilityGrants'>['scope']; mode: 'direct' | 'propose'; delegate: boolean; expiresAt: number; parent?: Id<'capabilityGrants'> };
-async function issue(ctx: MutationCtx, principal: Principal, args: GrantInput) {
+export async function issue(ctx: MutationCtx, principal: Principal, args: GrantInput) {
   await writable(ctx, principal.org._id);
   await manage(ctx, principal, args.target);
   if (!Number.isFinite(args.expiresAt) || args.expiresAt <= Date.now()) fail('VALIDATION', 'Grant must expire in the future');

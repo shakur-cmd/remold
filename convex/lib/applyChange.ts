@@ -1,6 +1,6 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { currentPrincipal, recordGranted, type Membership, type Principal } from "../identity";
+import { currentPrincipal, fieldGranted, recordGranted, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
@@ -60,7 +60,7 @@ async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId:
   }
 }
 
-export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; writeOnly?: boolean } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
   await writable(ctx, change.orgId);
   if (membership.org._id !== change.orgId) fail("FORBIDDEN", "Workspace mismatch");
@@ -82,12 +82,17 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
         if (field && (!canReadField(principal, object!, field, record?._id) || (change.action === "create" && !createScopes.some(scope => scope.fields === "all" || scope.fields.includes(field._id))))) fail("NOT_FOUND", "Field not found");
       }
     };
-    checkScope(membership);
-    if (options.approvedBy) {
-      const approver = await currentPrincipal(ctx, options.approvedBy);
-      if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
-      checkScope(approver);
-    } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
+    // Write-only (website intake): a new-style field grant authorizes the write without any read scope.
+    if (options.writeOnly) {
+      if (!("agent" in membership) || !fieldGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct field grant required");
+    } else {
+      checkScope(membership);
+      if (options.approvedBy) {
+        const approver = await currentPrincipal(ctx, options.approvedBy);
+        if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
+        checkScope(approver);
+      } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
+    }
   }
   if (change.action === "delete") {
     // Records that link to this one drop it from their links value through an
