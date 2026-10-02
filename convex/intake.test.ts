@@ -474,7 +474,7 @@ describe("intake abuse limits", () => {
     expect((await send({ name: "A", email: "a@x.com" }, "1")).status).toBe(201);
   });
 
-  for (const [label, raw] of [["missing", undefined], ["empty", " "], ["not a number", "abc"], ["negative", "-1"], ["fractional", "1.5"], ["zero", "0"]] as const) {
+  for (const [label, raw] of [["missing", undefined], ["empty", " "], ["not a number", "abc"], ["negative", "-1"], ["fractional", "1.5"], ["zero", "0"], ["exponent", "1e3"], ["hex", "0x10"], ["signed", "+5"], ["trailing zero fraction", "2.0"], ["past the safe integer range", "9007199254740993"]] as const) {
     it(`takes no leads when REMOLD_INTAKE_DAILY_CAP is ${label}: a missing or unreadable cap means zero`, async () => {
       vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", raw);
       const { t, send } = await intakeSetup();

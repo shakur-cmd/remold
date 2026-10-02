@@ -30,8 +30,8 @@ const GRANT_MS = 5 * 365 * DAY;
 export const normalEmail = (value: string) => value.trim().toLowerCase();
 export const normalPhone = (value: string) => { const digits = value.replace(/\D/g, ""); return digits ? (value.trim().startsWith("+") ? "+" : "") + digits : undefined; };
 const text = (value: string | undefined, label: string, max = 200) => { const t = value?.trim() ?? ""; if (t.length > max) fail("VALIDATION", `${label} is too long`); return t || undefined; };
-// A missing or unreadable cap means zero (AGENTS.md), so intake takes no leads until it is set.
-const dailyCap = () => { const raw = process.env.REMOLD_INTAKE_DAILY_CAP?.trim(), n = Number(raw); return raw && Number.isSafeInteger(n) && n > 0 ? n : 0; };
+// A missing or unreadable cap means zero (AGENTS.md), so intake takes no leads until it is set. Only plain digits count: Number() also reads "1e3", "0x10" and "+5".
+const dailyCap = () => { const raw = process.env.REMOLD_INTAKE_DAILY_CAP?.trim() ?? "", n = Number(raw); return /^\d+$/.test(raw) && Number.isSafeInteger(n) && n > 0 ? n : 0; };
 
 async function intakeScopes(ctx: MutationCtx, orgId: Id<"orgs">) {
   const items: Record<string, Item> = {};

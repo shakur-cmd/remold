@@ -254,4 +254,4 @@ REST v1 POST requests have a first-party Convex token-bucket limit per authentic
 | 429 | `RATE_LIMITED` with `Retry-After` seconds and nothing written: 10 per minute per key, 3 per hour per email, or the workspace's daily cap. The operator gets one notice per hour per limit, with no contact data |
 | 503 | `AUTHORITY_MIGRATING` |
 
-The daily cap is `REMOLD_INTAKE_DAILY_CAP` leads per workspace per UTC day. Missing, empty or not a positive whole number means zero: intake answers 429 to every lead until the variable is set.
+The daily cap is `REMOLD_INTAKE_DAILY_CAP` leads per workspace per UTC day. Missing, empty or anything but plain digits for a positive whole number (so not `1e3`, `0x10`, `+5` or `2.0`) means zero: intake answers 429 to every lead until the variable is set.
