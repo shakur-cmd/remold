@@ -196,6 +196,34 @@ describe("posts", () => {
       await expect(range({}, { cursor: null, endCursor: "range:x", numItems: 500 })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
     });
 
+    it("refuses day bounds that are not safe integer timestamps between 1970 and 2200, in the calendar and on Today", async () => {
+      const w = await world();
+      const day2200 = Date.UTC(2200, 0, 1), day2201 = Date.UTC(2201, 0, 1);
+      const bad: Record<string, number>[] = [
+        { start: Infinity, end: Infinity },
+        { start: -Infinity },
+        { end: Infinity },
+        { start: NaN },
+        { firstDay: Infinity, lastDay: Infinity },
+        { firstDay: -Infinity },
+        { firstDay: NaN, lastDay: NaN },
+        { start: 1e300, end: 1e300 },
+        { start: oct5.start + 0.5 },
+        { start: -DAY * 3, end: -1, firstDay: -DAY * 2, lastDay: -DAY * 2 },
+        { firstDay: day2201, lastDay: day2201, start: day2201 + 4 * 3_600_000, end: day2201 + DAY },
+      ];
+      for (const extra of bad) {
+        await expect(w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, ...extra, paginationOpts: { cursor: null, numItems: 500 } }), JSON.stringify(extra)).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+        const day = { today: extra.firstDay ?? oct5.firstDay, start: extra.start ?? oct5.start, end: extra.end ?? oct5.end };
+        await expect(w.client.query(api.today.posts, { orgId: w.orgId, ...day, paginationOpts: { cursor: null, numItems: 50 } }), JSON.stringify(day)).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      }
+      // Today without start and end (older clients) still refuses a nonsense day.
+      for (const today of [Infinity, -Infinity, NaN, 1e300]) await expect(w.client.query(api.today.posts, { orgId: w.orgId, today, paginationOpts: { cursor: null, numItems: 50 } })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      // The edges of the range are fine.
+      expect((await w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, firstDay: day2200, lastDay: day2200, start: day2200, end: day2200 + DAY - 1, paginationOpts: { cursor: null, numItems: 500 } })).isDone).toBe(true);
+      expect((await w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, firstDay: 0, lastDay: 0, start: 0, end: DAY - 1, paginationOpts: { cursor: null, numItems: 500 } })).isDone).toBe(true);
+    });
+
     it("pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar", async () => {
       const w = await world();
       await clones(w, 1000, { title: "Out", status: "published", publishedLink: "https://x.com/s/1", planned: Date.UTC(2026, 9, 5, 12) });

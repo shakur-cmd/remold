@@ -20,7 +20,12 @@ const DAY = 86400000, MAX_DAYS = 62;
 // The exact index intervals for those days, ascending and disjoint: each all-day
 // date as a point, and the instants between the whole UTC midnights inside
 // [start, end] (an instant is never a whole midnight). No off-day row is in them.
+// Timestamps a calendar may ask about: whole milliseconds from 1970 up to the end of 2200.
+const EARLIEST = 0, LATEST = Date.UTC(2201, 0, 1) - 1;
+const timestamp = (x: number) => Number.isSafeInteger(x) && x >= EARLIEST && x <= LATEST;
 export function dayIntervals(w: LocalDays): Interval[] {
+  // Checked before anything loops over them: Infinity or NaN would never let a loop end.
+  if (![w.firstDay, w.lastDay, w.start, w.end].every(timestamp)) fail("VALIDATION", "Invalid day range");
   const days = (w.lastDay - w.firstDay) / DAY;
   if (!allDay(w.firstDay) || !allDay(w.lastDay) || days < 0 || days >= MAX_DAYS || !(w.start <= w.end) || w.end - w.start > (days + 2) * DAY) fail("VALIDATION", "Invalid day range");
   const out: Interval[] = [];

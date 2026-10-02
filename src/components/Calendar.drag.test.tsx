@@ -97,6 +97,9 @@ it("says why a date field that is not indexed cannot be used", async () => {
   expect(host.textContent).toMatch(/Launch Date is not indexed, so events can't be placed on a calendar/);
 });
 
+// Rendering 501 posts twice in jsdom and re-running every page query takes a few
+// seconds, more than vitest's 5 s default on a loaded machine.
+const SLOW = 15_000;
 // 501 posts at noon on Oct 5, inserted directly so the test stays quick.
 async function busyDay() {
   const { t, client, orgId } = await userAndOrg();
@@ -118,7 +121,7 @@ it("follows a page that is not done and shows the records of the next one, witho
   backend.resubscribed = 0;
   await act(async () => { root.render(week(orgId, detail)); });
   expect(backend.resubscribed).toBe(0);
-});
+}, SLOW);
 
 // Astra's r3 live probe: two pages loaded, then a post lands before the first page's end.
 it("keeps every post when an insert moves an earlier page boundary while two pages are loaded", async () => {
@@ -131,4 +134,4 @@ it("keeps every post when an insert moves an earlier page boundary while two pag
   expect(titles).toHaveLength(502);
   expect(new Set(titles).size).toBe(502);
   for (const title of ["New earlier post", "Post 499", "Post 500"]) expect(titles).toContain(title);
-});
+}, SLOW);
