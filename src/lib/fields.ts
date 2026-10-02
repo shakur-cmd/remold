@@ -77,6 +77,11 @@ export const formatDate = (ms: unknown) =>
 export const formatFieldDate = (field: Field | undefined, ms: number) =>
   allDay(field, ms) ? formatDate(ms) : new Date(Math.floor(ms)).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 
+// Last contact is an Activity "when", a with-time value; in lists only its day shows.
+const WITH_TIME = { withTime: true } as Field;
+export const formatContact = (ms: number, dayOnly = false) =>
+  dayOnly && !allDay(WITH_TIME, ms) ? new Date(Math.floor(ms)).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : formatFieldDate(WITH_TIME, ms);
+
 // Time of day alone, "2:32 PM", or null for an all-day value.
 export const timeOfDay = (field: Field | undefined, ms: number) => (allDay(field, ms) ? null : new Date(Math.floor(ms)).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }));
 

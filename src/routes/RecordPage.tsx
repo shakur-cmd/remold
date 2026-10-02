@@ -23,7 +23,7 @@ import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
 import { usePinnedPages } from "@/lib/pages";
 import { invoiceStatus } from "@/lib/invoices";
-import { contactHref, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, isSlotted, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { contactHref, formatContact, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, isSlotted, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -37,6 +37,7 @@ export function RecordPage() {
 function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"> }) {
   const detail = useQuery(api.records.get, { orgId, recordId });
   const reverse = useQuery(api.records.reverseFields, detail ? { orgId, objectId: detail.object._id } : "skip");
+  const contact = useQuery(api.records.lastContact, detail?.object.key === "person" ? { orgId, recordIds: [recordId] } : "skip")?.[recordId];
   const remove = useMutation(api.records.remove);
   const navigate = useNavigate();
   const [showEmpty, setShowEmpty] = useState(false);
@@ -100,6 +101,7 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
               <span>
                 Created {formatTime(record._creationTime)} · Updated {formatTime(record.updatedAt)}
               </span>
+              {contact !== undefined && <span>Last contact {formatContact(contact)}</span>}
             </div>
           </div>
           <DropdownMenu>

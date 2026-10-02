@@ -21,13 +21,14 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
   const agents = useQuery(api.agents.list, { orgId });
   const create = useAction(api.agents.create);
   const createIntake = useAction(api.agents.createIntake);
+  const createGmailSync = useAction(api.agents.createGmailSync);
   const setGrants = useMutation(api.agents.setGrants);
   const setSharedInbox = useMutation(api.agents.setSharedInbox);
   const revoke = useMutation(api.agents.revoke);
   const [name, setName] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
   const [grants, setGrantsDraft] = useState<Grant[]>([]);
-  const [issued, setIssued] = useState<{ name: string; key: string; intake?: boolean } | null>(null);
+  const [issued, setIssued] = useState<{ name: string; key: string; intake?: boolean; gmail?: boolean } | null>(null);
 
   async function add(e: FormEvent) {
     e.preventDefault();
@@ -39,6 +40,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
     });
   }
   const addIntake = () => attempt(async () => setIssued({ name: "Website intake key", key: (await createIntake({ orgId })).key, intake: true }));
+  const addGmailSync = () => attempt(async () => setIssued({ name: "Gmail sync", key: (await createGmailSync({ orgId })).key, gmail: true }));
   const has = (g: Grant) => grants.some((x) => x.action === g.action && x.objectKey === g.objectKey);
   const toggle = (g: Grant) => setGrantsDraft((all) => (has(g) ? all.filter((x) => !(x.action === g.action && x.objectKey === g.objectKey)) : [...all, g]));
 
@@ -56,7 +58,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
                 <span className={agent.revokedAt ? "text-muted-foreground line-through" : "font-medium"}>{agent.name}</span>
                 <code className="text-xs text-muted-foreground">{agent.keyPrefix}…</code>
                 <Badge variant="outline">{agent.role}</Badge>
-                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.purpose === "intake" ? "submits website leads only; reads nothing" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "all pre-migration objects" : g.objectKey}`).join(", ")}` : "proposes only"}</span>
+                <span className="text-xs text-muted-foreground">{agent.revokedAt ? "revoked" : agent.purpose === "intake" ? "submits website leads only; reads nothing" : agent.grants.length ? `applies ${agent.grants.map((g) => `${g.action} ${g.objectKey === "*" ? "all pre-migration objects" : g.objectKey}`).join(", ")}` : agent.access.length ? `can ${agent.access.join(", ")}` : "proposes only"}</span>
                 {admin && !agent.revokedAt && (
                   <span className="ml-auto flex gap-1">
                     {agent.purpose === undefined && (
@@ -87,6 +89,12 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
                 <p className="text-muted-foreground">Store it as a server-side secret on the website. It can submit leads and read nothing. Each form submission needs its own Idempotency-Key:</p>
                 <CopyBlock text={`curl -X POST ${siteUrl}/api/v1/intake/lead -H "Authorization: Bearer ${issued.key}" -H "Idempotency-Key: <submission id>" -H "Content-Type: application/json" -d '{"name":"Ada Lovelace","email":"ada@example.com","message":"Hello"}'`} label="Intake example" />
               </>
+            ) : issued.gmail ? (
+              <>
+                <p className="text-muted-foreground">In the Apps Script project's Script Properties, set REMOLD_KEY to the key above and REMOLD_BASE_URL to:</p>
+                <CopyBlock text={siteUrl} label="Base URL" />
+                <p className="text-muted-foreground">The script and setup steps are in ops/gmail-sync in the Remold repository. Installing it needs your Google sign-in.</p>
+              </>
             ) : (
               <>
                 <p className="text-muted-foreground">Connect Claude Code:</p>
@@ -101,11 +109,19 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
           </div>
         )}
         {owner && (
-          <div className="flex flex-wrap items-center gap-2 border-t pt-4 text-sm">
-            <Button type="button" variant="outline" onClick={addIntake}>
-              Website intake key
-            </Button>
-            <span className="text-muted-foreground">For your website's contact form: it adds each lead as a Person, an Opportunity at New and a Note, and cannot read anything.</span>
+          <div className="grid gap-2 border-t pt-4 text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" onClick={addIntake}>
+                Website intake key
+              </Button>
+              <span className="text-muted-foreground">For your website's contact form: it adds each lead as a Person, an Opportunity at New and a Note, and cannot read anything.</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" onClick={addGmailSync}>
+                Create Gmail sync key
+              </Button>
+              <span className="text-muted-foreground">For the Apps Script that logs your emails as activities: it reads people's names and emails, reads and creates activities, and nothing else.</span>
+            </div>
           </div>
         )}
         {admin && (

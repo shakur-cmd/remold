@@ -19,7 +19,7 @@ import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
-import { dayRange, isEmpty, isSlotted, type Field } from "@/lib/fields";
+import { dayRange, formatContact, isEmpty, isSlotted, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Sort = { fieldId: Id<"fields">; direction: "asc" | "desc" };
@@ -67,6 +67,7 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   if (!firstPage && status !== "LoadingFirstPage" && !board && !calendar) setFirstPage(used);
   const groupBy = selectFields[0];
   const dated = fields.some((f) => f.type === "date" && !f.retired);
+  const person = object.key === "person";
 
   function toggleSort(fieldId: Id<"fields">) {
     setSort((current) =>
@@ -154,6 +155,7 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
                     </TableHead>
                   );
                 })}
+                {person && <TableHead className="h-9 text-xs font-medium text-muted-foreground">Last contact</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,11 +179,12 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
                       )}
                     </TableCell>
                   ))}
+                  {person && <LastContact orgId={orgId} recordId={record._id} />}
                 </TableRow>
               ))}
               {status !== "LoadingFirstPage" && results.length === 0 && (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={columns.length + 1} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={columns.length + (person ? 2 : 1)} className="py-12 text-center text-muted-foreground">
                     {applied.length || range ? (
                       `No ${object.labelPlural.toLowerCase()} match these filters.`
                     ) : (
@@ -197,7 +200,7 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
               )}
               {status === "CanLoadMore" && (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={columns.length + 1} className="p-0">
+                  <TableCell colSpan={columns.length + (person ? 2 : 1)} className="p-0">
                     <button type="button" className="w-full py-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => loadMore(50)}>
                       Load more
                     </button>
@@ -305,4 +308,10 @@ function FilterValue({ orgId, field, value, onChange }: { orgId: Id<"orgs">; fie
       <FieldInput orgId={orgId} field={field} value={value ?? null} onChange={(next) => onChange(next === "" ? undefined : (next ?? undefined))} />
     </div>
   );
+}
+
+// One subscription per row, so rows added by Load more get theirs too.
+function LastContact({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"> }) {
+  const at = useQuery(api.records.lastContact, { orgId, recordIds: [recordId] })?.[recordId];
+  return <TableCell className="py-1.5 whitespace-nowrap text-muted-foreground tabular-nums">{at === undefined ? "" : formatContact(at, true)}</TableCell>;
 }

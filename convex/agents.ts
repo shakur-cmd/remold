@@ -1,13 +1,15 @@
 import { pauseWork } from './integrations/lifecycle';
 import { action, internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
-import { v } from "convex/values";
+import { v, type ObjectType } from "convex/values";
 import { requireMember } from "./identity";
 import { fail } from "./errors";
 import { expand, snapshot } from "./authority/migration";
 import { writable } from "./authority/readonly";
 import { grantIntake } from "./lib/intake";
+import { issue } from "./authority/grants";
 
 const grants = v.array(v.object({ action: v.union(v.literal("create"), v.literal("update"), v.literal("delete")), objectKey: v.string() }));
 const role = v.union(v.literal("admin"), v.literal("member"));
@@ -15,7 +17,13 @@ const hex = (bytes: Uint8Array) => [...bytes].map((byte) => byte.toString(16).pa
 
 export const list = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
   await requireMember(ctx, args.orgId);
-  return ctx.db.query("agents").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect().then((rows) => rows.map(({ keyHash: _keyHash, ...agent }) => ({ ...agent, grants: agent.grants.map(({ action, objectKey }) => ({ action, objectKey })) })));
+  // Scoped keys act only through capability grants; access names the live ones, e.g. "create activity".
+  const keys = new Map((await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect()).map((o) => [o._id as string, o.key])), now = Date.now();
+  const rows = await ctx.db.query("agents").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect();
+  return Promise.all(rows.map(async ({ keyHash: _keyHash, ...agent }) => {
+    const live = (await ctx.db.query("capabilityGrants").withIndex("by_agent", (q) => q.eq("orgId", args.orgId).eq("agentId", agent._id)).collect()).filter((g) => g.revokedAt === undefined && g.expiresAt > now);
+    return { ...agent, grants: agent.grants.map(({ action, objectKey }) => ({ action, objectKey })), access: [...new Set(live.map((g) => `${g.capability.replace(/^record\./, "")}${g.scope.kind === "records" ? ` ${keys.get(g.scope.objectId) ?? "?"}` : ""}`))] };
+  }));
 } });
 
 // The key is minted here, in an action, because mutations have no
@@ -32,7 +40,9 @@ const mint = async () => {
   return { key, keyHash: hex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))), keyPrefix: key.slice(0, 12) };
 };
 
-export const insert = internalMutation({ args: { orgId: v.id("orgs"), name: v.string(), role: v.optional(role), grants: v.optional(grants), scoped: v.optional(v.boolean()), intake: v.optional(v.boolean()), origin: v.optional(v.union(v.literal("hosted"), v.literal("external"))), keyHash: v.string(), keyPrefix: v.string(), asUserId: v.optional(v.id("users")) }, handler: async (ctx, args): Promise<Id<"agents">> => {
+const insertArgs = { orgId: v.id("orgs"), name: v.string(), role: v.optional(role), grants: v.optional(grants), scoped: v.optional(v.boolean()), intake: v.optional(v.boolean()), origin: v.optional(v.union(v.literal("hosted"), v.literal("external"))), keyHash: v.string(), keyPrefix: v.string(), asUserId: v.optional(v.id("users")) };
+export const insert = internalMutation({ args: insertArgs, handler: (ctx, args) => insertAgent(ctx, args) });
+async function insertAgent(ctx: MutationCtx, args: ObjectType<typeof insertArgs>): Promise<Id<"agents">> {
   // CLI creation (`convex run agents:createAs`) has no signed-in identity, so
   // the admin is named explicitly, the same way seed:demoAs works.
   const userId = args.asUserId ? await adminId(ctx, args.orgId, args.asUserId) : (await requireMember(ctx, args.orgId, "admin")).user._id;
@@ -44,7 +54,7 @@ export const insert = internalMutation({ args: { orgId: v.id("orgs"), name: v.st
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: { kind: "user", id: userId }, action: args.scoped ? "scopedAgentCreated" : "legacyGrantsFrozen", targetId: agentId, objectIds: args.scoped ? [] : objects.map(o => o._id), epoch: 0 });
   if (args.intake) await grantIntake(ctx, args.orgId, agentId);
   return agentId;
-} });
+}
 
 async function legacyCeiling(ctx: { db: any }, orgId: Id<"orgs">, userId: Id<"users">) {
   const member = await ctx.db.query("members").withIndex("by_org_user", (q: any) => q.eq("orgId", orgId).eq("userId", userId)).unique();
@@ -100,4 +110,28 @@ export const createScoped = action({ args: { orgId: v.id("orgs"), name: v.string
 export const createIntake = action({ args: { orgId: v.id("orgs") }, handler: async (ctx, args): Promise<{ agentId: Id<"agents">; key: string }> => {
   const { key, ...stored } = await mint();
   return { agentId: await ctx.runMutation(internal.agents.insert, { ...args, ...stored, name: "Website intake key", origin: "external", scoped: true, intake: true }), key };
+} });
+
+// Preset for ops/gmail-sync: a scoped key that reads only people's names and
+// emails and creates activities. Creating needs read on the fields it writes,
+// so it also reads those five Activity fields. Capability grants must expire.
+const GMAIL_SYNC = { person: ["name", "email"], activity: ["title", "type", "when", "about", "source"] };
+export const createGmailSync = action({ args: { orgId: v.id("orgs") }, handler: async (ctx, args): Promise<{ agentId: Id<"agents">; key: string }> => {
+  const { key, ...stored } = await mint();
+  return { agentId: await ctx.runMutation(internal.agents.insertGmailSync, { ...args, ...stored }), key };
+} });
+export const insertGmailSync = internalMutation({ args: { orgId: v.id("orgs"), keyHash: v.string(), keyPrefix: v.string() }, handler: async (ctx, args): Promise<Id<"agents">> => {
+  const owner = await requireMember(ctx, args.orgId, "owner");
+  const agentId = await insertAgent(ctx, { ...args, name: "Gmail sync", scoped: true, origin: "external" });
+  const expiresAt = Date.now() + 365 * 86400000;
+  for (const [objectKey, keys] of Object.entries(GMAIL_SYNC)) {
+    const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", args.orgId).eq("key", objectKey)).unique();
+    const fields = object ? await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", object._id)).collect() : [];
+    const ids = keys.map((key) => fields.find((field) => field.key === key && !field.retired)?._id);
+    if (!object || ids.some((id) => !id)) fail("NOT_FOUND", `${objectKey} is missing a field the Gmail sync needs`);
+    const scope = { kind: "records" as const, objectId: object._id, records: "all" as const, fields: ids as Id<"fields">[] };
+    await issue(ctx, owner, { target: agentId, capability: "read", scope, mode: "direct", delegate: false, expiresAt });
+    if (objectKey === "activity") await issue(ctx, owner, { target: agentId, capability: "record.create", scope, mode: "direct", delegate: false, expiresAt });
+  }
+  return agentId;
 } });

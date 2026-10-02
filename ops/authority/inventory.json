@@ -170,6 +170,16 @@
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
+    "id": "agents:insertGmailSync",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
     "id": "agents:createAs",
     "kind": "action",
     "visibility": "internal",
@@ -211,6 +221,16 @@
   },
   {
     "id": "agents:createScoped",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agents:createGmailSync",
     "kind": "action",
     "visibility": "public",
     "writes": true,
@@ -1207,6 +1227,16 @@
     "readonly": "not-a-write",
     "masks": "projected",
     "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "records:lastContact",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "is the newest past activity about each person, and skips activities the reader cannot see"
   },
   {
     "id": "records:related",
