@@ -6,6 +6,7 @@ import { Copy, ExternalLink, Mail, MoreHorizontal, Phone, Plus } from "lucide-re
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
+import type { FunctionReturnType } from "convex/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +18,7 @@ import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
+import { usePinnedPages } from "@/lib/pages";
 import { contactHref, formatDate, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
@@ -386,7 +388,7 @@ const TIMELINE_PREVIEW = 5;
 // Change history merged with the activities, notes and tasks about this record, newest first.
 function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs">; recordId: Id<"records">; fields: Field[]; note?: Reverse; activity?: Reverse }) {
   // The server merges and orders history with related activities, notes and tasks; pages arrive in order.
-  const { results: entries, status, loadMore } = usePaginatedQuery(api.events.timeline, { orgId, recordId }, { initialNumItems: 20 });
+  const { results: entries, status, loadMore } = usePinnedPages<FunctionReturnType<typeof api.events.timeline>["page"][number]>(api.events.timeline, { orgId, recordId }, 20);
   const [expanded, setExpanded] = useState(false);
   const [logging, setLogging] = useState(false);
   const byId = new Map(fields.map((f) => [f._id, f]));
