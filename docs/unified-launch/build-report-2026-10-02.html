@@ -76,9 +76,9 @@
 <tr><td>Website side of M6</td><td>Opus 5.5, old HP</td><td>Fable</td><td>2</td><td>SIM, then LIVE test</td></tr>
 <tr><td>Release 2 integration</td><td>Opus 5.5, old HP</td><td>Fable</td><td>1</td><td>SIM, then LIVE check</td></tr>
 <tr><td>Polish, intake key CLI</td><td>Opus 5.5</td><td>Fable</td><td>2 each</td><td>SIM</td></tr>
-<tr><td>M10 first-customer groundwork</td><td>Opus 5.5, old HP</td><td>Astra, then Fable</td><td>see below</td><td>not merged, not live</td></tr>
+<tr><td>M10 first-customer groundwork</td><td>Opus 5.5, old HP</td><td>Astra, then Fable</td><td>6 (incl. one restart)</td><td>SIM + local SERVICE size runs; held back from live on purpose</td></tr>
 </table>
-<p>"Level" follows the pack: SIM is the simulator, SERVICE a local Convex backend, LIVE the real site. Verdicts and handovers are in <code>~/scratch/remold-build/</code> on this Mac (copied from the workers). Live checks are in <code>evidence/2026-10-02-go-live-iv/</code>, <code>evidence/2026-10-02-release-iv/</code>, <code>evidence/2026-10-03-release-iv/</code> and <code>evidence/2026-10-02-website-intake/</code>.</p>
+<p>"Level" follows the pack: SIM is the simulator, SERVICE a local Convex backend, LIVE the real site. Every verdict is in <code>evidence/2026-10-02-build-verdicts/</code>. Live checks are in <code>evidence/2026-10-02-go-live-iv/</code>, <code>evidence/2026-10-02-release-iv/</code>, <code>evidence/2026-10-03-release-iv/</code> and <code>evidence/2026-10-02-website-intake/</code>.</p>
 
 <h2>Releases</h2>
 <table>
@@ -104,7 +104,7 @@
   <li><b>Email reminders and alerts:</b> built and verified, but silent until the Resend key exists.</li>
   <li><b>M8 Gmail sync:</b> built and verified in the simulator; not installed or run against your mailbox.</li>
   <li><b>M9 "you work from Remold":</b> that is your daily use. Nothing to build until something gets in your way.</li>
-  <li><b>M10 first paying customer:</b> groundwork (export, staged import, deletion, draft legal pages, Stripe test mode, gate list) is on branch <code>m10/first-customer</code> and still in verification. It is not merged and not live. Live billing still needs your explicit OK.</li>
+  <li><b>M10 first paying customer:</b> groundwork passed independent verification on branch <code>m10/first-customer</code> (<code>cd37db0</code>). It covers workspace export (up to 64 MB), staged import (up to 32 MB and 25,000 rows, proven on a local Convex backend), deletion in bounded steps, draft /terms and /privacy, Stripe test-mode billing and the gate list <code>docs/first-customer-gate.html</code>. <b>Held back from live on purpose:</b> deploying it would publish the draft legal pages, and those and the price are yours to approve. Live billing needs your explicit OK.</li>
   <li><b>Still waiting by your decision:</b> the marketing engine with automated sends, auto-posting to social platforms (needs developer approvals per platform), hosted agents, A1 and the impact tracker.</li>
   <li><b>Not exercised live yet</b> because there is no data: funnel totals, invoice totals, task times on Today, social posts. Each passed in the simulator.</li>
   <li><b>Leftover test data:</b> the TEST lead records in Remold and the 3 kept demo rows are yours to delete.</li>
