@@ -4,7 +4,7 @@ import { DAY } from "@convex-dev/rate-limiter";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { fail } from "../errors";
-import { fieldGranted, requireMember, type AgentMembership } from "../identity";
+import { fieldGranted, memberAs, requireMember, type AgentMembership } from "../identity";
 import { writable } from "../authority/readonly";
 import { issue } from "../authority/grants";
 import { notice } from "../alerts";
@@ -45,8 +45,8 @@ async function intakeScopes(ctx: MutationCtx, orgId: Id<"orgs">) {
   return { items, scopes };
 }
 
-export async function grantIntake(ctx: MutationCtx, orgId: Id<"orgs">, agentId: Id<"agents">) {
-  const owner = await requireMember(ctx, orgId, "owner");
+export async function grantIntake(ctx: MutationCtx, orgId: Id<"orgs">, agentId: Id<"agents">, asUserId?: Id<"users">) {
+  const owner = asUserId ? await memberAs(ctx, orgId, asUserId, "owner") : await requireMember(ctx, orgId, "owner");
   for (const scope of (await intakeScopes(ctx, orgId)).scopes) await issue(ctx, owner, { target: agentId, capability: `record.${scope.action}`, scope: { kind: "records", objectId: scope.object._id, records: "all", fields: scope.fieldIds }, mode: "direct", delegate: false, expiresAt: Date.now() + GRANT_MS });
 }
 

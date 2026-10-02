@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
 import { requireAgent } from "./identity";
 import { applyChange } from "./lib/applyChange";
+import { createHash } from "node:crypto";
+import { internal } from "./_generated/api";
+import { insert } from "./agents";
 
 // Production needs REMOLD_INTAKE_DAILY_CAP set; unset it means zero leads.
 beforeEach(() => { vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", "50"); });
@@ -428,6 +431,82 @@ describe("website intake key", () => {
     await admin.mutation(api.invites.accept, { token: invite.token });
     await expect(admin.action(api.agents.createIntake, { orgId })).rejects.toThrow();
     expect(await t.run((ctx: any) => ctx.db.query("agents").collect())).toEqual([]);
+  });
+
+  describe("created from the CLI (convex run agents:insert with asUserId)", () => {
+    const key = `rm_${"c".repeat(40)}`;
+    const cli = (t: any, orgId: any, asUserId: any, extra: Record<string, unknown> = {}) => t.mutation(internal.agents.insert, { orgId, name: "Website intake key", origin: "external", scoped: true, intake: true, keyHash: createHash("sha256").update(key).digest("hex"), keyPrefix: key.slice(0, 12), asUserId, ...extra });
+    const joined = async (t: any, client: any, orgId: any, role: "admin" | "member", tokenIdentifier: string) => {
+      const invite = await client.mutation(api.invites.create, { orgId, role });
+      const user = t.withIdentity({ tokenIdentifier, name: role });
+      await user.mutation(api.users.store, {});
+      await user.mutation(api.invites.accept, { token: invite.token });
+      return userId(t, tokenIdentifier);
+    };
+    const userId = (t: any, tokenIdentifier: string) => t.run(async (ctx: any) => (await ctx.db.query("users").withIndex("by_token", (q: any) => q.eq("tokenIdentifier", tokenIdentifier)).unique())._id);
+    const writes = (t: any) => t.run(async (ctx: any) => ({ agents: (await ctx.db.query("agents").collect()).length, grants: (await ctx.db.query("capabilityGrants").collect()).length, audit: (await ctx.db.query("authorityAudit").collect()).length }));
+
+    it("issues the intake grants as the named owner, so the key submits leads and nothing else", async () => {
+      const { t, orgId } = await userAndOrg();
+      const owner = await userId(t, "clerk|A");
+      await cli(t, orgId, owner);
+      const grants: any[] = await t.run((ctx: any) => ctx.db.query("capabilityGrants").collect());
+      expect(grants.map((g) => g.grantor.id)).toEqual(Array(4).fill(owner));
+      expect((await post(t, key, "/api/v1/intake/lead", lead, "cli-1")).status).toBe(201);
+      const call = rest(t, key);
+      expect((await call("GET", "/api/v1/records?object=person")).status).toBe(403);
+      expect((await call("POST", "/api/v1/changes", { action: "create", object: "person", values: { name: "x" }, reason: "x" })).status).toBe(403);
+    });
+
+    it("refuses an admin who is not the owner, writing nothing", async () => {
+      const { t, client, orgId } = await userAndOrg();
+      const admin = await joined(t, client, orgId, "admin", "clerk|admin");
+      const before = await writes(t);
+      await expect(cli(t, orgId, admin)).rejects.toThrow(/owner/i);
+      expect(await writes(t)).toEqual(before);
+    });
+
+    it("refuses an owner of a different workspace, writing nothing", async () => {
+      const { t, orgId } = await userAndOrg();
+      const other = t.withIdentity({ tokenIdentifier: "clerk|B", name: "B" });
+      await other.mutation(api.users.store, {});
+      await other.mutation(api.orgs.create, { name: "B Org" });
+      const before = await writes(t);
+      await expect(cli(t, orgId, await userId(t, "clerk|B"))).rejects.toThrow();
+      expect(await writes(t)).toEqual(before);
+    });
+
+    it("refuses a second key with the same hash, writing nothing and leaving the first key working", async () => {
+      const { t, orgId } = await userAndOrg();
+      const owner = await userId(t, "clerk|A");
+      await cli(t, orgId, owner);
+      const before = await writes(t);
+      await expect(cli(t, orgId, owner)).rejects.toThrow(/CONFLICT/);
+      expect(await writes(t)).toEqual(before);
+      expect((await post(t, key, "/api/v1/intake/lead", lead, "dup-1")).status).toBe(201);
+    });
+
+    it("refuses a key hash that is not 64 lowercase hex characters, or an empty prefix, writing nothing", async () => {
+      const { t, orgId } = await userAndOrg();
+      const owner = await userId(t, "clerk|A");
+      const before = await writes(t);
+      for (const extra of [{ keyHash: "not-a-hash" }, { keyHash: "A".repeat(64) }, { keyHash: "a".repeat(63) }, { keyPrefix: "" }]) await expect(cli(t, orgId, owner, extra)).rejects.toThrow(/VALIDATION/);
+      expect(await writes(t)).toEqual(before);
+    });
+
+    it("refuses a plain member creating a normal key from the CLI, writing nothing", async () => {
+      const { t, client, orgId } = await userAndOrg();
+      const member = await joined(t, client, orgId, "member", "clerk|member");
+      const before = await writes(t);
+      await expect(cli(t, orgId, member, { intake: false, name: "cli key" })).rejects.toThrow(/Admin membership required/);
+      await expect(cli(t, orgId, member, { intake: false, scoped: false, name: "cli key" })).rejects.toThrow(/Admin membership required/);
+      expect(await writes(t)).toEqual(before);
+    });
+
+    it("stays internal, so clients cannot call it", () => {
+      expect((insert as any).isInternal).toBe(true);
+      expect((insert as any).isPublic).toBeFalsy();
+    });
   });
 });
 
