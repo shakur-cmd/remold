@@ -1487,9 +1487,31 @@
     "visibility": "public",
     "writes": true,
     "principal": "human",
-    "readonly": "refused",
+    "readonly": "reduction-only",
     "masks": "n/a",
-    "proof": "a member turns their own daily reminder on and off, and a read-only workspace refuses the change"
+    "proof": "a member can always turn their own reminder off, but a read-only workspace refuses turning it on"
+  },
+  {
+    "id": "reminders:claim",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "a second reminder run on the same UTC day sends nothing, and the next day sends again",
+    "reason": "daily reminder delivery bookkeeping only"
+  },
+  {
+    "id": "reminders:release",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "a failed send is retried by a later run the same day, then sends nothing more",
+    "reason": "daily reminder delivery bookkeeping only"
   },
   {
     "id": "reminders:recipients",
