@@ -9,7 +9,7 @@ import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
 import { localSpan } from "@/lib/calendar";
-import { uniqueById, useFollow } from "@/lib/pages";
+import { useAllPages } from "@/lib/pages";
 import { localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
@@ -20,8 +20,6 @@ export function Today() {
   const data = useQuery(api.today.get, { orgId: org._id, today, start, end });
   const waiting = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
   const update = useMutation(api.records.update);
-  // The first page of today's posts comes with the day; a busy day continues here.
-  const rest = useFollow<{ posts: Doc<"records">[]; done: boolean; cursor: string | null }>(api.today.posts, data && !data.postsDone && data.postsCursor ? { orgId: org._id, today, start, end } : null, data?.postsCursor ?? undefined);
   if (!data) return <Loading />;
   const { task } = data;
   const at = (record: Doc<"records">) => (task ? (record.values[task.dueFieldId] as number) : 0);
@@ -31,8 +29,6 @@ export function Today() {
     { label: "Today", rows: data.tasks.filter((r) => due(r) === today) },
     { label: "This week", rows: data.tasks.filter((r) => due(r) > today) },
   ];
-  const planned = (record: Doc<"records">) => (data.post ? (record.values[data.post.plannedFieldId] as number) : 0);
-  const posts = uniqueById([...data.posts, ...rest.pages.flatMap((page) => page?.posts ?? [])]);
   const complete = (recordId: Id<"records">) => task?.doneFieldId && attempt(() => update({ orgId: org._id, recordId, values: { [task.doneFieldId!]: true } }), "Done");
 
   return (
@@ -72,37 +68,7 @@ export function Today() {
           )}
         </CardContent>
       </Card>
-      {data.post && (posts.length > 0 || rest.loading || rest.more) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Posts today</CardTitle>
-            <CardDescription>
-              Planned for today and not yet published. Post them, then paste the link back.{" "}
-              <Link to={`/o/${org._id}/${data.post.objectKey}?view=calendar`} className="text-primary hover:underline">
-                Social calendar
-              </Link>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-0.5">
-            {posts.map((record) => {
-              const status = data.post!.statusField, value = status && record.values[status._id];
-              return (
-                <Link key={record._id} to={`/o/${org._id}/${data.post!.objectKey}/${record._id}`} className="flex h-8 items-center gap-3 rounded-md px-2 text-sm hover:bg-muted">
-                  <span className="min-w-0 flex-1 truncate">{record.title || "Untitled"}</span>
-                  {status && value !== undefined && <span className="text-xs text-muted-foreground">{optionLabel(status, value)}</span>}
-                  <span className="text-xs text-muted-foreground tabular-nums">{timeOfDay(data.post!.plannedField, planned(record)) ?? "Today"}</span>
-                </Link>
-              );
-            })}
-            {rest.loading && <p className="px-2 text-xs text-muted-foreground">Looking for more…</p>}
-            {rest.more && (
-              <button type="button" className="px-2 py-1 text-left text-xs text-primary hover:underline" onClick={rest.loadMore}>
-                Look for more posts today
-              </button>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {data.post && <PostsToday orgId={org._id} post={data.post} day={{ today, start, end }} />}
       {data.quiet.length > 0 && data.dealKey && (
         <Card>
           <CardHeader>
@@ -122,5 +88,45 @@ export function Today() {
       )}
       <InboxCard orgId={org._id} />
     </div>
+  );
+}
+
+type PostMeta = { objectKey: string; plannedFieldId: Id<"fields">; plannedField: Doc<"fields">; statusField: Doc<"fields"> | null };
+
+// Posts planned for the viewer's day that are still to go out, every page, pinned.
+function PostsToday({ orgId, post, day }: { orgId: Id<"orgs">; post: PostMeta; day: { today: number; start: number; end: number } }) {
+  const posts = useAllPages<Doc<"records">>(api.today.posts, { orgId, ...day }, 50);
+  if (!posts.results.length && !posts.loading && !posts.more) return null;
+  const status = post.statusField;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Posts today</CardTitle>
+        <CardDescription>
+          Planned for today and not yet published. Post them, then paste the link back.{" "}
+          <Link to={`/o/${orgId}/${post.objectKey}?view=calendar`} className="text-primary hover:underline">
+            Social calendar
+          </Link>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-0.5">
+        {posts.results.map((record) => {
+          const value = status && record.values[status._id];
+          return (
+            <Link key={record._id} to={`/o/${orgId}/${post.objectKey}/${record._id}`} className="flex h-8 items-center gap-3 rounded-md px-2 text-sm hover:bg-muted">
+              <span className="min-w-0 flex-1 truncate">{record.title || "Untitled"}</span>
+              {status && value !== undefined && <span className="text-xs text-muted-foreground">{optionLabel(status, value)}</span>}
+              <span className="text-xs text-muted-foreground tabular-nums">{timeOfDay(post.plannedField, record.values[post.plannedFieldId] as number) ?? "Today"}</span>
+            </Link>
+          );
+        })}
+        {posts.loading && <p className="px-2 text-xs text-muted-foreground">Looking for more…</p>}
+        {posts.more && (
+          <button type="button" className="px-2 py-1 text-left text-xs text-primary hover:underline" onClick={posts.loadMore}>
+            Look for more posts today
+          </button>
+        )}
+      </CardContent>
+    </Card>
   );
 }

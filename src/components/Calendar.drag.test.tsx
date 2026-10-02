@@ -2,28 +2,29 @@
 /// <reference types="node" />
 process.env.TZ = "America/New_York";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-import { getFunctionName } from "convex/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { act } from "react";
+import { act, type ReactElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter } from "react-router";
 import { api, objectFields, userAndOrg } from "../../convex/test.helpers";
 import { inputToDate } from "@/lib/fields";
 
-// The real Calendar and dnd-kit, with convex/react served by a convex-test
-// backend: query results are read from the backend before rendering (keyed by
-// function and cursor), mutations run through applyChange.
-const backend = vi.hoisted(() => ({ client: null as any, results: new Map<string, unknown>(), pending: [] as Promise<unknown>[], last: null as null | { queries: unknown; shape: string }, resubscribed: 0 }));
+// The real Calendar and dnd-kit, with convex/react served live by a convex-test
+// backend: every query a render subscribes to is remembered, and sync() re-runs
+// them all against the backend and re-renders until nothing changes, as live
+// subscriptions would. Mutations run through applyChange.
+const backend = vi.hoisted(() => ({ client: null as any, subscribed: new Map<string, { query: any; args: any }>(), results: new Map<string, unknown>(), pending: [] as Promise<unknown>[], last: null as null | { queries: unknown; shape: string }, resubscribed: 0 }));
 vi.mock("convex/react", async () => {
   const { getFunctionName } = await import("convex/server");
+  const read = (query: any, args: any) => { const key = JSON.stringify([getFunctionName(query), args]); backend.subscribed.set(key, { query, args }); return backend.results.get(key); };
   return {
-    useQuery: (ref: any, args: any) => (args === "skip" ? undefined : backend.results.get(`${getFunctionName(ref)}|${args?.cursor ?? ""}`)),
+    useQuery: (query: any, args: any) => (args === "skip" ? undefined : read(query, args)),
     // Like Convex, a new queries object means a new subscription; count needless ones.
     useQueries: (queries: Record<string, { query: any; args: any }>) => {
       const shape = JSON.stringify(Object.entries(queries).map(([k, { query, args }]) => [k, getFunctionName(query), args]));
       if (backend.last && backend.last.queries !== queries && backend.last.shape === shape) backend.resubscribed++;
       backend.last = { queries, shape };
-      return Object.fromEntries(Object.entries(queries).map(([k, { query, args }]) => [k, backend.results.get(`${getFunctionName(query)}|${args?.cursor ?? ""}`)]));
+      return Object.fromEntries(Object.entries(queries).map(([k, { query, args }]) => [k, read(query, args)]));
     },
     useMutation: (ref: unknown) => (args: unknown) => { const p = backend.client.mutation(ref, args); backend.pending.push(p); return p; },
   };
@@ -48,7 +49,24 @@ const pointer = (target: EventTarget, type: string, clientX: number, clientY: nu
 };
 
 let root: Root, host: HTMLDivElement;
-beforeEach(() => { host = document.body.appendChild(document.createElement("div")); layout(); });
+beforeEach(() => { host = document.body.appendChild(document.createElement("div")); layout(); backend.subscribed.clear(); backend.results.clear(); });
+const week = (orgId: any, detail: any) => <MemoryRouter initialEntries={["/?view=calendar&cal=week&at=2026-10-05"]}><Calendar orgId={orgId} object={detail.object} fields={detail.fields} /></MemoryRouter>;
+// Re-runs every subscribed query and re-renders, until the results stop changing.
+async function sync(view: () => ReactElement) {
+  for (let round = 0; round < 20; round++) {
+    let changed = false;
+    for (const [key, { query, args }] of [...backend.subscribed]) {
+      const result = await backend.client.query(query, args);
+      if (JSON.stringify(backend.results.get(key)) !== JSON.stringify(result)) { backend.results.set(key, result); changed = true; }
+    }
+    const before = backend.subscribed.size;
+    await act(async () => { root.render(view()); });
+    if (!changed && backend.subscribed.size === before && round > 0) return;
+  }
+  throw new Error("queries never settled");
+}
+// Titles of the chips on the week view (each chip's first line is its title).
+const shown = () => [...host.querySelectorAll("[data-day] a span.font-medium")].map((span) => span.textContent!);
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 
 it("dragging a post to another day saves that day and keeps its local time, even when the new time is midnight UTC", async () => {
@@ -58,11 +76,8 @@ it("dragging a post to another day saves that day and keeps its local time, even
   const planned = post.fields.planned;
   const { recordId } = await client.mutation(api.records.create, { orgId, objectId: post.object._id, values: { [post.fields.title._id]: "Evening reel", [planned._id]: inputToDate("2026-10-05T20:00", planned) } });
   const detail = await client.query(api.objects.get, { orgId, objectId: post.object._id });
-  backend.results.set(`${getFunctionName(api.records.inRange)}|`, await client.query(api.records.inRange, { orgId, objectId: post.object._id, fieldId: planned._id, firstDay: Date.UTC(2026, 9, 4), lastDay: Date.UTC(2026, 9, 10), start: Date.UTC(2026, 9, 4, 4), end: Date.UTC(2026, 9, 11, 4) - 1 }));
-  await act(async () => {
-    root = createRoot(host);
-    root.render(<MemoryRouter initialEntries={["/?view=calendar&cal=week&at=2026-10-05"]}><Calendar orgId={orgId} object={detail.object} fields={detail.fields} /></MemoryRouter>);
-  });
+  await act(async () => { root = createRoot(host); });
+  await sync(() => week(orgId, detail));
   const chip = host.querySelector('[data-day="2026-10-05"] a')!;
   expect(chip.textContent).toContain("Evening reel");
   await act(async () => { pointer(chip, "pointerdown", 150, 65); });
@@ -82,19 +97,38 @@ it("says why a date field that is not indexed cannot be used", async () => {
   expect(host.textContent).toMatch(/Launch Date is not indexed, so events can't be placed on a calendar/);
 });
 
-it("follows a page that is not done and shows the records of the next one", async () => {
-  const record = (id: string, title: string, day: number) => ({ _id: id, title, values: { p: Date.UTC(2026, 9, day, 16) } });
-  const name = getFunctionName(api.records.inRange);
-  backend.results.set(`${name}|`, { records: [record("a", "First page post", 5)], done: false, cursor: "c1" });
-  backend.results.set(`${name}|c1`, { records: [record("b", "Second page post", 7)], done: true, cursor: null });
-  const object = { _id: "o", key: "post", labelPlural: "Posts" } as any;
-  const fields = [{ _id: "p", key: "planned", label: "Planned", type: "date", withTime: true, slot: { kind: "d", index: 0 } }] as any;
-  await act(async () => { root = createRoot(host); root.render(<MemoryRouter initialEntries={["/?view=calendar&cal=week&at=2026-10-05"]}><Calendar orgId={"org" as any} object={object} fields={fields} /></MemoryRouter>); });
-  expect(host.querySelector('[data-day="2026-10-05"]')!.textContent).toContain("First page post");
-  expect(host.querySelector('[data-day="2026-10-07"]')!.textContent).toContain("Second page post");
+// 501 posts at noon on Oct 5, inserted directly so the test stays quick.
+async function busyDay() {
+  const { t, client, orgId } = await userAndOrg();
+  backend.client = client;
+  const post = await objectFields(client, orgId, "post"), planned = post.fields.planned;
+  const create = (title: string, at: number) => client.mutation(api.records.create, { orgId, objectId: post.object._id, values: { [post.fields.title._id]: title, [planned._id]: at } });
+  const { recordId } = await create("Post 0", Date.UTC(2026, 9, 5, 12));
+  await t.run(async (ctx: any) => { const { _id, _creationTime, ...doc } = await ctx.db.get(recordId); for (let i = 1; i <= 500; i++) await ctx.db.insert("records", { ...doc, title: `Post ${i}`, ref: `${doc.ref}-${i}` }); });
+  const detail = await client.query(api.objects.get, { orgId, objectId: post.object._id });
+  await act(async () => { root = createRoot(host); });
+  return { orgId, detail, create };
+}
+
+it("follows a page that is not done and shows the records of the next one, without resubscribing", async () => {
+  const { orgId, detail } = await busyDay();
+  await sync(() => week(orgId, detail));
+  expect(shown()).toHaveLength(501);
   // Re-rendering with the same pages must not hand useQueries a new object (the real one would resubscribe forever).
   backend.resubscribed = 0;
-  await act(async () => { root.render(<MemoryRouter initialEntries={["/?view=calendar&cal=week&at=2026-10-05"]}><Calendar orgId={"org" as any} object={object} fields={fields} /></MemoryRouter>); });
+  await act(async () => { root.render(week(orgId, detail)); });
   expect(backend.resubscribed).toBe(0);
 });
 
+// Astra's r3 live probe: two pages loaded, then a post lands before the first page's end.
+it("keeps every post when an insert moves an earlier page boundary while two pages are loaded", async () => {
+  const { orgId, detail, create } = await busyDay();
+  await sync(() => week(orgId, detail));
+  expect(shown()).toHaveLength(501);
+  await create("New earlier post", Date.UTC(2026, 9, 5, 11));
+  await sync(() => week(orgId, detail));
+  const titles = shown();
+  expect(titles).toHaveLength(502);
+  expect(new Set(titles).size).toBe(502);
+  for (const title of ["New earlier post", "Post 499", "Post 500"]) expect(titles).toContain(title);
+});

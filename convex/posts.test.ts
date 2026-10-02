@@ -4,6 +4,8 @@ import { api, agentFor, objectFields, rest, userAndOrg } from "./test.helpers";
 
 const DAY = 86_400_000;
 // One local day in New York (EDT): from local midnight to the next local midnight minus 1 ms.
+// The first page of a paged query.
+const first = (numItems: number) => ({ paginationOpts: { cursor: null, numItems } });
 const nyDay = (y: number, m: number, d: number) => ({ firstDay: Date.UTC(y, m, d), lastDay: Date.UTC(y, m, d), start: Date.UTC(y, m, d, 4), end: Date.UTC(y, m, d + 1, 4) - 1 });
 const metadata = (t: any, orgId: any) => t.run(async (ctx: any) => ({
   objects: (await ctx.db.query("objects").withIndex("by_org", (q: any) => q.eq("orgId", orgId)).collect()),
@@ -100,9 +102,9 @@ describe("posts", () => {
     await w.create({ title: "Dropped", status: "skipped", planned: today + 16 * 3_600_000 });
     await w.create({ title: "Next week", status: "approved", planned: today + 7 * DAY });
     await w.create({ title: "Unplanned", status: "idea" });
-    const result = await w.client.query(api.today.get, { orgId: w.orgId, today, start: nyDay(2026, 9, 1).start, end: nyDay(2026, 9, 1).end });
-    expect(result.posts.map((r: any) => r.title).sort()).toEqual(["Idea for today", "Morning reel"]);
-    expect(result.post).toMatchObject({ objectKey: "post", plannedFieldId: w.post.fields.planned._id });
+    const result = await w.client.query(api.today.posts, { orgId: w.orgId, today, start: nyDay(2026, 9, 1).start, end: nyDay(2026, 9, 1).end, ...first(50) });
+    expect(result.page.map((r: any) => r.title).sort()).toEqual(["Idea for today", "Morning reel"]);
+    expect((await w.client.query(api.today.get, { orgId: w.orgId, today })).post).toMatchObject({ objectKey: "post", plannedFieldId: w.post.fields.planned._id });
   });
 
   it("lists an object's records on the viewer's local days: instants by local time, all-day values by their date", async () => {
@@ -116,22 +118,22 @@ describe("posts", () => {
     await make("All day Oct 6", Date.UTC(2026, 9, 6));
     await make("Oct 6, 12:00 AM", Date.UTC(2026, 9, 6, 4));
     await w.create({ title: "Undated" });
-    const range = (window: { firstDay: number; lastDay: number; start: number; end: number }) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...window });
+    const range = (window: { firstDay: number; lastDay: number; start: number; end: number }) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...window, ...first(500) });
     const result = await range(nyDay(2026, 9, 5));
-    expect(result.records.map((r: any) => r.title)).toEqual(["All day Oct 5", "Oct 5, 12:00 AM", "Oct 5, 8:00 PM", "Oct 5, last ms"]);
-    expect(result.done).toBe(true);
+    expect(result.page.map((r: any) => r.title)).toEqual(["All day Oct 5", "Oct 5, 12:00 AM", "Oct 5, 8:00 PM", "Oct 5, last ms"]);
+    expect(result.isDone).toBe(true);
     // Nov 1 is 25 hours long in New York; 11:30 PM EST is already Nov 2 in UTC.
     await make("Nov 1, 11:30 PM", Date.UTC(2026, 10, 2, 4, 30));
-    expect((await range({ firstDay: Date.UTC(2026, 10, 1), lastDay: Date.UTC(2026, 10, 1), start: Date.UTC(2026, 10, 1, 4), end: Date.UTC(2026, 10, 2, 5) - 1 })).records.map((r: any) => r.title)).toEqual(["Nov 1, 11:30 PM"]);
-    await expect(w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.title._id, ...nyDay(2026, 9, 5) })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+    expect((await range({ firstDay: Date.UTC(2026, 10, 1), lastDay: Date.UTC(2026, 10, 1), start: Date.UTC(2026, 10, 1, 4), end: Date.UTC(2026, 10, 2, 5) - 1 })).page.map((r: any) => r.title)).toEqual(["Nov 1, 11:30 PM"]);
+    await expect(w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.title._id, ...nyDay(2026, 9, 5), ...first(500) })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
   });
 
   it("Today finds today's post even when earlier days fill the old window", async () => {
     const w = await world();
     for (let i = 0; i < 55; i++) await w.create({ title: `Yesterday ${i}`, status: "drafted", planned: Date.UTC(2026, 9, 4, 12) + i });
     await w.create({ title: "Due today", status: "approved", planned: Date.UTC(2026, 9, 5, 14) });
-    const result = await w.client.query(api.today.get, { orgId: w.orgId, today: Date.UTC(2026, 9, 5), start: nyDay(2026, 9, 5).start, end: nyDay(2026, 9, 5).end });
-    expect(result.posts.map((r: any) => r.title)).toEqual(["Due today"]);
+    const result = await w.client.query(api.today.posts, { orgId: w.orgId, today: Date.UTC(2026, 9, 5), start: nyDay(2026, 9, 5).start, end: nyDay(2026, 9, 5).end, ...first(50) });
+    expect(result.page.map((r: any) => r.title)).toEqual(["Due today"]);
   });
 
   it("Post status and published link cannot be retired, and the link rule holds even if one was", async () => {
@@ -156,32 +158,21 @@ describe("posts", () => {
       });
     }
     const oct5 = nyDay(2026, 9, 5);
-    // Follows continuation cursors to the end; a page that is not done must say where to go on.
-    async function allRange(w: any) {
+    const range = (w: any, paginationOpts: object) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, paginationOpts });
+    const todays = (w: any, paginationOpts: object) => w.client.query(api.today.posts, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end, paginationOpts });
+    // Follows continuation cursors to the end; a page that is not done says where to go on.
+    async function all(query: (paginationOpts: object) => Promise<any>, numItems: number) {
       const out: string[] = [];
-      let cursor: string | undefined;
+      let cursor: string | null = null;
       for (let page = 0; page < 20; page++) {
-        const r = await w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, ...(cursor ? { cursor } : {}) });
-        out.push(...r.records.map((x: any) => x.title));
-        if (r.done === true) return out;
-        expect(typeof r.cursor).toBe("string");
-        cursor = r.cursor;
+        const r = await query({ cursor, numItems });
+        out.push(...r.page.map((x: any) => x.title));
+        if (r.isDone === true) return out;
+        cursor = r.continueCursor;
       }
       throw new Error("never done");
     }
-    async function allToday(w: any) {
-      const first = await w.client.query(api.today.get, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end });
-      const out: string[] = first.posts.map((x: any) => x.title);
-      let done = first.postsDone, cursor = first.postsCursor;
-      for (let page = 0; page < 20 && done !== true; page++) {
-        expect(typeof cursor).toBe("string");
-        const r = await w.client.query(api.today.posts, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end, cursor });
-        out.push(...r.posts.map((x: any) => x.title));
-        done = r.done; cursor = r.cursor;
-      }
-      expect(done).toBe(true);
-      return out;
-    }
+    const allRange = (w: any) => all((o) => range(w, o), 500), allToday = (w: any) => all((o) => todays(w, o), 50);
 
     for (const n of [999, 1000]) {
       it(`finds the one post on the day after ${n} posts late the evening before`, async () => {
@@ -191,31 +182,53 @@ describe("posts", () => {
         expect(await allRange(w)).toEqual(["On the day"]);
         expect(await allToday(w)).toEqual(["On the day"]);
         // The index is read with the day's exact bounds, so the evening before costs no reads.
-        expect(await w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5 })).toMatchObject({ done: true, cursor: null });
-        expect(await w.client.query(api.today.get, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end })).toMatchObject({ postsDone: true, postsCursor: null });
+        expect(await range(w, { cursor: null, numItems: 500 })).toMatchObject({ isDone: true });
+        expect(await todays(w, { cursor: null, numItems: 50 })).toMatchObject({ isDone: true });
       });
     }
 
     it("refuses a malformed cursor and a range longer than a calendar shows", async () => {
       const w = await world();
-      const range = (extra: object) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, ...extra });
-      await expect(range({ cursor: "list:5" })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      const range = (extra: object, paginationOpts: { cursor: string | null; numItems: number; endCursor?: string } = { cursor: null, numItems: 500 }) => w.client.query(api.records.inRange, { orgId: w.orgId, objectId: w.post.object._id, fieldId: w.post.fields.planned._id, ...oct5, ...extra, paginationOpts });
+      await expect(range({}, { cursor: "list:5", numItems: 500 })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
       await expect(range({ lastDay: oct5.firstDay + 100 * DAY, end: oct5.end + 100 * DAY })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
       await expect(range({ start: oct5.firstDay - 10 * DAY })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      await expect(range({}, { cursor: null, endCursor: "range:x", numItems: 500 })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
     });
 
     it("pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar", async () => {
       const w = await world();
       await clones(w, 1000, { title: "Out", status: "published", publishedLink: "https://x.com/s/1", planned: Date.UTC(2026, 9, 5, 12) });
       await w.create({ title: "Still to go", status: "approved", planned: Date.UTC(2026, 9, 5, 13) });
-      const first = await w.client.query(api.today.get, { orgId: w.orgId, today: oct5.firstDay, start: oct5.start, end: oct5.end });
-      expect(first.postsDone).toBe(false);
+      expect((await todays(w, { cursor: null, numItems: 50 })).isDone).toBe(false);
       expect(await allToday(w)).toEqual(["Still to go"]);
       const titles = await allRange(w);
       expect(titles).toHaveLength(1001);
       expect(new Set(titles).size).toBe(1001);
       expect(titles.at(-1)).toBe("Still to go");
     });
+  
+    it("a page asked for with its endCursor returns everything up to that end, so an insert grows it instead of shifting a post onto the next page", async () => {
+      const w = await world();
+      await clones(w, 501, { title: "Post", planned: Date.UTC(2026, 9, 5, 12) });
+      const one = await range(w, { cursor: null, numItems: 500 });
+      const two = await range(w, { cursor: one.continueCursor, numItems: 500 });
+      expect([one.page.length, two.page.length, two.isDone]).toEqual([500, 1, true]);
+      await w.create({ title: "New earlier post", planned: Date.UTC(2026, 9, 5, 11) });
+      // What the live subscriptions re-run: each page pinned to the end it first returned.
+      const oneAgain = await range(w, { cursor: null, endCursor: one.continueCursor, numItems: 500 });
+      const twoAgain = await range(w, { cursor: one.continueCursor, endCursor: two.continueCursor, numItems: 500 });
+      expect(oneAgain.page).toHaveLength(501);
+      expect(oneAgain.continueCursor).toBe(one.continueCursor);
+      const ids = [...oneAgain.page, ...twoAgain.page].map((r: any) => r._id);
+      expect(new Set(ids).size).toBe(502);
+      expect(twoAgain.isDone).toBe(true);
+      // Today's pages follow the same contract.
+      const t1 = await todays(w, { cursor: null, numItems: 50 });
+      await w.create({ title: "Another early post", planned: Date.UTC(2026, 9, 5, 10) });
+      const t1Again = await todays(w, { cursor: null, endCursor: t1.continueCursor, numItems: 50 });
+      expect(t1Again.page).toHaveLength(51);
+      expect(t1Again.isDone).toBe(false);
+    });
   });
 });
-

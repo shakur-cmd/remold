@@ -9,7 +9,7 @@ import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { attempt } from "@/lib/errors";
-import { uniqueById, useFollow } from "@/lib/pages";
+import { useAllPages } from "@/lib/pages";
 import { byDay, dayKey, localSpan, monthDays, moveToDay, parseDay, shiftAnchor, swatch, weekDays } from "@/lib/calendar";
 import { type Field, isSlotted, localToday, optionLabel, timeOfDay } from "@/lib/fields";
 
@@ -34,9 +34,6 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
   const today = localToday();
   const anchor = parseDay(params.get("at")) ?? today;
   const days = mode === "month" ? monthDays(anchor) : weekDays(anchor);
-  // Each page reads a bounded number of rows; the rest of a busy range follows by cursor.
-  const range = useFollow<{ records: Doc<"records">[]; done: boolean; cursor: string | null }>(api.records.inRange, dateField ? { orgId, objectId: object._id, fieldId: dateField._id, ...localSpan(days[0]!, days.at(-1)!) } : null);
-  const records = uniqueById(range.pages.flatMap((page) => page?.records ?? []));
   const set = (changes: Record<string, string>) => setParams((current) => { const next = new URLSearchParams(current); for (const [k, v] of Object.entries(changes)) next.set(k, v); return next; }, { replace: true });
   if (!dateField)
     return (
@@ -50,7 +47,7 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
     ? shown.toLocaleDateString(undefined, { timeZone: "UTC", month: "long", year: "numeric" })
     : `${first.toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric" })} – ${last.toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" })}`;
 
-  function onMove(recordId: Id<"records">, day: number) {
+  function onMove(records: Doc<"records">[], recordId: Id<"records">, day: number) {
     const record = records.find((r) => r._id === recordId), at = record?.values[dateField!._id];
     if (typeof at !== "number") return;
     const value = moveToDay(dateField!, at, day);
@@ -115,18 +112,30 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
           ))}
         </div>
       )}
-      <CalendarGrid orgId={orgId} objectKey={object.key} mode={mode} days={days} month={shown.getUTCMonth()} records={records} dateField={dateField} colorField={colorField} today={today} onMove={onMove} onShowDay={(day) => set({ cal: "week", at: dayKey(day) })} />
-      {range.loading && records.length > 0 && <p className="text-xs text-muted-foreground">Loading more…</p>}
-      {range.more && (
-        <p className="text-xs text-muted-foreground">
-          Showing the first {records.length} in this range.{" "}
-          <button type="button" className="text-primary hover:underline" onClick={range.loadMore}>
-            Load more
-          </button>
-        </p>
-      )}
+      <Range args={{ orgId, objectId: object._id, fieldId: dateField._id, ...localSpan(days[0]!, days.at(-1)!) }}>
+        {(range) => (
+          <>
+            <CalendarGrid orgId={orgId} objectKey={object.key} mode={mode} days={days} month={shown.getUTCMonth()} records={range.results} dateField={dateField} colorField={colorField} today={today} onMove={(id, day) => onMove(range.results, id, day)} onShowDay={(day) => set({ cal: "week", at: dayKey(day) })} />
+            {range.loading && range.results.length > 0 && <p className="text-xs text-muted-foreground">Loading more…</p>}
+            {range.more && (
+              <p className="text-xs text-muted-foreground">
+                Showing the first {range.results.length} in this range.{" "}
+                <button type="button" className="text-primary hover:underline" onClick={range.loadMore}>
+                  Load more
+                </button>
+              </p>
+            )}
+          </>
+        )}
+      </Range>
     </div>
   );
+}
+
+// Every page of the range, pinned (see usePinnedPages), as a component so the query
+// only exists once there is a date field to read.
+function Range({ args, children }: { args: Record<string, unknown>; children: (range: ReturnType<typeof useAllPages<Doc<"records">>>) => ReactNode }) {
+  return children(useAllPages<Doc<"records">>(api.records.inRange, args, 500));
 }
 
 // Releasing a drag over a chip also clicks its link. dnd-kit stops that click
@@ -136,7 +145,7 @@ const swallow = (event: Event) => event.preventDefault();
 const release = () => setTimeout(() => document.removeEventListener("click", swallow, true), 50);
 
 // A month cell shows this many; the rest are a click away in that day's week.
-const MONTH_CHIPS = 3;
+const MONTH_CHIPS = 3, PHONE_DOTS = 4;
 
 type GridProps = { orgId: Id<"orgs">; objectKey: string; mode: Mode; days: number[]; month: number; records: Doc<"records">[]; dateField: Field; colorField?: Field; today: number; onMove: (recordId: Id<"records">, day: number) => void; onShowDay?: (day: number) => void };
 
@@ -168,7 +177,8 @@ export function CalendarGrid({ orgId, objectKey, mode, days, month, records, dat
                   <button type="button" className={cn("flex w-full flex-col items-center gap-1 md:hidden", selected === day && "rounded-md bg-accent")} onClick={() => setPicked(day)}>
                     <DayNumber day={day} today={today} />
                     <span className="flex flex-wrap justify-center gap-0.5">
-                      {placed.get(day)?.map((r) => <span key={r._id} className={cn("size-1.5 rounded-full", swatch(colorField, colorField && r.values[colorField._id]))} />)}
+                      {placed.get(day)?.slice(0, PHONE_DOTS).map((r) => <span key={r._id} className={cn("size-1.5 rounded-full", swatch(colorField, colorField && r.values[colorField._id]))} />)}
+                      {(placed.get(day)?.length ?? 0) > PHONE_DOTS && <span className="text-[10px] leading-none text-muted-foreground">+{placed.get(day)!.length - PHONE_DOTS}</span>}
                     </span>
                   </button>
                   <div className="hidden gap-0.5 md:grid">
