@@ -112,6 +112,7 @@ describe("activity and timeline", () => {
     const create = async (item: any, values: Record<string, unknown>) => (await client.mutation(api.records.create, { orgId, objectId: item.object._id, values: Object.fromEntries(Object.entries(values).map(([k, v]) => [item.fields[k]._id, v])) })).recordId;
     const acme = await create(company, { name: "Acme" });
     const n1 = await create(note, { body: "Note 1", about: acme });
+    await new Promise((resolve) => setTimeout(resolve, 10)); // leaves room for a whole-ms time between Note 1 and Note 2
     const n2 = await create(note, { body: "Note 2", about: acme });
     await create(note, { body: "Note 3", about: acme });
     // Load two pages the way the app does, pinning each page to the boundary it first returned.
@@ -125,7 +126,8 @@ describe("activity and timeline", () => {
     expect((await refreshed()).titles).toEqual([["Note 4", "Note 3", "Note 2"], ["Note 1", "create"]]);
     // An activity dated between Note 2 and Note 1 lands inside the second loaded page.
     const at = (id: any) => client.query(api.records.get, { orgId, recordId: id }).then((r: any) => r.record._creationTime);
-    await create(activity, { title: "Backdated call", type: "call", when: Math.round(((await at(n1)) + (await at(n2))) / 2), about: acme });
+    expect((await at(n2)) - (await at(n1))).toBeGreaterThan(3);
+    await create(activity, { title: "Backdated call", type: "call", when: Math.floor(await at(n1)) + 2, about: acme });
     expect((await refreshed()).titles).toEqual([["Note 4", "Note 3", "Note 2"], ["Backdated call", "Note 1", "create"]]);
     // Deleting the row a page boundary was pinned to does not move the boundary.
     await client.mutation(api.records.remove, { orgId, recordId: n2 });
