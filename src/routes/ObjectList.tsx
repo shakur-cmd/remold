@@ -55,7 +55,7 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   const columns = (used.length ? candidates.filter((f) => used.includes(f._id)) : candidates).slice(0, 6);
   if (!firstPage && status !== "LoadingFirstPage" && !board && !calendar) setFirstPage(used);
   const groupBy = selectFields[0];
-  const dated = fields.some((f) => f.type === "date" && isSlotted(f) && !f.retired);
+  const dated = fields.some((f) => f.type === "date" && !f.retired);
 
   function toggleSort(fieldId: Id<"fields">) {
     setSort((current) =>

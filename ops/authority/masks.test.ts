@@ -60,7 +60,7 @@ it('the calendar range keeps hidden fields hidden and serves a record-scoped rea
   const post = await objectFields(client, orgId, 'post'), day = Date.UTC(2026, 9, 5);
   const make = async (title: string, text: string) => (await client.mutation(api.records.create, { orgId, objectId: post.object._id, values: { [post.fields.title._id]: title, [post.fields.text._id]: text, [post.fields.planned._id]: day } })).recordId;
   const mine = await make('Visible reel', 'Secret Text'); await make('Other Secret Post', 'more');
-  const range = { orgId, objectId: post.object._id, fieldId: post.fields.planned._id, from: day, to: day + 86400000 };
+  const range = { orgId, objectId: post.object._id, fieldId: post.fields.planned._id, firstDay: day, lastDay: day, start: day, end: day + 86400000 - 1 };
   expect(JSON.stringify(await client.query(api.records.inRange, range))).toMatch(/Secret Text/);
   const memberId = await t.run(async ctx => (await ctx.db.query('members').collect())[0]!._id);
   await client.mutation(anyApi['authority/policies'].setMember, { orgId, memberId, scopes: [{ objectId: post.object._id, records: [mine], fields: 'all' }], hiddenFieldIds: [post.fields.text._id] });
@@ -71,5 +71,5 @@ it('the calendar range keeps hidden fields hidden and serves a record-scoped rea
   const b = await userAndOrg('B'), bPost = await objectFields(b.client, b.orgId, 'post');
   const bMember = await b.t.run(async ctx => (await ctx.db.query('members').collect())[0]!._id);
   await b.client.mutation(anyApi['authority/policies'].setMember, { orgId: b.orgId, memberId: bMember, hiddenFieldIds: [bPost.fields.planned._id] });
-  await expect(b.client.query(api.records.inRange, { orgId: b.orgId, objectId: bPost.object._id, fieldId: bPost.fields.planned._id, from: day, to: day + 86400000 })).rejects.toMatchObject({ data: { code: 'NOT_FOUND' } });
+  await expect(b.client.query(api.records.inRange, { orgId: b.orgId, objectId: bPost.object._id, fieldId: bPost.fields.planned._id, firstDay: day, lastDay: day, start: day, end: day + 86400000 - 1 })).rejects.toMatchObject({ data: { code: 'NOT_FOUND' } });
 });

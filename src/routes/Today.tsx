@@ -8,13 +8,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
+import { localSpan } from "@/lib/calendar";
 import { localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 export function Today() {
   const { org } = useOutletContext<OrgContext>();
   const today = localToday();
-  const data = useQuery(api.today.get, { orgId: org._id, today });
+  const { start, end } = localSpan(today, today);
+  const data = useQuery(api.today.get, { orgId: org._id, today, start, end });
   const waiting = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
   const update = useMutation(api.records.update);
   if (!data) return <Loading />;
@@ -26,9 +28,8 @@ export function Today() {
     { label: "Today", rows: data.tasks.filter((r) => due(r) === today) },
     { label: "This week", rows: data.tasks.filter((r) => due(r) > today) },
   ];
-  // The server sends posts from a window around today; keep those on the viewer's own day.
   const planned = (record: Doc<"records">) => (data.post ? (record.values[data.post.plannedFieldId] as number) : 0);
-  const posts = data.post ? data.posts.filter((r) => localDay(data.post!.plannedField, planned(r)) === today) : [];
+  const { posts } = data;
   const complete = (recordId: Id<"records">) => task?.doneFieldId && attempt(() => update({ orgId: org._id, recordId, values: { [task.doneFieldId!]: true } }), "Done");
 
   return (

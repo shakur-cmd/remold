@@ -9,7 +9,7 @@ import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { attempt } from "@/lib/errors";
-import { byDay, dayKey, fetchRange, monthDays, moveToDay, parseDay, shiftAnchor, swatch, weekDays } from "@/lib/calendar";
+import { byDay, dayKey, localSpan, monthDays, moveToDay, parseDay, shiftAnchor, swatch, weekDays } from "@/lib/calendar";
 import { type Field, isSlotted, localToday, optionLabel, timeOfDay } from "@/lib/fields";
 
 type Mode = "month" | "week";
@@ -23,7 +23,8 @@ const wide = () => typeof window !== "undefined" && window.matchMedia("(min-widt
 export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object: Doc<"objects">; fields: Field[] }) {
   const [params, setParams] = useSearchParams();
   const update = useMutation(api.records.update);
-  const dates = fields.filter((f) => f.type === "date" && isSlotted(f) && !f.retired);
+  // Only indexed date fields can be read by range; the rest are listed and say why.
+  const allDates = fields.filter((f) => f.type === "date" && !f.retired), dates = allDates.filter(isSlotted), unindexed = allDates.filter((f) => !isSlotted(f));
   const selects = fields.filter((f) => f.type === "select" && !f.retired);
   const dateField = dates.find((f) => f._id === params.get("date")) ?? dates[0];
   const colorParam = params.get("color");
@@ -32,9 +33,14 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
   const today = localToday();
   const anchor = parseDay(params.get("at")) ?? today;
   const days = mode === "month" ? monthDays(anchor) : weekDays(anchor);
-  const result = useQuery(api.records.inRange, dateField ? { orgId, objectId: object._id, fieldId: dateField._id, ...fetchRange(days) } : "skip");
+  const result = useQuery(api.records.inRange, dateField ? { orgId, objectId: object._id, fieldId: dateField._id, ...localSpan(days[0]!, days.at(-1)!) } : "skip");
   const set = (changes: Record<string, string>) => setParams((current) => { const next = new URLSearchParams(current); for (const [k, v] of Object.entries(changes)) next.set(k, v); return next; }, { replace: true });
-  if (!dateField) return <p className="py-12 text-center text-sm text-muted-foreground">Add an indexed date field to see {object.labelPlural.toLowerCase()} on a calendar.</p>;
+  if (!dateField)
+    return (
+      <p className="py-12 text-center text-sm text-muted-foreground">
+        {unindexed.length ? `${unindexed.map((f) => f.label).join(", ")} ${unindexed.length === 1 ? "is" : "are"} not indexed` : "There is no date field"}, so {object.labelPlural.toLowerCase()} can't be placed on a calendar. An object indexes its first four date fields.
+      </p>
+    );
 
   const first = new Date(days[0]!), last = new Date(days.at(-1)!), shown = new Date(anchor);
   const title = mode === "month"
@@ -71,13 +77,14 @@ export function Calendar({ orgId, object, fields }: { orgId: Id<"orgs">; object:
               </Button>
             ))}
           </div>
-          {dates.length > 1 && (
+          {allDates.length > 1 && (
             <Select value={dateField._id} onValueChange={(id) => set({ date: id })}>
               <SelectTrigger size="sm" className="bg-card" aria-label="Date field">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {dates.map((f) => <SelectItem key={f._id} value={f._id}>{f.label}</SelectItem>)}
+                {unindexed.map((f) => <SelectItem key={f._id} value={f._id} disabled>{f.label} (not indexed)</SelectItem>)}
               </SelectContent>
             </Select>
           )}

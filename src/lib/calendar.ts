@@ -1,5 +1,5 @@
 import type { Doc } from "../../convex/_generated/dataModel";
-import { type Field, localDay } from "@/lib/fields";
+import { type Field, allDay, fromInstant, localDay } from "@/lib/fields";
 
 // Calendar days are local dates encoded as UTC midnight, like plain date values and "today".
 const DAY = 86400000;
@@ -19,8 +19,10 @@ export const shiftAnchor = (anchor: number, mode: "month" | "week", step: number
   const d = new Date(anchor);
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + step, 1);
 };
-// Wide enough on both sides that a timed value lands in range from any time zone.
-export const fetchRange = (days: number[]) => ({ from: days[0]! - DAY, to: days.at(-1)! + 2 * DAY });
+// The viewer's local days firstDay..lastDay: their dates, and the instants from
+// local midnight to the next local midnight minus 1 ms (23 or 25 hours on DST days).
+const localMidnight = (day: number) => { const d = new Date(day); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).getTime(); };
+export const localSpan = (firstDay: number, lastDay: number) => ({ firstDay, lastDay, start: localMidnight(firstDay), end: localMidnight(lastDay + DAY) - 1 });
 
 export function byDay(records: Doc<"records">[], field: Field) {
   const out = new Map<number, Doc<"records">[]>();
@@ -35,9 +37,9 @@ export function byDay(records: Doc<"records">[], field: Field) {
 // The same value on another day: a timed value keeps its local wall-clock time,
 // an all-day value becomes that day.
 export function moveToDay(field: Field, ms: number, day: number) {
-  if (localDay(field, ms) === ms) return day;
-  const from = new Date(ms), to = new Date(day);
-  return new Date(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate(), from.getHours(), from.getMinutes(), from.getSeconds(), from.getMilliseconds()).getTime();
+  if (allDay(field, ms)) return day;
+  const from = new Date(Math.floor(ms)), to = new Date(day);
+  return fromInstant(new Date(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate(), from.getHours(), from.getMinutes(), from.getSeconds(), from.getMilliseconds()).getTime());
 }
 
 // One color per select option, by its position.

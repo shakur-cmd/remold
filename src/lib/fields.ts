@@ -14,7 +14,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 // is a plain date (that calendar day everywhere); an instant is never one, since
 // an instant at exactly 00:00Z is stored as midnight + 0.5 ms.
 const sinceMidnight = (ms: number) => ((ms % DAY) + DAY) % DAY;
-const allDay = (field: Field | undefined, ms: number) => !field?.withTime || (Number.isInteger(ms) && sinceMidnight(ms) === 0);
+export const allDay = (field: Field | undefined, ms: number) => !field?.withTime || (Number.isInteger(ms) && sinceMidnight(ms) === 0);
 
 // Plain dates are stored as UTC midnight so every machine shows the same day;
 // with-time dates are instants, edited and shown in the browser's zone.
@@ -28,9 +28,9 @@ export const dateToInput = (ms: unknown, field?: Field) => {
 export const inputToDate = (value: string, field?: Field) => {
   if (!value) return null;
   if (!field?.withTime) return Date.parse(`${value}T00:00:00Z`);
-  const ms = new Date(value).getTime();
-  return sinceMidnight(ms) === 0 ? ms + 0.5 : ms;
+  return fromInstant(new Date(value).getTime());
 };
+export const fromInstant = (ms: number) => (sinceMidnight(ms) === 0 ? ms + 0.5 : ms);
 
 // The viewer's local date, encoded as UTC midnight like plain date fields.
 export const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };

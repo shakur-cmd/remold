@@ -5,11 +5,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import { CalendarGrid } from "./Calendar";
 import { monthDays, weekDays } from "@/lib/calendar";
+import { inputToDate } from "@/lib/fields";
 
 const planned = { _id: "planned", key: "planned", type: "date", withTime: true } as any;
 const status = { _id: "status", key: "status", type: "select", options: [{ id: "idea", label: "Idea" }, { id: "drafted", label: "Drafted" }] } as any;
-// 11:30 PM in New York on Oct 5 is already Oct 6 in UTC.
-const post = { _id: "r1", title: "Late night reel", values: { planned: new Date(2026, 9, 5, 23, 30).getTime(), status: "drafted" } } as any;
+// 8 PM in New York on Oct 5 is exactly midnight Oct 6 in UTC.
+const post = { _id: "r1", title: "Late night reel", values: { planned: inputToDate("2026-10-05T20:00", planned), status: "drafted" } } as any;
 
 // The markup of each day cell, keyed by its date.
 function cells(html: string) {
@@ -28,7 +29,7 @@ describe("CalendarGrid", () => {
   it("shows a post on its local day with its time in week view", () => {
     const week = render("week", weekDays(Date.UTC(2026, 9, 5)));
     expect(week["2026-10-05"]).toContain("Late night reel");
-    expect(week["2026-10-05"]).toContain("11:30");
+    expect(week["2026-10-05"]).toContain("8:00");
     expect(week["2026-10-06"]).not.toContain("Late night reel");
   });
   it("links each record to its page and labels its color", () => {

@@ -1,8 +1,8 @@
 /// <reference types="node" />
 process.env.TZ = "America/New_York";
 import { describe, expect, it } from "vitest";
-import type { Field } from "./fields";
-import { byDay, dayKey, monthDays, moveToDay, weekDays } from "./calendar";
+import { type Field, dateToInput, inputToDate } from "./fields";
+import { byDay, dayKey, localSpan, monthDays, moveToDay, weekDays } from "./calendar";
 
 const timed = { _id: "f1", type: "date", withTime: true } as unknown as Field;
 const plain = { _id: "f2", type: "date" } as unknown as Field;
@@ -39,3 +39,27 @@ describe("moveToDay", () => {
     expect(moveToDay(plain, Date.UTC(2026, 9, 5), Date.UTC(2026, 9, 9))).toBe(Date.UTC(2026, 9, 9));
   });
 });
+
+describe("8 PM in New York is midnight UTC", () => {
+  const eight = inputToDate("2026-10-05T20:00", timed)!;
+  it("stays on its local day", () => {
+    expect(byDay([{ _id: "a", values: { f1: eight } } as any], timed).get(Date.UTC(2026, 9, 5))?.map((r) => r._id)).toEqual(["a"]);
+  });
+  it("keeps 8 PM when moved, stored as an instant rather than an all-day date", () => {
+    const moved = moveToDay(timed, eight, Date.UTC(2026, 9, 8));
+    expect(moved).toBe(Date.UTC(2026, 9, 9) + 0.5);
+    expect(dateToInput(moved, timed)).toBe("2026-10-08T20:00");
+    expect(byDay([{ _id: "a", values: { f1: moved } } as any], timed).has(Date.UTC(2026, 9, 8))).toBe(true);
+  });
+});
+
+describe("localSpan", () => {
+  it("runs from local midnight of the first day to the next local midnight after the last, minus 1 ms", () => {
+    expect(localSpan(Date.UTC(2026, 9, 1), Date.UTC(2026, 9, 31))).toEqual({ firstDay: Date.UTC(2026, 9, 1), lastDay: Date.UTC(2026, 9, 31), start: local(2026, 9, 1), end: local(2026, 10, 1) - 1 });
+  });
+  it("is 25 hours long on the day daylight saving ends", () => {
+    const span = localSpan(Date.UTC(2026, 10, 1), Date.UTC(2026, 10, 1));
+    expect(span.end - span.start).toBe(25 * 3_600_000 - 1);
+  });
+});
+

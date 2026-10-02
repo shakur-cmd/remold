@@ -1,9 +1,21 @@
 import type { Doc } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import type { Principal } from "../identity";
+import { v } from "convex/values";
 import { canReadObject, canReadField, canReadRecord, canQueryField, firstVisible, listedRecords } from "../authority/reads";
+import { allDay } from "./values";
 
 const slotOf = (field: Doc<"fields">) => `${field.slot!.kind}${field.slot!.index}`;
+
+// A run of the viewer's local days, firstDay..lastDay as UTC midnights. All-day
+// values (whole UTC midnights) match by that calendar date; instants match from
+// the local midnight `start` through `end`, the next local midnight minus 1 ms,
+// which the viewer computes so that DST days are 23 or 25 hours long.
+export const localDays = { firstDay: v.number(), lastDay: v.number(), start: v.number(), end: v.number() };
+export type LocalDays = { firstDay: number; lastDay: number; start: number; end: number };
+export const onDays = (w: LocalDays) => (ms: unknown) => typeof ms === "number" && (allDay(ms) ? ms >= w.firstDay && ms <= w.lastDay : ms >= w.start && ms <= w.end);
+// Index bounds covering both kinds, for datedRecords; `onDays` then picks exactly.
+export const daysBounds = (w: LocalDays) => [Math.min(w.firstDay, w.start), Math.max(w.lastDay, w.end) + 1] as const;
 
 // Records whose `date` falls in [from, until) and that `keep` accepts, earliest
 // first. A record-scoped caller is served from their list, keeping only records
