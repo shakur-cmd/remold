@@ -89,8 +89,10 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
       checkScope(approver);
     } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
-    agentGuard(membership, object, fields, record, change.action === "delete" ? "delete" : change.values);
   }
+  // Also on reference cleanup: an agent's delete must not clear a protected
+  // lookup or link elsewhere, so the whole deletion is refused instead.
+  agentGuard(membership, object, fields, record, change.action === "delete" ? "delete" : change.values);
   if (change.action === "delete") {
     // Records that link to this one drop it from their links value through an
     // attributed update, which also removes the rows; then this record's own rows go.
