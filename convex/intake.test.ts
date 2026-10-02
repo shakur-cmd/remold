@@ -279,7 +279,7 @@ describe("POST /api/v1/intake/lead", () => {
     const [opp] = await recordsOf(t, "opportunity"), [n] = await recordsOf(t, "note");
     expect(opp.values[opportunity.fields.person._id]).toBe(existing.recordId);
     expect(n.values[note.fields.body._id]).toContain("Submitted: Shakur Abdul, shakur@x.com, +14105550100, CodeMyVibe");
-    expect(await t.run((ctx: any) => ctx.db.query("events").withIndex("by_record", (q: any) => q.eq("orgId", orgId).eq("recordId", existing.recordId)).collect()).then((events: any[]) => events.map((e) => e.action))).toEqual(["create"]);
+    expect(await t.run((ctx: any) => ctx.db.query("events").withIndex("by_record", (q: any) => q.eq("orgId", orgId).eq("recordId", existing.recordId)).collect()).then((events: any) => events.map((e: any) => e.action))).toEqual(["create"]);
   });
 
   it("links an existing person matched by phone without filling their empty email or company", async () => {
