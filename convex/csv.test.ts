@@ -68,4 +68,21 @@ describe("CSV export", () => {
     const due = Object.fromEntries(page.rows.map((r: string[]) => [r[page.header.indexOf("Title")], r[page.header.indexOf("Due Date")]]));
     expect(due).toEqual({ Midnight: "2026-10-02T00:00:00.000Z", Day: "2026-11-30", "US day": "2026-11-30" });
   });
+
+  it("refuses impossible calendar dates in every accepted format, on plain and with-time fields", async () => {
+    const { client, orgId } = await userAndOrg();
+    const task = await objectFields(client, orgId, "task"), deal = await objectFields(client, orgId, "opportunity");
+    const bad = [["Feb 30 US", "2/30/2026"], ["Month 13 US", "13/1/2026"], ["Day 0 US", "1/0/2026"], ["Feb 29 US", "2/29/2027"], ["Feb 30 ISO", "2026-02-30"], ["Month 13 ISO", "2026-13-01"], ["Day 32 ISO", "2026-1-32"]];
+    const good = [["Leap US", "2/29/2028"], ["Short ISO", "2026-1-5"], ["Two-digit year", "11/30/26"]];
+    const timed = await client.mutation(api.csv.importRows, { orgId, objectId: task.object._id, firstRow: 2, skipDuplicates: false, createMissing: false, columns: [task.fields.title._id, task.fields.dueDate._id], rows: [...bad, ...good] });
+    const plain = await client.mutation(api.csv.importRows, { orgId, objectId: deal.object._id, firstRow: 2, skipDuplicates: false, createMissing: false, columns: [deal.fields.name._id, deal.fields.closeDate._id], rows: [...bad, ...good] });
+    for (const result of [timed, plain]) {
+      expect(result.errors.map((e: any) => e.row)).toEqual([2, 3, 4, 5, 6, 7, 8]);
+      expect(result.created).toBe(3);
+    }
+    const dates = async (item: any, field: string) => { const page = await client.query(api.csv.exportPage, { orgId, objectId: item.object._id, cursor: null }); return Object.fromEntries(page.rows.map((r: string[]) => [r[1], r[page.header.indexOf(field)]])); };
+    const expected = { "Leap US": "2028-02-29", "Short ISO": "2026-01-05", "Two-digit year": "2026-11-30" };
+    expect(await dates(task, "Due Date")).toEqual(expected);
+    expect(await dates(deal, "Close Date")).toEqual(expected);
+  });
 });

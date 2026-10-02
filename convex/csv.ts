@@ -12,6 +12,9 @@ import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQ
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
 const US = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
+const ISO_DAY = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+// Date.UTC rolls 2/30 into March; a real calendar date survives the round trip.
+const calendar = (year: number, month: number, day: number) => { const ms = Date.UTC(year, month - 1, day), d = new Date(ms); return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day ? ms : undefined; };
 const TRUE = new Set(["yes", "y", "true", "1", "x"]), FALSE = new Set(["no", "n", "false", "0"]);
 const pad = (n: number) => String(n).padStart(2, "0");
 const isoDate = (ms: number) => { const d = new Date(ms); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
@@ -54,12 +57,12 @@ async function coerce(run: Run, field: Doc<"fields">, raw: string): Promise<unkn
     case "number": { const n = Number(text.replace(/[$,\s]/g, "")); return Number.isFinite(n) ? n : bad("is not a number"); }
     case "boolean": return TRUE.has(text.toLowerCase()) ? true : FALSE.has(text.toLowerCase()) ? false : bad("is not yes or no");
     case "date": {
-      const iso = ISO.exec(text), us = US.exec(text);
-      // With-time fields take only a real date or a real ISO 8601 instant; a bad time never falls back to its date.
-      if (field.withTime) { const value = us ? undefined : instant(text); if (value !== undefined) return value; if (!us) return bad("is not a date like 2026-09-22 or a time like 2026-09-22T14:30:00-04:00"); }
-      if (iso) return Date.UTC(+iso[1]!, +iso[2]! - 1, +iso[3]!);
-      if (us) { const year = +us[3]! < 100 ? 2000 + +us[3]! : +us[3]!; return Date.UTC(year, +us[1]! - 1, +us[2]!); }
-      return bad("is not a date like 2026-09-22");
+      // With-time fields take a real ISO 8601 instant; a bad time never falls back to its date.
+      if (field.withTime && /T/i.test(text)) { const value = instant(text); return value ?? bad("is not a time like 2026-09-22T14:30:00-04:00"); }
+      // Both kinds of field then take a whole date; with-time fields refuse anything after it.
+      const iso = (field.withTime ? ISO_DAY : ISO).exec(text), us = US.exec(text);
+      const value = iso ? calendar(+iso[1]!, +iso[2]!, +iso[3]!) : us ? calendar(+us[3]! < 100 ? 2000 + +us[3]! : +us[3]!, +us[1]!, +us[2]!) : undefined;
+      return value ?? bad("is not a real date like 2026-09-22");
     }
     case "select": {
       const option = field.options?.find((o) => o.id.toLowerCase() === text.toLowerCase() || o.label.toLowerCase() === text.toLowerCase());
