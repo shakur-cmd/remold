@@ -64,7 +64,7 @@ function Column({ orgId, object, groupBy, column, preview, filters, range, total
         <span className="ml-auto text-xs font-normal text-muted-foreground tabular-nums">
           {total?.count ?? results.length}
           {more}
-          {!!total?.sum && ` · ${show(preview.number!, total.sum)}${more}`}
+          {total?.sum != null && preview.number && ` · ${show(preview.number, total.sum)}${more}`}
         </span>
       </h2>
       {results.map((record) => (
