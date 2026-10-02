@@ -68,7 +68,7 @@ test('a bundle aimed at any deployment but the target is refused', t => {
   assert.throws(() => checkBundle(dist, target), /gallant-pika-581/);
   writeFileSync(join(dist, 'assets/index.js'), 'new Client("https://nautical-viper-899.convex.cloud");"client_01OTHER"');
   assert.throws(() => checkBundle(dist, target), /client_01TESTVALUE/);
-  writeFileSync(join(dist, 'assets/index.js'), 'new Client("https://nautical-viper-899.convex.cloud");"client_01TESTVALUE"');
+  writeFileSync(join(dist, 'assets/index.js'), 'new Client("https://nautical-viper-899.convex.cloud");"client_01TESTVALUE";"requires a URL like \'https://happy-otter-123.convex.cloud\'"');
   checkBundle(dist, target);
 });
 

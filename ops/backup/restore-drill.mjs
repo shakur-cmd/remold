@@ -48,6 +48,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
     if (trusted !== true) report.problems.push(trusted);
     const { counts, missing } = zipCounts(zip);
     report.problems.push(...missing.map(table => `${table}: named in the backup's table index but has no rows file`));
+    if (report.problems.length) throw new Error('backup itself is not intact; not restoring it');
     // Loopback only: local() refuses a non-127.0.0.1 backend and never sees a deploy key.
     const restored = await local(root, 'remold-restore-drill-', [3492, 3493], true, async backend => {
       backend.run('import', '--replace-all', '-y', zip);
@@ -57,7 +58,7 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
     report.problems.push(...compareCounts(counts, restored));
     Object.assign(report, { tables: Object.keys(counts).length, rows: Object.values(counts).reduce((a, b) => a + b, 0), restoredRows: Object.values(restored).reduce((a, b) => a + b, 0) });
     if (!report.problems.length) report.result = 'PASS';
-  } catch (error) { report.problems.push(String(error.message).slice(0, 500)); }
+  } catch (error) { report.problems.push(String(error.message).trim().slice(-500)); }
   console.log(JSON.stringify(report, null, 2));
   if (report.result !== 'PASS') process.exitCode = 1;
 }

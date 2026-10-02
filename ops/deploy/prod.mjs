@@ -48,9 +48,11 @@ export function rollbackFloor(cwd, sha, pinned) {
   if (!ok(cwd, 'merge-base', '--is-ancestor', pinned, sha)) throw new Error(`Refusing: ${sha} is older than the rollback target ${pinned} pinned in ops/release/notes.json; its schema may reject data written since`);
 }
 
+// The Convex client's own error messages use this example URL.
+const LIBRARY_EXAMPLES = ['happy-otter-123'];
 export function checkBundle(dist, target) {
   const text = readdirSync(dist, { recursive: true }).filter(file => /\.(js|html|css)$/.test(file)).map(file => readFileSync(join(dist, file), 'utf8')).join('\n');
-  const others = [...new Set([...text.matchAll(/([a-z]+-[a-z]+-\d+)\.convex\.(?:cloud|site)/g)].map(match => match[1]))].filter(name => name !== target.deployment);
+  const others = [...new Set([...text.matchAll(/([a-z]+-[a-z]+-\d+)\.convex\.(?:cloud|site)/g)].map(match => match[1]))].filter(name => name !== target.deployment && !LIBRARY_EXAMPLES.includes(name));
   if (others.length) throw new Error(`Built bundle names another deployment: ${others.join(', ')}`);
   for (const value of [target.convexUrl, target.workosClientId]) if (!text.includes(value)) throw new Error(`Built bundle does not contain ${value}`);
 }
