@@ -474,6 +474,15 @@ describe("intake abuse limits", () => {
     expect((await send({ name: "A", email: "a@x.com" }, "1")).status).toBe(201);
   });
 
+  it("reads a cap with surrounding whitespace, as an env file can leave it: \" 2\\n\" is 2", async () => {
+    vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", " 2\n");
+    vi.spyOn(Date, "now").mockReturnValue(1_800_000_000_000);
+    const { send } = await intakeSetup();
+    expect((await send({ name: "A", email: "a@x.com" }, "w1")).status).toBe(201);
+    expect((await send({ name: "B", email: "b@x.com" }, "w2")).status).toBe(201);
+    expect((await send({ name: "C", email: "c@x.com" }, "w3")).status).toBe(429);
+  });
+
   for (const [label, raw] of [["missing", undefined], ["empty", " "], ["not a number", "abc"], ["negative", "-1"], ["fractional", "1.5"], ["zero", "0"], ["exponent", "1e3"], ["hex", "0x10"], ["signed", "+5"], ["trailing zero fraction", "2.0"], ["past the safe integer range", "9007199254740993"]] as const) {
     it(`takes no leads when REMOLD_INTAKE_DAILY_CAP is ${label}: a missing or unreadable cap means zero`, async () => {
       vi.stubEnv("REMOLD_INTAKE_DAILY_CAP", raw);
