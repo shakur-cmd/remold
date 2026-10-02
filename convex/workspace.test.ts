@@ -4,6 +4,7 @@ import { anyApi } from "convex/server";
 import schema from "./schema";
 import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
 import { canonical, MAX_ROWS } from "./workspace";
+import { principalFor } from "./authority/grants";
 
 // Replaces every id with the order it first appears in, so two exports compare by shape and links, not by id.
 function modIds(data: any) {
@@ -297,6 +298,9 @@ describe("workspace deletion", () => {
     expect(await c.query(api.invites.get, { token: invite.token })).toBeNull();
     await expect(c.mutation(api.invites.accept, { token: invite.token })).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
     expect(await a.t.query(anyApi.reminders.compose, { memberId: reminderFor })).toBeNull();
+    // Background work re-derives its principal and is refused too.
+    const ownerId = (await a.client.query(api.users.me, {}))!._id;
+    await expect(a.t.run((ctx: any) => principalFor(ctx, a.orgId, { kind: "user", id: ownerId }))).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
     await a.t.finishAllScheduledFunctions(vi.runAllTimers);
   });
 
