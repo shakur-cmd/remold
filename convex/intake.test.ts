@@ -93,6 +93,56 @@ describe("Idempotency-Key on POST /api/v1/changes", () => {
     expect(await counts(t)).toEqual(before);
   });
 
+  it("replays the original result, not a later human edit", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "create", objectKey: "company" }] });
+    const company = await objectFields(client, orgId, "company");
+    const body = { action: "create", object: "company", values: { name: "Original Company", city: "Baltimore" }, reason: "intake" };
+    const first = await post(t, agent.key, "/api/v1/changes", body, "original");
+    await client.mutation(api.records.update, { orgId, recordId: first.json.record.id, values: { [company.fields.name._id]: "Later Human Edit", [company.fields.domain._id]: "later.example" } });
+    const before = await counts(t);
+    const replayed = await post(t, agent.key, "/api/v1/changes", body, "original");
+    expect(replayed.status).toBe(200);
+    expect(replayed.json).toEqual(first.json);
+    expect(JSON.stringify(replayed.json)).not.toContain("later.example");
+    expect(await counts(t)).toEqual(before);
+  });
+
+  it("never adds a field to a replay that was hidden when the change was made", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const person = await objectFields(client, orgId, "person");
+    const created = await client.mutation(api.records.create, { orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Person", [person.fields.email._id]: "was-hidden@x.com" } });
+    const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "update", objectKey: "person" }] });
+    await client.mutation(api.authority.policies.setAgentMasks, { orgId, agentId: agent.agentId, hiddenFieldIds: [person.fields.email._id] });
+    const body = { action: "update", record: created.recordId, values: { name: "Renamed" }, reason: "fix" };
+    const first = await post(t, agent.key, "/api/v1/changes", body, "unhidden");
+    await client.mutation(api.authority.policies.setAgentMasks, { orgId, agentId: agent.agentId, hiddenFieldIds: [] });
+    const replayed = await post(t, agent.key, "/api/v1/changes", body, "unhidden");
+    expect(replayed.status).toBe(200);
+    expect(replayed.json).toEqual(first.json);
+    expect(JSON.stringify(replayed.json)).not.toContain("was-hidden@x.com");
+  });
+
+  it("refuses a replay when the record has since been deleted, without writing again", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "create", objectKey: "company" }] });
+    const body = { action: "create", object: "company", values: { name: "Gone Co" }, reason: "intake" };
+    const first = await post(t, agent.key, "/api/v1/changes", body, "gone");
+    await client.mutation(api.records.remove, { orgId, recordId: first.json.record.id });
+    const before = await counts(t);
+    expect((await post(t, agent.key, "/api/v1/changes", body, "gone")).status).toBe(404);
+    expect(await counts(t)).toEqual(before);
+  });
+
+  it("dedupes ten concurrent identical changes into one write", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "create", objectKey: "company" }] });
+    const body = { action: "create", object: "company", values: { name: "Parallel" }, reason: "burst" };
+    const results = await Promise.all(Array.from({ length: 10 }, () => post(t, agent.key, "/api/v1/changes", body, "parallel")));
+    expect(results.every((r: any) => r.status === 200 && r.json.record.id === results[0].json.record.id)).toBe(true);
+    expect((await counts(t)).company).toBe(1);
+  });
+
   it("still writes every time when no key is sent", async () => {
     const { t, client, orgId } = await userAndOrg();
     const agent = await agentFor(client, orgId, { name: "writer", grants: [{ action: "create", objectKey: "company" }] });
@@ -231,6 +281,32 @@ describe("POST /api/v1/intake/lead", () => {
     expect((await counts(t)).company).toBe(26);
     const [opp] = await recordsOf(t, "opportunity");
     expect(opp.values[(await objectFields(client, orgId, "opportunity")).fields.company._id]).toBe(acme.recordId);
+  });
+
+  it("keeps matching and idempotency keys inside each workspace", async () => {
+    const a = await intakeSetup(), b = a.t.withIdentity({ tokenIdentifier: "clerk|B", name: "B" });
+    await b.mutation(api.users.store, {});
+    const orgB = await b.mutation(api.orgs.create, { name: "B Org" }), keyB = await b.action(api.agents.createIntake, { orgId: orgB });
+    expect((await a.send(lead, "shared-key")).status).toBe(201);
+    const second = await post(a.t, keyB.key, "/api/v1/intake/lead", lead, "shared-key");
+    expect(second.status).toBe(201);
+    expect(second.json.opportunity.id).not.toBe((await a.send(lead, "shared-key")).json.opportunity.id);
+    const people = ((await a.t.run((ctx: any) => ctx.db.query("records").collect())) as any[]).filter((r) => r.title === lead.name);
+    expect(new Set(people.map((p: any) => p.orgId))).toEqual(new Set([a.orgId, orgB]));
+    expect(people).toHaveLength(2);
+  });
+
+  it("rolls back when the final Note write fails, and the same key then succeeds", async () => {
+    const { t, client, orgId, send } = await intakeSetup();
+    const note = await objectFields(client, orgId, "note");
+    const { fieldId } = await client.mutation(api.fields.create, { orgId, objectId: note.object._id, key: "topic", label: "Topic", type: "text", required: true });
+    const before = await counts(t);
+    expect((await send(lead, "retry-note")).status).toBe(400);
+    expect(await counts(t)).toEqual(before);
+    // No API relaxes a required field (and retiring one still enforces it), so the owner's fix is applied directly.
+    await t.run((ctx: any) => ctx.db.patch(fieldId, { required: false }));
+    expect((await send(lead, "retry-note")).status).toBe(201);
+    expect(await counts(t)).toMatchObject({ person: 1, company: 1, opportunity: 1, note: 1 });
   });
 
   it("leaves no partial records when a later write fails", async () => {
