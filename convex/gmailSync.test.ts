@@ -52,6 +52,19 @@ describe("Gmail sync key", () => {
     expect(stored!.record.values).toMatchObject(fill(await objectFields(client, orgId, "person"), { name: "Ada", email: "ada@example.com" }));
   });
 
+  it("reads back the activities it logged in a When range, with source and about, as the script asks for them", async () => {
+    const { t, client, orgId, create, activity, ada } = await fixture();
+    const { key } = await client.action(api.agents.createGmailSync, { orgId });
+    const call = rest(t, key);
+    await call("POST", "/api/v1/changes", { action: "create", object: "activity", values: { title: "Email received", type: "email", when: "2026-09-30T13:05:00Z", about: ada, source: "gmail:m1" }, reason: "Gmail sync" });
+    await call("POST", "/api/v1/changes", { action: "create", object: "activity", values: { title: "Email sent", type: "email", when: "2026-08-01T09:00:00Z", about: ada, source: "gmail:m0" }, reason: "Gmail sync" });
+    await create(activity, { title: "Call", type: "call", when: Date.UTC(2026, 8, 30, 10), about: ada });
+    const range = encodeURIComponent(`${new Date(Date.UTC(2026, 8, 24, 6)).toISOString()}..${new Date(Date.UTC(2026, 9, 2, 6)).toISOString()}`);
+    const read = await call("GET", `/api/v1/records?object=activity&limit=100&range%5Bwhen%5D=${range}`);
+    expect(read.status).toBe(200);
+    expect(read.json.records.map((r: any) => [r.values.source ?? null, r.values.about?.id])).toEqual([[null, ada], ["gmail:m1", ada]]);
+  });
+
   it("only an owner can mint it", async () => {
     const { t, client, orgId } = await fixture();
     await client.mutation(api.invites.create, { orgId, role: "admin" }).then(async ({ token }: any) => {

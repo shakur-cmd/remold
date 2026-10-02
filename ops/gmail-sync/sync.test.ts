@@ -10,7 +10,7 @@ const OWNER = "shakur@codemyvibe.com", ALIAS = "hello@remoldcrm.com", BASE = "ht
 type Msg = { id: string; date: string; from: string; to?: string; cc?: string; bcc?: string; draft?: boolean };
 const forbidden = ["getSubject", "getBody", "getPlainBody", "getRawContent", "getAttachments", "getHeader"];
 
-function world(options: { messages: Msg[]; people: { id: string; email?: string }[]; props?: Record<string, string>; onSearch?: (start: number, threads: { m: Msg; messages: any[] }[], message: (m: Msg) => any) => void; respond?: (call: { url: string; body: any; headers: Record<string, string> }, n: number) => { status: number; body?: unknown; headers?: Record<string, string> } }) {
+function world(options: { messages: Msg[]; people: { id: string; email?: string }[]; logged?: { source: string; about: string }[]; onSleep?: (ms: number) => void; props?: Record<string, string>; onSearch?: (start: number, threads: { m: Msg; messages: any[] }[], message: (m: Msg) => any) => void; respond?: (call: { url: string; body: any; headers: Record<string, string> }, n: number) => { status: number; body?: unknown; headers?: Record<string, string> } }) {
   const props: Record<string, string> = { REMOLD_BASE_URL: BASE, REMOLD_KEY: "rm_" + "a".repeat(40), ...options.props };
   const calls: { method: string; url: string; body: any; headers: Record<string, string> }[] = [], searches: string[] = [];
   const message = (m: Msg) => {
@@ -36,6 +36,7 @@ function world(options: { messages: Msg[]; people: { id: string; email?: string 
     fetch: (url: string, params: any) => {
       const call = { method: params.method, url, body: params.payload ? JSON.parse(params.payload) : undefined, headers: params.headers };
       calls.push(call);
+      if (params.method === "get" && new URL(url).searchParams.get("object") === "activity") return response(200, { records: (options.logged ?? []).map((a, i) => ({ id: `a${i}`, values: { title: "Email", type: "email", source: a.source, about: { id: a.about } } })), cursor: null });
       if (params.method === "get") {
         const page = Number(new URL(url).searchParams.get("cursor") ?? 0), size = 2;
         return response(200, { records: options.people.slice(page, page + size).map((p) => ({ id: p.id, values: p.email ? { name: p.id, email: p.email } : { name: p.id } })), cursor: page + size < options.people.length ? String(page + size) : null });
@@ -46,7 +47,7 @@ function world(options: { messages: Msg[]; people: { id: string; email?: string 
   };
   const PropertiesService = { getScriptProperties: () => ({ getProperty: (k: string) => props[k] ?? null, setProperty: (k: string, v: string) => { props[k] = v; } }) };
   const sleeps: number[] = [];
-  const context = vm.createContext({ GmailApp, UrlFetchApp, PropertiesService, Session: { getEffectiveUser: () => ({ getEmail: () => OWNER }) }, Utilities: { sleep: (ms: number) => sleeps.push(ms) }, console: { log: () => {} }, Date, JSON, Math, Object, Array, String, Number, Error, encodeURIComponent, URL });
+  const context = vm.createContext({ GmailApp, UrlFetchApp, PropertiesService, Session: { getEffectiveUser: () => ({ getEmail: () => OWNER }) }, Utilities: { sleep: (ms: number) => { sleeps.push(ms); options.onSleep?.(ms); } }, console: { log: () => {} }, Date, JSON, Math, Object, Array, String, Number, Error, encodeURIComponent, URL });
   vm.runInContext(source, context);
   const posts = () => calls.filter((c) => c.method === "post");
   // A fixed clock unless a test brings its own: the run must not depend on the wall clock.
@@ -96,10 +97,10 @@ describe("gmail-sync run", () => {
     expect(sent[3]!.body.values.title).toBe("Email sent");
     // m4 only copied Bob on someone else's mail to the owner, and m5 is a draft: neither is contact.
     expect(summary).toMatchObject({ posted: 4, people: 3, complete: true });
-    expect(w.calls.filter((c) => c.method === "get").map((c) => c.url)).toEqual([`${BASE}/api/v1/records?object=person&limit=100`, `${BASE}/api/v1/records?object=person&limit=100&cursor=2`]);
+    expect(w.calls.filter((c) => c.method === "get" && c.url.includes("object=person")).map((c) => c.url)).toEqual([`${BASE}/api/v1/records?object=person&limit=100`, `${BASE}/api/v1/records?object=person&limit=100&cursor=2`]);
   });
 
-  it("a rerun over the same messages posts the same idempotency keys, so Remold creates nothing new", () => {
+  it("a rerun over the same messages posts the same idempotency keys", () => {
     const first = world({ messages, people });
     first.sync(NOW);
     const again = world({ messages, people, props: { WATERMARK: String(Date.UTC(2026, 8, 30, 13, 30)) } });
@@ -117,11 +118,12 @@ describe("gmail-sync run", () => {
     expect(w.props.WATERMARK).toBe(String(NOW));
   });
 
-  it("stops at the first 4xx, reports it, and leaves the watermark alone", () => {
+  it("stops at the first 4xx, reports it, and keeps the watermark at the last finished window", () => {
     const w = world({ messages, people, props: { WATERMARK: "1" }, respond: (_call, n) => (n === 2 ? { status: 403, body: { error: { code: "FORBIDDEN", message: "No grant" } } } : undefined) });
     expect(() => w.sync(NOW)).toThrow(/403 FORBIDDEN: No grant/);
     expect(w.posts()).toHaveLength(2);
-    expect(w.props.WATERMARK).toBe("1");
+    // The empty 14-day windows before the failing one finished; the failing one (the last 6 days) did not.
+    expect(w.props.WATERMARK).toBe(String(NOW - 6 * 86400000));
     expect(w.props.LAST_ERROR).toMatch(/403 FORBIDDEN: No grant/);
     expect(w.props.LAST_ERROR).not.toContain("rm_");
   });
@@ -189,5 +191,41 @@ describe("gmail-sync run", () => {
     const w = world({ messages, people, props: { WATERMARK: String(Date.UTC(2026, 8, 29)) }, onSearch: () => { clock += 200000; } });
     expect(w.sync(NOW, { now: () => clock, budgetMs: 150000 })).toMatchObject({ posted: 0, complete: false });
     expect(w.props.WINDOW_DAYS).toBe("7");
+  });
+
+  it("logs nothing when the owner is a Person: sent-to-self is not contact, and the Gmail query never names the owner", () => {
+    const self: Msg[] = [{ id: "s1", date: "2026-09-30T13:05:00Z", from: OWNER, to: OWNER }, { id: "s2", date: "2026-09-30T14:00:00Z", from: ALIAS, to: `Me <${OWNER}>` }, { id: "s3", date: "2026-09-30T15:00:00Z", from: `Me <${OWNER}>`, to: "ada@example.com" }];
+    const w = world({ messages: self, people: [...people, { id: "p_me", email: OWNER.toUpperCase() }, { id: "p_alias", email: ALIAS }] });
+    expect(w.sync(NOW)).toMatchObject({ complete: true });
+    expect(w.posts().map((c) => c.headers["Idempotency-Key"])).toEqual(["gmail:s3:p_ada"]);
+    expect(w.searches.length).toBeGreaterThan(0);
+    for (const query of w.searches) for (const own of [OWNER, ALIAS]) expect(query).not.toContain(own);
+  });
+
+  it("never sleeps a Retry-After past the run's remaining time: it stops early and keeps what went through", () => {
+    let clock = NOW;
+    const w = world({ messages, people, onSleep: (ms) => { clock += ms; }, respond: (_call, n) => (n >= 2 ? { status: 429, body: { error: { code: "RATE_LIMITED" } }, headers: { "Retry-After": "100" } } : undefined) });
+    const summary = w.sync(NOW, { now: () => clock });
+    expect(summary).toMatchObject({ posted: 1, complete: false });
+    expect(w.sleeps.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(270000);
+    expect(clock - NOW).toBeLessThanOrEqual(270000);
+    expect(w.props.WATERMARK).toBe(String(Date.parse("2026-09-30T13:05:00Z")));
+    expect(w.props.LAST_ERROR).toBe("");
+  });
+
+  it("saves the watermark after each finished window, so a failure in a later window keeps the earlier ones", () => {
+    const w = world({ messages, people, props: { LOOKBACK_DAYS: "30", WINDOW_DAYS: "29" }, respond: (_call, n) => (n === 4 ? { status: 500, body: { error: { code: "INTERNAL" } } } : undefined) });
+    expect(() => w.sync(NOW)).toThrow(/500/);
+    expect(w.posts()).toHaveLength(4);
+    expect(w.props.WATERMARK).toBe(String(NOW - 86400000));
+  });
+
+  it("skips emails Remold already has as activities, so reruns past the 24-hour Idempotency-Key window log nothing twice", () => {
+    const w = world({ messages, people, logged: [{ source: "gmail:m1", about: "p_ada" }, { source: "gmail:m2", about: "p_bob" }, { source: "manual", about: "p_cat" }] });
+    expect(w.sync(NOW)).toMatchObject({ posted: 2, complete: true });
+    expect(w.posts().map((c) => c.headers["Idempotency-Key"])).toEqual(["gmail:m2:p_ada", "gmail:m3:p_cat"]);
+    const read = w.calls.filter((c) => c.method === "get" && c.url.includes("object=activity")).map((c) => new URL(c.url).searchParams.get("range[when]"));
+    // Only the window with mail to post is checked: the last 6 of the 90 days, in 14-day windows.
+    expect(read).toEqual([`${new Date(NOW - 6 * 86400000).toISOString()}..${new Date(NOW).toISOString()}`]);
   });
 });

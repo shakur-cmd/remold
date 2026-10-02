@@ -15,9 +15,11 @@ function syncGmail(startedAt, options) {
   if (!base || !key) throw new Error("Set REMOLD_BASE_URL and REMOLD_KEY in Script Properties first");
   try {
     const watermark = props.getProperty("WATERMARK"), windowDays = Number(props.getProperty("WINDOW_DAYS")) || cfg.windowDays;
-    const late = function () { return now() - started > cfg.budgetMs; };
-    const people = peopleByEmail(fetchPeople(base, key)), emails = Object.keys(people);
+    const left = function () { return cfg.budgetMs - (now() - started); }, late = function () { return left() < 0; };
     const owners = ownerAddresses(Session.getEffectiveUser().getEmail(), GmailApp.getAliases(), props.getProperty("OWNER_EMAILS"));
+    // The owner's own addresses never count as contact, so searching them would only read the whole mailbox.
+    const people = peopleByEmail(fetchAll(base, key, "/api/v1/records?object=person&limit=100")), emails = Object.keys(people).filter(function (email) { return !owners[email]; });
+    const save = function (at) { if (at > (Number(props.getProperty("WATERMARK")) || 0)) props.setProperty("WATERMARK", String(at)); };
     // Windows of WINDOW_DAYS, oldest first, until time runs out: a long backlog is read in pieces
     // that each fit a run, and the watermark moves only over pieces whose posts all went through.
     let since = startFrom(watermark, started, Number(props.getProperty("LOOKBACK_DAYS")) || cfg.lookbackDays, cfg.overlapMs);
@@ -31,21 +33,27 @@ function syncGmail(startedAt, options) {
         if (!windows) { if (windowDays <= 1) throw new Error("Reading one day of Gmail takes longer than a run allows"); props.setProperty("WINDOW_DAYS", String(Math.floor(windowDays / 2))); }
         break;
       }
-      const posts = planPosts(read.messages, people, owners);
+      let posts = planPosts(read.messages, people, owners);
+      if (posts.length) {
+        const logged = loggedKeys(fetchAll(base, key, "/api/v1/records?object=activity&limit=100&range%5Bwhen%5D=" + encodeURIComponent(new Date(since).toISOString() + ".." + new Date(until).toISOString())));
+        posts = posts.filter(function (post) { return !logged[post.key]; });
+      }
       let i = 0;
       for (; i < posts.length && !late(); i++) {
-        remold(base, key, "post", "/api/v1/changes", posts[i].body, posts[i].key);
+        if (!remold(base, key, "post", "/api/v1/changes", posts[i].body, posts[i].key, left)) break;
         posted++;
         if (!posts[i + 1] || posts[i + 1].messageId !== posts[i].messageId) mark = posts[i].at;
       }
       if (i < posts.length) break;
+      // Saved now, so a later window's failure or a killed run keeps this one.
       mark = until;
+      save(mark);
       windows++;
       if (until === started) { complete = true; break; }
       if (late()) break;
       since = until;
     }
-    if (mark !== null && mark > (Number(watermark) || 0)) props.setProperty("WATERMARK", String(mark));
+    if (mark !== null) save(mark);
     const summary = { people: emails.reduce(function (n, email) { return n + people[email].length; }, 0), messages: messages, posted: posted, complete: complete, from: new Date(first).toISOString(), through: new Date(Number(props.getProperty("WATERMARK")) || first).toISOString() };
     props.setProperty("LAST_RUN", new Date(started).toISOString() + " " + JSON.stringify(summary));
     props.setProperty("LAST_ERROR", "");
@@ -58,10 +66,10 @@ function syncGmail(startedAt, options) {
   }
 }
 
-function fetchPeople(base, key) {
+function fetchAll(base, key, path) {
   let records = [], cursor = null;
   do {
-    const page = remold(base, key, "get", "/api/v1/records?object=person&limit=100" + (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""));
+    const page = remold(base, key, "get", path + (cursor ? "&cursor=" + encodeURIComponent(cursor) : ""));
     records = records.concat(page.records);
     cursor = page.cursor;
   } while (cursor);
@@ -100,7 +108,8 @@ function readMessages(emails, since, until, late, cfg) {
   return { messages: out, timedOut: late() };
 }
 
-function remold(base, key, method, path, body, idempotencyKey) {
+// Returns null, having posted nothing, when a rate-limit wait would outlast the run's time left.
+function remold(base, key, method, path, body, idempotencyKey, left) {
   for (let attempt = 0; ; attempt++) {
     const headers = { Authorization: "Bearer " + key };
     if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
@@ -108,7 +117,13 @@ function remold(base, key, method, path, body, idempotencyKey) {
     if (body) { params.contentType = "application/json"; params.payload = JSON.stringify(body); }
     const response = UrlFetchApp.fetch(base + path, params), status = response.getResponseCode(), text = response.getContentText();
     if (status >= 200 && status < 300) return JSON.parse(text);
-    if (status === 429 && attempt < SYNC.retries) { Utilities.sleep(1000 * (Number(headerOf(response, "retry-after")) || 30)); continue; }
+    if (status === 429 && attempt < SYNC.retries) {
+      const wait = 1000 * (Number(headerOf(response, "retry-after")) || 30);
+      // Apps Script kills a run at six minutes; stopping here lets the next run continue cleanly.
+      if (left && wait > left()) return null;
+      Utilities.sleep(wait);
+      continue;
+    }
     let error = {};
     try { error = JSON.parse(text).error || {}; } catch (ignored) { /* not JSON */ }
     throw new Error("Remold refused " + method.toUpperCase() + " " + path.split("?")[0] + ": " + status + " " + (error.code || "") + ": " + (error.message || ""));

@@ -74,7 +74,18 @@ function planPosts(messages, people, owners) {
   return posts;
 }
 
-// Reruns overlap the last watermark a little, for mail Gmail indexed late; idempotency keys make the overlap free.
+// Activities Remold already holds from Gmail, keyed like the posts: "gmail:<message id>:<person id>".
+// Idempotency-Keys last 24 hours, so reruns over older mail rely on this instead.
+function loggedKeys(records) {
+  const keys = {};
+  records.forEach(function (record) {
+    const values = record.values || {}, about = values.about && values.about.id;
+    if (/^gmail:/.test(values.source || "") && about) keys[values.source + ":" + about] = true;
+  });
+  return keys;
+}
+
+// Reruns overlap the last watermark a little, for mail Gmail indexed late; loggedKeys makes the overlap free.
 // Nothing older than the lookback is read, even after a long pause.
 function startFrom(watermark, now, lookbackDays, overlapMs) {
   const mark = Number(watermark), floor = now - lookbackDays * 86400000;

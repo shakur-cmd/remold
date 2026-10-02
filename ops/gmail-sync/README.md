@@ -24,6 +24,8 @@ minutes, once.
    - `REMOLD_BASE_URL`: the base URL from step 1, without a trailing slash.
    - `REMOLD_KEY`: the key from step 1.
    - Optional `LOOKBACK_DAYS`: how far back it ever reads (default 90).
+   - Optional `WINDOW_DAYS`: how many days of mail it reads at a time (default
+     14). It halves this itself when one window does not fit in a run.
    - Optional `OWNER_EMAILS`: other addresses of yours, comma separated, if they
      are not Gmail aliases ("send mail as") of this account.
 6. In the editor pick `syncGmail` and press **Run**. Google asks you to
@@ -36,19 +38,27 @@ minutes, once.
 
 ## How it behaves
 
-- Reruns are safe: each post carries an `Idempotency-Key` of
-  `gmail:<message id>:<person id>`, so Remold never creates the same Activity
-  twice, even after you replace the key. Deleting such an Activity in Remold
-  keeps it deleted.
+- Reruns are safe: before posting a window it reads that window's Activities
+  back from Remold and skips any email already logged for that person (source
+  `gmail:<message id>`). Each post also carries an `Idempotency-Key` of
+  `gmail:<message id>:<person id>`, which Remold honours for 24 hours per key,
+  so a retried request never lands twice. An email Activity you delete in
+  Remold comes back only if a later run reads that day again (the one-hour
+  overlap, or after you delete `WATERMARK`).
 - It reads Gmail in windows of `WINDOW_DAYS` (default 14), oldest first, until
-  the run's five minutes are used, so a long first backlog spreads over a few
+  the run's 270 seconds are used, so a long first backlog spreads over a few
   runs. If one window cannot be read in a run, it halves `WINDOW_DAYS` itself.
-- Script Property `WATERMARK` records how far it got. It moves only after the
-  posts it covers went through. Delete it to re-read the last `LOOKBACK_DAYS`
-  (for example after adding many people); nothing is duplicated.
+- Script Property `WATERMARK` records how far it got. It is saved after each
+  window whose posts all went through, so a run that fails or is stopped keeps
+  the windows it finished. Delete it to re-read the last `LOOKBACK_DAYS` (for
+  example after adding many people); nothing is duplicated.
 - Any refusal from Remold (a 4xx other than rate limiting, or a 5xx) stops the
-  run, leaves `WATERMARK` alone, writes `LAST_ERROR`, and fails the execution,
-  which makes Google email you. Rate limits are waited out.
+  run, keeps `WATERMARK` at the last finished window, writes `LAST_ERROR`, and
+  fails the execution, which makes Google email you. Rate limits are waited out
+  only while the wait fits in the run's 270 seconds; a longer one ends the run
+  early and the next run carries on.
+- Your own addresses are never searched for: mail to yourself is not contact,
+  even if you are a person in Remold.
 - Mail you sent counts as contact with everyone it went to; mail you received
   counts only for its sender. Drafts and chats are skipped.
 - To stop: delete the trigger, or revoke the key in Remold Settings → Agents.
