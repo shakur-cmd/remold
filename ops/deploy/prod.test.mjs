@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { checkBundle, deployCommands, readTarget, releasable, requireDeployKey, rollbackFloor } from './prod.mjs';
+import { checkBundle, deletionGate, deployCommands, readTarget, releasable, requireDeployKey, rollbackFloor } from './prod.mjs';
 
 const live = { convexUrl: 'https://nautical-viper-899.convex.cloud', workosClientId: 'client_01TESTVALUE', workosRedirectUri: 'https://app.remoldcrm.com/callback', authSessionMode: 'staging-live' };
 const temp = t => { const dir = mkdtempSync(join(tmpdir(), 'remold-deploy-test-')); t.after(() => rmSync(dir, { recursive: true, force: true })); return dir; };
@@ -84,4 +84,11 @@ test('a bundle aimed at any deployment but the target is refused', t => {
 
 test('deploy pushes Convex functions before the frontend that calls them', () => {
   assert.deepEqual(deployCommands().map(command => command.slice(0, 4).join(' ')), ['pnpm exec convex deploy', 'pnpm dlx wrangler@4.138.0 deploy']);
+});
+
+test('the rollback deletion gate refuses a backup it cannot read', t => {
+  const root = new URL('../..', import.meta.url).pathname, target = JSON.parse(execFileSync('git', ['show', 'HEAD:ops/release/notes.json'], { cwd: root, encoding: 'utf8' })).rollbackTarget;
+  assert.throws(() => deletionGate(root, target, join(temp(t), 'no-such.zip')), /cannot read the orgs table/);
+  const notZip = join(temp(t), 'broken.zip'); writeFileSync(notZip, 'not a zip');
+  assert.throws(() => deletionGate(root, target, notZip), /cannot read the orgs table/);
 });

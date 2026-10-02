@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { anyApi } from "convex/server";
 import schema from "./schema";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
+import { agentFor, api, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
+import { internal } from "./_generated/api";
 import { canonical, MAX_ROWS } from "./workspace";
 import { principalFor } from "./authority/grants";
 
@@ -46,6 +47,8 @@ async function joinAs(a: any, client: any, role: "admin" | "member") {
 }
 const exportOf = (client: any, orgId: any): Promise<any> => client.query(api.workspace.exportAll, { orgId });
 
+// convex-test simulates 15,000-row reads and writes in memory; these two need more than the default 15 s.
+const HEAVY = 60_000;
 const ownerOnly = { data: { code: "FORBIDDEN" } };
 const refused = (why: RegExp) => ({ data: { code: "VALIDATION", message: expect.stringMatching(why) } });
 afterEach(() => { vi.useRealTimers(); });
@@ -92,10 +95,11 @@ describe("full workspace export", () => {
     await expect(a.client.mutation(api.workspace.confirmDelete, { orgId: a.orgId, confirmName: "A Org", sha256: before.sha256 })).rejects.toMatchObject(ownerOnly);
   });
 
-  it("exports and re-imports a workspace exactly at the size limit and refuses one row more", async () => {
+  it("exports and re-imports a workspace exactly at the size limit; above it, deletion needs DELETE WITHOUT EXPORT", async () => {
     const a = await userAndOrg("A");
     const note = await objectFields(a.client, a.orgId, "note");
     const small = await exportOf(a.client, a.orgId);
+    expect(MAX_ROWS).toBe(15000);
     const room = MAX_ROWS - small.objects.length - small.fields.length;
     const add = (n: number) => a.t.run(async (ctx: any) => { const user = (await ctx.db.query("users").first())._id; for (let i = 0; i < n; i++) await ctx.db.insert("records", { orgId: a.orgId, objectId: note.object._id, values: { [note.fields.body._id]: `n${i}` }, title: `n${i}`, createdBy: user, updatedAt: 0 }); });
     await add(room);
@@ -104,10 +108,43 @@ describe("full workspace export", () => {
     const fresh = await a.client.mutation(api.orgs.create, { name: "Copy" });
     await a.client.mutation(api.workspace.importAll, { orgId: fresh, data: full });
     expect((await exportOf(a.client, fresh)).records).toHaveLength(room);
+    // The phrase is refused while an export is still possible.
+    await expect(a.client.mutation(api.workspace.confirmDelete, { orgId: a.orgId, confirmName: "A Org", withoutExport: "DELETE WITHOUT EXPORT" })).rejects.toMatchObject(refused(/export it first/));
     await add(1);
-    await expect(exportOf(a.client, a.orgId)).rejects.toMatchObject(refused(/larger than one file/));
-    await expect(a.client.mutation(api.workspace.importAll, { orgId: await a.client.mutation(api.orgs.create, { name: "Too big" }), data: { ...full, records: [...full.records, { ...full.records[0], id: "extra" }] } })).rejects.toMatchObject(refused(/larger than one file/));
+    await expect(exportOf(a.client, a.orgId)).rejects.toMatchObject(refused(/more than 15,000 rows/));
+    await expect(a.client.mutation(api.workspace.importAll, { orgId: await a.client.mutation(api.orgs.create, { name: "Too big" }), data: { ...full, records: [...full.records, { ...full.records[0], id: "extra" }] } })).rejects.toMatchObject(refused(/more than 15,000 rows/));
+    for (const withoutExport of ["delete without export", "DELETE"]) await expect(a.client.mutation(api.workspace.confirmDelete, { orgId: a.orgId, confirmName: "A Org", withoutExport })).rejects.toMatchObject(refused(/DELETE WITHOUT EXPORT/));
+    await expect(a.client.mutation(api.workspace.confirmDelete, { orgId: a.orgId, confirmName: "A org", withoutExport: "DELETE WITHOUT EXPORT" })).rejects.toMatchObject(refused(/name exactly/));
+    vi.useFakeTimers();
+    await a.client.mutation(api.workspace.confirmDelete, { orgId: a.orgId, confirmName: "A Org", withoutExport: "DELETE WITHOUT EXPORT" });
+    await expect(a.client.query(api.orgs.get, { orgId: a.orgId })).rejects.toMatchObject(ownerOnly);
+    await a.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect(await a.t.run(async (ctx: any) => (await ctx.db.query("records").collect()).filter((r: any) => r.orgId === a.orgId).length)).toBe(0);
+  }, HEAVY);
+
+  it("counts relation values toward the limit on import too", async () => {
+    const a = await filled("A");
+    const data = await exportOf(a.client, a.orgId);
+    data.records.find((r: any) => r.values.title === "A first").values.blockedBy = Array(MAX_ROWS).fill(a.t2);
+    const fresh = await a.client.mutation(api.orgs.create, { name: "Fresh" });
+    await expect(a.client.mutation(api.workspace.importAll, { orgId: fresh, data })).rejects.toMatchObject(refused(/more than 15,000 rows/));
   });
+
+  it("exports and restores a realistic workspace of 3,000 people with their history", async () => {
+    const a = await userAndOrg("A");
+    const person = await objectFields(a.client, a.orgId, "person"), company = await objectFields(a.client, a.orgId, "company");
+    await bulk(a.t, a.orgId, async (apply) => {
+      const companies = [];
+      for (let i = 0; i < 50; i++) companies.push((await apply({ action: "create", objectId: company.object._id, values: { [company.fields.name._id]: `Company ${i}` } })).recordId);
+      for (let i = 0; i < 3000; i++) await apply({ action: "create", objectId: person.object._id, values: { [person.fields.name._id]: `Person ${i}`, [person.fields.email._id]: `p${i}@example.invalid`, [person.fields.company._id]: companies[i % 50] } });
+    });
+    const data = await exportOf(a.client, a.orgId);
+    expect(data.records).toHaveLength(3050);
+    expect(data.events).toHaveLength(3050);
+    const fresh = await a.client.mutation(api.orgs.create, { name: "A Org" });
+    await a.client.mutation(api.workspace.importAll, { orgId: fresh, data });
+    expect(modIds(await exportOf(a.client, fresh))).toEqual(modIds(data));
+  }, HEAVY);
 });
 
 describe("workspace import", () => {
@@ -123,6 +160,11 @@ describe("workspace import", () => {
     const ann = again.records.find((r: any) => r.values.name === "A Ann");
     const read: any = await a.client.query(api.records.get, { orgId: fresh, recordId: ann.id });
     expect(read.record.values[person.fields.company._id]).toBe(again.records.find((r: any) => r.values.name === "A Acme").id);
+    const links = (orgId: any) => a.t.run(async (ctx: any) => (await ctx.db.query("links").collect()).filter((l: any) => l.orgId === orgId).length);
+    expect(await links(a.orgId)).toBe(1);
+    expect(await links(fresh)).toBe(1);
+    const second = again.records.find((r: any) => r.values.title === "A second");
+    expect((await a.client.query(api.records.related, { orgId: fresh, recordId: second.id, fieldId: (await objectFields(a.client, fresh, "task")).fields.blockedBy._id, paginationOpts: { cursor: null, numItems: 10 } })).page.map((r: any) => r.title)).toEqual(["A first"]);
     const history = await a.client.query(api.events.forRecord, { orgId: fresh, recordId: ann.id });
     expect(history.map((e: any) => [e.action, e.actorName])).toEqual([["update", "A"], ["create", "A"]]);
   });
@@ -301,6 +343,8 @@ describe("workspace deletion", () => {
     // Background work re-derives its principal and is refused too.
     const ownerId = (await a.client.query(api.users.me, {}))!._id;
     await expect(a.t.run((ctx: any) => principalFor(ctx, a.orgId, { kind: "user", id: ownerId }))).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
+    // A principal read before the deletion started is refused when it is re-checked at the write.
+    await expect(bulk(a.t, a.orgId, async (apply) => { await apply({ action: "update", recordId: a.ann, values: { [a.person.fields.phone._id]: "3" } }); })).rejects.toMatchObject({ data: { code: "FORBIDDEN", message: "Workspace no longer exists" } });
     await a.t.finishAllScheduledFunctions(vi.runAllTimers);
   });
 
@@ -338,5 +382,42 @@ describe("workspace deletion", () => {
     expect(afterA.usersAll).toBe(beforeA.usersAll);
     expect(await counts(a.t, orgB)).toEqual({ ...beforeB, integrationPagesAll: beforeB.integrationPagesAll - 1 });
     expect((await b.query(api.records.search, { orgId: orgB, text: "B secret" })).length).toBe(1);
+  });
+
+  it("deletes the children of every parent, even past the first hundred parents", async () => {
+    const a = await filled("A");
+    await seedEverywhere(a.t, a.orgId);
+    await a.t.run(async (ctx: any) => {
+      const orgId = a.orgId, connectionId = (await ctx.db.query("integrationConnections").collect()).find((c: any) => c.orgId === orgId)._id;
+      for (let i = 0; i < 150; i++) {
+        const late = i >= 140;
+        const cursorId = await ctx.db.insert("integrationCursors", { orgId, connectionId, resource: `r${i}`, checkpoint: 0, traversal: "t", nextPage: 0, complete: false });
+        const bindingId = await ctx.db.insert("integrationBindings", { orgId, connectionId, provider: "p", environment: "test", account: "a", kind: "k", externalId: `e${i}`, connected: true });
+        const targetId = await ctx.db.insert("safetyTargets", { orgId, bindingId, documentRef: `d${i}`, providerRef: "pr", kind: "payment", currency: "usd", paidMinor: 0, refundedMinor: 0, pendingRefundMinor: 0, cancelled: false, generation: 0, startedAt: 1, complete: false, providerPendingMinor: 0 });
+        if (!late) continue;
+        await ctx.db.insert("integrationPages", { cursorId, traversal: "t", page: 0, digest: "d" });
+        await ctx.db.insert("integrationLookups", { orgId, connectionId, cursorId, resource: "r", traversal: "t", pageCount: 0, digest: "d", completedAt: 1 });
+        await ctx.db.insert("integrationCallbacks", { orgId, bindingId, eventId: `ev${i}`, digest: "d", receivedAt: 1 });
+        await ctx.db.insert("integrationObservations", { orgId, bindingId, version: 1, state: "s", observedAt: 1 });
+        await ctx.db.insert("integrationReceipts", { orgId, targetId, provider: "p", environment: "test", account: "a", kind: "refund", receipt: { receiptId: `r${i}`, sourceRef: "s", status: "pending", amountMinor: 1, currency: "usd" } });
+      }
+    });
+    vi.useFakeTimers();
+    await a.client.mutation(api.workspace.confirmDelete, { orgId: a.orgId, confirmName: "A Org", sha256: (await exportOf(a.client, a.orgId)).sha256 });
+    await a.t.finishAllScheduledFunctions(vi.runAllTimers);
+    const left = await counts(a.t, a.orgId);
+    for (const name of [...orgTables, "orgs"]) expect(left[name], name).toBe(0);
+    expect(left.integrationPagesAll).toBe(0);
+  });
+
+  it("resumes a deletion whose purge chain stopped", async () => {
+    const a = await filled("A");
+    vi.useFakeTimers();
+    // A workspace marked for deletion with no purge scheduled, as after a purge step that threw.
+    await a.t.run(async (ctx: any) => ctx.db.patch(a.orgId, { deletingAt: Date.now() }));
+    await a.t.mutation(internal.workspace.resumeDeletions, {});
+    await a.t.finishAllScheduledFunctions(vi.runAllTimers);
+    const left = await counts(a.t, a.orgId);
+    for (const name of [...orgTables, "orgs"]) expect(left[name], name).toBe(0);
   });
 });

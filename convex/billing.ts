@@ -29,7 +29,7 @@ export const checkout = action({ args: { orgId: v.id("orgs") }, handler: async (
   const config = billingConfig() ?? fail("UNSUPPORTED", "Billing is off");
   await ctx.runQuery(internal.billing.owner, { orgId });
   const back = `${config.appUrl}/o/${orgId}/settings`;
-  const body = new URLSearchParams({ mode: "subscription", "line_items[0][price]": config.price, "line_items[0][quantity]": "1", client_reference_id: orgId, "metadata[orgId]": orgId, "subscription_data[metadata][orgId]": orgId, success_url: `${back}?billing=done`, cancel_url: back });
+  const body = new URLSearchParams({ mode: "subscription", "line_items[0][price]": config.price, "line_items[0][quantity]": "1", client_reference_id: orgId, "metadata[orgId]": orgId, "subscription_data[metadata][orgId]": orgId, "metadata[price]": config.price, success_url: `${back}?billing=done`, cancel_url: back });
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", { method: "POST", headers: { authorization: `Bearer ${config.key}`, "content-type": "application/x-www-form-urlencoded" }, body: body.toString() });
   const session = await response.json().catch(() => null) as { url?: string } | null;
   if (!response.ok || !session?.url) fail("UNSUPPORTED", "Stripe did not open a checkout session");
@@ -48,11 +48,14 @@ export async function verifySignature(body: string, header: string | null, secre
 
 const fromStripe: Record<string, Status> = { active: "active", trialing: "active", past_due: "past_due", unpaid: "past_due", incomplete: "past_due", paused: "past_due", canceled: "canceled", incomplete_expired: "canceled" };
 type Change = { orgId: string; eventId: string; type: string; status: Status; customerId?: string; subscriptionId?: string; eventAt: number };
-export function billingChange(event: any): Change | null {
+export function billingChange(event: any, price: string): Change | null {
   const object = event?.data?.object ?? {}, eventAt = Number(event?.created), eventId = event?.id, type = event?.type;
   if (!Number.isFinite(eventAt) || typeof eventId !== "string" || typeof type !== "string") return null;
   const ids = (customerId: unknown, subscriptionId: unknown) => ({ ...(typeof customerId === "string" ? { customerId } : {}), ...(typeof subscriptionId === "string" ? { subscriptionId } : {}) });
   if (type === "checkout.session.completed") {
+    // Only a paid subscription Checkout opened by billing.checkout counts. Its metadata, set by us, names
+    // the configured price; a payment link on the same account can carry a client_reference_id but not that.
+    if (object.mode !== "subscription" || object.payment_status !== "paid" || object.metadata?.price !== price) return null;
     const orgId = object.client_reference_id ?? object.metadata?.orgId;
     return typeof orgId === "string" ? { orgId, eventId, type, status: "active", eventAt, ...ids(object.customer, object.subscription) } : null;
   }
@@ -84,7 +87,7 @@ export const webhook = httpAction(async (ctx, request) => {
   const event = JSON.parse(body);
   // Webhook secrets look the same in both modes, so the event itself must say test mode.
   if (event.livemode !== false) return new Response("Live events are refused", { status: 400 });
-  const change = billingChange(event);
+  const change = billingChange(event, config.price);
   if (change) await ctx.runMutation(internal.billing.apply, change);
   return new Response(null, { status: 200 });
 });

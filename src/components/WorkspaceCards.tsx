@@ -38,8 +38,10 @@ function download(data: unknown, name: string) {
   URL.revokeObjectURL(url);
 }
 
-// Delete stays off until the name is typed exactly and something shaped like the export's sha256 is pasted.
-export const canDelete = (orgName: string, typed: string, hash: string) => typed === orgName && /^[0-9a-f]{64}$/i.test(hash.trim());
+// Delete stays off until the name is typed exactly and the export's sha256 is pasted, or, for a
+// workspace too large to export, the exact phrase.
+const NO_EXPORT = "DELETE WITHOUT EXPORT";
+export const canDelete = (orgName: string, typed: string, proof: string) => typed === orgName && (/^[0-9a-f]{64}$/i.test(proof.trim()) || proof === NO_EXPORT);
 
 export function DataCard({ org }: { org: Doc<"orgs"> }) {
   const convex = useConvex(), importAll = useMutation(api.workspace.importAll), confirmDelete = useMutation(api.workspace.confirmDelete);
@@ -61,9 +63,9 @@ export function DataCard({ org }: { org: Doc<"orgs"> }) {
           </label>
         </div>
         {exported && <p className="break-all text-muted-foreground">Export sha256: <code>{exported}</code></p>}
-        <form className="grid gap-2 border-t pt-4" onSubmit={(e) => { e.preventDefault(); void run(async () => { await confirmDelete({ orgId: org._id, confirmName, sha256: hash }); navigate("/"); }, "Workspace deleted"); }}>
+        <form className="grid gap-2 border-t pt-4" onSubmit={(e) => { e.preventDefault(); void run(async () => { await confirmDelete({ orgId: org._id, confirmName, ...(hash === NO_EXPORT ? { withoutExport: hash } : { sha256: hash }) }); navigate("/"); }, "Workspace deleted"); }}>
           <p className="font-medium text-destructive">Delete this workspace</p>
-          <p className="text-muted-foreground">First export the workspace and keep the file. Then type <span className="font-medium text-foreground">{org.name}</span> and paste the export's sha256 (it is in the file) to prove you hold it. Everything is removed and this cannot be undone.</p>
+          <p className="text-muted-foreground">First export the workspace and keep the file. Then type <span className="font-medium text-foreground">{org.name}</span> and paste the export's sha256 (it is in the file) to prove you hold it. A workspace over 15,000 rows cannot be exported here: type {NO_EXPORT} in that box instead, or ask us for an export first. Everything is removed and this cannot be undone.</p>
           <Input value={confirmName} onChange={(e) => setConfirmName(e.target.value)} placeholder="Workspace name" aria-label="Workspace name to confirm deletion" />
           <div className="flex gap-2">
             <Input value={hash} onChange={(e) => setHash(e.target.value)} placeholder="Export sha256" aria-label="Export sha256 to confirm deletion" />

@@ -17,7 +17,7 @@ export function Terms() {
   return (
     <Page title="Terms of use">
       <p>Remold is a small CRM made and run by CodeMyVibe. By using it you agree to these terms.</p>
-      <p><strong>Your data is yours.</strong> You can export your whole workspace as one file at any time, and an owner can delete the workspace at any time. We do not sell your data or use it for anything except running Remold for you.</p>
+      <p><strong>Your data is yours.</strong> An owner can export the whole workspace as one file at any time, for workspaces up to 15,000 rows (records, history and settings together); larger workspaces are exported by request. An owner can delete the workspace at any time. We do not sell your data or use it for anything except running Remold for you.</p>
       <p><strong>Use it fairly.</strong> Do not use Remold to break the law, send spam, or get into other people's workspaces. We may suspend a workspace that does, and we will tell you why.</p>
       <p><strong>Paying.</strong> If you subscribe, the price is shown before you pay and billing runs through Stripe. You can cancel any time by emailing us.</p>
       <p><strong>No promises beyond care.</strong> We work to keep Remold running and your data safe, but it is provided as is. Keep your own export if the data matters to you. Our liability is limited to what you paid us in the last twelve months.</p>
@@ -33,7 +33,7 @@ export function Privacy() {
       <p><strong>What we keep.</strong> Your name and email from sign-in, and whatever you and your team put into your workspace: records, fields, notes and their change history.</p>
       <p><strong>Where it lives.</strong> Workspace data is stored with Convex in the United States. Sign-in is handled by WorkOS. Emails Remold sends, such as reminders, go through Resend. If you subscribe, payments are handled by Stripe; we never see your card number. The app itself is served by Cloudflare.</p>
       <p><strong>Who sees it.</strong> Only the people and agents your workspace lets in. We look at workspace data only to fix a problem you report or when the law requires it.</p>
-      <p><strong>Your choices.</strong> An owner can export the whole workspace at any time, and can delete it at any time from Settings. Deletion removes the workspace's data from Remold; any backup copies are removed as they expire.</p>
+      <p><strong>Your choices.</strong> An owner can export the whole workspace from Settings at any time, for workspaces up to 15,000 rows; larger workspaces are exported by request. An owner can delete the workspace at any time. Deletion removes the workspace's data from Remold; any backup copies are removed as they expire. Your sign-in identity (name and email) is kept, because it may belong to other workspaces; ask us and we will remove it.</p>
       <p><strong>Cookies.</strong> Only what sign-in needs. No advertising or tracking cookies.</p>
     </Page>
   );

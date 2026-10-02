@@ -25,6 +25,11 @@ describe("terms and privacy", () => {
     expect(at("/o/x/today")).toContain("signed-in app");
   });
 
+  it("both pages say honestly how large an export can be and what deletion keeps", () => {
+    for (const path of ["/terms", "/privacy"]) expect(at(path)).toMatch(/15,000 rows.*larger workspaces.*by request/s);
+    expect(at("/privacy")).toMatch(/sign-in identity/);
+  });
+
   it("the sign-in page links to both", () => {
     const html = renderToStaticMarkup(<MemoryRouter><SignInPage /></MemoryRouter>);
     expect(html).toContain('href="/terms"');

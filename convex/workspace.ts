@@ -15,17 +15,19 @@ import { pauseWork } from "./integrations/lifecycle";
 // Import restores it in one mutation, all or nothing. Deletion needs the export's sha256 back,
 // which proves the owner holds a copy of exactly what is about to be removed.
 const FORMAT = "remold.workspace", VERSION = 1;
-// Objects + fields + records + events + relation values. Keeps one export inside a query's read
-// limits and one import well inside a mutation's write limits.
-export const MAX_ROWS = 4000;
-const MAX_BYTES = 4_000_000;
+// Objects + fields + records + events + relation values, in both export and import. Convex documents a
+// per-function limit of 16,384 documents and 8 MiB read; this leaves headroom under both.
+export const MAX_ROWS = 15000;
+const MAX_BYTES = 7 * 1024 * 1024;
+const NO_EXPORT = "DELETE WITHOUT EXPORT";
 const TYPES = ["text", "number", "select", "date", "boolean", "lookup", "links"] as const;
 type Row = Record<string, any>;
 const defined = (row: Row) => Object.fromEntries(Object.entries(row).filter(([, value]) => value !== undefined));
 // The sha256 covers the export without its sha256 field, as JSON with keys sorted at every level,
 // so anyone can recompute it from the file whatever order a tool writes keys in.
 export const canonical = (value: unknown): string => Array.isArray(value) ? `[${value.map(canonical).join(",")}]` : value && typeof value === "object" ? `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical((value as Row)[k])}`).join(",")}}` : JSON.stringify(value);
-const tooBig = (what: string) => fail("VALIDATION", `${what} is larger than one file can hold (${MAX_ROWS} rows or ${MAX_BYTES / 1e6} MB). Ask shakur@codemyvibe.com for a staged export.`);
+const tooBig = (what: string) => fail("VALIDATION", `${what} has more than 15,000 rows or 7 MiB, more than one file can hold. Larger workspaces are exported by request: shakur@codemyvibe.com.`);
+const links = (fieldType: (object: string, key: string) => string | undefined, records: { object: string; values: Row }[]) => records.reduce((n, r) => n + Object.entries(r.values ?? {}).reduce((m, [key, value]) => m + (fieldType(r.object, key) === "links" && Array.isArray(value) ? value.length : 0), 0), 0);
 
 async function requireOwner(ctx: QueryCtx | MutationCtx, orgId: Id<"orgs">) {
   const principal = await requireMember(ctx, orgId, "owner");
@@ -78,7 +80,8 @@ function validate(data: any) {
   const is = { string: (x: unknown): x is string => typeof x === "string", number: (x: unknown): x is number => typeof x === "number" && Number.isFinite(x), boolean: (x: unknown): x is boolean => typeof x === "boolean", object: (x: unknown): x is Row => !!x && typeof x === "object" && !Array.isArray(x) };
   if (!is.object(data) || data.format !== FORMAT || data.version !== VERSION) bad(`expected a ${FORMAT} export, version ${VERSION}`);
   if (![data.objects, data.fields, data.records, data.events].every(Array.isArray)) bad("objects, fields, records and events must be lists");
-  if (JSON.stringify(data).length > MAX_BYTES * 1.1 || data.objects.length + data.fields.length + data.records.length + data.events.length > MAX_ROWS) tooBig("This file");
+  const types = new Map<string, string>(data.fields.map((f: Row) => [`${f?.object}:${f?.key}`, f?.type]));
+  if (JSON.stringify(data).length > MAX_BYTES || data.objects.length + data.fields.length + data.records.length + data.events.length + links((o, k) => types.get(`${o}:${k}`), data.records.filter(is.object) as any) > MAX_ROWS) tooBig("This file");
   const only = (row: unknown, what: string, keys: string[]) => { if (!is.object(row)) bad(`${what} is not an object`); for (const key of Object.keys(row as Row)) if (!keys.includes(key)) bad(`${what} has unknown property "${key}"`); return row as Row; };
   const unique = (seen: Set<string>, id: unknown, what: string) => { if (!is.string(id) || !id) bad(`${what} has no id`); if (seen.has(id as string)) bad(`duplicate ${what} "${id}"`); seen.add(id as string); };
   const validKey = (key: unknown, what: string) => { if (!is.string(key) || !/^[a-z][a-zA-Z0-9]*$/.test(key)) bad(`${what} has an invalid key`); };
@@ -184,27 +187,30 @@ export const importAll = mutation({ args: { orgId: v.id("orgs"), data: v.any() }
 } });
 
 // Step two of deletion. The owner already holds the export: its sha256 must match the workspace as it
-// is now, so a change after the export means exporting again. One small write; the purge does the rest.
-export const confirmDelete = mutation({ args: { orgId: v.id("orgs"), confirmName: v.string(), sha256: v.string() }, handler: async (ctx, { orgId, confirmName, sha256: held }) => {
-  const { org, sha256: current } = await snapshot(ctx, orgId);
-  if (current !== held.trim().toLowerCase()) fail("VALIDATION", "That sha256 is not the current export of this workspace; export again");
+// is now, so a change after the export means exporting again. A workspace too large to export can be
+// deleted only with the typed phrase instead. One small write; the purge does the rest.
+export const confirmDelete = mutation({ args: { orgId: v.id("orgs"), confirmName: v.string(), sha256: v.optional(v.string()), withoutExport: v.optional(v.string()) }, handler: async (ctx, { orgId, confirmName, sha256: held, withoutExport }) => {
+  const { org } = await requireOwner(ctx, orgId);
+  if (withoutExport !== undefined) {
+    if (withoutExport !== NO_EXPORT) fail("VALIDATION", `Type ${NO_EXPORT} exactly to delete without an export`);
+    if (await snapshot(ctx, orgId).then(() => true, (error) => { if (/more than 15,000 rows/.test(error?.data?.message ?? "")) return false; throw error; })) fail("VALIDATION", "This workspace can be exported; export it first and confirm with the export's sha256");
+  } else if ((await snapshot(ctx, orgId)).sha256 !== held?.trim().toLowerCase()) fail("VALIDATION", "That sha256 is not the current export of this workspace; export again");
   if (org.name !== confirmName) fail("VALIDATION", "Type the workspace name exactly to delete it");
   await ctx.db.patch(orgId, { deletingAt: Date.now() });
   await pauseWork(ctx, orgId);
   await ctx.scheduler.runAfter(0, internal.workspace.purge, { orgId });
 } });
 
-// Every table holding workspace rows, children before the parents they are found through.
+// Every table holding workspace rows, children before the parents they are found through. A child step
+// walks every parent, so no parent is deleted while it still has children.
 // workspace.test.ts derives the list of orgId tables from the schema and checks each one empties.
-type Find = (ctx: MutationCtx, orgId: Id<"orgs">, n: number) => Promise<{ _id: string }[]>;
-const byOrg = (table: string, index: string, field = "orgId"): Find => (ctx, orgId, n) => (ctx.db.query(table as any) as any).withIndex(index, (q: any) => q.eq(field, orgId)).take(n);
-const under = (parents: Find, table: string, index: string, field: string): Find => async (ctx, orgId, n) => {
-  const out: { _id: string }[] = [];
-  for (const parent of await parents(ctx, orgId, 100)) { if (out.length >= n) break; out.push(...await (ctx.db.query(table as any) as any).withIndex(index, (q: any) => q.eq(field, parent._id)).take(n - out.length)); }
-  return out;
+type Rows = (ctx: MutationCtx, orgId: Id<"orgs">) => AsyncIterable<{ _id: string }>;
+const byOrg = (table: string, index: string, field = "orgId"): Rows => (ctx, orgId) => (ctx.db.query(table as any) as any).withIndex(index, (q: any) => q.eq(field, orgId));
+const under = (parents: Rows, table: string, index: string, field: string): Rows => async function* (ctx, orgId) {
+  for await (const parent of parents(ctx, orgId)) yield* (ctx.db.query(table as any) as any).withIndex(index, (q: any) => q.eq(field, parent._id));
 };
 const connections = byOrg("integrationConnections", "by_org"), cursors = under(connections, "integrationCursors", "by_resource", "connectionId"), bindings = byOrg("integrationBindings", "by_org");
-const purgeOrder: Find[] = [
+const purgeOrder: Rows[] = [
   byOrg("members", "by_org_user"), byOrg("capabilityGrants", "by_agent"), byOrg("agents", "by_org"), byOrg("invites", "by_org"),
   under(cursors, "integrationPages", "by_page", "cursorId"), under(byOrg("safetyTargets", "by_org"), "integrationReceipts", "by_target", "targetId"),
   byOrg("safetyTargets", "by_org"), under(cursors, "integrationLookups", "by_traversal", "cursorId"), cursors,
@@ -218,12 +224,18 @@ export const BATCH = 200;
 export const purge = internalMutation({ args: { orgId: v.id("orgs") }, handler: async (ctx, { orgId }) => {
   const org = await ctx.db.get(orgId);
   if (!org?.deletingAt) return;
-  for (const find of purgeOrder) {
-    const rows = await find(ctx, orgId, BATCH);
+  for (const step of purgeOrder) {
+    const rows: { _id: string }[] = [];
+    for await (const row of step(ctx, orgId)) if (rows.push(row) >= BATCH) break;
     if (!rows.length) continue;
     for (const row of rows) await ctx.db.delete(row._id as any);
     await ctx.scheduler.runAfter(0, internal.workspace.purge, { orgId });
     return;
   }
   await ctx.db.delete(orgId);
+} });
+
+// A purge step that throws ends its chain; the hourly cron starts a fresh one for any unfinished deletion.
+export const resumeDeletions = internalMutation({ args: {}, handler: async (ctx) => {
+  for await (const org of ctx.db.query("orgs")) if (org.deletingAt) await ctx.scheduler.runAfter(0, internal.workspace.purge, { orgId: org._id });
 } });

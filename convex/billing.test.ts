@@ -12,6 +12,9 @@ const deliver = (t: any, event: unknown, signature?: (body: string) => string) =
 };
 const subscription = (orgId: string, status: string, created: number, type = "customer.subscription.updated") => ({ id: `evt_${created}`, type, created, livemode: false, data: { object: { id: "sub_1", customer: "cus_1", status, metadata: { orgId } } } });
 
+// What Stripe sends for a paid subscription Checkout opened by billing.checkout.
+const paidSession = (orgId: string, subscription: string) => ({ mode: "subscription", payment_status: "paid", client_reference_id: orgId, customer: "cus_1", subscription, metadata: { orgId, price: "price_from_env" } });
+
 let stripe: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   stripe = vi.fn(async () => new Response(JSON.stringify({ id: "cs_test_1", url: "https://checkout.stripe.com/c/pay/cs_test_1" }), { status: 200 }));
@@ -48,7 +51,7 @@ describe("subscription billing (Stripe test mode only)", () => {
     expect(url).toBe("https://api.stripe.com/v1/checkout/sessions");
     expect((init.headers as Record<string, string>).authorization).toBe("Bearer sk_test_stub");
     const form = new URLSearchParams(init.body as string);
-    expect(Object.fromEntries(form)).toMatchObject({ mode: "subscription", "line_items[0][price]": "price_from_env", "line_items[0][quantity]": "1", client_reference_id: a.orgId, "subscription_data[metadata][orgId]": a.orgId, success_url: expect.stringContaining(`https://app.example.invalid/o/${a.orgId}/settings`) });
+    expect(Object.fromEntries(form)).toMatchObject({ mode: "subscription", "line_items[0][price]": "price_from_env", "line_items[0][quantity]": "1", client_reference_id: a.orgId, "subscription_data[metadata][orgId]": a.orgId, "metadata[price]": "price_from_env", success_url: expect.stringContaining(`https://app.example.invalid/o/${a.orgId}/settings`) });
     const b = a.t.withIdentity({ tokenIdentifier: "clerk|B", name: "B" });
     await b.mutation(api.users.store, {});
     const invite = await a.client.mutation(api.invites.create, { orgId: a.orgId, role: "admin" });
@@ -71,7 +74,7 @@ describe("subscription billing (Stripe test mode only)", () => {
     expect((await deliver(a.t, subscription(a.orgId, "active", now), (body) => signed(body, now - 3600))).status).toBe(400);
     expect((await deliver(a.t, { ...subscription(a.orgId, "active", now), livemode: true }, signed)).status).toBe(400);
     expect(await status()).toBeNull();
-    const completed = { id: "evt_c", type: "checkout.session.completed", created: now, livemode: false, data: { object: { client_reference_id: a.orgId, customer: "cus_1", subscription: "sub_1", metadata: {} } } };
+    const completed = { id: "evt_c", type: "checkout.session.completed", created: now, livemode: false, data: { object: paidSession(a.orgId, "sub_1") } };
     expect((await deliver(a.t, completed, signed)).status).toBe(200);
     expect(await status()).toBe("active");
     expect((await deliver(a.t, subscription(a.orgId, "past_due", now + 10), signed)).status).toBe(200);
@@ -89,7 +92,7 @@ describe("subscription billing (Stripe test mode only)", () => {
     const a = await userAndOrg("A");
     env(testEnv);
     const now = Math.floor(Date.now() / 1000);
-    const event = (id: string, type: string, sub: string, status: string, created = now) => ({ id, type, created, livemode: false, data: { object: type === "checkout.session.completed" ? { client_reference_id: a.orgId, customer: "cus_1", subscription: sub } : { id: sub, customer: "cus_1", status, metadata: { orgId: a.orgId } } } });
+    const event = (id: string, type: string, sub: string, status: string, created = now) => ({ id, type, created, livemode: false, data: { object: type === "checkout.session.completed" ? paidSession(a.orgId, sub) : { id: sub, customer: "cus_1", status, metadata: { orgId: a.orgId } } } });
     const status = async () => (await a.client.query(api.billing.status, { orgId: a.orgId })).status;
     const log = () => a.t.run(async (ctx: any) => (await ctx.db.query("billingEvents").collect()).map((e: any) => [e.eventId, e.from ?? null, e.to ?? null]));
     // Same second: active, then canceled, then a replay of the first. Order is (created, event id).
@@ -105,5 +108,25 @@ describe("subscription billing (Stripe test mode only)", () => {
     await deliver(a.t, event("evt_h", "customer.subscription.updated", "sub_2", "past_due", now + 200), signed);
     await deliver(a.t, event("evt_g", "customer.subscription.updated", "sub_2", "active", now + 200), signed);
     expect(await status()).toBe("past_due");
+  });
+
+  it("activates only from a paid subscription Checkout for the configured price, and ignores a workspace being deleted", async () => {
+    const a = await userAndOrg("A");
+    env(testEnv);
+    const now = Math.floor(Date.now() / 1000);
+    const status = async () => (await a.client.query(api.billing.status, { orgId: a.orgId })).status;
+    const session = (id: string, change: object) => ({ id, type: "checkout.session.completed", created: now, livemode: false, data: { object: { ...paidSession(a.orgId, "sub_1"), ...change } } });
+    for (const [id, change] of [["evt_1", { mode: "payment" }], ["evt_2", { payment_status: "unpaid" }], ["evt_3", { metadata: { orgId: a.orgId, price: "price_other" } }], ["evt_4", { metadata: { orgId: a.orgId } }]] as const) {
+      expect((await deliver(a.t, session(id, change), signed)).status).toBe(200);
+      expect(await status(), id).toBeNull();
+    }
+    await a.t.run(async (ctx: any) => ctx.db.patch(a.orgId, { deletingAt: Date.now() }));
+    await deliver(a.t, session("evt_5", {}), signed);
+    const after = await a.t.run(async (ctx: any) => ({ org: await ctx.db.get(a.orgId), rows: (await ctx.db.query("billingEvents").collect()).length }));
+    expect(after.org.billing).toBeUndefined();
+    expect(after.rows).toBe(0);
+    await a.t.run(async (ctx: any) => ctx.db.patch(a.orgId, { deletingAt: undefined }));
+    await deliver(a.t, session("evt_6", {}), signed);
+    expect(await status()).toBe("active");
   });
 });
