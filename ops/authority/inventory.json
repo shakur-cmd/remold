@@ -2071,5 +2071,186 @@
     "readonly": "not-a-write",
     "masks": "no-record-data",
     "proof": "Callback, adapter, REST and ops logs reveal no secrets"
+  },
+  {
+    "id": "workspace:definitions",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:page",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:exportAll",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Export is refused to an owner with hidden fields or record scopes"
+  },
+  {
+    "id": "workspace:importDefinitions",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "refuses a workspace that already has records, and refuses non-owners"
+  },
+  {
+    "id": "workspace:importRecords",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "refuses a workspace that already has records, and refuses non-owners"
+  },
+  {
+    "id": "workspace:importValues",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "refuses a workspace that already has records, and refuses non-owners"
+  },
+  {
+    "id": "workspace:importEvents",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "refuses a workspace that already has records, and refuses non-owners"
+  },
+  {
+    "id": "workspace:importFinish",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "refuses a workspace that already has records, and refuses non-owners"
+  },
+  {
+    "id": "workspace:importAll",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "refuses a workspace that already has records, and refuses non-owners"
+  },
+  {
+    "id": "workspace:beginDelete",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+  },
+  {
+    "id": "workspace:remove",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "projected",
+    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+  },
+  {
+    "id": "workspace:purge",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+  },
+  {
+    "id": "scheduled workspace:purge",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "removes every row of the workspace in batches and leaves the other workspace untouched"
+  },
+  {
+    "id": "billing:status",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "stays off unless REMOLD_BILLING=test with test keys"
+  },
+  {
+    "id": "billing:owner",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "opens a subscription Checkout for the owner with the price from the environment"
+  },
+  {
+    "id": "billing:checkout",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "opens a subscription Checkout for the owner with the price from the environment",
+    "reason": "Stripe test mode only; writes nothing in the workspace"
+  },
+  {
+    "id": "billing:apply",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "sets the workspace access flag only from correctly signed, fresh webhook events"
+  },
+  {
+    "id": "billing:webhook",
+    "kind": "httpaction",
+    "visibility": "http",
+    "writes": true,
+    "principal": "human",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "sets the workspace access flag only from correctly signed, fresh webhook events"
   }
 ]

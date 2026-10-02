@@ -7,6 +7,7 @@ import { route as integrationRoute } from "./integrations/http";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { recordResponse, validProbe } from "./telemetryHttp";
+import { webhook as billingWebhook } from "./billing";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -84,4 +85,5 @@ const route = httpAction(async (ctx,request) => {
 router.route({ pathPrefix: "/api/v1/", method: "GET", handler: route });
 router.route({ pathPrefix: "/api/v1/", method: "POST", handler: route });
 router.route({ pathPrefix: "/api/integrations/v1/", method: "POST", handler: integrationRoute });
+router.route({ path: "/billing/stripe", method: "POST", handler: billingWebhook });
 export default router;

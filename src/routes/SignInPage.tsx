@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useIdentity } from "@/lib/identity";
+import { LegalLinks } from "@/routes/Legal";
 
 export function SignInPage() {
   const identity = useIdentity();
@@ -27,6 +28,7 @@ export function SignInPage() {
         <Button variant="link" className="h-auto p-0" disabled={pending || identity.isLoading} onClick={() => void start(true)}>Create an account</Button>
       </p>
       {error && <p role="alert" className="text-sm text-destructive">Sign-in could not start. Try again.</p>}
+      <LegalLinks />
     </div>
   );
 }

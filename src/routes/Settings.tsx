@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
+import { BillingCard, DataCard } from "@/components/WorkspaceCards";
 import { attempt } from "@/lib/errors";
 import { toKey } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
@@ -26,6 +27,8 @@ export function Settings() {
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
+      <BillingCard org={org} owner={role === "owner"} />
+      {role === "owner" && <DataCard org={org} />}
     </div>
   );
 }

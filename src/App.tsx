@@ -1,7 +1,8 @@
 import { useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
+import type { ConvexReactClient } from "convex/react";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
-import { useIdentity } from "@/lib/identity";
+import { IdentityProvider, useIdentity } from "@/lib/identity";
 import { api } from "../convex/_generated/api";
 import { Toaster } from "@/components/ui/sonner";
 import { Loading } from "@/components/Loading";
@@ -16,6 +17,18 @@ import { Today } from "@/routes/Today";
 import { InvitePage } from "@/routes/InvitePage";
 import { CapturePage } from "@/routes/CapturePage";
 import { Suggestions } from "@/routes/Suggestions";
+import { Privacy, Terms } from "@/routes/Legal";
+
+// Terms and privacy are public, so they render without the sign-in provider.
+export function Shell({ client }: { client: ConvexReactClient }) {
+  return (
+    <Routes>
+      <Route path="terms" element={<Terms />} />
+      <Route path="privacy" element={<Privacy />} />
+      <Route path="*" element={<IdentityProvider client={client}><App /></IdentityProvider>} />
+    </Routes>
+  );
+}
 
 export default function App() {
   return (

@@ -19,6 +19,7 @@ import type * as authority_pending from "../authority/pending.js";
 import type * as authority_policies from "../authority/policies.js";
 import type * as authority_readonly from "../authority/readonly.js";
 import type * as authority_reads from "../authority/reads.js";
+import type * as billing from "../billing.js";
 import type * as capture from "../capture.js";
 import type * as crons from "../crons.js";
 import type * as csv from "../csv.js";
@@ -69,6 +70,7 @@ import type * as telemetry from "../telemetry.js";
 import type * as telemetryHttp from "../telemetryHttp.js";
 import type * as today from "../today.js";
 import type * as users from "../users.js";
+import type * as workspace from "../workspace.js";
 
 import type {
   ApiFromModules,
@@ -88,6 +90,7 @@ declare const fullApi: ApiFromModules<{
   "authority/policies": typeof authority_policies;
   "authority/readonly": typeof authority_readonly;
   "authority/reads": typeof authority_reads;
+  billing: typeof billing;
   capture: typeof capture;
   crons: typeof crons;
   csv: typeof csv;
@@ -138,6 +141,7 @@ declare const fullApi: ApiFromModules<{
   telemetryHttp: typeof telemetryHttp;
   today: typeof today;
   users: typeof users;
+  workspace: typeof workspace;
 }>;
 
 /**
