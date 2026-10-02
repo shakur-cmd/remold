@@ -1,3 +1,4 @@
+declare const process: { env: Record<string, string | undefined> };
 import { pauseWork } from './integrations/lifecycle';
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";

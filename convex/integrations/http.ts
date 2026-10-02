@@ -1,3 +1,4 @@
+declare const process: { env: Record<string, string | undefined> };
 import { httpAction } from '../_generated/server';
 import { makeFunctionReference } from 'convex/server';
 import { argumentsConform } from '../lib/shape';
