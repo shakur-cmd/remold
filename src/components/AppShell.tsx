@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { useQuery } from "convex/react";
 import { cn } from "cn";
 import { LogOut, Menu } from "lucide-react";
@@ -70,6 +70,10 @@ export function AppShell({ org, orgs, objects, children }: Props) {
 function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"objects">[]; onNavigate: () => void }) {
   const pending = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
   const identity = useIdentity();
+  const location = useLocation();
+  const posts = objects.find((object) => object.key === "post");
+  // The social calendar is the Posts list in calendar view, so only one of the two is lit.
+  const onCalendar = !!posts && location.pathname === `/o/${org._id}/${posts.key}` && new URLSearchParams(location.search).get("view") === "calendar";
   const link = ({ isActive }: { isActive: boolean }) =>
     cn(
       "relative flex h-8 items-center rounded-md px-3 text-sm",
@@ -92,9 +96,14 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
           {pending > 0 && <span className="ml-auto rounded-md bg-primary px-1.5 text-xs font-medium text-primary-foreground tabular-nums">{pending}</span>}
         </>,
       )}
+      {posts && (
+        <NavLink to={`/o/${org._id}/${posts.key}?view=calendar`} className={() => link({ isActive: onCalendar })} onClick={onNavigate}>
+          Social calendar
+        </NavLink>
+      )}
       <div className="mt-4 mb-1 px-3 text-xs text-muted-foreground">Records</div>
       {objects.map((object) => (
-        <NavLink key={object._id} to={`/o/${org._id}/${object.key}`} className={link} onClick={onNavigate}>
+        <NavLink key={object._id} to={`/o/${org._id}/${object.key}`} className={({ isActive }) => link({ isActive: isActive && !(object === posts && onCalendar) })} onClick={onNavigate}>
           {object.labelPlural}
         </NavLink>
       ))}

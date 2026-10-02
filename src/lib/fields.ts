@@ -25,6 +25,9 @@ export const dateToInput = (ms: unknown, field?: Field) => {
 };
 export const inputToDate = (value: string, field?: Field) => (!value ? null : field?.withTime ? new Date(value).getTime() : Date.parse(`${value}T00:00:00Z`));
 
+// The viewer's local date, encoded as UTC midnight like plain date fields.
+export const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
+
 // The local day a date falls on, encoded as UTC midnight like plain dates and "today".
 export const localDay = (field: Field | undefined, ms: number) => {
   if (allDay(field, ms)) return ms;
@@ -35,7 +38,7 @@ export const localDay = (field: Field | undefined, ms: number) => {
 export const optionLabel = (field: Field, id: unknown) =>
   field.options?.find((option) => option.id === id)?.label ?? String(id ?? "");
 
-export const isLongText = (field: Field) => field.type === "text" && (field.key === "body" || field.key === "notes");
+export const isLongText = (field: Field) => field.type === "text" && (field.key === "body" || field.key === "notes" || field.key === "text");
 
 // Standard contact fields become one-tap actions: call, email, open the site.
 export function contactHref(field: Field, value: unknown): string | undefined {
@@ -43,6 +46,7 @@ export function contactHref(field: Field, value: unknown): string | undefined {
   const text = value.trim();
   if (field.key === "phone") return `tel:${text.replace(/[^\d+]/g, "")}`;
   if (field.key === "email") return `mailto:${text}`;
+  if (field.key === "mediaLink" || field.key === "publishedLink") return /^https?:\/\//i.test(text) ? text : undefined;
   if (field.key === "domain" || field.key === "website" || field.key === "linkedin") return /^https?:\/\//i.test(text) ? text : `https://${text}`;
   return undefined;
 }

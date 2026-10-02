@@ -34,7 +34,7 @@ export async function daily(ctx: QueryCtx, principal: Principal, until: number, 
     tasks: (await Promise.all(tasks.slice(0, 50).map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null),
     dealKey: deal && canReadObject(principal, deal.object) ? deal.object.key : null,
     quiet: (await Promise.all(quiet.map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null),
-    post: post && planned && posts.length ? { objectKey: post.object.key, plannedFieldId: planned._id, plannedField: planned } : null,
+    post: post && planned && posts.length ? { objectKey: post.object.key, plannedFieldId: planned._id, plannedField: planned, statusField: status ?? null } : null,
     posts: (await Promise.all(posts.map(r => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null),
   };
 }

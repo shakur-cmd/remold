@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useOutletContext, useParams, useSearchParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Columns3, Plus, Rows3 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarDays, Columns3, Plus, Rows3 } from "lucide-react";
 import { cn } from "cn";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Board } from "@/components/Board";
+import { Calendar } from "@/components/Calendar";
 import { CsvTools } from "@/components/CsvTools";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
@@ -40,8 +41,8 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   const [open, setOpen] = useState(false);
   const [params, setParams] = useSearchParams();
   const [firstPage, setFirstPage] = useState<Id<"fields">[] | null>(null);
-  const board = params.get("view") === "board";
-  const { results, status, loadMore } = usePaginatedQuery(api.records.list, board ? "skip" : { orgId, objectId, sort, filter }, { initialNumItems: 50 });
+  const board = params.get("view") === "board", calendar = params.get("view") === "calendar";
+  const { results, status, loadMore } = usePaginatedQuery(api.records.list, board || calendar ? "skip" : { orgId, objectId, sort, filter }, { initialNumItems: 50 });
 
   if (!detail) return <Loading />;
   const { object, fields } = detail;
@@ -52,8 +53,9 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   // Chosen once from the first page, so the header does not shift on Load more or while editing.
   const used = firstPage ?? candidates.filter((f) => f.type === "boolean" || results.some((r) => !isEmpty(r.values[f._id]))).map((f) => f._id);
   const columns = (used.length ? candidates.filter((f) => used.includes(f._id)) : candidates).slice(0, 6);
-  if (!firstPage && status !== "LoadingFirstPage" && !board) setFirstPage(used);
+  if (!firstPage && status !== "LoadingFirstPage" && !board && !calendar) setFirstPage(used);
   const groupBy = selectFields[0];
+  const dated = fields.some((f) => f.type === "date" && isSlotted(f) && !f.retired);
 
   function toggleSort(fieldId: Id<"fields">) {
     setSort((current) =>
@@ -66,17 +68,24 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-semibold tracking-tight">{object.labelPlural}</h1>
         <div className="ml-auto flex items-center gap-2">
-          {groupBy && (
+          {(groupBy || dated) && (
             <div className="flex rounded-md border bg-card p-0.5">
-              <Button variant={board ? "ghost" : "secondary"} size="icon-sm" aria-label="Table view" onClick={() => setParams({}, { replace: true })}>
+              <Button variant={board || calendar ? "ghost" : "secondary"} size="icon-sm" aria-label="Table view" onClick={() => setParams({}, { replace: true })}>
                 <Rows3 />
               </Button>
-              <Button variant={board ? "secondary" : "ghost"} size="icon-sm" aria-label={`Board by ${groupBy.label}`} onClick={() => setParams({ view: "board" }, { replace: true })}>
-                <Columns3 />
-              </Button>
+              {groupBy && (
+                <Button variant={board ? "secondary" : "ghost"} size="icon-sm" aria-label={`Board by ${groupBy.label}`} onClick={() => setParams({ view: "board" }, { replace: true })}>
+                  <Columns3 />
+                </Button>
+              )}
+              {dated && (
+                <Button variant={calendar ? "secondary" : "ghost"} size="icon-sm" aria-label="Calendar view" onClick={() => setParams({ view: "calendar" }, { replace: true })}>
+                  <CalendarDays />
+                </Button>
+              )}
             </div>
           )}
-          {!board && selectFields.map((field) => (
+          {!board && !calendar && selectFields.map((field) => (
             <Select
               key={field._id}
               value={filter?.fieldId === field._id ? filter.value : "all"}
@@ -127,7 +136,9 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
         </div>
       </div>
 
-      {board && groupBy ? (
+      {calendar && dated ? (
+        <Calendar orgId={orgId} object={object} fields={fields} />
+      ) : board && groupBy ? (
         <Board orgId={orgId} object={object} groupBy={groupBy} fields={fields} />
       ) : (
         <div className="overflow-x-auto rounded-lg border bg-card">

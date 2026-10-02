@@ -56,3 +56,21 @@ it('the record timeline and history pages keep hidden fields hidden', async () =
   const page = await rest(t, agent.key)('GET', `/api/v1/records/${recordId}/events`);
   expect(page.status).toBe(200); expect(JSON.stringify(page.json)).not.toMatch(/Hidden City/);
 });
+it('the calendar range keeps hidden fields hidden and serves a record-scoped reader only their records', async () => {
+  const { t, client, orgId } = await userAndOrg();
+  const post = await objectFields(client, orgId, 'post'), day = Date.UTC(2026, 9, 5);
+  const make = async (title: string, text: string) => (await client.mutation(api.records.create, { orgId, objectId: post.object._id, values: { [post.fields.title._id]: title, [post.fields.text._id]: text, [post.fields.planned._id]: day } })).recordId;
+  const mine = await make('Visible reel', 'Secret Text'); await make('Other Secret Post', 'more');
+  const range = { orgId, objectId: post.object._id, fieldId: post.fields.planned._id, from: day, to: day + 86400000 };
+  expect(JSON.stringify(await client.query(api.records.inRange, range))).toMatch(/Secret Text/);
+  const memberId = await t.run(async ctx => (await ctx.db.query('members').collect())[0]!._id);
+  await client.mutation(anyApi['authority/policies'].setMember, { orgId, memberId, scopes: [{ objectId: post.object._id, records: [mine], fields: 'all' }], hiddenFieldIds: [post.fields.text._id] });
+  const scoped = await client.query(api.records.inRange, range);
+  expect(scoped.records.map((r: any) => r._id)).toEqual([mine]);
+  expect.soft(JSON.stringify(scoped)).not.toMatch(/Secret/);
+  // A reader who cannot see the date field cannot place records by it.
+  const b = await userAndOrg('B'), bPost = await objectFields(b.client, b.orgId, 'post');
+  const bMember = await b.t.run(async ctx => (await ctx.db.query('members').collect())[0]!._id);
+  await b.client.mutation(anyApi['authority/policies'].setMember, { orgId: b.orgId, memberId: bMember, hiddenFieldIds: [bPost.fields.planned._id] });
+  await expect(b.client.query(api.records.inRange, { orgId: b.orgId, objectId: bPost.object._id, fieldId: bPost.fields.planned._id, from: day, to: day + 86400000 })).rejects.toMatchObject({ data: { code: 'NOT_FOUND' } });
+});

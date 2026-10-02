@@ -1139,6 +1139,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "records:inRange",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the calendar range keeps hidden fields hidden and serves a record-scoped reader only their records"
+  },
+  {
     "id": "records:get",
     "kind": "query",
     "visibility": "public",

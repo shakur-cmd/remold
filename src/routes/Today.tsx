@@ -8,11 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
-import { localDay, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
+import { localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
-
-// Date fields hold UTC midnight of the chosen day, so "today" is encoded the same way.
-const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
 
 export function Today() {
   const { org } = useOutletContext<OrgContext>();
@@ -29,6 +26,9 @@ export function Today() {
     { label: "Today", rows: data.tasks.filter((r) => due(r) === today) },
     { label: "This week", rows: data.tasks.filter((r) => due(r) > today) },
   ];
+  // The server sends posts from a window around today; keep those on the viewer's own day.
+  const planned = (record: Doc<"records">) => (data.post ? (record.values[data.post.plannedFieldId] as number) : 0);
+  const posts = data.post ? data.posts.filter((r) => localDay(data.post!.plannedField, planned(r)) === today) : [];
   const complete = (recordId: Id<"records">) => task?.doneFieldId && attempt(() => update({ orgId: org._id, recordId, values: { [task.doneFieldId!]: true } }), "Done");
 
   return (
@@ -68,6 +68,31 @@ export function Today() {
           )}
         </CardContent>
       </Card>
+      {data.post && posts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Posts today</CardTitle>
+            <CardDescription>
+              Planned for today and not yet published. Post them, then paste the link back.{" "}
+              <Link to={`/o/${org._id}/${data.post.objectKey}?view=calendar`} className="text-primary hover:underline">
+                Social calendar
+              </Link>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-0.5">
+            {posts.map((record) => {
+              const status = data.post!.statusField, value = status && record.values[status._id];
+              return (
+                <Link key={record._id} to={`/o/${org._id}/${data.post!.objectKey}/${record._id}`} className="flex h-8 items-center gap-3 rounded-md px-2 text-sm hover:bg-muted">
+                  <span className="min-w-0 flex-1 truncate">{record.title || "Untitled"}</span>
+                  {status && value !== undefined && <span className="text-xs text-muted-foreground">{optionLabel(status, value)}</span>}
+                  <span className="text-xs text-muted-foreground tabular-nums">{timeOfDay(data.post!.plannedField, planned(record)) ?? "Today"}</span>
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
       {data.quiet.length > 0 && data.dealKey && (
         <Card>
           <CardHeader>
