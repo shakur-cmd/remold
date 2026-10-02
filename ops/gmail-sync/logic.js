@@ -21,10 +21,10 @@ function senderOf(from) {
   return cleanEmail(angle ? angle[1] : addressesIn(text)[0]);
 }
 
-// A Script Property that must be a count of days: "1.5", "1e1", "-3" or "0x10" mean the default.
+// A Script Property that must be a count of days up to ten years: "1.5", "1e1", "-3", "0x10" or "100000000" mean the default.
 function wholeDays(value, fallback) {
   const text = String(value == null ? "" : value).trim();
-  return /^\d+$/.test(text) && Number(text) > 0 ? Number(text) : fallback;
+  return /^\d+$/.test(text) && Number(text) > 0 && Number(text) <= 3650 ? Number(text) : fallback;
 }
 
 function ownerAddresses(user, aliases, extra) {

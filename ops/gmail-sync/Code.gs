@@ -23,14 +23,14 @@ function syncGmail(startedAt, options) {
     // Windows of WINDOW_DAYS, oldest first, until time runs out: a long backlog is read in pieces
     // that each fit a run, and the watermark moves only over pieces whose posts all went through.
     let since = startFrom(watermark, started, wholeDays(props.getProperty("LOOKBACK_DAYS"), cfg.lookbackDays), cfg.overlapMs);
-    let messages = 0, posted = 0, windows = 0, mark = null, complete = false;
+    let messages = 0, posted = 0, windows = 0, mark = null, complete = false, halved = null;
     const first = since, before = Number(watermark) || 0;
     for (;;) {
       const until = Math.min(started, since + windowDays * DAY), read = readMessages(emails, since, until < started ? until : null, late, cfg);
       messages += read.messages.length;
       if (read.timedOut) {
         // Not even one window fit: the next run tries half as many days.
-        if (!windows) { if (windowDays <= 1) throw new Error("Reading one day of Gmail takes longer than a run allows"); props.setProperty("WINDOW_DAYS", String(Math.floor(windowDays / 2))); }
+        if (!windows) { if (windowDays <= 1) throw new Error("Reading one day of Gmail takes longer than a run allows"); halved = Math.floor(windowDays / 2); props.setProperty("WINDOW_DAYS", String(halved)); }
         break;
       }
       let posts = planPosts(read.messages, people, owners);
@@ -56,9 +56,10 @@ function syncGmail(startedAt, options) {
     if (mark !== null) save(mark);
     const summary = { people: emails.reduce(function (n, email) { return n + people[email].length; }, 0), messages: messages, posted: posted, complete: complete, from: new Date(first).toISOString(), through: new Date(Number(props.getProperty("WATERMARK")) || first).toISOString() };
     props.setProperty("LAST_RUN", new Date(started).toISOString() + " " + JSON.stringify(summary));
-    // A run that moved nothing is stuck, and the next one would be too: say so where the owner looks.
+    // A run that moved nothing says so where the owner looks; a halved window may let the next one through, a long rate limit may not.
     const moved = complete || (Number(props.getProperty("WATERMARK")) || 0) > before;
-    props.setProperty("LAST_ERROR", moved ? "" : new Date(started).toISOString() + " No progress: read " + messages + " messages and posted " + posted + "; the watermark stayed at " + summary.through);
+    const stalled = new Date(started).toISOString() + " No progress: read " + messages + " messages and posted " + posted + "; " + (before ? "the watermark stayed at " + new Date(before).toISOString() : "no watermark is saved yet") + (halved ? "; WINDOW_DAYS is now " + halved + " for the next run" : "");
+    props.setProperty("LAST_ERROR", moved ? "" : stalled);
     console.log(JSON.stringify(summary));
     return summary;
   } catch (error) {

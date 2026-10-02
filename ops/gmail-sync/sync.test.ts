@@ -208,8 +208,8 @@ describe("gmail-sync run", () => {
     expect(w.posts().map((c) => c.body.values.about)).toEqual(["p_ada"]);
   });
 
-  for (const raw of ["0", "-3", "1.5", "1e1", "0x10", "+5", "abc", " "]) {
-    it(`reads in default 14-day windows when WINDOW_DAYS is ${JSON.stringify(raw)}: only a positive whole number counts`, () => {
+  for (const raw of ["0", "-3", "1.5", "1e1", "0x10", "+5", "abc", " ", "3651", "100000000", "99999999999999999999"]) {
+    it(`reads in default 14-day windows when WINDOW_DAYS is ${JSON.stringify(raw)}: only a positive whole number up to 3650 counts`, () => {
       // A clock that moves with each search, so a window that never advances runs out of time instead of looping.
       let clock = NOW;
       const w = world({ messages, people, props: { LOOKBACK_DAYS: "30", WINDOW_DAYS: raw }, onSearch: () => { clock += 1000; } });
@@ -218,8 +218,10 @@ describe("gmail-sync run", () => {
     });
   }
 
-  it("reads the default 90-day lookback when LOOKBACK_DAYS is not a positive whole number", () => {
-    for (const raw of ["-5", "2.5", "1e1"]) expect(world({ messages, people, props: { LOOKBACK_DAYS: raw } }).sync(NOW).from).toBe(new Date(NOW - 90 * 86400000).toISOString());
+  it("reads the default 90-day lookback when LOOKBACK_DAYS is not a positive whole number up to 3650", () => {
+    for (const raw of ["-5", "2.5", "1e1", "3651", "100000000", "99999999999999999999"]) expect(world({ messages, people, props: { LOOKBACK_DAYS: raw } }).sync(NOW).from, raw).toBe(new Date(NOW - 90 * 86400000).toISOString());
+    // Ten years is the most it takes.
+    expect(world({ messages, people, props: { LOOKBACK_DAYS: "3650" } }).sync(NOW).from).toBe(new Date(NOW - 3650 * 86400000).toISOString());
   });
 
   it("records LAST_ERROR when a run makes no progress, and clears it once a run moves the watermark", () => {
@@ -228,10 +230,17 @@ describe("gmail-sync run", () => {
     const w = world({ messages, people, props: { WATERMARK: mark, LAST_ERROR: "" }, onSearch: () => { clock += 200000; } });
     expect(w.sync(NOW, { now: () => clock, budgetMs: 150000 })).toMatchObject({ posted: 0, complete: false });
     expect(w.props.WATERMARK).toBe(mark);
-    expect(w.props.LAST_ERROR).toMatch(/^2026-10-02T06:00:00.000Z No progress/);
+    expect(w.props.LAST_ERROR).toBe("2026-10-02T06:00:00.000Z No progress: read 4 messages and posted 0; the watermark stayed at 2026-09-29T00:00:00.000Z; WINDOW_DAYS is now 7 for the next run");
     const stuck = world({ messages, people, onSleep: () => {}, props: { WATERMARK: mark }, respond: () => ({ status: 429, body: { error: { code: "RATE_LIMITED" } }, headers: { "Retry-After": "1000" } }) });
     expect(stuck.sync(NOW)).toMatchObject({ posted: 0, complete: false });
     expect(stuck.props.LAST_ERROR).toMatch(/No progress/);
+    expect(stuck.props.LAST_ERROR).not.toContain("WINDOW_DAYS");
+    // A first run has no watermark to name.
+    let first = NOW;
+    const fresh = world({ messages, people, onSearch: () => { first += 200000; } });
+    fresh.sync(NOW, { now: () => first, budgetMs: 150000 });
+    expect(fresh.props.WATERMARK).toBeUndefined();
+    expect(fresh.props.LAST_ERROR).toBe("2026-10-02T06:00:00.000Z No progress: read 0 messages and posted 0; no watermark is saved yet; WINDOW_DAYS is now 7 for the next run");
     const next = world({ messages, people, props: { WATERMARK: mark, LAST_ERROR: w.props.LAST_ERROR! } });
     next.sync(NOW);
     expect(next.props.LAST_ERROR).toBe("");

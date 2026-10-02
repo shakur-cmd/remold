@@ -26,8 +26,8 @@ minutes, once.
    - Optional `LOOKBACK_DAYS`: how far back it ever reads (default 90).
    - Optional `WINDOW_DAYS`: how many days of mail it reads at a time (default
      14). It halves this itself when one window does not fit in a run.
-     Both day counts must be positive whole numbers like `30`; anything else
-     means the default.
+     Both day counts must be whole numbers from 1 to 3650 (ten years), like
+     `30`; anything else means the default.
    - Optional `OWNER_EMAILS`: other addresses of yours, comma separated, if they
      are not Gmail aliases ("send mail as") of this account.
 6. In the editor pick `syncGmail` and press **Run**. Google asks you to
@@ -61,7 +61,9 @@ minutes, once.
   early and the next run carries on.
 - A run that ends without moving `WATERMARK` (one window too slow to read, or a
   rate limit longer than the run) writes `LAST_ERROR` starting "No progress"
-  without failing; a later run that moves it clears `LAST_ERROR`.
+  without failing. It names the watermark it kept (or says none is saved yet)
+  and, if it halved `WINDOW_DAYS`, the new value. A later run that moves the
+  watermark clears `LAST_ERROR`.
 - Your own addresses are never searched for: mail to yourself is not contact,
   even if you are a person in Remold.
 - Mail you sent counts as contact with everyone it went to; mail you received
