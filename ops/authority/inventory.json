@@ -2352,5 +2352,45 @@
     "readonly": "not-a-write",
     "masks": "no-record-data",
     "proof": "operator-only: scheduled removal of an export file an hour after it was made"
+  },
+  {
+    "id": "workspace:importUploaded",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "reads only an upload the signed-in caller registered, behind the creation gate, and never deletes anyone else's file"
+  },
+  {
+    "id": "workspace:importUpload",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "reads only an upload the signed-in caller registered, behind the creation gate, and never deletes anyone else's file"
+  },
+  {
+    "id": "workspace:dropUpload",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "outside-workspace",
+    "masks": "no-record-data",
+    "proof": "reads only an upload the signed-in caller registered, behind the creation gate, and never deletes anyone else's file"
+  },
+  {
+    "id": "workspace:abortImport",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "operator-only: abort a stuck import by workspace id"
   }
 ]

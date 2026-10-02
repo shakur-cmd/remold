@@ -18,7 +18,12 @@ import { pauseWork } from "./integrations/lifecycle";
 // published; a failed import is purged. Deletion: one marker write, then a scheduled bounded purge.
 const FORMAT = "remold.workspace", VERSION = 1;
 const PAGE = 500, PAGE_BYTES = 4 * 1024 * 1024;
-const WRITES = 300, BATCH_BYTES = 2 * 1024 * 1024;
+const WRITES = 300, BATCH_BYTES = 512 * 1024;
+// Convex refuses more than 4 MiB written per second per deployment. Staged import writes are paced to
+// WRITE_BUDGET, counting each batch twice (a record's indexed values are stored again in its slots).
+const WRITE_BUDGET = 1.5 * 1024 * 1024;
+// An action stops after 10 minutes; a staging workspace older than this has no import left to finish it.
+const STALE_IMPORT_MS = 15 * 60_000;
 const MAX_DEFINITIONS = 1000;
 const DOWNLOAD_MS = 60 * 60_000, EXPORT_FRESH_MS = 24 * 60 * 60_000;
 export const NO_EXPORT = "DELETE WITHOUT EXPORT";
@@ -58,8 +63,8 @@ export const exportBegin = internalMutation({ args: { orgId: v.id("orgs") }, han
   await ctx.db.patch(orgId, { exportingAt: token });
   return token;
 } });
-export const exportEnd = internalMutation({ args: { orgId: v.id("orgs"), token: v.number(), done: v.boolean() }, handler: async (ctx, { orgId, token, done }) => {
-  if (done) await fenced(ctx, orgId, token);
+export const exportEnd = internalMutation({ args: { orgId: v.id("orgs"), token: v.number(), done: v.boolean(), storageId: v.optional(v.id("_storage")) }, handler: async (ctx, { orgId, token, done, storageId }) => {
+  if (done) { const { user } = await fenced(ctx, orgId, token); if (storageId) await ctx.db.insert("workspaceFiles", { storageId, userId: user._id, kind: "export", orgId }); }
   const org = await ctx.db.get(orgId);
   if (org?.exportingAt === token) await ctx.db.patch(orgId, { exportingAt: undefined, ...(done ? { exportedAt: Date.now() } : {}) });
 } });
@@ -98,7 +103,10 @@ export const exportEvents = internalQuery({ args: { orgId: v.id("orgs"), token: 
   };
   return { ...result, page: await Promise.all(result.page.map(async e => defined({ id: e._id, at: e.at ?? e._creationTime, by: await by(e.actor), action: e.action, object: e.objectId, record: e.recordId, before: e.before && keyed(byId, e.before), after: e.after && keyed(byId, e.after), reason: e.reason }))) };
 } });
-export const dropFile = internalMutation({ args: { storageId: v.id("_storage") }, handler: async (ctx, { storageId }) => { await ctx.storage.delete(storageId).catch(() => undefined); } });
+export const dropFile = internalMutation({ args: { storageId: v.id("_storage") }, handler: async (ctx, { storageId }) => {
+  for (const file of await ctx.db.query("workspaceFiles").withIndex("by_storage", q => q.eq("storageId", storageId)).collect()) await ctx.db.delete(file._id);
+  await ctx.storage.delete(storageId).catch(() => undefined);
+} });
 
 // The file lives in Convex storage for an hour; the browser downloads it from the returned URL.
 export const exportAll = action({ args: { orgId: v.id("orgs") }, handler: async (ctx, { orgId }): Promise<{ url: string; storageId: Id<"_storage">; bytes: number; records: number; events: number }> => {
@@ -126,7 +134,7 @@ export const exportAll = action({ args: { orgId: v.id("orgs") }, handler: async 
     }
     push("]}");
     storageId = await ctx.storage.store(new Blob(parts, { type: "application/json" }));
-    await ctx.runMutation(internal.workspace.exportEnd, { orgId, token, done: true });
+    await ctx.runMutation(internal.workspace.exportEnd, { orgId, token, done: true, storageId });
     await ctx.scheduler.runAfter(DOWNLOAD_MS, internal.workspace.dropFile, { storageId });
     return { url: (await ctx.storage.getUrl(storageId))!, storageId, bytes, records, events };
   } catch (error) {
@@ -137,6 +145,20 @@ export const exportAll = action({ args: { orgId: v.id("orgs") }, handler: async 
 } });
 
 // ---- Import ----
+const nap = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+// Spreads `bytes` sent over time so the running total stays at or under bytesPerSecond.
+export function pacer(bytesPerSecond: number, now: () => number = Date.now, sleep: (ms: number) => Promise<void> = nap) {
+  const start = now(); let sent = 0;
+  return async (bytes: number) => { const wait = start + (sent / bytesPerSecond) * 1000 - now(); if (wait > 0) await sleep(wait); sent += bytes; };
+}
+// A refused mutation wrote nothing, so a write-rate or overload refusal is retried with growing waits.
+// Our own errors (ConvexError, with data) are never retried.
+const transient = (error: any) => !error?.data && /Too many writes|TooManyWrites|too many system operations|Too many bytes written/i.test(String(error?.message ?? error));
+export async function withRetry<T>(work: () => Promise<T>, sleep: (ms: number) => Promise<void> = nap, tries = 6): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try { return await work(); } catch (error) { if (attempt >= tries || !transient(error)) throw error; await sleep(1000 * 2 ** attempt); }
+  }
+}
 // Checks the whole document before anything is written; every refusal names its reason.
 function validate(data: any) {
   const bad = (why: string): never => fail("VALIDATION", `Import refused: ${why}`);
@@ -318,7 +340,9 @@ export const importAbort = internalMutation({ args: { orgId: v.id("orgs"), token
 } });
 
 async function stage(ctx: ActionCtx, data: Row, fieldOf: Map<string, Row>) {
-  const start = await ctx.runMutation(internal.workspace.importStart, { name: data.workspace.name.trim(), objects: data.objects, fields: data.fields });
+  const pace = pacer(WRITE_BUDGET);
+  const send = async <T,>(ref: any, args: Row): Promise<T> => { await pace(2 * utf8(JSON.stringify(args))); return withRetry(() => ctx.runMutation(ref, args)); };
+  const start = await send<{ orgId: Id<"orgs">; token: number; objects: Record<string, Id<"objects">>; fields: Record<string, Id<"fields">> }>(internal.workspace.importStart, { name: data.workspace.name.trim(), objects: data.objects, fields: data.fields });
   const { orgId, token, objects, fields } = start, records = new Map<string, Id<"records">>();
   try {
     const { batches } = planImport(data, fieldOf);
@@ -339,26 +363,50 @@ async function stage(ctx: ActionCtx, data: Row, fieldOf: Map<string, Row>) {
     const dropped = new Map<string, string[]>();
     for (const batch of batches) {
       const rows = batch.map(r => { const values = remap(r.object, r.values, false), missing = Object.keys(r.values).filter(key => !(fields[fieldOf.get(`${r.object}:${key}`)!.id]! in values)); if (missing.length) dropped.set(r.id, missing); return defined({ objectId: objects[r.object], ref: r.ref, updatedAt: r.updatedAt, title: title(r), values }); });
-      const ids = await ctx.runMutation(internal.workspace.importRecords, { orgId, token, rows: rows as any });
+      const ids = await send<Id<"records">[]>(internal.workspace.importRecords, { orgId, token, rows });
       batch.forEach((r, i) => records.set(r.id, ids[i]!));
     }
     const fixes = [...dropped].map(([old, keys]) => { const r = byId.get(old)!; return { id: records.get(old)!, values: remap(r.object, Object.fromEntries(keys.map(key => [key, r.values[key]])), true) }; });
-    for (const rows of chunked(fixes, row => utf8(JSON.stringify(row)))) await ctx.runMutation(internal.workspace.importCycles, { orgId, token, rows });
+    for (const rows of chunked(fixes, row => utf8(JSON.stringify(row)))) await send(internal.workspace.importCycles, { orgId, token, rows });
     // History may name records that were deleted before the export.
     const ghosts = new Map<string, string>();
     for (const e of data.events) for (const [old, object] of [[e.record, e.object], ...[e.before, e.after].flatMap((values: Row | null) => Object.entries(values ?? {}).flatMap(([key, value]) => { const f = fieldOf.get(`${e.object}:${key}`)!; return f.type === "lookup" || f.type === "links" ? (Array.isArray(value) ? value : [value]).filter(Boolean).map(id => [id, f.target ?? e.object]) : []; }))] as [string, string][]) if (!records.has(old) && !ghosts.has(old)) ghosts.set(old, object);
-    for (const part of chunked([...ghosts], () => 0)) { const ids = await ctx.runMutation(internal.workspace.importGhosts, { orgId, token, objectIds: part.map(([, object]) => objects[object]!) }); part.forEach(([old], i) => records.set(old, ids[i]!)); }
+    for (const part of chunked([...ghosts], () => 0)) { const ids = await send<Id<"records">[]>(internal.workspace.importGhosts, { orgId, token, objectIds: part.map(([, object]) => objects[object]!) }); part.forEach(([old], i) => records.set(old, ids[i]!)); }
     // In original order, so history pages in the same order as `at`.
     const events = [...data.events].sort((a: Row, b: Row) => a.at - b.at).map((e: Row) => defined({ at: e.at, actor: { name: e.by }, action: e.action, objectId: objects[e.object], recordId: records.get(e.record), before: e.before && remap(e.object, e.before, true), after: e.after && remap(e.object, e.after, true), reason: e.reason }));
-    for (const rows of chunked(events, row => utf8(JSON.stringify(row)))) await ctx.runMutation(internal.workspace.importEvents, { orgId, token, rows });
-    await ctx.runMutation(internal.workspace.importPublish, { orgId, token });
+    for (const rows of chunked(events, row => utf8(JSON.stringify(row)))) await send(internal.workspace.importEvents, { orgId, token, rows });
+    await send(internal.workspace.importPublish, { orgId, token });
     return orgId;
   } catch (error) {
-    await ctx.runMutation(internal.workspace.importAbort, { orgId, token });
+    await send(internal.workspace.importAbort, { orgId, token });
     throw error;
   }
 }
+// The browser registers its upload right after sending it; an export file is registered as one at export.
+export const importUploaded = mutation({ args: { storageId: v.id("_storage") }, handler: async (ctx, { storageId }) => {
+  const { user } = await getPrincipal(ctx);
+  if (!await mayCreate(ctx)) fail("FORBIDDEN", "New organisations are invite-only. Ask an organisation owner for an invite link.");
+  const file = await ctx.db.query("workspaceFiles").withIndex("by_storage", q => q.eq("storageId", storageId)).first();
+  if (file) { if (file.kind === "upload" && file.userId === user._id) return; fail("FORBIDDEN", "That file is not your upload"); }
+  if (!await ctx.db.system.get(storageId)) fail("NOT_FOUND", "Upload the export file first");
+  await ctx.db.insert("workspaceFiles", { storageId, userId: user._id, kind: "upload" });
+} });
+// Sign-in, the creation gate and ownership are checked before the file is read or touched.
+export const importUpload = internalQuery({ args: { storageId: v.id("_storage") }, handler: async (ctx, { storageId }) => {
+  const { user } = await getPrincipal(ctx);
+  if (!await mayCreate(ctx)) fail("FORBIDDEN", "New organisations are invite-only. Ask an organisation owner for an invite link.");
+  const file = await ctx.db.query("workspaceFiles").withIndex("by_storage", q => q.eq("storageId", storageId)).first();
+  if (!file || file.kind !== "upload" || file.userId !== user._id) fail("FORBIDDEN", "Import reads only an export file you uploaded for import");
+  return file._id;
+} });
+export const dropUpload = internalMutation({ args: { fileId: v.id("workspaceFiles") }, handler: async (ctx, { fileId }) => {
+  const file = await ctx.db.get(fileId);
+  if (!file) return;
+  await ctx.db.delete(fileId);
+  await ctx.storage.delete(file.storageId).catch(() => undefined);
+} });
 export const importAll = action({ args: { storageId: v.id("_storage") }, handler: async (ctx, { storageId }): Promise<Id<"orgs">> => {
+  const fileId: Id<"workspaceFiles"> = await ctx.runQuery(internal.workspace.importUpload, { storageId });
   try {
     const blob = (await ctx.storage.get(storageId)) ?? fail("NOT_FOUND", "Upload the export file first");
     if (blob.size > MAX_IMPORT_BYTES()) fail("VALIDATION", `Import refused: the file is larger than ${mb(MAX_IMPORT_BYTES())}. Larger workspaces are imported by request: shakur@codemyvibe.com.`);
@@ -367,7 +415,7 @@ export const importAll = action({ args: { storageId: v.id("_storage") }, handler
     const fieldOf = validate(data), rows = (data as Row).records.length + (data as Row).events.length + (data as Row).records.reduce((n: number, r: Row) => n + Object.entries(r.values).reduce((m, [key, value]) => m + (fieldOf.get(`${r.object}:${key}`)?.type === "links" ? (value as unknown[]).length : 0), 0), 0);
     if (rows > MAX_IMPORT_ROWS()) fail("VALIDATION", `Import refused: the file holds ${rows} records, history entries and links; one import takes up to ${MAX_IMPORT_ROWS()}. Larger workspaces are imported by request: shakur@codemyvibe.com.`);
     return await stage(ctx, data as Row, fieldOf);
-  } finally { await ctx.storage.delete(storageId); }
+  } finally { await ctx.runMutation(internal.workspace.dropUpload, { fileId }); }
 } });
 
 // ---- Deletion ----
@@ -394,7 +442,7 @@ const purgeOrder: Node[] = [
   of("integrationBindings", "by_org", [of("integrationCallbacks", "by_event", undefined, "bindingId"), of("integrationObservations", "by_binding", undefined, "bindingId")]),
   of("integrationConnections", "by_org", [of("integrationCursors", "by_resource", [of("integrationPages", "by_page", undefined, "cursorId"), of("integrationLookups", "by_traversal", undefined, "cursorId")], "connectionId"), of("integrationIntents", "by_logical", undefined, "connectionId")]),
   of("secretReferences", "by_org"), of("consent", "by_recipient"), of("usageBudgets", "by_key", undefined, "key"), of("agentInbox", "by_org_status"), of("suggestions", "by_org_status"),
-  of("authorityAudit", "by_org"), of("opsEvents", "by_org"), of("billingEvents", "by_org"),
+  of("authorityAudit", "by_org"), of("opsEvents", "by_org"), of("billingEvents", "by_org"), of("workspaceFiles", "by_org"),
   of("links", "by_record_any"), of("events", "by_org"), of("records", "by_object"), of("fields", "by_object"), of("objects", "by_org"),
 ];
 // Deletes up to `budget` rows under `key`, children first; a parent goes only once its children are gone.
@@ -402,6 +450,7 @@ async function drain(ctx: MutationCtx, node: Node, key: string, budget: number):
   let deleted = 0;
   for (const row of await (ctx.db.query(node.table as any) as any).withIndex(node.index, (q: any) => q.eq(node.field ?? "orgId", key)).take(budget)) {
     for (const child of node.children ?? []) { deleted += await drain(ctx, child, row._id, budget - deleted); if (deleted >= budget) return deleted; }
+    if (node.table === "workspaceFiles") await ctx.storage.delete(row.storageId).catch(() => undefined);
     await ctx.db.delete(row._id); deleted += 1;
     if (deleted >= budget) return deleted;
   }
@@ -420,7 +469,18 @@ export const purge = internalMutation({ args: { orgId: v.id("orgs"), step: v.opt
   await ctx.db.delete(orgId);
 } });
 
-// A purge step that throws ends its chain; the hourly cron starts a fresh one for any unfinished deletion.
+// Hourly: a purge step that throws ends its chain, so start a fresh one for any unfinished deletion; and a
+// staging workspace older than any import could run (its action died) is deleted the same way.
 export const resumeDeletions = internalMutation({ args: {}, handler: async (ctx) => {
-  for await (const org of ctx.db.query("orgs")) if (org.deletingAt) await ctx.scheduler.runAfter(0, internal.workspace.purge, { orgId: org._id, step: 0 });
+  for await (const org of ctx.db.query("orgs")) {
+    if (!org.deletingAt && org.importingAt && Date.now() - org.importingAt > STALE_IMPORT_MS) await ctx.db.patch(org._id, { deletingAt: Date.now() });
+    if (org.deletingAt || (org.importingAt && Date.now() - org.importingAt > STALE_IMPORT_MS)) await ctx.scheduler.runAfter(0, internal.workspace.purge, { orgId: org._id, step: 0 });
+  }
+} });
+// Operator: abort a stuck import now, by workspace id (pnpm exec convex run workspace:abortImport '{"orgId": ...}').
+export const abortImport = internalMutation({ args: { orgId: v.id("orgs") }, handler: async (ctx, { orgId }) => {
+  const org = await ctx.db.get(orgId);
+  if (!org?.importingAt) fail("VALIDATION", "That workspace is not being imported");
+  await ctx.db.patch(orgId, { deletingAt: org.deletingAt ?? Date.now() });
+  await ctx.scheduler.runAfter(0, internal.workspace.purge, { orgId, step: 0 });
 } });

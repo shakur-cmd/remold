@@ -1,7 +1,7 @@
 // node ops/workspace/limits.mjs: whole-workspace export, import and deletion at realistic sizes on an isolated
 // local Convex backend (loopback, synthetic sign-in, ops/authority/local.mjs), which enforces Convex's real
 // per-function limits. Prints one JSON report and exits non-zero if any check fails.
-// ONLY=roundtrip|large|parents|failure runs one scenario on its own fresh backend (each takes a few minutes).
+// ONLY=roundtrip|large|bigimport|parents|failure runs one scenario on its own fresh backend (each takes a few minutes).
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -22,7 +22,12 @@ await withAuthority(async ({ client, scratch }) => {
   const workspace = async name => owner.mutation('orgs:create', { name });
   const seed = async (orgId, object, total, text = 0, link) => { const ids = []; for (let start = 0; start < total; start += 200) ids.push(...await run(fixture('seed'), { orgId, userId, object, start, count: Math.min(200, total - start), text, ...(link ? { link } : {}) })); return ids; };
   const exported = async orgId => { const result = await owner.action('workspace:exportAll', { orgId }); const text = await (await fetch(result.url)).text(); return { result, text, bytes: Buffer.byteLength(text) }; };
-  const upload = async text => { const url = await owner.mutation('workspace:importUploadUrl', {}); return (await (await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: text })).json()).storageId; };
+  const upload = async text => {
+    const url = await owner.mutation('workspace:importUploadUrl', {}), { storageId } = await (await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: text })).json();
+    // Older code had no upload registration; skipping it there lets this script show that code's failures.
+    await owner.mutation('workspace:importUploaded', { storageId }).catch(error => { if (!/Could not find public function/.test(String(error?.message))) throw error; });
+    return storageId;
+  };
   const gone = async (orgId, seconds = 600) => { const deadline = Date.now() + seconds * 1000; for (;;) { const left = await run(fixture('left'), { orgId }); if (!left.length) return; if (Date.now() > deadline) throw new Error('rows left after purge: ' + left.join(', ')); await new Promise(r => setTimeout(r, 2000)); } };
 
   // 1. Export and import round trip at 10,000 records (100 companies, 9,900 people linked to them).
@@ -52,6 +57,20 @@ await withAuthority(async ({ client, scratch }) => {
   }
 
   // 4. A workspace with 10,000 childless integration parents.
+  // 2b. Import that byte-heavy workspace: the writes must stay under the backend's bytes-per-second limit.
+  if (wanted('bigimport')) {
+    const largeMb = Number(process.env.LARGE_MB ?? 30), name = `Limits import ${largeMb}MB`;
+    const d = await workspace(name);
+    await seed(d, 'company', Math.ceil(3300 * largeMb / 30), 4500);
+    const big = await exported(d);
+    await timed(`import a ${largeMb} MB byte-heavy export into a new workspace, re-export identical apart from ids`, async () => {
+      const orgId = await owner.action('workspace:importAll', { storageId: await upload(big.text) });
+      const again = await exported(orgId);
+      assert.equal(shape(JSON.parse(again.text)), shape(JSON.parse(big.text)));
+      return { mb: +(big.bytes / 1e6).toFixed(1), records: JSON.parse(again.text).records.length };
+    });
+  }
+
   if (wanted('parents')) {
   const c = await workspace('Limits parents');
   for (let i = 0; i < 10000; i += 500) await run(fixture('parents'), { orgId: c, count: 500 });

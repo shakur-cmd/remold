@@ -3,7 +3,7 @@ import { anyApi } from "convex/server";
 import schema from "./schema";
 import { agentFor, api, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
 import { internal } from "./_generated/api";
-import { BATCH, NO_EXPORT, planImport } from "./workspace";
+import { BATCH, NO_EXPORT, pacer, planImport, withRetry } from "./workspace";
 import { principalFor } from "./authority/grants";
 
 // Replaces every id with the order it first appears in, so two exports compare by shape and links, not by id.
@@ -47,7 +47,9 @@ async function joinAs(a: any, client: any, role: "admin" | "member") {
 // Export runs as an action that leaves the file in storage; the tests read it back from there.
 const exportOf = async (t: any, client: any, orgId: any): Promise<any> => { const { storageId } = await client.action(api.workspace.exportAll, { orgId }); return JSON.parse(await t.run(async (ctx: any) => (await ctx.storage.get(storageId)).text())); };
 const upload = (t: any, data: unknown): Promise<any> => t.run((ctx: any) => ctx.storage.store(new Blob([typeof data === "string" ? data : JSON.stringify(data)])));
-const importFile = async (t: any, client: any, data: unknown): Promise<any> => client.action(api.workspace.importAll, { storageId: await upload(t, data) });
+// What the browser does: upload, register the upload as its own, then import it.
+const importFile = async (t: any, client: any, data: unknown): Promise<any> => { const storageId = await upload(t, data); await client.mutation(api.workspace.importUploaded, { storageId }); return client.action(api.workspace.importAll, { storageId }); };
+const fileExists = (t: any, storageId: any) => t.run(async (ctx: any) => (await ctx.storage.get(storageId)) !== null);
 
 // convex-test simulates thousands of rows in memory; the 3,000-person case needs more than the default 15 s.
 const HEAVY = 60_000;
@@ -265,6 +267,65 @@ describe("workspace import", () => {
     for (const name of [...orgTables, "orgs"]) expect(left[name], name).toBe(0);
   });
 
+  it("reads only an upload the signed-in caller registered, behind the creation gate, and never deletes anyone else's file", async () => {
+    const a = await filled("A");
+    const exportFile = (await a.client.action(api.workspace.exportAll, { orgId: a.orgId })).storageId;
+    const data = await exportOf(a.t, a.client, a.orgId);
+    const mine = await upload(a.t, data);
+    await a.client.mutation(api.workspace.importUploaded, { storageId: mine });
+    // Signed out.
+    await expect(a.t.action(api.workspace.importAll, { storageId: mine })).rejects.toMatchObject({ data: { code: "UNAUTHENTICATED" } });
+    // Another signed-in user, with A's upload or A's export file.
+    const b = await second(a.t);
+    await expect(b.action(api.workspace.importAll, { storageId: mine })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    await expect(b.action(api.workspace.importAll, { storageId: exportFile })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    await expect(b.mutation(api.workspace.importUploaded, { storageId: exportFile })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    await expect(b.mutation(api.workspace.importUploaded, { storageId: mine })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    // An export file cannot be imported by id, even by its owner, and an unregistered upload is refused.
+    await expect(a.client.action(api.workspace.importAll, { storageId: exportFile })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    const unregistered = await upload(a.t, data);
+    await expect(a.client.action(api.workspace.importAll, { storageId: unregistered })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    // The creation gate is checked before the file is touched.
+    vi.stubEnv("REMOLD_OPEN_SIGNUP", "0");
+    await expect(a.client.action(api.workspace.importAll, { storageId: mine })).rejects.toMatchObject(ownerOnly);
+    vi.unstubAllEnvs();
+    for (const id of [exportFile, mine, unregistered]) expect(await fileExists(a.t, id)).toBe(true);
+    // The owner's own registered upload imports, and is removed afterwards.
+    await a.client.action(api.workspace.importAll, { storageId: mine });
+    expect(await fileExists(a.t, mine)).toBe(false);
+  });
+
+  it("purges a staging workspace its import left behind once it is older than the action time limit", async () => {
+    const a = await filled("A");
+    const data = await exportOf(a.t, a.client, a.orgId);
+    vi.useFakeTimers();
+    const left = await a.client.mutation(internal.workspace.importStart, { name: "Left behind", objects: data.objects, fields: data.fields });
+    await a.client.mutation(internal.workspace.importRecords, { orgId: left.orgId, token: left.token, rows: [{ objectId: Object.values(left.objects)[0], updatedAt: 0, title: "", values: {} }] });
+    // Within the action time limit the import may still be running: the cron leaves it alone.
+    vi.advanceTimersByTime(9 * 60_000);
+    await a.t.mutation(internal.workspace.resumeDeletions, {});
+    await a.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await counts(a.t, left.orgId)).orgs).toBe(1);
+    expect(((await a.t.run((ctx: any) => ctx.db.get(left.orgId))) as any).deletingAt).toBeUndefined();
+    vi.advanceTimersByTime(7 * 60_000);
+    await a.t.mutation(internal.workspace.resumeDeletions, {});
+    await a.t.finishAllScheduledFunctions(vi.runAllTimers);
+    const after = await counts(a.t, left.orgId);
+    for (const name of [...orgTables, "orgs"]) expect(after[name], name).toBe(0);
+  });
+
+  it("lets an operator abort a stuck import by workspace id, and nothing else", async () => {
+    const a = await filled("A");
+    const data = await exportOf(a.t, a.client, a.orgId);
+    const stuck = await a.client.mutation(internal.workspace.importStart, { name: "Stuck", objects: data.objects, fields: data.fields });
+    await expect(a.t.mutation(internal.workspace.abortImport, { orgId: a.orgId })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+    vi.useFakeTimers();
+    await a.t.mutation(internal.workspace.abortImport, { orgId: stuck.orgId });
+    await a.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await counts(a.t, stuck.orgId)).orgs).toBe(0);
+    expect((await a.client.query(api.orgs.get, { orgId: a.orgId })).name).toBe("A Org");
+  });
+
   it("names history actors as text and never shows another workspace's agent", async () => {
     const a = await filled("A");
     const b = await second(a.t);
@@ -283,7 +344,8 @@ describe("workspace import", () => {
   });
 
   it("keeps imported history in its original order next to later native activity", async () => {
-    vi.useFakeTimers();
+    // Only the clock is fake: the import's pacing still sleeps on real timers.
+    vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(Date.UTC(2026, 0, 1, 10));
     const a = await userAndOrg("A");
     const person = await objectFields(a.client, a.orgId, "person");
@@ -318,6 +380,7 @@ async function seedEverywhere(t: any, orgId: any) {
     await ctx.db.insert("invites", { orgId, token: `tok${orgId}`, role: "member", createdBy: member.userId, expiresAt: Date.now() + 1e9 });
     await ctx.db.insert("authorityAudit", { orgId, actor, action: "test", targetId: "x" });
     await ctx.db.insert("opsEvents", { orgId, actor: { kind: "operator", id: "internal-admin" }, action: "featureFlagChanged", flag: "f", before: false, after: true, reason: "test" });
+    await ctx.db.insert("workspaceFiles", { orgId, userId: member.userId, kind: "export", storageId: await ctx.storage.store(new Blob(["{}"])) });
     await ctx.db.insert("billingEvents", { orgId, eventId: `evt_${orgId}`, type: "customer.subscription.updated", created: 1, to: "active", from: "none" });
     const suggestion = await ctx.db.insert("suggestions", { orgId, agentId, status: "pending", change: { action: "create", objectId: object._id, values: {} }, before: {}, reason: "r" });
     await ctx.db.insert("agentInbox", { orgId, text: "hi", source: "test", from: { kind: "agent", id: agentId }, status: "pending", suggestionId: suggestion });
@@ -406,6 +469,8 @@ describe("workspace deletion", () => {
     // A read-only hold does not block leaving: deletion only removes.
     await a.t.run(async (ctx: any) => ctx.db.patch(a.orgId, { flags: { readonly: true } }));
     const beforeA = await counts(a.t, a.orgId), beforeB = await counts(a.t, orgB);
+    const fileOf = (orgId: any) => a.t.run(async (ctx: any) => (await ctx.db.query("workspaceFiles").collect()).find((f: any) => f.orgId === orgId).storageId);
+    const fileA = await fileOf(a.orgId), fileB = await fileOf(orgB);
     for (const name of orgTables) expect(beforeA[name], `fixture must seed ${name}`).toBeGreaterThan(0);
     vi.useFakeTimers();
     const total = async () => Object.entries(await counts(a.t, a.orgId)).reduce((sum, [name, n]) => name.endsWith("All") ? sum : sum + n, 0);
@@ -423,6 +488,9 @@ describe("workspace deletion", () => {
     expect(afterA.usersAll).toBe(beforeA.usersAll);
     expect(await counts(a.t, orgB)).toEqual({ ...beforeB, integrationPagesAll: beforeB.integrationPagesAll - 1 });
     expect((await b.query(api.records.search, { orgId: orgB, text: "B secret" })).length).toBe(1);
+    // An export file in storage goes with its workspace.
+    expect(await fileExists(a.t, fileA)).toBe(false);
+    expect(await fileExists(a.t, fileB)).toBe(true);
   });
 
   it("deletes the children of every parent, even past the first hundred parents", async () => {
@@ -468,5 +536,31 @@ describe("workspace deletion", () => {
     const before = await counts(a.t, a.orgId);
     await a.t.mutation(internal.workspace.purge, { orgId: a.orgId, step: 0 });
     expect(await counts(a.t, a.orgId)).toEqual(before);
+  });
+});
+
+describe("import write pacing", () => {
+  it("keeps staged writes under the byte budget across steps", async () => {
+    let now = 0; const slept: number[] = [];
+    const pace = pacer(1.5 * 1024 * 1024, () => now, async (ms) => { slept.push(ms); now += ms; });
+    for (let i = 0; i < 10; i++) { await pace(1024 * 1024); now += 50; }
+    // 10 MiB at 1.5 MiB/s takes at least about 6.7 s however fast each step returns.
+    expect(now).toBeGreaterThanOrEqual(6_000);
+    expect(now).toBeLessThan(8_000);
+    expect(slept.length).toBeGreaterThan(0);
+  });
+
+  it("retries a write-rate refusal with growing waits, and passes any other error straight through", async () => {
+    const slept: number[] = []; let calls = 0;
+    const sleep = async (ms: number) => { slept.push(ms); };
+    const flaky = async () => { calls += 1; if (calls < 3) throw new Error("Too many writes per second. Your deployment is limited to 4 MiB bytes written per 1 second."); return "done"; };
+    expect(await withRetry(flaky, sleep)).toBe("done");
+    expect(slept).toEqual([1000, 2000]);
+    const refused = Object.assign(new Error("Import refused"), { data: { code: "VALIDATION" } });
+    slept.length = 0;
+    await expect(withRetry(async () => { throw refused; }, sleep)).rejects.toBe(refused);
+    expect(slept).toEqual([]);
+    await expect(withRetry(async () => { throw new Error("Too many writes per second"); }, sleep)).rejects.toThrow(/Too many writes/);
+    expect(slept.length).toBe(6);
   });
 });

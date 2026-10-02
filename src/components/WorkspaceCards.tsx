@@ -47,7 +47,7 @@ export function deleteArgs(orgId: Id<"orgs">, orgName: string, typed: string, ex
 }
 
 export function DataCard({ org }: { org: Doc<"orgs"> }) {
-  const exportAll = useAction(api.workspace.exportAll), uploadUrl = useMutation(api.workspace.importUploadUrl), importAll = useAction(api.workspace.importAll), confirmDelete = useMutation(api.workspace.confirmDelete);
+  const exportAll = useAction(api.workspace.exportAll), uploadUrl = useMutation(api.workspace.importUploadUrl), uploaded = useMutation(api.workspace.importUploaded), importAll = useAction(api.workspace.importAll), confirmDelete = useMutation(api.workspace.confirmDelete);
   const navigate = useNavigate();
   const [typed, setTyped] = useState(""), [phrase, setPhrase] = useState(""), [exported, setExported] = useState(false), [busy, setBusy] = useState(false);
   const run = async (work: () => Promise<unknown>, done: string) => { setBusy(true); const ok = await attempt(work, done); setBusy(false); return ok; };
@@ -62,7 +62,7 @@ export function DataCard({ org }: { org: Doc<"orgs"> }) {
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" disabled={busy} onClick={() => run(async () => { await save((await exportAll({ orgId: org._id })).url, org.name); setExported(true); }, "Exported")}>Export workspace</Button>
           <label className="inline-flex">
-            <Input type="file" accept="application/json,.json" className="sr-only" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ""; if (file) void run(async () => { const { storageId } = await (await fetch(await uploadUrl(), { method: "POST", headers: { "content-type": "application/json" }, body: file })).json(); navigate(`/o/${await importAll({ storageId })}`); }, "Imported into a new workspace"); }} />
+            <Input type="file" accept="application/json,.json" className="sr-only" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ""; if (file) void run(async () => { const { storageId } = await (await fetch(await uploadUrl(), { method: "POST", headers: { "content-type": "application/json" }, body: file })).json(); await uploaded({ storageId }); navigate(`/o/${await importAll({ storageId })}`); }, "Imported into a new workspace"); }} />
             <span className="inline-flex h-8 cursor-pointer items-center rounded-md border px-3 font-medium hover:bg-accent">Import into a new workspace</span>
           </label>
         </div>
