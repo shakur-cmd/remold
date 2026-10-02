@@ -8,7 +8,7 @@ import { pageRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
 import { visibleInboxItems, visibleSuggestions } from "./authority/pending";
 import { dueTasks, quietDeals } from "./lib/daily";
-import { readable, readableMap, resolveValues } from "./lib/values";
+import { instant, readable, readableMap, resolveValues } from "./lib/values";
 import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex } from "./authority/reads";
 import { writable } from "./authority/readonly";
 import { canSeeInbox, visibleInbox } from "./authority/inbox";
@@ -53,17 +53,18 @@ async function suggestionApi(ctx: any, principal: Principal, suggestion: Doc<"su
 
 export const me = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const [pendingInbox, pendingSuggestions] = await Promise.all([visibleInboxItems(ctx, principal, "pending"), visibleSuggestions(ctx, principal, "pending")]); return { org: { id: principal.org._id, name: principal.org.name }, agent: { id: principal.agent._id, name: principal.agent.name, role: principal.agent.role, grants: principal.agent.grants }, pendingInbox: pendingInbox.length, pendingSuggestions: pendingSuggestions.length }; } });
 export const objects = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect(); return Promise.all(objects.filter(object => canReadObject(principal, object)).sort((a, b) => a.order - b.order).map(async (object) => { const fields = (await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", principal.org._id).eq("objectId", object._id)).collect()).filter((field) => !field.retired && canReadField(principal, object, field)).sort((a, b) => a.order - b.order); return { key: object.key, label: object.label, labelPlural: object.labelPlural, titleField: fields.find((field) => field._id === object.titleFieldId)?.key ?? null, fields: await Promise.all(fields.map(async (field) => ({ key: field.key, label: field.label, type: field.type, ...(field.options ? { options: field.options } : {}), ...(field.targetObjectId ? { target: (await ctx.db.get(field.targetObjectId))?.key } : {}), required: field.required, indexed: !!field.slot }))) }; })); } });
-export const listRecords = internalQuery({ args: { keyHash, object: v.string(), cursor: v.optional(v.string()), limit: v.optional(v.number()), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), filter: v.optional(v.object({ field: v.string(), value: v.any() })) }, handler: async (ctx, args) => {
+export const listRecords = internalQuery({ args: { keyHash, object: v.string(), cursor: v.optional(v.string()), limit: v.optional(v.number()), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), filter: v.optional(v.object({ field: v.string(), value: v.any() })), filters: v.optional(v.array(v.object({ field: v.string(), value: v.any() }))), range: v.optional(v.object({ field: v.string(), from: v.optional(v.string()), to: v.optional(v.string()) })) }, handler: async (ctx, args) => {
   const principal = await requireAgent(ctx, args.keyHash), item = await objectFor(ctx, principal.org._id, args.object), byKey = new Map(item.fields.map((field) => [field.key, field]));
   requireObjectRead(principal, item.object);
-  const sort = args.sort ? { fieldId: byKey.get(args.sort.field)?._id, direction: args.sort.direction } : undefined;
-  const filterField = args.filter ? byKey.get(args.filter.field) : undefined;
-  if ((args.sort && !sort?.fieldId) || (args.filter && !filterField)) fail("NOT_FOUND", "Field not found");
-  if (sort?.fieldId) requireQueryField(principal, item.object, byKey.get(args.sort!.field)!);
-  if (filterField) requireQueryField(principal, item.object, filterField);
-  // Query strings arrive as text; the slot holds the field's real type, so the value is coerced like any agent input.
-  const filter = args.filter && filterField ? { fieldId: filterField._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [filterField.key]: args.filter.value }))[filterField._id] } : undefined;
-  const page = await pageRecords(ctx, principal.org._id, item.object._id, { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 25) || 25, 1), 100) }, sort as any, filter as any, principal);
+  const known = (key: string) => { const field = byKey.get(key); if (!field) fail("NOT_FOUND", "Field not found"); requireQueryField(principal, item.object, field); return field; };
+  const sort = args.sort ? { fieldId: known(args.sort.field)._id, direction: args.sort.direction } : undefined;
+  // Query strings arrive as text; the slot holds the field's real type, so each value is coerced like any agent input.
+  const filters = [];
+  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }))[field._id] }); }
+  // A bare date as the end of a range means through the end of that day (UTC).
+  const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instant(text); if (ms === undefined) fail("VALIDATION", "Range bounds must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
+  const range = args.range ? { fieldId: known(args.range.field)._id, from: bound(args.range.from, false), to: bound(args.range.to, true) } : undefined;
+  const page = await pageRecords(ctx, principal.org._id, item.object._id, { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 25) || 25, 1), 100) }, sort, { filters, range }, principal);
   return { records: await Promise.all(page.page.filter(record => canReadRecord(principal, item.object, record)).map((record) => readable(ctx, principal, record, item.object, item.fields))), cursor: page.isDone ? null : page.continueCursor };
 } });
 

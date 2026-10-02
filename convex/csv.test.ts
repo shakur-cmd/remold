@@ -41,8 +41,8 @@ describe("CSV export", () => {
     const acme = await client.mutation(api.records.create, { orgId, objectId: company.object._id, values: { [company.fields.name._id]: "Acme" } });
     await client.mutation(api.records.create, { orgId, objectId: deal.object._id, values: { [deal.fields.name._id]: "Site", [deal.fields.stage._id]: "won", [deal.fields.closeDate._id]: Date.UTC(2026, 0, 5), [deal.fields.company._id]: acme.recordId } });
     const page = await client.query(api.csv.exportPage, { orgId, objectId: deal.object._id, cursor: null });
-    expect(page.header).toEqual(["Code", "Name", "Amount", "Stage", "Close Date", "Company", "Person"]);
-    expect(page.rows[0].slice(1)).toEqual(["Site", "", "Won", "2026-01-05", "Acme", ""]);
+    expect(page.header).toEqual(["Code", "Name", "Amount", "Stage", "Close Date", "Company", "Person", "Campaign"]);
+    expect(page.rows[0].slice(1)).toEqual(["Site", "", "Won", "2026-01-05", "Acme", "", ""]);
     expect(page.done).toBe(true);
   });
 

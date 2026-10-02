@@ -8,6 +8,7 @@ import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
 import { findReadableByTitle } from "./lib/find";
 import { instant } from "./lib/values";
+import { pageRecords, whereArgs } from "./lib/list";
 import { canReadField, projectRecord, requireObjectRead, canReadRecord, requireQueryField, visibleTitle, listedRecords, pageList, paginateIndex } from "./authority/reads";
 
 const ISO = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
@@ -111,7 +112,7 @@ export const importRows = mutation({
 // One page of an export, already as spreadsheet text: select labels, dates as
 // YYYY-MM-DD (with-time dates as ISO 8601 UTC), linked records by name, several links joined with "; ".
 export const exportPage = query({
-  args: { orgId: v.id("orgs"), objectId: v.id("objects"), cursor: v.union(v.string(), v.null()) },
+  args: { orgId: v.id("orgs"), objectId: v.id("objects"), cursor: v.union(v.string(), v.null()), ...whereArgs },
   handler: async (ctx, args) => {
     const principal = await requireMember(ctx, args.orgId);
     const { object, fields: allFields } = await fieldsOf(ctx, args.orgId, args.objectId);
@@ -119,7 +120,8 @@ export const exportPage = query({
     const fields = allFields.filter(f => canReadField(principal, object, f));
     // A record-scoped reader pages their own list, so hidden rows never shorten a page.
     const listed = await listedRecords(ctx, principal, object);
-    const page = listed ? pageList([...listed].sort((a, b) => a._creationTime - b._creationTime), { cursor: args.cursor, numItems: 200 }) : await paginateIndex(ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)), { cursor: args.cursor, numItems: 200 });
+    // A filtered export reads exactly what the filtered list shows.
+    const page = args.filters?.length || args.range ? await pageRecords(ctx, args.orgId, args.objectId, { cursor: args.cursor, numItems: 200 }, undefined, args, principal) : listed ? pageList([...listed].sort((a, b) => a._creationTime - b._creationTime), { cursor: args.cursor, numItems: 200 }) : await paginateIndex(ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", args.orgId).eq("objectId", args.objectId)), { cursor: args.cursor, numItems: 200 });
     const titles = new Map<string, string>();
     const titleOf = async (id: string) => {
       if (!titles.has(id)) { const normal = ctx.db.normalizeId("records", id); const record = normal ? await ctx.db.get(normal) : null; titles.set(id, record ? await visibleTitle(ctx, principal, record) : ""); }
