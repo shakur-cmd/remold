@@ -176,7 +176,7 @@ ApiInboxItem:  { id, text, source, from: { kind, name }, status, createdAt, reso
 
 - Auth: `Authorization: Bearer rm_...`. Missing or malformed => 401 `{ "error": { "code": "UNAUTHENTICATED", "message": "..." } }`. The action hashes the key (SHA-256 hex, `crypto.subtle` is available in HTTP actions) and passes `keyHash` to the internal function. The plain key never reaches the database layer.
 - JSON in (`Content-Type: application/json`), JSON out. Query parameters for GET. Unknown route => 404 with the same error shape.
-- Error mapping from `ConvexError.data.code`: UNAUTHENTICATED 401, FORBIDDEN 403, NOT_FOUND 404, CONFLICT 409, VALIDATION / UNSUPPORTED / UNINDEXED_FIELD 400. The response body is `{ error: data }` (so `fieldKey` travels). Any other thrown error => 500 `{ error: { code: "INTERNAL", message: "Something went wrong" } }`, never the stack.
+- Error mapping from `ConvexError.data.code`: UNAUTHENTICATED 401, FORBIDDEN 403, NOT_FOUND 404, CONFLICT 409, IDEMPOTENCY_MISMATCH 422, VALIDATION / UNSUPPORTED / UNINDEXED_FIELD 400, AUTHORITY_MIGRATING 503. The response body is `{ error: data }` (so `fieldKey` travels). Any other thrown error => 500 `{ error: { code: "INTERNAL", message: "Something went wrong" } }`, never the stack.
 
 ```
 GET  /api/v1/me
@@ -189,7 +189,8 @@ GET  /api/v1/search?q=atlas&object=company&limit=10
 GET  /api/v1/today
 GET  /api/v1/suggestions?status=pending
 POST /api/v1/suggestions          body { action, object?, record?, values?, reason, inboxId? }   201
-POST /api/v1/changes              body { action, object?, record?, values?, reason }             200 (needs a grant)
+POST /api/v1/changes              body { action, object?, record?, values?, reason }             200 (needs a grant); optional Idempotency-Key header
+POST /api/v1/intake/lead          body { name, email, phone?, company?, message?, source?, campaign? }   201; intake keys only; Idempotency-Key required
 GET  /api/v1/inbox?status=pending
 POST /api/v1/inbox                body { text, source? }   201
 POST /api/v1/inbox/{id}/resolve   body { note?, suggestionId?, recordId? }
@@ -235,3 +236,22 @@ Do not run `convex dev` or `convex deploy`. Do not edit anything under `src/` (t
 ## I2 operational amendment, 2026-09-24
 
 REST v1 POST requests have a first-party Convex token-bucket limit per authenticated agent key: 120 writes per minute, capacity 120. GET requests do not consume this allowance. Exhaustion returns HTTP 429 with `Retry-After` seconds and `{error:{code:"RATE_LIMITED",message,retryAfter}}`, before dispatching the requested write. Revoked or unknown keys still fail authentication. Other keys and workspaces retain independent allowances. This is implemented and verified locally, not yet deployed; evidence is in `evidence/2026-09-24-unified-build/rate-limit-verdict.json`.
+
+## Idempotency and website intake amendment, 2026-10-03
+
+`POST /api/v1/changes` takes an optional `Idempotency-Key` header of 1 to 255 visible ASCII characters (otherwise 400 VALIDATION). A key belongs to the agent key that sent it and is bound to a SHA-256 of the route and the canonical JSON body. For 24 hours after a successful write, the same key with the same body replays the original response without writing again: the stored values are re-projected through the caller's current authority, so a record deleted since is 404, one no longer readable is 403, and fields hidden since are dropped. The same key with a different body is 422 `IDEMPOTENCY_MISMATCH` and writes nothing. A failed request leaves the key unused. After 24 hours the key is forgotten and a repeat writes again. Other agent keys, including a replacement key, have their own keys. Requests without the header always write.
+
+`POST /api/v1/intake/lead` is for a website intake key (Settings, owners only), which holds direct field grants on Person, Company, Opportunity and Note and no read scope. One call, in one transaction, finds the Person by normalized email, then by normalized phone, or creates one; finds or creates the Company by exact name; and creates an Opportunity at stage `new` linked to both and a Note on the Opportunity with the message, source, campaign and the submitted details. A matched Person is only linked, never changed: what the form submitted is kept in the Note alone. When the email and phone match different people, the email's person is linked and the Note flags the phone's owner. The 201 body is `{ opportunity: { id, ref } }`.
+
+| Status | When |
+|---|---|
+| 201 | Lead written, or a replay of the same key and body within 24 hours |
+| 400 | `VALIDATION`: missing `Idempotency-Key`, missing name, invalid email, an over-long field, or a body that is not JSON |
+| 401 | `UNAUTHENTICATED`: missing, unknown or revoked key |
+| 403 | `FORBIDDEN`: a key without the intake field grants (any non-intake key), or the workspace is read only. An intake key gets 403 on every other route |
+| 404 | `NOT_FOUND`: the workspace lacks the Person, Company, Opportunity or Note object, or one of the fields intake writes; also any other `/api/v1/intake/*` path or method |
+| 422 | `IDEMPOTENCY_MISMATCH`: the key was used with a different body |
+| 429 | `RATE_LIMITED` with `Retry-After` seconds and nothing written: 10 per minute per key, 3 per hour per email, or the workspace's daily cap. The operator gets one notice per hour per limit, with no contact data |
+| 503 | `AUTHORITY_MIGRATING` |
+
+The daily cap is `REMOLD_INTAKE_DAILY_CAP` leads per workspace per UTC day. Missing, empty or not a positive whole number means zero: intake answers 429 to every lead until the variable is set.
