@@ -211,4 +211,50 @@ describe("funnels", () => {
     expect(totals).toMatchObject({ partial: true, cap: 4000 });
     expect(totals.groups.find((g: any) => g.value === "new")!.count).toBe(4000);
   }, 60000);
+
+  it("treats an ISO midnight bound like the bare date, on a plain and on a with-time date field", async () => {
+    const f = await funnels(), { client, orgId, task, newDeal } = f;
+    await newDeal("First day", { stage: "new", closeDate: "2026-10-01" });
+    await newDeal("Last day", { stage: "new", closeDate: "2026-10-31" });
+    await newDeal("Day before", { stage: "new", closeDate: "2026-09-30" });
+    for (const [title, due] of [["All-day first", Date.UTC(2026, 9, 1)], ["At midnight", Date.UTC(2026, 9, 1) + 0.5], ["Evening before", "2026-09-30T23:59:00Z"]] as const)
+      await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: title, [task.fields.dueDate._id]: typeof due === "string" ? Date.parse(due) : due } });
+    const call = rest(f.t, (await agentFor(client, orgId, { name: "reader" })).key);
+    const titles = async (query: string) => { const r = await call("GET", `/api/v1/records?${query}`); expect(r.status).toBe(200); return r.json.records.map((x: any) => x.title).sort(); };
+    const deals = await titles("object=opportunity&range[closeDate]=2026-10-01..2026-10-31");
+    expect(deals).toEqual(["First day", "Last day"]);
+    expect(await titles(`object=opportunity&range[closeDate]=${encodeURIComponent("2026-10-01T00:00:00Z..2026-10-31T23:59:59.999Z")}`)).toEqual(deals);
+    expect(await titles("object=opportunity&range[closeDate]=..2026-10-01")).toEqual(["Day before", "First day"]);
+    expect(await titles(`object=opportunity&range[closeDate]=${encodeURIComponent("..2026-10-01T00:00:00Z")}`)).toEqual(["Day before", "First day"]);
+    const tasks = await titles("object=task&range[dueDate]=2026-10-01..2026-10-01");
+    expect(tasks).toEqual(["All-day first", "At midnight"]);
+    expect(await titles(`object=task&range[dueDate]=${encodeURIComponent("2026-10-01T00:00:00Z..2026-10-01T23:59:59.999Z")}`)).toEqual(tasks);
+  });
+
+  it("pages every step in due order through an index, an urgent step after 1,000 others first", async () => {
+    const f = await funnels(), { t, client, orgId, task, newCampaign } = f;
+    const spring = await newCampaign("Spring webinar");
+    const slot = (field: any) => `${field.slot.kind}${field.slot.index}`;
+    // Direct inserts with the same values and slot projections applyChange writes, to keep the test fast.
+    await t.run(async (ctx: any) => {
+      const user = (await ctx.db.query("users").first())._id;
+      for (let i = 0; i < 1000; i += 1) { const due = Date.UTC(2026, 11, 1) + i * 60000; await ctx.db.insert("records", { orgId, objectId: task.object._id, values: { [task.fields.title._id]: `Future ${i}`, [task.fields.about._id]: spring, [task.fields.dueDate._id]: due }, title: `Future ${i}`, createdBy: user, updatedAt: 0, [slot(task.fields.title)]: `Future ${i}`, [slot(task.fields.about)]: spring, [slot(task.fields.dueDate)]: due }); }
+    });
+    await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: "Undated", [task.fields.about._id]: spring } });
+    await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: "Urgent", [task.fields.about._id]: spring, [task.fields.dueDate._id]: Date.UTC(2026, 9, 1, 13) } });
+    const seen: string[] = [];
+    let cursor: string | null = null, first: string | undefined;
+    for (let pages = 0; pages < 100; pages += 1) {
+      const result: any = await client.query(api.records.steps, { orgId, recordId: spring, paginationOpts: { cursor, numItems: 150 } });
+      first ??= result.page[0]?.title;
+      seen.push(...result.page.map((r: any) => r.title));
+      if (result.isDone) break; cursor = result.continueCursor;
+    }
+    expect(first).toBe("Urgent");
+    expect(seen).toHaveLength(1002);
+    expect(new Set(seen).size).toBe(1002);
+    expect(seen[1]).toBe("Future 0");
+    expect(seen.at(-2)).toBe("Future 999");
+    expect(seen.at(-1)).toBe("Undated");
+  }, 60000);
 });

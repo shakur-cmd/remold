@@ -119,11 +119,12 @@ export async function totals(ctx: QueryCtx, principal: Principal, orgId: Id<"org
   return { groups: [...out].map(([value, entry]) => ({ value, count: entry.count, sum: summed ? entry.sum : null })), partial: rows.length > TOTALS_CAP, cap: TOTALS_CAP };
 }
 
-const STEPS_CAP = 1000;
 // A record's steps: tasks whose About points at it, earliest due first, undated last,
-// ties by creation. All of them are ordered before a page is cut, so a step created
-// late but due soon is on the first page. A caller who cannot query the due field gets
-// creation order, since ordering by a hidden value would reveal it.
+// ties by creation. Pages are cut from that order itself: the About+due index yields the
+// dated steps in due order and then the undated ones, read only up to the page's end, so
+// a step created late but due soon is on the first page and every step can be reached.
+// A caller who cannot query the due field gets creation order, since ordering by a
+// hidden value would reveal it.
 export async function steps(ctx: QueryCtx, principal: Principal, orgId: Id<"orgs">, recordId: Id<"records">, paginationOpts: PageOpts) {
   const target = await ctx.db.get(recordId), targetObject = target && target.orgId === orgId ? await ctx.db.get(target.objectId) : null;
   if (!target || !targetObject || !canReadRecord(principal, targetObject, target)) fail("NOT_FOUND", "Record not found");
@@ -132,11 +133,24 @@ export async function steps(ctx: QueryCtx, principal: Principal, orgId: Id<"orgs
   const about = fields.find((f) => f.key === "about" && f.type === "lookup" && !f.targetObjectId && !f.retired && f.slot && canQueryField(principal, task!, f));
   if (!task || !about) return { page: [], isDone: true, continueCursor: "list:0" };
   const due = fields.find((f) => f.key === "dueDate" && f.type === "date" && !f.retired && canQueryField(principal, task, f));
-  const name = slotName(about.slot!.kind, about.slot!.index);
-  const rows: Doc<"records">[] = await listedRelated(ctx, principal, task, about, target._id) ?? await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", task._id).eq(name, target._id)).take(STEPS_CAP);
+  const name = slotName(about.slot!.kind, about.slot!.index), dueName = due?.slot && slotName(due.slot.kind, due.slot.index);
   const dueOf = (r: Doc<"records">) => { const value = due ? r.values[due._id] : undefined; return typeof value === "number" ? value : Infinity; };
-  const page = pageList([...rows].sort((a, b) => (dueOf(a) === dueOf(b) ? 0 : dueOf(a) < dueOf(b) ? -1 : 1) || a._creationTime - b._creationTime), paginationOpts);
-  return { ...page, page: (await Promise.all(page.page.map((r) => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null) };
+  const ordered = (rows: Doc<"records">[]) => [...rows].sort((a, b) => (dueOf(a) === dueOf(b) ? 0 : dueOf(a) < dueOf(b) ? -1 : 1) || a._creationTime - b._creationTime);
+  const project = async (page: { page: Doc<"records">[]; isDone: boolean; continueCursor: string }) => ({ ...page, page: (await Promise.all(page.page.map((r) => projectRecord(ctx, principal, r)))).filter((r): r is Doc<"records"> => r !== null) });
+  const listed = await listedRelated(ctx, principal, task, about, target._id);
+  if (listed) return project(pageList(ordered(listed), paginationOpts));
+  // Same offset cursors as pageList, so pages stay stable when the client re-queries with endCursor.
+  const offset = (cursor: string) => { const m = /^list:(\d+)$/.exec(cursor); if (!m) fail("VALIDATION", "Invalid cursor"); return Number(m[1]); };
+  const start = paginationOpts.cursor ? offset(paginationOpts.cursor) : 0, end = paginationOpts.endCursor ? offset(paginationOpts.endCursor) : start + Math.max(0, Math.floor(paginationOpts.numItems));
+  const byAbout = () => (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", task._id).eq(name, target._id));
+  let rows: Doc<"records">[];
+  if (!due) rows = await byAbout().take(end + 1);
+  else if (name === "s2" && dueName === "d0") {
+    const index = (more: (q: any) => any) => ctx.db.query("records").withIndex("by_s2_d0", (q) => more(q.eq("orgId", orgId).eq("objectId", task._id).eq("s2", target._id)));
+    rows = await index((q) => q.gt("d0", null)).take(end + 1);
+    if (rows.length <= end) rows = [...rows, ...await index((q) => q.eq("d0", undefined)).take(end + 1 - rows.length)];
+  } else rows = ordered(await byAbout().collect()); // a custom slot layout has no About+due index: order every step in memory
+  return project({ page: rows.slice(start, end), isDone: rows.length <= end, continueCursor: "list:" + end });
 }
 
 // Records of `source` that point at `targetId` through a lookup or links field, from a

@@ -20,14 +20,17 @@ const DAY = 86400000, sinceMidnight = (ms: number) => ((ms % DAY) + DAY) % DAY;
 export const allDay = (ms: number) => Number.isInteger(ms) && sinceMidnight(ms) === 0;
 export const fromInstant = (ms: number) => (allDay(ms) ? ms + 0.5 : ms);
 export const dateValue = (field: Doc<"fields">, value: unknown) => typeof value === "number" && (Number.isInteger(value) || (!!field.withTime && sinceMidnight(value) === 0.5));
-// A time without an offset names no instant, so with-time fields refuse it rather than guess a zone.
-export const instant = (value: string) => {
+// The instant a text names, exactly; a time without an offset names no instant, so it is
+// refused rather than a zone guessed. Query bounds use this as is. Stored values go through
+// instant(), which keeps an instant at 00:00Z off the all-day encoding (midnight + 0.5 ms).
+export const instantBound = (value: string) => {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return day(value);
   const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|[+-]\d{2}:?\d{2})$/.exec(value);
   if (!match || day(match[1]!) === undefined || +match[2]! > 23 || +match[3]! > 59 || +(match[4] ?? 0) > 59) return undefined;
   const ms = Date.parse(value.replace(/([+-]\d{2})(\d{2})$/, "$1:$2"));
-  return Number.isFinite(ms) ? fromInstant(ms) : undefined;
+  return Number.isFinite(ms) ? ms : undefined;
 };
+export const instant = (value: string) => { const ms = instantBound(value); return ms === undefined || /^\d{4}-\d{2}-\d{2}$/.test(value) ? ms : fromInstant(ms); };
 
 async function related(ctx: Ctx, principal: Principal, field: Doc<"fields">, value: unknown, fieldKey: string) {
   const orgId = principal.org._id;

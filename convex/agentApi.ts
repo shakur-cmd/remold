@@ -8,7 +8,7 @@ import { pageRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
 import { visibleInboxItems, visibleSuggestions } from "./authority/pending";
 import { dueTasks, quietDeals } from "./lib/daily";
-import { instant, readable, readableMap, resolveValues } from "./lib/values";
+import { instantBound, readable, readableMap, resolveValues } from "./lib/values";
 import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex } from "./authority/reads";
 import { writable } from "./authority/readonly";
 import { canSeeInbox, visibleInbox } from "./authority/inbox";
@@ -62,9 +62,9 @@ export const listRecords = internalQuery({ args: { keyHash, object: v.string(), 
   const filters = [];
   for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }))[field._id] }); }
   // A bare date as the end of a range means through the end of that day (UTC).
-  const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instant(text); if (ms === undefined) fail("VALIDATION", "Range bounds must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
+  const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instantBound(text); if (ms === undefined) fail("VALIDATION", "Range bounds must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
   // On a with-time field, all-day values match by the calendar date written in each bound, so offset bounds name local days.
-  const rangeField = args.range && known(args.range.field), dateOf = (text: string | undefined) => text === undefined ? undefined : instant(text.slice(0, 10));
+  const rangeField = args.range && known(args.range.field), dateOf = (text: string | undefined) => text === undefined ? undefined : instantBound(text.slice(0, 10));
   const range = args.range && rangeField ? { fieldId: rangeField._id, from: bound(args.range.from, false), to: bound(args.range.to, true), ...(rangeField.withTime ? { days: { from: dateOf(args.range.from), to: dateOf(args.range.to) } } : {}) } : undefined;
   const page = await pageRecords(ctx, principal.org._id, item.object._id, { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 25) || 25, 1), 100) }, sort, { filters, range }, principal);
   return { records: await Promise.all(page.page.filter(record => canReadRecord(principal, item.object, record)).map((record) => readable(ctx, principal, record, item.object, item.fields))), cursor: page.isDone ? null : page.continueCursor };
