@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { type Field, dateToInput, formatDate, formatFieldDate, formatNumber, inputToDate, localDay, relativeDay, timeOfDay, toKey } from "./fields";
+import { type Field, dateToInput, formatDate, formatFieldDate, formatMoney, formatNumber, inputToDate, localDay, relativeDay, timeOfDay, toKey } from "./fields";
 
 const day = 86400000;
 const today = Date.UTC(2026, 8, 25); // a Friday
@@ -109,5 +109,12 @@ describe("plain dates on with-time fields", () => {
   it("a local time that is not midnight UTC in Tokyo still shows in Tokyo time", () => {
     vi.stubEnv("TZ", "Asia/Tokyo");
     expect(formatFieldDate(timed, Date.UTC(2026, 9, 2) + 0.5)).toMatch(/Oct 2, 2026.*9:00\sAM/);
+  });
+});
+
+describe("formatMoney", () => {
+  it("keeps cents when an amount has them and drops them when it does not", () => {
+    expect(formatMoney(450.5)).toBe((450.5).toLocaleString(undefined, { style: "currency", currency: "USD", minimumFractionDigits: 2 }));
+    expect(formatMoney(1200)).toBe((1200).toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
   });
 });

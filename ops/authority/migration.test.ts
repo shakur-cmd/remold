@@ -39,10 +39,10 @@ it('an unfrozen legacy agent fails closed while migrated agents continue', async
 });
 
 it('dangling legacy grants are dropped and cannot attach to a later key', async () => {
-  const f = await legacy('member', [{ action: 'create', objectKey: 'invoice' }]);
-  expect((await f.t.mutation(migration.migrateAgent, { agentId: f.agent.agentId })).dropped).toEqual(['create:invoice']);
-  await f.client.mutation(api.objects.create, { orgId: f.orgId, key: 'invoice', label: 'Invoice', labelPlural: 'Invoices' });
-  expect((await f.call('POST', '/api/v1/changes', { action: 'create', object: 'invoice', values: { name: 'No' }, reason: 'latent grant' })).status).toBe(403);
+  const f = await legacy('member', [{ action: 'create', objectKey: 'shipment' }]);
+  expect((await f.t.mutation(migration.migrateAgent, { agentId: f.agent.agentId })).dropped).toEqual(['create:shipment']);
+  await f.client.mutation(api.objects.create, { orgId: f.orgId, key: 'shipment', label: 'Shipment', labelPlural: 'Shipments' });
+  expect((await f.call('POST', '/api/v1/changes', { action: 'create', object: 'shipment', values: { name: 'No' }, reason: 'latent grant' })).status).toBe(403);
 });
 
 it('admin legacy role adds no authority, and object key reuse never transfers object-ID grants', async () => {

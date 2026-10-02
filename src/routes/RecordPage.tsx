@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,8 @@ import { SuggestionCard } from "@/components/SuggestionCard";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
 import { usePinnedPages } from "@/lib/pages";
-import { contactHref, formatDate, formatFieldDate, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { invoiceStatus } from "@/lib/invoices";
+import { contactHref, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -128,9 +130,13 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
         </div>
 
         {/* Tasks that feed the next step are listed there, not twice. */}
-        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry)).map((entry) => (
-          <RelatedPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} showVia={reverse.filter((r) => r.object._id === entry.object._id).length > 1} />
-        ))}
+        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry)).map((entry) =>
+          entry.object.key === "invoice" && entry.field.key === "company" ? (
+            <InvoicesPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} />
+          ) : (
+            <RelatedPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} showVia={reverse.filter((r) => r.object._id === entry.object._id).length > 1} />
+          ),
+        )}
       </div>
 
       <div className="grid min-w-0 content-start gap-5">
@@ -249,6 +255,72 @@ function AddRelatedDialog({ orgId, recordId, entry, open, onOpenChange }: { orgI
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// A company's invoices with what was billed, what is paid and what is still open.
+function InvoicesPanel({ orgId, recordId, entry }: { orgId: Id<"orgs">; recordId: Id<"records">; entry: Reverse }) {
+  const data = useQuery(api.invoices.forCompany, { orgId, recordId });
+  // Totals add up every page, independent of how many invoices are listed.
+  const sums = usePaginatedQuery(api.invoices.totals, { orgId, recordId }, { initialNumItems: 500 });
+  const { status, loadMore } = sums;
+  useEffect(() => { if (status === "CanLoadMore") loadMore(500); }, [status, loadMore]);
+  const [adding, setAdding] = useState(false);
+  const today = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  if (!data) return null;
+  const { fields: f } = data;
+  const number = (r: Doc<"records">, id: Id<"fields"> | null) => (id && typeof r.values[id] === "number" ? (r.values[id] as number) : null);
+  const rows = [...data.invoices].sort((a, b) => (number(b, f.due) ?? b._creationTime) - (number(a, f.due) ?? a._creationTime));
+  const complete = status === "Exhausted", known = sums.results.every((s) => s.known);
+  const billed = sums.results.reduce((t, s) => t + s.billed, 0), paid = sums.results.reduce((t, s) => t + s.paid, 0);
+  const totals = [
+    { label: "Billed", value: known ? billed : null },
+    { label: "Paid", value: known ? paid : null },
+    { label: "Open", value: known ? billed - paid : null },
+  ];
+  return (
+    <Card className="min-w-0">
+      <CardHeader>
+        <CardTitle>
+          Invoices
+          {rows.length > 0 && <span className="ml-2 font-normal text-muted-foreground tabular-nums">{rows.length}{data.capped ? "+" : ""}</span>}
+        </CardTitle>
+        <CardAction>
+          <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setAdding(true)}>
+            <Plus /> Add
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {rows.length > 0 && (
+          <dl className="grid grid-cols-3 gap-2 rounded-lg border bg-muted/40 p-3">
+            {totals.map((total) => (
+              <div key={total.label} className="grid gap-0.5">
+                <dt className="text-xs text-muted-foreground">{total.label}</dt>
+                <dd className={cn("text-sm font-medium tabular-nums", !complete && "text-muted-foreground")}>{total.value === null ? "Hidden" : formatMoney(total.value)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {rows.length > 0 && !complete && <p className="-mt-2 px-1 text-xs text-muted-foreground">Still counting older invoices; totals so far.</p>}
+        <div className="grid gap-0.5">
+          {rows.map((r) => {
+            const amount = number(r, f.amount), due = number(r, f.due), paidOn = number(r, f.paidOn);
+            const status = invoiceStatus({ due, paidOn, paymentHidden: data.paymentHidden.includes(r._id), today });
+            return (
+              <Link key={r._id} to={`/o/${orgId}/${data.objectKey}/${r._id}`} className="flex min-w-0 items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                <span className="shrink-0">{r.title || "Untitled"}</span>
+                {f.monthly && r.values[f.monthly] === true && <Badge variant="outline" className="shrink-0">Monthly</Badge>}
+                <span className={cn("ml-auto min-w-0 truncate text-xs tabular-nums", status.overdue ? "font-medium text-destructive" : "text-muted-foreground")}>{status.label}</span>
+                <span className="w-20 shrink-0 text-right tabular-nums">{amount === null ? "—" : formatMoney(amount)}</span>
+              </Link>
+            );
+          })}
+          {rows.length === 0 && <span className="px-2 text-sm text-muted-foreground">None yet</span>}
+        </div>
+      </CardContent>
+      <AddRelatedDialog orgId={orgId} recordId={recordId} entry={entry} open={adding} onOpenChange={setAdding} />
+    </Card>
   );
 }
 
