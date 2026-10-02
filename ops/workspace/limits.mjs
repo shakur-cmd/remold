@@ -41,13 +41,14 @@ await withAuthority(async ({ client, scratch }) => {
   });
   }
 
-  // 2. A 30 MB workspace: 3,300 companies with 4.5 KB of notes each (record plus its create event).
+  // 2. A 30 MB workspace: 3,300 companies with 4.5 KB of notes each (record plus its create event). LARGE_MB=60 for a bigger one.
   if (wanted('large')) {
   const b = await workspace('Limits 30MB');
-  await seed(b, 'company', 3300, 4500);
-  await timed('export a 30 MB workspace', async () => { const { bytes, result } = await exported(b); assert.ok(bytes >= 30e6, `${bytes} bytes`); return { mb: +(bytes / 1e6).toFixed(1), records: result.records, events: result.events }; });
+  const largeMb = Number(process.env.LARGE_MB ?? 30);
+  await seed(b, 'company', Math.ceil(3300 * largeMb / 30), 4500);
+  await timed(`export a ${largeMb} MB workspace`, async () => { const { bytes, result } = await exported(b); assert.ok(bytes >= largeMb * 1e6, `${bytes} bytes`); return { mb: +(bytes / 1e6).toFixed(1), records: result.records, events: result.events }; });
   // 3. Delete it without an export: one marker write, then the bounded purge.
-  await timed('delete the 30 MB workspace without an export', async () => { await owner.mutation('workspace:confirmDelete', { orgId: b, confirmName: 'Limits 30MB', withoutExport: 'DELETE WITHOUT EXPORT' }); await gone(b); return {}; });
+  if (!process.env.SKIP_DELETE) await timed(`delete the ${largeMb} MB workspace without an export`, async () => { await owner.mutation('workspace:confirmDelete', { orgId: b, confirmName: 'Limits 30MB', withoutExport: 'DELETE WITHOUT EXPORT' }); await gone(b); return {}; });
   }
 
   // 4. A workspace with 10,000 childless integration parents.
