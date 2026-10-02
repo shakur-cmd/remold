@@ -66,3 +66,9 @@ it('an authority sweep preserves an unrelated valid proposal awaiting approval',
   await f.t.mutation(anyApi['integrations/lifecycle'].sweep, { orgId: f.orgId, cursor: null });
   expect((await f.client.query(commands.getHuman, { orgId: f.orgId, id })).state).toBe('proposed');
 });
+it('a result reconciled while the workspace is read only is classified late', async () => {
+  const f = await fixture(), id = await f.propose('readonly'), target = await f.start(id);
+  await f.t.run(ctx => ctx.db.patch(f.orgId, { flags: { readonly: true } }));
+  expect(await f.t.mutation(outcomes.reconcile, { ...target, providerRef: 'frozen', usage: 2 })).toMatchObject({ accepted: true, late: true });
+  expect((await f.t.run(ctx => ctx.db.get(id)) as any).receipts).toMatchObject([{ providerRef: 'frozen', late: true }]);
+});

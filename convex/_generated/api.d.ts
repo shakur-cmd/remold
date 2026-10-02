@@ -11,6 +11,7 @@
 import type * as agentApi from "../agentApi.js";
 import type * as agents from "../agents.js";
 import type * as alerts from "../alerts.js";
+import type * as authority_agentGuards from "../authority/agentGuards.js";
 import type * as authority_grants from "../authority/grants.js";
 import type * as authority_inbox from "../authority/inbox.js";
 import type * as authority_migration from "../authority/migration.js";
@@ -46,6 +47,7 @@ import type * as integrations_tables from "../integrations/tables.js";
 import type * as invites from "../invites.js";
 import type * as lib_applyChange from "../lib/applyChange.js";
 import type * as lib_daily from "../lib/daily.js";
+import type * as lib_email from "../lib/email.js";
 import type * as lib_find from "../lib/find.js";
 import type * as lib_list from "../lib/list.js";
 import type * as lib_ref from "../lib/ref.js";
@@ -59,6 +61,7 @@ import type * as ops from "../ops.js";
 import type * as orgs from "../orgs.js";
 import type * as rateLimit from "../rateLimit.js";
 import type * as records from "../records.js";
+import type * as reminders from "../reminders.js";
 import type * as release from "../release.js";
 import type * as seed from "../seed.js";
 import type * as suggestions from "../suggestions.js";
@@ -77,6 +80,7 @@ declare const fullApi: ApiFromModules<{
   agentApi: typeof agentApi;
   agents: typeof agents;
   alerts: typeof alerts;
+  "authority/agentGuards": typeof authority_agentGuards;
   "authority/grants": typeof authority_grants;
   "authority/inbox": typeof authority_inbox;
   "authority/migration": typeof authority_migration;
@@ -112,6 +116,7 @@ declare const fullApi: ApiFromModules<{
   invites: typeof invites;
   "lib/applyChange": typeof lib_applyChange;
   "lib/daily": typeof lib_daily;
+  "lib/email": typeof lib_email;
   "lib/find": typeof lib_find;
   "lib/list": typeof lib_list;
   "lib/ref": typeof lib_ref;
@@ -125,6 +130,7 @@ declare const fullApi: ApiFromModules<{
   orgs: typeof orgs;
   rateLimit: typeof rateLimit;
   records: typeof records;
+  reminders: typeof reminders;
   release: typeof release;
   seed: typeof seed;
   suggestions: typeof suggestions;

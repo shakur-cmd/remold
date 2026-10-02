@@ -19,7 +19,7 @@ const run = (t: any) => t.finishAllScheduledFunctions(vi.runAllTimers);
 const later = (t: any, ms = 11_000) => { vi.setSystemTime(Date.now() + ms); return t.action(check, {}); };
 
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(start); });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); delete process.env.REMOLD_ALERT_WEBHOOK_URL; });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); for (const key of ["REMOLD_ALERT_WEBHOOK_URL", "REMOLD_ALERT_EMAIL_TO", "RESEND_API_KEY", "REMOLD_EMAIL_FROM", "REMOLD_EMAIL_ALLOWLIST"]) delete process.env[key]; });
 
 it("opens one alert for a failing background function, stays quiet while it keeps failing, and resolves when it succeeds", async () => {
   const t = makeTest();
@@ -232,6 +232,35 @@ it("delivers each notice to the configured sink, retries failed deliveries, and 
   expect(sent).toHaveLength(2);
   expect(sent[1].body).toMatchObject({ source: "remold", event: "open", kind: "rest-500", key: "rest-500", count: 1 });
   expect(sent[0].body.id).toBe(sent[1].body.id);
+});
+
+it("emails each notice to the alert address alongside or instead of the webhook, retries a failed email, and never resends one", async () => {
+  const t = makeTest();
+  await t.mutation(record, { minute: minute(), route: "rest", status: 500, durationMs: 5, release: "unknown" });
+  const emails: any[] = [], hooks: any[] = [];
+  let up = false;
+  vi.stubGlobal("fetch", vi.fn(async (url: string, init: any) => {
+    if (url === "https://api.resend.com/emails") { emails.push(JSON.parse(init.body)); return new Response("{}", { status: up ? 200 : 503 }); }
+    hooks.push(JSON.parse(init.body)); return new Response(null, { status: 204 });
+  }));
+  Object.assign(process.env, { RESEND_API_KEY: "re_test_key", REMOLD_EMAIL_FROM: "Remold <remold@example.com>", REMOLD_EMAIL_ALLOWLIST: "ops@example.com", REMOLD_ALERT_EMAIL_TO: "stranger@example.com" });
+  expect(await t.action(check, {})).toMatchObject({ email: "unconfigured", emailed: 0 });
+  expect(emails).toEqual([]);
+  process.env.REMOLD_ALERT_EMAIL_TO = "ops@example.com";
+  expect(await t.action(check, {})).toMatchObject({ email: "configured", emailed: 0, channel: "unconfigured" });
+  up = true;
+  expect((await t.action(check, {})).emailed).toBe(1);
+  expect((await t.action(check, {})).emailed).toBe(0);
+  expect(emails).toHaveLength(2);
+  expect(emails[1]).toMatchObject({ to: ["ops@example.com"], subject: expect.stringContaining("REST API is returning internal errors") });
+  expect(emails[1].text).toContain("rest-500");
+  // Turning on the webhook later still delivers there once, without a second email.
+  process.env.REMOLD_ALERT_WEBHOOK_URL = "http://127.0.0.1:9/hook";
+  expect(await t.action(check, {})).toMatchObject({ delivered: 1, emailed: 0 });
+  expect(await t.action(check, {})).toMatchObject({ delivered: 0, emailed: 0 });
+  expect(hooks).toHaveLength(1);
+  expect(emails).toHaveLength(2);
+  expect(hooks[0]).toMatchObject({ event: "open", key: "rest-500" });
 });
 
 it("sends each notice once when checks overlap, even behind a sink slower than a minute", async () => {

@@ -33,7 +33,8 @@ export const reconcile = internalMutation({ args: { ...target, providerRef: v.st
   const continuing = !!args.continue && ['dispatching', 'cancellationPending', 'outcomeUnknown'].includes(op.state) && op.step === args.step && args.usage !== undefined && op.capability === 'model.call' && op.step < op.maxSteps;
   let revoked = false;
   try { const principal = await principalFor(ctx, op.orgId, op.actor); if (epoch(principal) !== op.actorEpoch || ('member' in principal && principal.member._id !== op.actorMembershipId)) revoked = true; else await authority(ctx, principal, op); } catch { revoked = true; }
-  const cancelled = op.cancelRequestedAt !== undefined, late = revoked || cancelled || !!op.absence || op.released || op.late;
+  const readonly = !!(await ctx.db.get(op.orgId))?.flags?.readonly;
+  const cancelled = op.cancelRequestedAt !== undefined, late = revoked || readonly || cancelled || !!op.absence || op.released || op.late;
   const receipt = { step: args.step, providerRef: args.providerRef, usage: args.usage, late, at: existing?.at ?? Date.now() };
   const receipts = existing ? op.receipts.map(r => r.step === args.step ? receipt : r) : [...op.receipts, receipt];
   const actual = args.usage ?? 0, total = op.usage + actual, overrun = total > op.reserved;

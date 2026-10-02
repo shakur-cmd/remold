@@ -4,6 +4,7 @@ import { currentPrincipal, recordGranted, type Membership, type Principal } from
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
+import { agentGuard } from "../authority/agentGuards";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 
@@ -88,6 +89,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (!("member" in approver) || approver.org._id !== change.orgId) fail("FORBIDDEN", "Invalid approver");
       checkScope(approver);
     } else if ("agent" in membership && !recordGranted(membership, change.action, object, record?._id, touched)) fail("FORBIDDEN", "Direct record grant required");
+    agentGuard(membership, object, fields, record, change.action === "delete" ? "delete" : change.values);
   }
   if (change.action === "delete") {
     // Records that link to this one drop it from their links value through an

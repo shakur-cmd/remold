@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +23,7 @@ export function Settings() {
     <div className="grid max-w-3xl gap-5">
       <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
       <OrgCard org={org} admin={admin} />
+      <RemindersCard orgId={org._id} />
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
@@ -50,6 +52,25 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
             Rename
           </Button>
         </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RemindersCard({ orgId }: { orgId: Id<"orgs"> }) {
+  const mine = useQuery(api.reminders.mine, { orgId });
+  const set = useMutation(api.reminders.set);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Daily reminder</CardTitle>
+        <CardDescription>An email at 11:00 UTC with your overdue tasks, tasks due today and deals gone quiet in this organisation. Nothing is sent on days with nothing to list.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={mine?.on === true} disabled={!mine?.email} onCheckedChange={(on) => attempt(() => set({ orgId, on: on === true }), on === true ? "Daily reminder on" : "Daily reminder off")} aria-label="Email me a daily reminder" />
+          {mine?.email ? <>Email me at <span className="font-medium">{mine.email}</span></> : "Your account has no email address, so reminders cannot be sent."}
+        </label>
       </CardContent>
     </Card>
   );
@@ -297,8 +318,13 @@ function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs"
       {isTitle && <Badge variant="secondary">title</Badge>}
       {/* Only unindexed fields need a note: they store values but cannot sort or filter. */}
       {!field.slot && field.type !== "links" && <Badge variant="outline" title="Stores values, cannot sort or filter">unindexed</Badge>}
+      {!admin && field.protectedFromAgents && <Badge variant="outline" title="Agents cannot change this field">protected from agents</Badge>}
       {admin && !field.retired && (
-        <span className="ml-auto flex gap-1">
+        <span className="ml-auto flex items-center gap-1">
+          <label className="mr-1 flex items-center gap-1.5 text-xs text-muted-foreground" title="Agents cannot change this field, even with a grant. People still can.">
+            <Checkbox checked={field.protectedFromAgents === true} onCheckedChange={(on) => attempt(() => update({ orgId, fieldId: field._id, protectedFromAgents: on === true }), on === true ? "Protected from agents" : "Agents may edit again")} aria-label={`Protect ${field.label} from agents`} />
+            Protect from agents
+          </label>
           <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setDraft(field.label)}>
             Rename
           </Button>

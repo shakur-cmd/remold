@@ -1492,6 +1492,59 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "reminders:mine",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "emails each opted-in owner their own due, overdue and quiet work with a link to Today"
+  },
+  {
+    "id": "reminders:set",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "a member turns their own daily reminder on and off, and a read-only workspace refuses the change"
+  },
+  {
+    "id": "reminders:recipients",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "operator-only: internal function with no HTTP route or public caller",
+    "reason": "daily reminder only"
+  },
+  {
+    "id": "reminders:compose",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "emails each opted-in owner their own due, overdue and quiet work with a link to Today",
+    "reason": "daily reminder only"
+  },
+  {
+    "id": "reminders:send",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "does not email an address outside the allowlist, and turning reminders off stops them",
+    "reason": "daily reminder only"
+  },
+  {
     "id": "users:store",
     "kind": "mutation",
     "visibility": "public",
@@ -1594,6 +1647,17 @@
     "masks": "no-record-data",
     "proof": "bounds release cardinality, rejects customer-shaped fields and expires old rows",
     "reason": "operational metrics only"
+  },
+  {
+    "id": "cron Daily reminder email",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "runs the reminder once a day at 11:00 UTC",
+    "reason": "daily reminder only"
   },
   {
     "id": "HTTP GET /api/v1/_probe",
