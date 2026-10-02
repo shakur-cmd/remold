@@ -2,7 +2,7 @@
 // and appends its checksum to SHA256SUMS there. Never deletes or overwrites a backup.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,6 +26,8 @@ export async function exportBackup({ dir, deployment, key, now, exportZip }) {
 // Runs outside the repo, with only the deploy key, so no .env.local or CONVEX_DEPLOYMENT can pick the deployment.
 function convexExport(path) {
   const cwd = mkdtempSync(join(tmpdir(), 'remold-backup-'));
+  // The CLI refuses to run without a package.json in its working directory.
+  writeFileSync(join(cwd, 'package.json'), JSON.stringify({ name: 'remold-backup', private: true, dependencies: { convex: '*' } }));
   try { execFileSync(process.execPath, [join(root, 'node_modules/convex/bin/main.js'), 'export', '--prod', '--path', path], { cwd, stdio: 'inherit', env: { PATH: process.env.PATH, HOME: process.env.HOME, CONVEX_DEPLOY_KEY: process.env.CONVEX_DEPLOY_KEY } }); }
   finally { rmSync(cwd, { recursive: true, force: true }); }
 }
