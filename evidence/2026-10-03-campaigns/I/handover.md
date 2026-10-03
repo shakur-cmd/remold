@@ -200,3 +200,55 @@ Per minute: 200 due schedules; 100 date automations (each reached about every N/
 - The screenshots are from round 1 and were not retaken. The page is unchanged apart from the refusal message on Turn on.
 - `GATED` names `booking`, which does not exist yet. When Job B merges, check which booking fields an automation must not write (verifier N4).
 - Not independently re-verified.
+
+## Round 3 (after Fable's round 2 REVISE on 61643da)
+
+Level: unit. Not independently re-verified.
+
+### Fixes
+
+- **B2 (blocker): the dry run showed the caller fields hidden from it.** The dry run still renders as the person who turned the automation on while it is on, so it stays faithful. What it returns is now limited to what the caller can read (`viewer` in `perform`, `convex/automations.ts`):
+  - A template tag that reads a field the caller cannot read shows `(hidden from you)` instead of its value, whether the tag is the whole value or part of a text.
+  - Step values are shown through the caller's `readableMap`. Any written field the caller cannot read shows `(hidden from you)`.
+  - Lookup titles and the updated record's reference are read as the caller.
+  - The caller must still be able to read the record it names; otherwise it gets 404, as for a record that does not exist. That check is mutant D1.
+  - The verifier's probe P8 is now a test: amount is masked from the agent, and no `5000` appears anywhere in the response. The test covers an inbox step, a created record and an update step.
+- **S5: a narrowed enabler queues nothing.** `enqueue` (`convex/lib/automation.ts`) compares the stored member epoch with the member's current one. If the role, scope or masks changed, or the member is gone, it queues no run and pauses the automation with the inbox item. There is no run row at all, so nothing records which record matched.
+  - A run already queued when access changes is still refused at run time, as before.
+  - A refused run now drops `triggerRecordId` and `eventId` from its row, and `history` never shows a trigger on a refused row.
+  - The verifier's probe P7 is now a test: after amount is hidden from Ben, "Secretly big" is not in anything Ben can see, there are no runs, and the automation is paused.
+- **Behavior change:** demotion or removal after turn-on now pauses at the next matching write without a refused row. A refused row appears only when the change lands between queueing and running. The permissions test now covers both paths.
+- `pause` and `patchValues` moved to `convex/lib/automation.ts` so `enqueue` can pause. `lastRun` is unchanged: still a direct patch with no event.
+
+### Fail before, pass after
+
+- `round3-fail-before.txt`: the current tests against the round 2 code (automations.ts and lib/automation.ts from 61643da) give `3 failed | 21 passed (24)`. After: `24 passed (24)`.
+  - the dry run never shows the caller a field or record it cannot read, even when it renders as the person who turned it on
+  - once the person it runs as has narrower access, matching writes queue no run and the automation pauses without naming the record
+  - acts with the permissions of the person who turned it on, and pauses when they lose them or the workspace is read only (updated for S5)
+- Mutants (`mutants.mjs`, `mutants-round3.txt`): **43/43 caught.** The five new ones:
+  - D1: no caller read check on the record
+  - R11: templates use the enabler's reads
+  - R12: step values use the enabler's reads
+  - R13: a stale enabler still queues runs
+  - R14: a refused row keeps its trigger
+
+  Two mutants were adjusted to the moved code: M20 now targets the lib, and R6 the new refuse line. M15 (epoch snapshot ignored at run time) survived the first run, because the new enqueue check made its only test path unreachable. It is caught now by the queued-then-demoted case.
+
+### Suites (round 3)
+
+| Suite | Result |
+|---|---|
+| `pnpm test` | 55 files, **496/496** |
+| `pnpm typecheck` | **clean** |
+| `pnpm test:authority` | **101/101** |
+| `pnpm verify:release` | **37/37** |
+| `pnpm build` | **ok** |
+| `pnpm --dir packages/mcp test` | **8/8** |
+
+(`after-round3.txt`)
+
+### Not redone
+
+- Rollback: round 3 has no schema change, and the round 2 rollback stands.
+- Screenshots: the page is unchanged.

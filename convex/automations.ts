@@ -6,10 +6,9 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { currentPrincipal, requireMember, requireWriter, type Actor, type Principal } from "./identity";
 import { fail, type ErrorCode } from "./errors";
 import { applyChange } from "./lib/applyChange";
-import { projections } from "./lib/slots";
 import { allDay, fromInstant, readableMap, resolveValues } from "./lib/values";
 import { canReadField, canReadRecord, requireRecordRead, visibleTitle } from "./authority/reads";
-import { DAY, TAG, definitionOf, enqueue, fieldOf, itemByKey, nextDue, nextQueued, sentence, triggerAccess, type Chain, type Definition, type Item } from "./lib/automation";
+import { DAY, TAG, definitionOf, enqueue, fieldOf, itemByKey, nextDue, nextQueued, patchValues, pause, sentence, triggerAccess, type Chain, type Definition, type Item } from "./lib/automation";
 
 // The automation runner. A trigger (lib/automation.ts) or the minute cron queues a run
 // and schedules `run`, which executes the actions in one mutation as the person who
@@ -28,8 +27,10 @@ async function refOf(ctx: Ctx, principal: Principal, id: string) {
   return record && object && record.orgId === principal.org._id && canReadRecord(principal, object, record) ? { id, ref: record.ref ?? null, object: object.key, title: await visibleTitle(ctx, principal, record) } : { id };
 }
 
-type Env = { principal: Principal; trigger: Trigger; created: Map<string, string>; today: number };
-type Got = { value: unknown; field?: Doc<"fields">; date?: boolean };
+// `viewer` is the dry run's caller: whatever it may not read shows as HIDDEN, never as its value.
+type Env = { principal: Principal; viewer?: Principal; trigger: Trigger; created: Map<string, string>; today: number };
+type Got = { value: unknown; field?: Doc<"fields">; date?: boolean; hidden?: boolean };
+export const HIDDEN = "(hidden from you)";
 // {{today+3}}, {{created.project}}, {{record.id}}, {{record.name}} and {{record.closeDate-1}}.
 function tagValue(env: Env, inner: string): Got {
   const sign = (s?: string) => (s === "-" ? -1 : 1);
@@ -42,16 +43,18 @@ function tagValue(env: Env, inner: string): Got {
   const { record, item } = env.trigger;
   if (m[1] === "id") return { value: record._id };
   const field = fieldOf(item, m[1]), value = field && canReadField(env.principal, item.object, field, record._id) ? record.values[field._id] : undefined;
+  if (field && env.viewer && !canReadField(env.viewer, item.object, field, record._id)) return { value: undefined, hidden: true };
   if (m[2] && typeof value === "number") return { value: Math.floor(value / DAY) * DAY + sign(m[2]) * Number(m[3]) * DAY, date: true };
   return { value, field };
 }
-async function asText(ctx: Ctx, env: Env, { value, field, date }: Got): Promise<string> {
+async function asText(ctx: Ctx, env: Env, { value, field, date, hidden }: Got): Promise<string> {
+  if (hidden) return HIDDEN;
   if (value === undefined || value === null) return "";
   if (typeof value === "number" && (date || field?.type === "date")) return dateText(value);
   if (field?.type === "select") return field.options?.find((o) => o.id === value)?.label ?? String(value);
   if (field?.type === "boolean") return value ? "yes" : "no";
   if (Array.isArray(value)) return (await Promise.all(value.map((id) => asText(ctx, env, { value: id })))).join(", ");
-  if (typeof value === "string" && (!field || field.type === "lookup") && ctx.db.normalizeId("records", value)) { const ref = await refOf(ctx, env.principal, value); return ("title" in ref && ref.title) || ""; }
+  if (typeof value === "string" && (!field || field.type === "lookup") && ctx.db.normalizeId("records", value)) { const ref = await refOf(ctx, env.viewer ?? env.principal, value); return ("title" in ref && ref.title) || ""; }
   return String(value);
 }
 // A value that is one tag keeps its type (an id, a date, a number); text with tags in it becomes text.
@@ -59,7 +62,7 @@ async function render(ctx: Ctx, env: Env, input: unknown, target?: Doc<"fields">
   if (Array.isArray(input)) return Promise.all(input.map((item) => render(ctx, env, item)));
   if (typeof input !== "string") return input;
   const one = /^\{\{\s*([^{}]+?)\s*\}\}$/.exec(input);
-  if (one && target?.type !== "text") return tagValue(env, one[1]!).value ?? null;
+  if (one && target?.type !== "text") { const got = tagValue(env, one[1]!); return got.hidden ? HIDDEN : got.value ?? null; }
   let out = "", at = 0;
   for (const match of input.matchAll(TAG)) { out += input.slice(at, match.index) + await asText(ctx, env, tagValue(env, match[1]!)); at = match.index! + match[0].length; }
   return out + input.slice(at);
@@ -68,9 +71,9 @@ async function render(ctx: Ctx, env: Env, input: unknown, target?: Doc<"fields">
 type Writer = { actor: Actor; reason: string; automation: Chain; inbox: (text: string) => Promise<unknown> };
 // Runs the actions in order. Without a writer it is the dry run: the same rendering and
 // value checks, nothing written, new records stood in for by "(the new Project)".
-export async function perform(ctx: Ctx, principal: Principal, d: Definition, trigger: Trigger, write?: Writer) {
-  const orgId = principal.org._id, env: Env = { principal, trigger, created: new Map(), today: Math.floor(Date.now() / DAY) * DAY };
-  const steps: Record<string, unknown>[] = [], problems: string[] = [], created: Id<"records">[] = [], standIns = new Set<string>();
+export async function perform(ctx: Ctx, principal: Principal, d: Definition, trigger: Trigger, write?: Writer, viewer?: Principal) {
+  const orgId = principal.org._id, env: Env = { principal, viewer, trigger, created: new Map(), today: Math.floor(Date.now() / DAY) * DAY };
+  const steps: Record<string, unknown>[] = [], problems: string[] = [], created: Id<"records">[] = [], standIns = new Set<string>([HIDDEN]);
   let last: { item: Item; id: string } | null = null;
   for (const [index, action] of d.actions.entries()) {
     try {
@@ -104,8 +107,11 @@ export async function perform(ctx: Ctx, principal: Principal, d: Definition, tri
         if (creates) { created.push(result.recordId); env.created.set(item!.object.key, result.recordId); last = { item: item!, id: result.recordId }; }
         continue;
       }
-      const shown = { ...(await readableMap(ctx, principal, item!.fields, values)), ...pending };
-      if (!creates) { steps.push({ action: "update", object: item!.object.key, record: standIns.has(recordId!) ? recordId : await refOf(ctx, principal, recordId!), values: shown }); continue; }
+      // Shown as the caller may read it: a field it may not read shows as HIDDEN.
+      const looker = viewer ?? principal, readable = await readableMap(ctx, looker, item!.fields, values);
+      for (const field of item!.fields) if (field._id in values && !(field.key in readable)) readable[field.key] = HIDDEN;
+      const shown = { ...readable, ...pending };
+      if (!creates) { steps.push({ action: "update", object: item!.object.key, record: standIns.has(recordId!) ? recordId : await refOf(ctx, looker, recordId!), values: shown }); continue; }
       const standIn = `(the new ${item!.object.label})`;
       standIns.add(standIn); env.created.set(item!.object.key, standIn); last = { item: item!, id: standIn };
       steps.push({ action: "create", object: item!.object.key, values: shown });
@@ -120,25 +126,6 @@ export async function perform(ctx: Ctx, principal: Principal, d: Definition, tri
 
 async function stateOf(ctx: Ctx, automationId: Id<"records">) {
   return ctx.db.query("automationState").withIndex("by_automation", (q) => q.eq("automationId", automationId)).unique();
-}
-// Engine bookkeeping on the automation record (last run, pausing) is written directly:
-// it must work in a read-only workspace and must not count as editing the automation.
-async function patchValues(ctx: MutationCtx, recordId: Id<"records">, changes: Record<string, unknown>) {
-  const record = await ctx.db.get(recordId);
-  if (!record) return null;
-  const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", record.orgId).eq("objectId", record.objectId)).collect();
-  const values = { ...record.values, ...changes };
-  await ctx.db.patch(recordId, { values, ...projections(fields, values) });
-  return record;
-}
-async function pause(ctx: MutationCtx, automation: Doc<"records">, item: Item, state: Doc<"automationState">, text: string) {
-  const status = fieldOf(item, "status"), record = await ctx.db.get(automation._id);
-  if (status && record?.values[status._id] === "on") {
-    await patchValues(ctx, automation._id, { [status._id]: "paused" });
-    await ctx.db.insert("events", { orgId: automation.orgId, actor: { kind: "automation", id: automation._id }, action: "update", objectId: item.object._id, recordId: automation._id, before: { [status._id]: "on" }, after: { [status._id]: "paused" }, reason: text });
-  }
-  await ctx.db.patch(state._id, { on: false });
-  await ctx.db.insert("agentInbox", { orgId: automation.orgId, text, source: "automation", from: { kind: "user", id: state.enabledBy }, status: "pending", audience: "author", recordId: automation._id });
 }
 // Counts one run against today's workspace cap and the automation's own cap, or says why not.
 async function reserve(ctx: MutationCtx, orgId: Id<"orgs">, automationId: Id<"records">, force: boolean) {
@@ -178,7 +165,8 @@ async function step(ctx: MutationCtx, run: Doc<"automationRuns">) {
   if (!automation || !item || !state?.on) return finish("skipped", "The automation was not on");
   const d = definitionOf(item, automation.values), as = await runAs(ctx, state, d);
   // Any refusal pauses at once, so an automation never stays on refusing every run.
-  const refuse = async (reason: string) => { await finish("refused", reason[0]!.toUpperCase() + reason.slice(1)); await pause(ctx, automation, item, state, `Automation "${d.name}" paused: ${reason}. Turn it on again to run it as you.`); };
+  // A refused row keeps no trigger record or event: which record matched could itself be what the person may no longer see.
+  const refuse = async (reason: string) => { await finish("refused", reason[0]!.toUpperCase() + reason.slice(1)); await ctx.db.patch(runId, { triggerRecordId: undefined, eventId: undefined }); await pause(ctx, automation, item, state, `Automation "${d.name}" paused: ${reason}. Turn it on again to run it as you.`); };
   if ("refused" in as) return refuse(as.refused);
   const { principal, user } = as;
   let trigger: Trigger = null;
@@ -266,7 +254,7 @@ const definitionOrNull = (item: Item, record: Doc<"records">) => { try { return 
 export async function history(ctx: Ctx, principal: Principal, record: Doc<"records">) {
   const item = await automationItem(ctx, principal, record), d = definitionOrNull(item, record), status = fieldOf(item, "status");
   const rows = await ctx.db.query("automationRuns").withIndex("by_automation", (q) => q.eq("automationId", record._id)).order("desc").take(50);
-  const runs = await Promise.all(rows.map(async (run) => ({ id: run._id, status: run.status, error: run.error ?? null, at: run._creationTime, finishedAt: run.finishedAt ?? null, depth: run.depth, enabledBy: (await ctx.db.get(run.enabledBy))?.name ?? null, trigger: run.triggerRecordId ? await refOf(ctx, principal, run.triggerRecordId) : null, created: await Promise.all(run.created.map((id) => refOf(ctx, principal, id))) })));
+  const runs = await Promise.all(rows.map(async (run) => ({ id: run._id, status: run.status, error: run.error ?? null, at: run._creationTime, finishedAt: run.finishedAt ?? null, depth: run.depth, enabledBy: (await ctx.db.get(run.enabledBy))?.name ?? null, trigger: run.triggerRecordId && run.status !== "refused" ? await refOf(ctx, principal, run.triggerRecordId) : null, created: await Promise.all(run.created.map((id) => refOf(ctx, principal, id))) })));
   return { automation: { id: record._id, ref: record.ref ?? null, title: await visibleTitle(ctx, principal, record), status: (status && record.values[status._id]) ?? "draft", sentence: d ? await sentence(ctx, record.orgId, d) : "Its actions are not valid JSON" }, runs };
 }
 
@@ -290,7 +278,7 @@ export async function dryRun(ctx: Ctx, caller: Principal, record: Doc<"records">
     requireRecordRead(principal, watched.object, triggerRecord);
     trigger = { record: triggerRecord, item: watched };
   }
-  const { steps, problems } = await perform(ctx, principal, d, trigger);
+  const { steps, problems } = await perform(ctx, principal, d, trigger, undefined, caller);
   return { sentence: await sentence(ctx, record.orgId, d), renderedAs, steps, problems };
 }
 

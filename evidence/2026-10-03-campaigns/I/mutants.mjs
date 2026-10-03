@@ -25,7 +25,7 @@ const mutants = [
   ['M16 runs in a read-only workspace', A, 'if (!org || org.flags?.readonly) return { refused', 'if (!org) return { refused'],
   ['M18 pauses after 4 failures', A, 'if (state.failures + 1 >= 3) await pause', 'if (state.failures + 1 >= 4) await pause'],
   ['M19 a success does not reset failures', A, '  await ctx.db.patch(state._id, { failures: 0 });\n', ''],
-  ['M20 pause leaves no inbox item', A, '  await ctx.db.insert("agentInbox", { orgId: automation.orgId, text, source: "automation"', '  void ({ orgId: automation.orgId, text, source: "automation"'],
+  ['M20 pause leaves no inbox item', L, '  await ctx.db.insert("agentInbox", { orgId: automation.orgId, text, source: "automation"', '  void ({ orgId: automation.orgId, text, source: "automation"'],
   ['M21 a failed action keeps earlier writes', A, 'if (write) fail(((error as any)?.data?.code as ErrorCode) ?? "VALIDATION", message);', 'if (write) { problems.push(message); continue; }'],
   ['M22 one job per run', L, 'if (!over && !waiting) await ctx.scheduler', 'if (!over) await ctx.scheduler'],
   ['M23 no recovery of a dead queue', A, 'if (!stuck.has(run.automationId)) { stuck.add', 'if (false) { stuck.add'],
@@ -41,11 +41,17 @@ const mutants = [
   ['R3 access check ignores the watched field (B1)', L, '(field && !canReadField(principal, trigger.object, field))', 'false'],
   ['R4 access check ignores record scope (B1, was the trigger-record check)', L, '!canReadRecordId(principal, trigger.object) || ', ''],
   ['R5 templates read hidden fields (T1 M-b)', A, 'value = field && canReadField(env.principal, item.object, field, record._id) ? record.values[field._id] : undefined;', 'value = field ? record.values[field._id] : undefined;'],
-  ['R6 a refused run leaves it on (S4)', A, 'await finish("refused", reason[0]!.toUpperCase() + reason.slice(1)); await pause(', 'await finish("refused", reason[0]!.toUpperCase() + reason.slice(1)); void (0 as any) && pause('],
+  ['R6 a refused run leaves it on (S4)', A, 'eventId: undefined }); await pause(', 'eventId: undefined }); void (0 as any) && pause('],
   ['R7 dry run always as the caller', A, '  if (state?.on) {\n    const as = await runAs', '  if (false) {\n    const as = await runAs'],
   ['R8 schedule due time never advances', A, 'await ctx.db.patch(state._id, next === undefined ? { on: false } : { dueAt: next });', ''],
   ['R9 any automation actor counts as the sender (S1)', 'convex/lib/emailRules.ts', 'engine = actor.kind === "automation" && actor.id === "Campaign email";', 'engine = actor.kind === "automation";', C],
   ['R10 withdrawal loses the automation chain (S2)', 'convex/lib/applyChange.ts', '{ clearingReference: true, actor: { kind: "automation", id: "Campaign email" }, automation: options.automation });', '{ clearingReference: true, actor: { kind: "automation", id: "Campaign email" } });', C],
+  // Round 3
+  ['D1 dry run skips the caller read of the record (B2)', A, '    requireRecordRead(caller, watched.object, triggerRecord);\n', ''],
+  ['R11 dry run templates show the enabler view of a field hidden from the caller (B2)', A, '  if (field && env.viewer && !canReadField(env.viewer, item.object, field, record._id)) return { value: undefined, hidden: true };\n', ''],
+  ['R12 dry run step values shown with the enabler reads (B2)', A, 'const looker = viewer ?? principal,', 'const looker = principal,'],
+  ['R13 a stale enabler still queues runs (S5)', L, 'if (!member || (member.authorityEpoch ?? 0) !== state.epoch) {', 'if (false) {'],
+  ['R14 a refused run keeps its trigger record (S5)', A, ' await ctx.db.patch(runId, { triggerRecordId: undefined, eventId: undefined });', ''],
 ];
 let caught = 0;
 for (const [label, file, from, to, test = T] of mutants) {

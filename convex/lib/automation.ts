@@ -4,6 +4,7 @@ import { internal } from "../_generated/api";
 import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { canReadField, canReadRecordId } from "../authority/reads";
+import { projections } from "./slots";
 
 // The rules an Automation record follows on every write, and the event triggers. The
 // runner itself (actions, caps, the cron) is convex/automations.ts.
@@ -235,11 +236,38 @@ export async function automationAfter(ctx: MutationCtx, principal: Principal, ob
 }
 
 export const nextQueued = async (ctx: Ctx, automationId: Id<"records">) => (await ctx.db.query("automationRuns").withIndex("by_automation_status", (q) => q.eq("automationId", automationId).eq("status", "queued")).first())?._id ?? null;
+// Engine bookkeeping on the automation record (last run, pausing) is written directly:
+// it must work in a read-only workspace and must not count as editing the automation.
+export async function patchValues(ctx: MutationCtx, recordId: Id<"records">, changes: Record<string, unknown>) {
+  const record = await ctx.db.get(recordId);
+  if (!record) return null;
+  const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", record.orgId).eq("objectId", record.objectId)).collect();
+  const values = { ...record.values, ...changes };
+  await ctx.db.patch(recordId, { values, ...projections(fields, values) });
+  return record;
+}
+export async function pause(ctx: MutationCtx, automation: Doc<"records">, item: Item, state: Doc<"automationState">, text: string) {
+  const status = fieldOf(item, "status"), record = await ctx.db.get(automation._id);
+  if (status && record?.values[status._id] === "on") {
+    await patchValues(ctx, automation._id, { [status._id]: "paused" });
+    await ctx.db.insert("events", { orgId: automation.orgId, actor: { kind: "automation", id: automation._id }, action: "update", objectId: item.object._id, recordId: automation._id, before: { [status._id]: "on" }, after: { [status._id]: "paused" }, reason: text });
+  }
+  await ctx.db.patch(state._id, { on: false });
+  await ctx.db.insert("agentInbox", { orgId: automation.orgId, text, source: "automation", from: { kind: "user", id: state.enabledBy }, status: "pending", audience: "author", recordId: automation._id });
+}
 // One run per dedupe key. Past the depth cap the run is kept, as skipped, so the history says why.
 // An automation's runs go one at a time, oldest first: the runner started for the first
 // waiting run works through the rest, so a busy write schedules one job, not one per run.
 export async function enqueue(ctx: MutationCtx, state: Doc<"automationState">, run: { key: string; triggerRecordId?: Id<"records">; eventId?: Id<"events">; depth: number; chain: Id<"records">[] }) {
   if (await ctx.db.query("automationRuns").withIndex("by_key", (q) => q.eq("key", run.key)).first()) return;
+  // The person it runs as changed (role, scope, removal) since turning it on: no run is
+  // queued, so nothing records which record matched; it pauses until someone turns it on again.
+  const member = await ctx.db.get(state.memberId);
+  if (!member || (member.authorityEpoch ?? 0) !== state.epoch) {
+    const automation = await ctx.db.get(state.automationId), item = await itemByKey(ctx, state.orgId, "automation"), user = await ctx.db.get(state.enabledBy);
+    if (automation && item) return pause(ctx, automation, item, state, `Automation "${definitionOf(item, automation.values).name}" paused: ${user?.name ?? "the person who turned it on"} no longer has the access they had when turning it on. Turn it on again to run it as you.`);
+    return;
+  }
   const over = run.depth > MAX_DEPTH, waiting = await nextQueued(ctx, state.automationId);
   const runId = await ctx.db.insert("automationRuns", { orgId: state.orgId, automationId: state.automationId, ...run, enabledBy: state.enabledBy, created: [], status: over ? "skipped" : "queued", ...(over ? { error: `Stopped: automations can set each other off at most ${MAX_DEPTH} deep`, finishedAt: Date.now() } : {}) });
   if (!over && !waiting) await ctx.scheduler.runAfter(0, internal.automations.run, { runId });
