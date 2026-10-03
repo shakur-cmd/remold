@@ -204,7 +204,7 @@ Still additive: optional booking fields (`livemode`, `expectedMinor`, `expectedC
 
 Verifier: Claude Fable 5.1 (`~/work/briefs-1003/iv-B2-verdict.md`). Builder: Claude Opus 5.5. Not re-verified yet. Levels: SIM (convex-test) and SERVICE (local backend, 21/21 checks). Nothing LIVE.
 
-Commits: `c40182f` merges `origin/integ/campaigns` (f94e828: views, automations, shape lifecycle), then the round 3 fixes with this section, then one commit recording hashes. Final: `git log -1 campaigns/booking`.
+Commits: `c40182f` merges `origin/integ/campaigns` (f94e828: views, automations, shape lifecycle), then `82de93a` (round 3 fixes and this section), then one commit recording hashes. Final: `git log -1 campaigns/booking`.
 
 ### Merge with integ/campaigns (f94e828)
 
