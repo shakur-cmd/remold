@@ -231,6 +231,16 @@ describe("automations", () => {
     expect(await w.runs(weekly)).toHaveLength(1);
   });
 
+  it("changing the workspace zone moves a switched-on schedule's next due time to its wall clock time there", async () => {
+    const w = await world();
+    const id = await w.automation({ name: "Morning", when: "schedule", schedule: "daily 09:00", actions: [{ type: "inbox", text: "Hi" }] });
+    await w.turnOn(id);
+    const due = async () => ((await w.t.run((ctx: any) => ctx.db.query("automationState").collect())) as any[])[0].dueAt;
+    expect(await due()).toBe(Date.UTC(2026, 9, 5, 9));
+    await w.client.mutation(api.orgs.setTimeZone, { orgId: w.orgId, timeZone: "America/New_York" });
+    expect(await due()).toBe(Date.UTC(2026, 9, 5, 13));
+  });
+
   it("a run happens once even when its job is retried or ticks overlap", async () => {
     const w = await world();
     const id = await w.automation({ name: "Welcome", when: "recordCreated", object: "company", actions: [{ type: "createRecord", object: "project", values: { name: "Onboard {{record.name}}" } }] });

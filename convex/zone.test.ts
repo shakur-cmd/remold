@@ -35,6 +35,15 @@ describe("workspace time zone setting", () => {
     expect((await client.query(api.orgs.get, { orgId })).timeZone).toBe("America/New_York");
   });
 
+  it("takes the creator's browser zone when a workspace is created, UTC when it is not a zone", async () => {
+    const { t } = await userAndOrg();
+    const other = t.withIdentity({ tokenIdentifier: "clerk|Z", name: "Z" });
+    await other.mutation(api.users.store, {});
+    const zoneOf = async (timeZone: string) => (await other.query(api.orgs.get, { orgId: await other.mutation(api.orgs.create, { name: "Z", timeZone }) })).timeZone;
+    expect(await zoneOf("Asia/Tokyo")).toBe("Asia/Tokyo");
+    expect(await zoneOf("Mars/Olympus")).toBe("UTC");
+  });
+
   it("refuses names that are not time zones", async () => {
     const { client, orgId } = await userAndOrg();
     for (const timeZone of ["Mars/Olympus", "", "+05:00", "  ", "New York"]) await expect(client.mutation(api.orgs.setTimeZone, { orgId, timeZone })).rejects.toThrow();

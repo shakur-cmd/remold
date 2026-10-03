@@ -6,6 +6,7 @@ import { v } from "convex/values";
 import { getPrincipal, requireMember, requireWriter } from "./identity";
 import { seedStandard } from "./lib/standard";
 import { validZone } from "./lib/zone";
+import { definitionOf, itemByKey, nextDue } from "./lib/automation";
 import { fail } from "./errors";
 import { writable } from "./authority/readonly";
 
@@ -17,10 +18,11 @@ async function mayCreate(ctx: QueryCtx) {
   return !!email && (process.env.REMOLD_WORKSPACE_CREATORS ?? "").split(",").some((creator) => creator.trim().toLowerCase() === email);
 }
 export const canCreate = query({ args: {}, handler: async (ctx) => mayCreate(ctx) });
-export const create = mutation({ args: { name: v.string() }, handler: async (ctx, args) => {
+// timeZone is the creator's browser zone; an invalid one means UTC, an absent one leaves the zone unset.
+export const create = mutation({ args: { name: v.string(), timeZone: v.optional(v.string()) }, handler: async (ctx, args) => {
   const principal = await getPrincipal(ctx);
   if (!await mayCreate(ctx)) fail("FORBIDDEN", "New organisations are invite-only. Ask an organisation owner for an invite link.");
-  const orgId = await ctx.db.insert("orgs", { name: args.name, createdBy: principal.user._id });
+  const orgId = await ctx.db.insert("orgs", { name: args.name, createdBy: principal.user._id, ...(args.timeZone === undefined ? {} : { timeZone: validZone(args.timeZone.trim()) ?? "UTC" }) });
   await ctx.db.insert("members", { orgId, userId: principal.user._id, role: "owner" });
   await seedStandard(ctx, orgId);
   const objects = await ctx.db.query("objects").withIndex("by_org", q => q.eq("orgId", orgId)).collect();
@@ -43,6 +45,14 @@ export const setTimeZone = mutation({ args: { orgId: v.id("orgs"), timeZone: v.s
   const timeZone = validZone(args.timeZone.trim());
   if (!timeZone) fail("VALIDATION", "Use a time zone name such as America/New_York");
   await ctx.db.patch(args.orgId, { timeZone });
+  // Schedules are due at a wall clock time, so each switched-on one is re-aimed at the new zone now.
+  const item = await itemByKey(ctx, args.orgId, "automation");
+  for (const state of await ctx.db.query("automationState").withIndex("by_due", (q) => q.eq("on", true).eq("when", "schedule")).collect()) {
+    if (state.orgId !== args.orgId) continue;
+    const record = item && await ctx.db.get(state.automationId), d = record && (() => { try { return definitionOf(item, record.values); } catch { return null; } })();
+    const dueAt = d ? nextDue(d.schedule, Date.now(), timeZone) : undefined;
+    if (dueAt !== undefined) await ctx.db.patch(state._id, { dueAt });
+  }
 } });
 export const members = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
   await requireMember(ctx, args.orgId);
