@@ -3,14 +3,16 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { ownerOf, type Actor, type Principal } from "../identity";
 import { fail } from "../errors";
 import { writable } from "../authority/readonly";
-import { canReadField, canReadObject, canReadRecord, requireRecordRead } from "../authority/reads";
+import { canReadField, canReadObject, canReadRecord, requireRecordRead, visibleTitle } from "../authority/reads";
 import { applyChange } from "./applyChange";
-import { DAY, compose, deploymentCap, inboundDomain, normalAddress, settingsProblems, validAddress, type Recipient } from "./campaignText";
+import { DAY, compose, deploymentCap, fingerprint, inboundDomain, normalAddress, settingsProblems, validAddress, type EmailSettings, type Recipient } from "./campaignText";
 
 type Ctx = QueryCtx | MutationCtx;
 export type Item = { object: Doc<"objects">; f: Record<string, Doc<"fields">> };
 export const AUTOMATION: Actor = { kind: "automation", id: "Campaign email" };
 export const MAX_ATTEMPTS = 3;
+// People added to an email's recipient set per approval. More than this need another approval.
+export const SNAPSHOT_LIMIT = 4000;
 
 export async function standardItem(ctx: Ctx, orgId: Id<"orgs">, key: string): Promise<Item | null> {
   const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", key)).unique();
@@ -18,22 +20,30 @@ export async function standardItem(ctx: Ctx, orgId: Id<"orgs">, key: string): Pr
   const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", object._id)).collect();
   return { object, f: Object.fromEntries(fields.filter((field) => !field.retired).map((field) => [field.key, field])) };
 }
-const value = (record: Doc<"records">, field: Doc<"fields"> | undefined) => (field ? record.values[field._id] : undefined);
+export const value = (record: Doc<"records">, field: Doc<"fields"> | undefined) => (field ? record.values[field._id] : undefined);
+const addressOf = (raw: unknown) => (typeof raw === "string" && raw.trim() ? normalAddress(raw) : null);
 
 // Who a person is to merge tags: their name and their company's name.
-export async function recipientOf(ctx: Ctx, person: Item, record: Doc<"records">): Promise<Recipient & { address: string | null }> {
+export async function recipientOf(ctx: Ctx, person: Item, record: Doc<"records">): Promise<Recipient> {
   const companyId = value(record, person.f.company) as Id<"records"> | undefined, company = companyId ? await ctx.db.get(companyId) : null;
-  const raw = value(record, person.f.email);
-  return { name: record.title, company: company?.title || undefined, address: typeof raw === "string" && raw.trim() ? normalAddress(raw) : null };
+  return { name: record.title, company: company?.title || undefined };
+}
+// The same, as far as a caller may read the person's name and company.
+async function visibleRecipient(ctx: Ctx, principal: Principal, person: Item, record: Doc<"records">): Promise<Recipient> {
+  const readable = (key: string) => !!person.f[key] && canReadField(principal, person.object, person.f[key]!, record._id);
+  const companyId = readable("company") ? (value(record, person.f.company) as Id<"records"> | undefined) : undefined, company = companyId ? await ctx.db.get(companyId) : null;
+  return { name: readable("name") ? record.title : "", company: company ? (await visibleTitle(ctx, principal, company)) || undefined : undefined };
 }
 
-// Why an address may not get campaign email in this org, or null. Suppression in
-// `consent` comes first; past replies, bounces, complaints and unsubscribes also count.
-export async function exclusion(ctx: Ctx, orgId: Id<"orgs">, address: string) {
+// Why an address may not get this campaign's email, or null. Unsubscribes, bounces and
+// complaints (in `consent`, or on any earlier send) hold across the org; a reply only
+// within the campaign it answered.
+export async function exclusion(ctx: Ctx, orgId: Id<"orgs">, address: string, campaignId?: Id<"records">) {
   const consent = await ctx.db.query("consent").withIndex("by_recipient", (q) => q.eq("orgId", orgId).eq("recipient", address).eq("channel", "email").eq("purpose", "marketing")).order("desc").first();
   if (consent?.suppressed) return ({ bounce: "bounced", complaint: "complained", unsubscribe: "unsubscribed" } as Record<string, string>)[consent.source] ?? "suppressed";
   const past = await ctx.db.query("emailSends").withIndex("by_org_to", (q) => q.eq("orgId", orgId).eq("to", address)).collect();
-  for (const [key, reason] of [["repliedAt", "replied"], ["bouncedAt", "bounced"], ["complainedAt", "complained"], ["unsubscribedAt", "unsubscribed"]] as const) if (past.some((send) => send[key])) return reason;
+  for (const [key, reason] of [["bouncedAt", "bounced"], ["complainedAt", "complained"], ["unsubscribedAt", "unsubscribed"]] as const) if (past.some((send) => send[key])) return reason;
+  if (campaignId && past.some((send) => send.repliedAt && send.campaignRecordId === campaignId)) return "replied";
   return null;
 }
 
@@ -46,52 +56,91 @@ async function wroteBack(ctx: Ctx, orgId: Id<"orgs">, personId: Id<"records">, s
   return rows.some((row) => value(row, activity.f.type) === "email" && /received/i.test(row.title) && ((value(row, activity.f.when) as number | undefined) ?? row._creationTime) > since);
 }
 
-export type Candidate = { personId: Id<"records">; recipient: Recipient; address: string | null; reason?: string; replied?: Id<"emailSends"> };
-// Who an email goes to now, and who is left out and why. Only people without a row
-// for this email yet, at most `limit`. `waiting` counts follow-up recipients whose wait is not over.
-export async function audience(ctx: Ctx, orgId: Id<"orgs">, email: Doc<"records">, item: Item, now: number, limit = Infinity) {
-  const person = await standardItem(ctx, orgId, "person"), campaignItem = await standardItem(ctx, orgId, "campaign");
+// Whether one recipient is left out at send time: a reply to the email before (or a
+// Gmail-synced message after it), then the exclusions, then the follow-up's Send To.
+export async function decide(ctx: Ctx, orgId: Id<"orgs">, campaignId: Id<"records">, address: string, previous: Doc<"emailSends"> | null, sendTo: string) {
+  const wrote = !!previous && !previous.repliedAt && await wroteBack(ctx, orgId, previous.personRecordId, previous.sentAt ?? 0);
+  if (previous?.repliedAt || wrote) return { reason: "replied", wrote };
+  const excluded = await exclusion(ctx, orgId, address, campaignId);
+  if (excluded) return { reason: excluded, wrote };
+  if (previous && sendTo === "notOpened" && previous.openedAt) return { reason: "opened", wrote };
+  if (previous && sendTo === "notClicked" && previous.clickedAt) return { reason: "clicked", wrote };
+  return { reason: undefined, wrote };
+}
+const timing = (email: Doc<"records">, item: Item) => ({ wait: ((value(email, item.f.waitDays) as number | undefined) ?? 3) * DAY, sendTo: (value(email, item.f.sendTo) as string | undefined) ?? "notReplied" });
+
+export type Candidate = { personId: Id<"records">; address: string | null; reason?: string };
+// What a person approves: the words, schedule and follow-up rules, and the sender
+// settings they go out with. The sender refuses to send if this changes after approval.
+export function contentVersion(email: Doc<"records">, item: Item, settings: EmailSettings | undefined) {
+  return fingerprint({ content: ["subject", "body", "campaign", "followsUp", "waitDays", "sendTo", "sendAt"].map((key) => value(email, item.f[key]) ?? null), from: [settings?.fromName ?? null, settings?.fromAddress ?? null, settings?.replyTo ?? null, settings?.postalAddress ?? null] });
+}
+// The same plus exactly who it goes to; a preview shows it and approval must match it.
+export const approvalVersion = (content: string, people: Candidate[]) => fingerprint({ content, people: people.map((c) => [c.personId, c.address, c.reason ?? null]) });
+
+// A first email's people who have no row for it yet: from the campaign's People,
+// each with an address or the reason it has none. Existing rows supply the addresses
+// already taken, so nobody with a row is read again.
+export async function newPeople(ctx: Ctx, email: Doc<"records">, item: Item, limit: number) {
+  const person = await standardItem(ctx, email.orgId, "person"), campaignItem = await standardItem(ctx, email.orgId, "campaign");
+  const campaignId = value(email, item.f.campaign) as Id<"records"> | undefined, campaign = campaignId ? await ctx.db.get(campaignId) : null;
+  if (!person || !campaignItem || !campaign) return [];
+  const rows = await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect();
+  const had = new Set(rows.map((row) => row.personRecordId as string)), seen = new Set(rows.map((row) => row.to).filter(Boolean));
   const out: Candidate[] = [];
-  let waiting = 0;
-  if (!person || !campaignItem) return { candidates: out, waiting };
-  const had = new Set((await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect()).map((send) => send.personRecordId as string));
-  const previous = value(email, item.f.followsUp) as Id<"records"> | undefined;
-  const add = async (candidate: Candidate) => {
-    if (!candidate.reason && candidate.address) candidate.reason = (await exclusion(ctx, orgId, candidate.address)) ?? undefined;
-    out.push(candidate);
-  };
-  if (!previous) {
-    const campaign = await ctx.db.get(value(email, item.f.campaign) as Id<"records">);
-    const ids = campaign ? ((value(campaign, campaignItem.f.people) as Id<"records">[] | undefined) ?? []) : [];
-    const seen = new Set<string>();
-    for (const id of ids) {
-      if (out.length >= limit) break;
-      const record = await ctx.db.get(id), raw = record && value(record, person.f.email);
-      if (!record) continue;
-      // People who already have a row still claim their address, so a later duplicate is caught.
-      if (had.has(id)) { if (typeof raw === "string") seen.add(normalAddress(raw)); continue; }
-      const { address, ...recipient } = await recipientOf(ctx, person, record);
-      const reason = !address ? "no email" : !validAddress(address) ? "invalid address" : seen.has(address) ? "duplicate address" : undefined;
-      if (address) seen.add(address);
-      await add({ personId: id, recipient, address, reason });
-    }
-    return { candidates: out, waiting };
-  }
-  const wait = ((value(email, item.f.waitDays) as number | undefined) ?? 3) * DAY, sendTo = (value(email, item.f.sendTo) as string | undefined) ?? "notReplied";
-  for (const before of await ctx.db.query("emailSends").withIndex("by_email_status", (q) => q.eq("emailRecordId", previous).eq("status", "sent")).collect()) {
+  for (const id of (value(campaign, campaignItem.f.people) as Id<"records">[] | undefined) ?? []) {
     if (out.length >= limit) break;
-    if (had.has(before.personRecordId)) continue;
-    if ((before.sentAt ?? 0) + wait > now) { waiting++; continue; }
-    const record = await ctx.db.get(before.personRecordId);
-    const recipient = record ? await recipientOf(ctx, person, record) : { name: "", address: null };
-    const replied = !before.repliedAt && await wroteBack(ctx, orgId, before.personRecordId, before.sentAt ?? 0);
-    const reason = before.repliedAt || replied ? "replied" : (await exclusion(ctx, orgId, before.to)) ?? (sendTo === "notOpened" && before.openedAt ? "opened" : sendTo === "notClicked" && before.clickedAt ? "clicked" : undefined);
-    out.push({ personId: before.personRecordId, recipient: { name: recipient.name, company: recipient.company }, address: before.to, reason, ...(replied ? { replied: before._id } : {}) });
+    if (had.has(id)) continue;
+    const record = await ctx.db.get(id);
+    if (!record) continue;
+    const address = addressOf(value(record, person.f.email));
+    const reason = !address ? "no email" : !validAddress(address) ? "invalid address" : seen.has(address) ? "duplicate address" : (await exclusion(ctx, email.orgId, address, campaign._id)) ?? undefined;
+    if (address) seen.add(address);
+    out.push({ personId: id, address, ...(reason ? { reason } : {}) });
   }
-  return { candidates: out, waiting };
+  return out;
+}
+// How many of a first email's campaign People are not in its recipient set yet (no reads per person).
+async function notInSet(ctx: Ctx, email: Doc<"records">, item: Item, rows: Doc<"emailSends">[]) {
+  if (value(email, item.f.followsUp)) return 0;
+  const campaignItem = await standardItem(ctx, email.orgId, "campaign"), campaign = await ctx.db.get(value(email, item.f.campaign) as Id<"records">);
+  const had = new Set(rows.map((row) => row.personRecordId as string));
+  return campaign && campaignItem ? new Set(((value(campaign, campaignItem.f.people) as string[] | undefined) ?? []).filter((id) => !had.has(id))).size : 0;
 }
 
+// The approval fixes who an email goes to. A first email: the campaign's People now,
+// as queued rows (or skipped, with the reason). A follow-up: one row per person the
+// email before was sent to, due after the wait; more are added as that email goes out.
+export async function snapshot(ctx: MutationCtx, email: Doc<"records">, item: Item, people: Candidate[]) {
+  const campaignId = value(email, item.f.campaign) as Id<"records">, previous = value(email, item.f.followsUp) as Id<"records"> | undefined;
+  const base = { orgId: email.orgId, emailRecordId: email._id, campaignRecordId: campaignId, attempts: 0 };
+  if (!previous) {
+    const notBefore = (value(email, item.f.sendAt) as number | undefined) ?? 0;
+    for (const c of people) await ctx.db.insert("emailSends", { ...base, personRecordId: c.personId, to: c.address ?? "", token: newToken(), notBefore, ...(c.reason ? { status: "skipped" as const, skipReason: c.reason } : { status: "queued" as const }) });
+    return;
+  }
+  for (const before of await ctx.db.query("emailSends").withIndex("by_email_status", (q) => q.eq("emailRecordId", previous).eq("status", "sent")).take(SNAPSHOT_LIMIT)) await followUpRow(ctx, email, item, before);
+}
+async function followUpRow(ctx: MutationCtx, email: Doc<"records">, item: Item, before: Doc<"emailSends">) {
+  if (await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id).eq("personRecordId", before.personRecordId)).first()) return;
+  await ctx.db.insert("emailSends", { orgId: email.orgId, emailRecordId: email._id, campaignRecordId: value(email, item.f.campaign) as Id<"records">, personRecordId: before.personRecordId, to: before.to, token: newToken(), status: "queued", attempts: 0, notBefore: (before.sentAt ?? 0) + timing(email, item).wait, previousSendId: before._id });
+}
+// A send just went out: every approved follow-up of its email gets this person.
+export async function followUpsOf(ctx: MutationCtx, send: Doc<"emailSends">) {
+  const item = await standardItem(ctx, send.orgId, "email"), slot = item?.f.followsUp?.slot;
+  if (!item || !slot) return;
+  const name = `${slot.kind}${slot.index}`;
+  const next: Doc<"records">[] = await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", send.orgId).eq("objectId", item.object._id).eq(name, send.emailRecordId)).collect();
+  for (const email of next) {
+    const run = await ctx.db.query("emailRuns").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).unique();
+    if (run?.live && run.confirmed) await followUpRow(ctx, email, item, send);
+  }
+}
+export const newToken = () => [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, "0")).join("");
+
 export type State = { org: Doc<"orgs">; email: Doc<"records">; item: Item; campaign: Doc<"records"> | null; run: Doc<"emailRuns"> | null; replyTo?: string; problems: string[] };
+export const NOT_CONFIRMED = "Not approved on the campaign page with the list confirmed";
+export const CHANGED = "The email or the sending settings changed since approval";
 // Everything that decides whether an email may send right now. Problems are plain
 // sentences for people and agents; any problem means nothing sends.
 export async function stateOf(ctx: Ctx, email: Doc<"records">, now: number): Promise<State | null> {
@@ -108,7 +157,8 @@ export async function stateOf(ctx: Ctx, email: Doc<"records">, now: number): Pro
   else if (value(campaign, campaignItem.f.status) !== "active") problems.push("The campaign is not active");
   if (status === "stopped") problems.push("Stopped");
   else if (status !== "approved" && status !== "sending" && status !== "sent") problems.push("Not approved yet");
-  else if (!run?.confirmed) problems.push("Not approved on the campaign page with the list confirmed");
+  else if (!run?.confirmed) problems.push(NOT_CONFIRMED);
+  else if (status !== "sent" && run.contentVersion !== contentVersion(email, item, org.emailSettings)) problems.push(CHANGED);
   if (!value(email, item.f.followsUp) && sendAt && sendAt > now) problems.push(`Waits until ${new Date(sendAt).toISOString().slice(0, 16).replace("T", " ")} UTC`);
   // Before approval the approving admin is not known yet; their email becomes the default.
   if (run && !inboundDomain() && !replyTo) problems.push("No reply-to address");
@@ -188,7 +238,7 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
   return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, emails: await Promise.all(chain(emails, item).map(async (email) => {
     const rows = await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect();
     const count = (test: (s: Doc<"emailSends">) => unknown) => rows.filter(test).length, sent = count((s) => s.status === "sent");
-    const counts = { recipients: count((s) => s.status !== "skipped"), queued: count((s) => s.status === "queued" || s.status === "sending"), sent, failed: count((s) => s.status === "failed"), skipped: count((s) => s.status === "skipped"), delivered: count((s) => s.deliveredAt), opened: count((s) => s.openedAt), clicked: count((s) => s.clickedAt), replied: count((s) => s.repliedAt), bounced: count((s) => s.bouncedAt), unsubscribed: count((s) => s.unsubscribedAt) };
+    const counts = { recipients: count((s) => s.status !== "skipped"), queued: count((s) => s.status === "queued" || s.status === "sending"), waiting: count((s) => s.status === "queued" && (s.notBefore ?? 0) > now), sent, failed: count((s) => s.status === "failed"), skipped: count((s) => s.status === "skipped"), delivered: count((s) => s.deliveredAt), opened: count((s) => s.openedAt), clicked: count((s) => s.clickedAt), replied: count((s) => s.repliedAt), bounced: count((s) => s.bouncedAt), unsubscribed: count((s) => s.unsubscribedAt) };
     const recipients = [];
     for (const s of rows) {
       const record = person ? await ctx.db.get(s.personRecordId) : null;
@@ -196,28 +246,48 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
       const address = person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? s.to || null : null;
       recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: person.f.name && canReadField(principal, person.object, person.f.name, record._id) ? record.title : null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt });
     }
-    const state = await stateOf(ctx, email, now);
-    return { id: email._id, ref: email.ref ?? null, subject: shown(email, "subject"), status: shown(email, "status"), followsUp: shown(email, "followsUp"), waitDays: shown(email, "waitDays"), sendTo: shown(email, "sendTo"), sendAt: shown(email, "sendAt"), problems: state?.problems ?? ["This email is missing a standard field"], counts, rates: { opened: share(counts.opened, sent), clicked: share(counts.clicked, sent), replied: share(counts.replied, sent) }, recipients };
+    const state = await stateOf(ctx, email, now), status = value(email, item.f.status);
+    // People linked to the campaign after its approval: they get nothing until an admin approves again.
+    const added = status === "approved" || status === "sending" || status === "sent" ? await notInSet(ctx, email, item, rows) : 0;
+    return { id: email._id, ref: email.ref ?? null, subject: shown(email, "subject"), status: shown(email, "status"), followsUp: shown(email, "followsUp"), waitDays: shown(email, "waitDays"), sendTo: shown(email, "sendTo"), sendAt: shown(email, "sendAt"), problems: state?.problems ?? ["This email is missing a standard field"], added, counts, rates: { opened: share(counts.opened, sent), clicked: share(counts.clicked, sent), replied: share(counts.replied, sent) }, recipients };
   })) };
 }
 
-// The email as one person would get it now, and who it would go to and who not.
+// The email as one person would get it, and who an approval now would add and who
+// it leaves out and why. Names, companies and addresses follow the caller's read scope.
 export async function emailPreview(ctx: Ctx, principal: Principal, email: Doc<"records">, personId?: Id<"records">) {
   const item = await standardItem(ctx, principal.org._id, "email"), person = await standardItem(ctx, principal.org._id, "person");
   if (!item || !person || email.objectId !== item.object._id) fail("NOT_FOUND", "Email not found");
   requireRecordRead(principal, item.object, email);
-  const state = await stateOf(ctx, email, Date.now());
+  const now = Date.now(), state = await stateOf(ctx, email, now);
   if (!state?.campaign) fail("VALIDATION", "This email has no campaign yet");
   const campaignObject = await ctx.db.get(state.campaign.objectId);
   if (!campaignObject || !canReadRecord(principal, campaignObject, state.campaign)) fail("NOT_FOUND", "Campaign not found");
-  const { candidates, waiting } = await audience(ctx, principal.org._id, email, item, Date.now(), 1000);
-  const readable = async (c: Candidate) => { const record = await ctx.db.get(c.personId); return !!record && canReadRecord(principal, person.object, record) ? record : null; };
+  const previous = value(email, item.f.followsUp) as Id<"records"> | undefined;
+  let candidates: Candidate[] = [], waiting = 0;
+  if (!previous) candidates = await newPeople(ctx, email, item, SNAPSHOT_LIMIT);
+  else {
+    const { wait, sendTo } = timing(email, item), had = new Set((await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect()).map((s) => s.personRecordId as string));
+    for (const before of await ctx.db.query("emailSends").withIndex("by_email_status", (q) => q.eq("emailRecordId", previous).eq("status", "sent")).take(1000)) {
+      if (had.has(before.personRecordId)) continue;
+      if ((before.sentAt ?? 0) + wait > now) { waiting++; continue; }
+      candidates.push({ personId: before.personRecordId, address: before.to, reason: (await decide(ctx, principal.org._id, state.campaign._id, before.to, before, sendTo)).reason });
+    }
+  }
   const listed = [];
-  for (const c of candidates) { const record = await readable(c); if (record) listed.push({ c, row: { person: { id: record._id, ref: record.ref ?? null }, name: record.title, address: person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? c.address : null, ...(c.reason ? { reason: c.reason } : {}) } }); }
-  const chosen = personId ? listed.find(({ c }) => c.personId === personId) : listed.find(({ c }) => !c.reason);
-  let target = chosen?.c.recipient;
-  if (personId && !chosen) { const record = await ctx.db.get(personId); if (!record || record.orgId !== principal.org._id || !canReadRecord(principal, person.object, record)) fail("NOT_FOUND", "Person not found"); target = { name: record.title, company: (await recipientOf(ctx, person, record)).company }; }
-  const template = { subject: String(value(email, item.f.subject) ?? ""), body: String(value(email, item.f.body) ?? "") };
-  const rendered = target ? { person: { name: target.name }, ...compose(template, target, state.org.emailSettings?.postalAddress ?? "", "preview") } : null;
-  return { rendered, recipients: listed.filter(({ c }) => !c.reason).map(({ row }) => row), excluded: listed.filter(({ c }) => c.reason).map(({ row }) => row), counts: { recipients: candidates.filter((c) => !c.reason).length, excluded: candidates.filter((c) => c.reason).length, waiting }, problems: state.problems };
+  for (const c of candidates.slice(0, 200)) {
+    const record = await ctx.db.get(c.personId);
+    if (record && canReadRecord(principal, person.object, record)) listed.push({ c, record, row: { person: { id: record._id, ref: record.ref ?? null }, name: person.f.name && canReadField(principal, person.object, person.f.name, record._id) ? record.title : null, address: person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? c.address : null, ...(c.reason ? { reason: c.reason } : {}) } });
+  }
+  let target = personId ? listed.find(({ c }) => c.personId === personId)?.record : listed.find(({ c }) => !c.reason)?.record;
+  if (personId && !target) { const record = await ctx.db.get(personId); if (!record || record.orgId !== principal.org._id || !canReadRecord(principal, person.object, record)) fail("NOT_FOUND", "Person not found"); target = record; }
+  // A caller who cannot read the subject or body sees neither, rendered or not.
+  const readable = (key: string) => !!item.f[key] && canReadField(principal, item.object, item.f[key]!, email._id);
+  const template = { subject: readable("subject") ? String(value(email, item.f.subject) ?? "") : "", body: readable("body") ? String(value(email, item.f.body) ?? "") : "" };
+  const recipient = target ? await visibleRecipient(ctx, principal, person, target) : null;
+  const rendered = recipient ? { person: { name: recipient.name || null }, ...compose(template, recipient, state.org.emailSettings?.postalAddress ?? "", "preview") } : null;
+  // The version binds an approval to what this preview showed; only someone who could see all of it gets one.
+  const whole = ["subject", "body", "campaign", "followsUp", "waitDays", "sendTo", "sendAt"].every((key) => !item.f[key] || readable(key)) && ["name", "email", "company"].every((key) => !person.f[key] || canReadField(principal, person.object, person.f[key]!)) && listed.length === Math.min(candidates.length, 200);
+  const version = whole ? approvalVersion(contentVersion(email, item, state.org.emailSettings), previous ? [] : candidates) : null;
+  return { version, rendered, recipients: listed.filter(({ c }) => !c.reason).map(({ row }) => row), excluded: listed.filter(({ c }) => c.reason).map(({ row }) => row), counts: { recipients: candidates.filter((c) => !c.reason).length, excluded: candidates.filter((c) => c.reason).length, waiting }, problems: state.problems };
 }

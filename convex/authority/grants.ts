@@ -16,6 +16,7 @@ export async function principalFor(ctx: Ctx, orgId: Id<'orgs'>, actor: Actor): P
   if (actor.kind === 'agent') {
     const id = ctx.db.normalizeId('agents', actor.id), agent = id ? await ctx.db.get(id) : null;
     if (!agent || agent.orgId !== orgId || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== 'active')) fail('FORBIDDEN', 'Agent inactive');
+    // No readsEverything: absent means not a shared-inbox reader, so this principal fails closed on purpose.
     return { agent, org, actor: { kind: 'agent', id: agent._id } };
   }
   const id = ctx.db.normalizeId('users', actor.id), user = id ? await ctx.db.get(id) : null;

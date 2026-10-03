@@ -49,9 +49,10 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
     const fieldId = ctx.db.normalizeId("fields", id), field = fieldId ? await ctx.db.get(fieldId) : null;
     if (!field || !canReadField(member, object, field, record?._id)) fail("NOT_FOUND", "Field not found");
   }
-  if (suggestion.change.action === "update") {
-    const conflicts = Object.keys(suggestion.change.values).flatMap((fieldId) => same(record!.values[fieldId], suggestion.before[fieldId]) ? [] : [{ fieldId, expected: suggestion.before[fieldId] ?? null, actual: record!.values[fieldId] ?? null }]);
-    if (conflicts.length) { await ctx.db.patch(suggestion._id, { status: "conflicted", conflicts }); return { status: "conflicted" as const, conflicts }; }
+  if (suggestion.change.action === "update" || suggestion.change.action === "delete") {
+    const reviewed = suggestion.change.action === "delete" ? [...new Set([...Object.keys(suggestion.before), ...Object.keys(record!.values)])] : Object.keys(suggestion.change.values);
+    const conflicts = reviewed.flatMap((fieldId) => same(record!.values[fieldId], suggestion.before[fieldId]) ? [] : [{ fieldId, expected: suggestion.before[fieldId] ?? null, actual: record!.values[fieldId] ?? null }]);
+    if (conflicts.length) { await ctx.db.patch(suggestion._id, { status: "conflicted", conflicts }); return { status: "conflicted" as const, conflicts: (await row(ctx, member, { ...suggestion, conflicts }))?.suggestion.conflicts ?? [] }; }
   }
   const agent = await ctx.db.get(suggestion.agentId), org = await ctx.db.get(args.orgId);
   if (!agent || !org) fail("NOT_FOUND", "Suggestion agent not found");
@@ -62,6 +63,7 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
       ? { action: "update" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, values: suggestion.change.values, reason: suggestion.reason }
       : { action: "delete" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, reason: suggestion.reason };
   if (suggestion.adoptedBy && (suggestion.adoptedBy !== member.user._id || (suggestion.authorityEpoch ?? 0) !== (member.member.authorityEpoch ?? 0))) fail("FORBIDDEN", "Only the adopting member can apply this action");
+  // The agent principal omits readsEverything on purpose: absent fails closed (not a shared-inbox reader).
   const result = await applyChange(ctx, suggestion.adoptedBy ? member : { agent, org, actor: { kind: "agent", id: agent._id } }, change, { suggestionId: suggestion._id, approvedBy: member });
   await ctx.db.patch(suggestion._id, { status: "applied", resolvedBy: member.user._id, resolvedAt: Date.now(), ...(result.eventId ? { eventId: result.eventId } : {}) });
   if (suggestion.inboxId) { const inbox = await ctx.db.get(suggestion.inboxId); if (inbox?.orgId === args.orgId && inbox.status === "pending") await ctx.db.patch(inbox._id, { status: "resolved", resolvedAt: Date.now(), suggestionId: suggestion._id }); }

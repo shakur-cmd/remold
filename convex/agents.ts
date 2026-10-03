@@ -1,28 +1,32 @@
 import { pauseWork } from './integrations/lifecycle';
 import { action, internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-import type { MutationCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { v, type ObjectType } from "convex/values";
-import { memberAs, requireMember } from "./identity";
+import { memberAs, readsEverything, requireMember } from "./identity";
 import { fail } from "./errors";
 import { expand, snapshot } from "./authority/migration";
 import { writable } from "./authority/readonly";
 import { grantIntake } from "./lib/intake";
 import { issue } from "./authority/grants";
+import { agentReads, canReadObject } from "./authority/reads";
 
 const grants = v.array(v.object({ action: v.union(v.literal("create"), v.literal("update"), v.literal("delete")), objectKey: v.string() }));
 const role = v.union(v.literal("admin"), v.literal("member"));
 const hex = (bytes: Uint8Array) => [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 
 export const list = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
-  await requireMember(ctx, args.orgId);
+  const viewer = await requireMember(ctx, args.orgId);
   // Scoped keys act only through capability grants; access names the live ones, e.g. "create activity".
-  const keys = new Map((await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect()).map((o) => [o._id as string, o.key])), now = Date.now();
+  const objects = (await snapshot(ctx, args.orgId)).sort((a, b) => a.order - b.order), keys = new Map(objects.map((o) => [o._id as string, o.key])), now = Date.now(), org = viewer.org;
   const rows = await ctx.db.query("agents").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect();
   return Promise.all(rows.map(async ({ keyHash: _keyHash, ...agent }) => {
     const live = (await ctx.db.query("capabilityGrants").withIndex("by_agent", (q) => q.eq("orgId", args.orgId).eq("agentId", agent._id)).collect()).filter((g) => g.revokedAt === undefined && g.expiresAt > now);
-    return { ...agent, grants: agent.grants.map(({ action, objectKey }) => ({ action, objectKey })), access: [...new Set(live.map((g) => `${g.capability.replace(/^record\./, "")}${g.scope.kind === "records" ? ` ${keys.get(g.scope.objectId) ?? "?"}` : ""}`))] };
+    // Read through its list, or through a live read grant; grants on anything else do nothing, so they are not shown.
+    const reads = new Set(objects.filter((o) => agentReads({ agent: agent as Doc<"agents">, org }, o) || live.some((g) => g.capability === "read" && g.scope.kind === "records" && g.scope.objectId === o._id)).map((o) => o._id as string));
+    const shown = live.filter((g) => g.scope.kind !== "records" || reads.has(g.scope.objectId));
+    return { ...agent, grants: agent.grants.filter((g) => agent.authorityVersion !== 1 || (g.objectId && reads.has(g.objectId))).map(({ action, objectKey }) => ({ action, objectKey })), access: [...new Set(shown.map((g) => `${g.capability.replace(/^record\./, "")}${g.scope.kind === "records" ? ` ${keys.get(g.scope.objectId) ?? "?"}` : ""}`))], fixedScope: await fixedScope(ctx, agent), cannotRead: objects.filter((o) => !reads.has(o._id) && canReadObject(viewer, o)).map((o) => o.key), inboxNeedsAll: agent.authorityVersion === 1 && !!agent.sharedInbox && !(await readsEverything(ctx, agent as Doc<"agents">)) };
   }));
 } });
 
@@ -74,11 +78,52 @@ export const setGrants = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("
   const agent = await ctx.db.get(args.agentId);
   if (!agent || agent.orgId !== args.orgId) fail("NOT_FOUND", "Agent not found");
   const objects = await snapshot(ctx, args.orgId);
-  const frozen = await snapshot(ctx, args.orgId, caller.org.authorityFrozenAt), before = agent.authorityVersion === 1 ? agent.grants : expand(agent.grants, frozen), next = expand(args.grants, objects);
+  const frozen = await snapshot(ctx, args.orgId, caller.org.authorityFrozenAt), before = agent.authorityVersion === 1 ? agent.grants : expand(agent.grants, frozen);
+  // A write grant needs read on its object, so reading it later never switches on writes set earlier.
+  const reads = agent.readAllObjects ? objects.map(o => o._id) : agent.readObjectIds ?? frozen.map(o => o._id), next = expand(args.grants, objects);
+  // The list hides write grants on unread objects, so the UI never sends them back; keep them (inert until read returns, as in setReadAccess).
+  const kept = before.filter(g => g.objectId && !reads.includes(g.objectId) && !next.some(n => n.action === g.action && n.objectId === g.objectId));
+  const unread = next.find(g => !reads.includes(g.objectId!) && !before.some(old => old.action === g.action && old.objectId === g.objectId));
+  if (unread) fail("FORBIDDEN", `Let it read ${objects.find(o => o._id === unread.objectId)!.labelPlural} before it changes them`);
   if (next.some(g => !before.some(old => old.action === g.action && old.objectId === g.objectId))) { await writable(ctx, args.orgId); await legacyCeiling(ctx, args.orgId, caller.user._id); }
-  await ctx.db.patch(agent._id, { grants: next, authorityVersion: 1, readObjectIds: agent.readObjectIds ?? frozen.map(o => o._id), authorityEpoch: (agent.authorityEpoch ?? 0) + 1 });
+  await ctx.db.patch(agent._id, { grants: [...next, ...kept], authorityVersion: 1, readObjectIds: agent.readObjectIds ?? frozen.map(o => o._id), authorityEpoch: (agent.authorityEpoch ?? 0) + 1 });
   await pauseWork(ctx, args.orgId);
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: caller.actor, action: "legacyGrantsReplaced", targetId: agent._id, objectIds: objects.map(o => o._id), epoch: (agent.authorityEpoch ?? 0) + 1 });
+} });
+
+// Keys made for one job (website intake, Gmail sync, other scoped keys) keep their fixed scope; an owner widens those with capability grants.
+// Gmail sync keys have no marker of their own: this relies on insertAgent writing the scopedAgentCreated audit row.
+async function fixedScope(ctx: QueryCtx, agent: Pick<Doc<"agents">, "_id" | "orgId" | "purpose">) {
+  return agent.purpose !== undefined || !!(await ctx.db.query("authorityAudit").withIndex("by_target", (q) => q.eq("orgId", agent.orgId).eq("targetId", agent._id)).filter((q) => q.eq(q.field("action"), "scopedAgentCreated")).first());
+}
+
+// Replaces what the agent reads, among the objects the calling admin can read; the agent keeps its access to every other object.
+// Reading never grants writes. Removing read drops its write grants and revokes record capability grants on that object, so
+// reading it again does not bring them back. Hidden fields are kept: they hide nothing while unread, and again once read.
+export const setReadAccess = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("agents"), readAllObjects: v.boolean(), objectIds: v.array(v.id("objects")) }, handler: async (ctx, args) => {
+  const caller = await requireMember(ctx, args.orgId, "admin");
+  const agent = await ctx.db.get(args.agentId);
+  if (!agent || agent.orgId !== args.orgId) fail("NOT_FOUND", "Agent not found");
+  if (agent.revokedAt !== undefined || agent.state === "fired") fail("FORBIDDEN", "This agent's key is revoked");
+  if (await fixedScope(ctx, agent)) fail("FORBIDDEN", "This key has a fixed job, so its access does not change here");
+  if (agent.authorityVersion !== 1) fail("AUTHORITY_MIGRATING", "Workspace authority migration is pending; retry shortly", { retryable: true });
+  const objects = await snapshot(ctx, args.orgId), all = objects.map((o) => o._id), mine = objects.filter((o) => canReadObject(caller, o)).map((o) => o._id);
+  if (args.objectIds.some((id) => !mine.includes(id))) fail("NOT_FOUND", "Object not found");
+  // All objects covers objects this admin cannot see, including future ones.
+  if (mine.length < all.length && (args.readAllObjects || !!agent.readAllObjects)) fail("FORBIDDEN", "Only an administrator who sees every object can change All objects");
+  const before = agent.readAllObjects ? all : (agent.readObjectIds ?? []).filter((id) => all.includes(id));
+  const reads = args.readAllObjects ? all : [...new Set([...before.filter((id) => !mine.includes(id)), ...args.objectIds])], removed = before.filter((id) => !reads.includes(id));
+  if ((args.readAllObjects && !agent.readAllObjects) || reads.some((id) => !before.includes(id))) { await writable(ctx, args.orgId); await legacyCeiling(ctx, args.orgId, caller.user._id); }
+  const epoch = (agent.authorityEpoch ?? 0) + 1;
+  // readObjectIds also lists every current object under readAllObjects, so a release without the flag still reads them.
+  await ctx.db.patch(agent._id, { readAllObjects: args.readAllObjects || undefined, readObjectIds: reads, grants: agent.grants.filter((g) => !g.objectId || !mine.includes(g.objectId) || reads.includes(g.objectId)), authorityEpoch: epoch });
+  for (const g of await ctx.db.query("capabilityGrants").withIndex("by_agent", (q) => q.eq("orgId", args.orgId).eq("agentId", agent._id)).collect()) {
+    if (g.revokedAt !== undefined || !g.capability.startsWith("record.") || g.scope.kind !== "records" || !removed.includes(g.scope.objectId)) continue;
+    await ctx.db.patch(g._id, { revokedAt: Date.now() });
+    await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: caller.actor, action: "capabilityRevoked", targetId: g._id, epoch });
+  }
+  await pauseWork(ctx, args.orgId);
+  await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: caller.actor, action: "agentReadAccessChanged", targetId: agent._id, objectIds: reads, epoch });
 } });
 
 export const revoke = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("agents") }, handler: async (ctx, args) => {

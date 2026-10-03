@@ -59,7 +59,7 @@ async function dispatch(ctx: any, request: Request) {
     return args;
   };
   const query = async (reference: any, args: any) => ctx.runQuery(reference, await checked(reference, { ...args, keyHash }));
-  const mutation = async (reference: any, args: any) => ctx.runMutation(reference, await checked(reference, { ...args, keyHash }));
+  const mutation = async (reference: any, args: any) => ctx.runMutation(reference, await checked(reference, { ...args, ...(["propose", "proposeShape", "inboxAdd", "inboxResolve", "markReplied"].some(n => getFunctionName(reference) === `agentApi:${n}`) ? { idempotency: await idempotencyOf(request, url.pathname, body) } : {}), keyHash }));
   if (path[0] === "operations") {
     if (request.method === "GET" && path.length === 2) return json(await query(makeFunctionReference<'query'>("integrations/commands:getAgent"), { id: path[1] }));
     if (request.method === "POST" && path.length === 1) return json(await mutation(makeFunctionReference<'mutation'>("integrations/commands:proposeAgent"), body), 201);
