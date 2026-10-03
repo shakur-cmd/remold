@@ -2596,5 +2596,27 @@
     "readonly": "refused",
     "masks": "n/a",
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "campaignSend:claimForwards",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it",
+    "reason": "reply forwarding; a read-only workspace forwards nothing"
+  },
+  {
+    "id": "campaignSend:forwarded",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it",
+    "reason": "records a forward's outcome"
   }
 ]

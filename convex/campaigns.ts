@@ -3,7 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { requireMember, requireWriter } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
-import { campaignReport, emailPreview, markReplied as mark, standardItem } from "./lib/campaign";
+import { SNAPSHOT_LIMIT, approvalVersion, campaignReport, contentVersion, emailPreview, markReplied as mark, newPeople, snapshot, standardItem, value } from "./lib/campaign";
 import { checklist, validAddress } from "./lib/campaignText";
 
 // Campaign email for people in the app. Agents reach the same report, preview and
@@ -40,16 +40,21 @@ export const preview = query({ args: { orgId: v.id("orgs"), emailId: v.id("recor
 } });
 
 // Approval from the campaign page, where the admin confirms the list agreed to hear
-// from them. The status change goes through applyChange, which checks the email.
-export const approve = mutation({ args: { orgId: v.id("orgs"), emailId: v.id("records"), confirmed: v.boolean() }, handler: async (ctx, args) => {
+// from them. It must match the preview they saw (`version`): the same words, schedule,
+// sender settings and people. Those people become the email's recipients; anyone linked
+// to the campaign later needs another approval. The status change goes through
+// applyChange, which checks the email.
+export const approve = mutation({ args: { orgId: v.id("orgs"), emailId: v.id("records"), confirmed: v.boolean(), version: v.string() }, handler: async (ctx, args) => {
   const member = await requireWriter(ctx, args.orgId, "admin"), item = await standardItem(ctx, args.orgId, "email"), email = await ctx.db.get(args.emailId);
   if (!item?.f.status || !email || email.orgId !== args.orgId || email.objectId !== item.object._id) fail("NOT_FOUND", "Email not found");
-  if (["sending", "sent"].includes(email.values[item.f.status._id] as string)) fail("CONFLICT", "This email is already going out");
   if (!args.confirmed) fail("VALIDATION", "Confirm that everyone on this list agreed to hear from you or already works with you");
+  const people = value(email, item.f.followsUp) ? [] : await newPeople(ctx, email, item, SNAPSHOT_LIMIT), content = contentVersion(email, item, member.org.emailSettings);
+  if (approvalVersion(content, people) !== args.version) fail("CONFLICT", "The email, its settings or its recipients changed since the preview. Look again before approving.");
   await applyChange(ctx, member, { action: "update", orgId: args.orgId, recordId: email._id, values: { [item.f.status._id]: "approved" }, reason: "Approved for sending" });
   const run = await ctx.db.query("emailRuns").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).unique();
   if (!run) fail("CONFLICT", "This email is not waiting to send");
-  await ctx.db.patch(run._id, { confirmed: true, approvedBy: member.user._id, approvedAt: Date.now() });
+  await ctx.db.patch(run._id, { confirmed: true, approvedBy: member.user._id, approvedAt: Date.now(), version: args.version, contentVersion: content });
+  await snapshot(ctx, (await ctx.db.get(email._id))!, item, people);
 } });
 
 export const markReplied = mutation({ args: { orgId: v.id("orgs"), sendId: v.string() }, handler: async (ctx, args) => mark(ctx, await requireWriter(ctx, args.orgId), args.sendId) });

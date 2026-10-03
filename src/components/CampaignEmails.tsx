@@ -21,7 +21,13 @@ type Email = Report["emails"][number];
 const percent = (rate: number) => `${Math.round(rate * 100)}%`;
 const AUDIENCE: Record<string, string> = { everyone: "everyone", notOpened: "people who did not open", notClicked: "people who did not click", notReplied: "people who did not reply" };
 // Approving fixes these two; the dialog lists only what still stands in the way after it.
-const APPROVAL = /^Not approved/;
+const APPROVAL = /^Not approved|changed since approval/;
+const TAG_NAMES: Record<string, string> = { firstName: "first name", name: "name", company: "company" };
+// A subject with its merge tags shown as plain placeholders, not raw template syntax.
+function Subject({ text }: { text: string }) {
+  const parts = text.split(/(\{\{[^{}]*\}\})/);
+  return <>{parts.map((part, i) => { const name = /^\{\{\s*([A-Za-z]+)/.exec(part)?.[1]; return name ? <span key={i} className="rounded bg-muted px-1 text-muted-foreground">{TAG_NAMES[name] ?? name}</span> : part; })}</>;
+}
 
 // A campaign's emails in order, with their numbers, and the campaign's go switch.
 export function CampaignEmails({ orgId, recordId, status, admin }: { orgId: Id<"orgs">; recordId: Id<"records">; status?: { field: Field; value: unknown }; admin: boolean }) {
@@ -65,10 +71,11 @@ export function CampaignEmails({ orgId, recordId, status, admin }: { orgId: Id<"
           return (
             <div key={item.id} className="grid min-w-0 gap-2 rounded-lg border bg-card p-3">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <Link to={`/o/${orgId}/email/${item.id}`} className="min-w-0 truncate text-sm font-medium hover:underline">{String(item.subject ?? "") || "Untitled"}</Link>
+                <Link to={`/o/${orgId}/email/${item.id}`} className="min-w-0 truncate text-sm font-medium hover:underline">{item.subject ? <Subject text={String(item.subject)} /> : "Untitled"}</Link>
                 <Badge variant={state === "sent" ? "secondary" : state === "stopped" ? "destructive" : "outline"}>{statusOf(state)}</Badge>
                 <div className="ml-auto flex gap-1">
                   {admin && (state === "draft" || state === "stopped") && <Button size="xs" variant="outline" onClick={() => setApproving(item)}>Approve</Button>}
+                  {admin && (state === "approved" || state === "sending") && item.problems.some((p) => APPROVAL.test(p)) && <Button size="xs" variant="outline" onClick={() => setApproving(item)}>Confirm</Button>}
                   {(state === "approved" || state === "sending") && <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => email && attempt(() => update({ orgId, recordId: item.id, values: { [email.fields.find((f) => f.key === "status")!._id]: "stopped" } }), "Email stopped")}>Stop</Button>}
                   {item.recipients.length > 0 && <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setOpen(open === item.id ? null : item.id)}>{open === item.id ? "Hide people" : "People"}</Button>}
                 </div>
@@ -80,6 +87,12 @@ export function CampaignEmails({ orgId, recordId, status, admin }: { orgId: Id<"
                 ))}
               </dl>
               {waiting && <p className="text-xs text-muted-foreground">Waiting: {item.problems.join(". ")}.</p>}
+              {item.added > 0 && (
+                <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {item.added} {item.added === 1 ? "person" : "people"} added to the campaign since approval will not get this email.
+                  {admin && <Button size="xs" variant="outline" onClick={() => setApproving(item)}>Approve again</Button>}
+                </p>
+              )}
               {open === item.id && <Recipients orgId={orgId} rows={item.recipients} />}
             </div>
           );
@@ -150,7 +163,7 @@ function Approve({ orgId, email, onClose }: { orgId: Id<"orgs">; email: Email; o
             </label>
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={onClose}>Cancel</Button>
-              <Button disabled={!agreed} onClick={async () => { if (await attempt(() => approve({ orgId, emailId: email.id, confirmed: agreed }), "Approved")) onClose(); }}>Approve</Button>
+              <Button disabled={!agreed || !preview.version} onClick={async () => { if (await attempt(() => approve({ orgId, emailId: email.id, confirmed: agreed, version: preview.version! }), "Approved")) onClose(); }}>Approve</Button>
             </div>
           </div>
         )}
