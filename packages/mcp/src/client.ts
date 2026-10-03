@@ -32,6 +32,8 @@ export class RemoldClient {
   inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string; idempotencyKey?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
   campaignReport(idOrRef: string) { return this.request("GET", `/campaigns/${encodeURIComponent(idOrRef)}/report`); }
   emailPreview(args: { idOrRef: string; person?: string }) { const query = params({ person: args.person }); return this.request("GET", `/emails/${encodeURIComponent(args.idOrRef)}/preview${query ? `?${query}` : ""}`); }
+  automationRuns(idOrRef: string) { return this.request("GET", `/automations/${encodeURIComponent(idOrRef)}/runs`); }
+  automationTest(args: { idOrRef: string; record?: string }) { return this.request("POST", `/automations/${encodeURIComponent(args.idOrRef)}/test`, args.record === undefined ? {} : { record: args.record }); }
   markReplied(sendId: string, idempotencyKey?: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, { idempotencyKey }); }
 }
 

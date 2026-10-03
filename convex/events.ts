@@ -14,7 +14,10 @@ async function describe(ctx: QueryCtx, principal: Principal, event: Doc<"events"
   const suggestion = event.suggestionId ? await ctx.db.get(event.suggestionId) : null;
   const appliedBy = suggestion?.resolvedBy ? await ctx.db.get(suggestion.resolvedBy) : null;
   const masked = await projectEvent(ctx, principal, event);
-  return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? event.actor.id : null), appliedByName: appliedBy?.name ?? null } : null;
+  // An automation record acts under its own name when the viewer may read it; engines name themselves.
+  const ruleId = event.actor.kind === "automation" ? ctx.db.normalizeId("records", event.actor.id) : null, rule = ruleId ? await ctx.db.get(ruleId) : null, ruleObject = rule ? await ctx.db.get(rule.objectId) : null;
+  const automationName = ruleId ? (rule && ruleObject && canReadRecord(principal, ruleObject, rule) ? `Automation: ${rule.title}` : "Automation") : event.actor.id;
+  return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? automationName : null), appliedByName: appliedBy?.name ?? null } : null;
 }
 // An unreadable record gets the same answer as a deleted one.
 async function readableRecord(ctx: QueryCtx, principal: Principal, orgId: Id<"orgs">, recordId: Id<"records">) {

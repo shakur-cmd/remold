@@ -32,6 +32,12 @@ export default defineSchema({
     .index("by_email", ["emailRecordId", "personRecordId"]).index("by_email_status", ["emailRecordId", "status"]).index("by_email_due", ["emailRecordId", "status", "notBefore"]).index("by_token", ["token"]).index("by_provider", ["providerId"]).index("by_org_to", ["orgId", "to"]).index("by_status_lease", ["status", "lease"]),
   // Sends per UTC day: key is "<day>:<orgId>" for a workspace and "<day>:all" for the deployment.
   emailCaps: defineTable({ key: v.string(), used: v.number() }).index("by_key", ["key"]),
+  // Automations are records (standard object "automation"). A state row exists once a person
+  // turns one on and names who it runs as; runs are its history, one per trigger and dedupe key.
+  automationState: defineTable({ orgId: v.id("orgs"), automationId: v.id("records"), on: v.boolean(), objectKey: v.string(), when: v.string(), enabledBy: v.id("users"), memberId: v.id("members"), epoch: v.number(), enabledAt: v.number(), failures: v.number(), dueAt: v.optional(v.number()), scannedAt: v.optional(v.number()) }).index("by_automation", ["automationId"]).index("by_org_object", ["orgId", "on", "objectKey"]).index("by_due", ["on", "when", "dueAt"]).index("by_scan", ["on", "when", "scannedAt"]),
+  automationRuns: defineTable({ orgId: v.id("orgs"), automationId: v.id("records"), key: v.string(), depth: v.number(), chain: v.array(v.id("records")), triggerRecordId: v.optional(v.id("records")), eventId: v.optional(v.id("events")), enabledBy: v.id("users"), status: v.union(v.literal("queued"), v.literal("done"), v.literal("failed"), v.literal("refused"), v.literal("skipped")), error: v.optional(v.string()), created: v.array(v.id("records")), finishedAt: v.optional(v.number()) }).index("by_key", ["key"]).index("by_automation", ["automationId"]).index("by_automation_status", ["automationId", "status"]).index("by_status", ["status"]),
+  // Runs per UTC day: key is "<day>:<orgId>" for a workspace and "<day>:<automationId>" for one automation.
+  automationCaps: defineTable({ key: v.string(), used: v.number() }).index("by_key", ["key"]),
   webhookEvents: defineTable({ provider: v.string(), eventId: v.string(), at: v.number() }).index("by_event", ["provider", "eventId"]),
 
   users: defineTable({ tokenIdentifier: v.string(), name: v.string(), email: v.optional(v.string()), imageUrl: v.optional(v.string()) }).index("by_token", ["tokenIdentifier"]),

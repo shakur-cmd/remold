@@ -2728,5 +2728,132 @@
     "readonly": "not-a-write",
     "masks": "projected",
     "proof": "run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields"
+  },
+  {
+    "id": "automations:view",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "run history is readable by agents over REST and MCP, attributed to the trigger, the person and what was created"
+  },
+  {
+    "id": "automations:setOn",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "automations:execute",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "acts with the permissions of the person who turned it on, and pauses when they lose them or the workspace is read only",
+    "reason": "automation runner; in a read-only workspace a run is refused and the automation paused"
+  },
+  {
+    "id": "automations:failed",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a run that fails writes nothing, and three failures in a row pause the automation with an inbox item",
+    "reason": "automation runner bookkeeping; only records the failure and may pause"
+  },
+  {
+    "id": "automations:run",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a run that fails writes nothing, and three failures in a row pause the automation with an inbox item",
+    "reason": "automation runner; in a read-only workspace a run is refused and the automation paused"
+  },
+  {
+    "id": "automations:tick",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a schedule fires once a day at its time, or once a week on its day, and not for times before it was turned on",
+    "reason": "queues due runs; the run itself refuses and pauses in a read-only workspace"
+  },
+  {
+    "id": "agentApi:automationRuns",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "run history is readable by agents over REST and MCP, attributed to the trigger, the person and what was created"
+  },
+  {
+    "id": "agentApi:automationTest",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the dry run shows what the actions would write for a record and writes nothing"
+  },
+  {
+    "id": "HTTP GET /api/v1/automations/:id/runs",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "run history is readable by agents over REST and MCP, attributed to the trigger, the person and what was created"
+  },
+  {
+    "id": "HTTP POST /api/v1/automations/:id/test",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the dry run shows what the actions would write for a record and writes nothing",
+    "reason": "dry run served by a query; writes nothing"
+  },
+  {
+    "id": "cron Automations",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a schedule fires once a day at its time, or once a week on its day, and not for times before it was turned on",
+    "reason": "queues due runs; the run itself refuses and pauses in a read-only workspace"
+  },
+  {
+    "id": "scheduled automations:run",
+    "kind": "scheduled",
+    "visibility": "scheduled",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a run that fails writes nothing, and three failures in a row pause the automation with an inbox item",
+    "reason": "automation runner; in a read-only workspace a run is refused and the automation paused"
   }
 ]
