@@ -221,3 +221,21 @@ Note from the verifier, accepted: `fingerprint` is cyrb53 (53-bit, not cryptogra
 - `pass-after.txt`: 69/69.
 - `mutants.txt`: 56/56 caught. Round 3 adds 5 mutants: always reuse the stored payload, never reuse it, the key without the bytes, "changed since approval" on sent emails, and no uncertain mark on an expired forward lease. The round-2 "exact bytes" mutant now targets the uncertain retry.
 - Suites (`after.txt`): `pnpm test` 50 files, 398 passed; `pnpm typecheck` exit 0; `pnpm test:authority` 17 files, 101 passed; `pnpm verify:release` 37/37; `pnpm build` built; MCP 3/3.
+
+---
+
+# Round 4 (Fable round 3: PASS, with should-fix S9)
+
+Builder: Opus 5.5. Schema unchanged, so `expand-schema.diff` still holds.
+
+- **S9 fix.** When an email is withdrawn to draft (an edit after approval, or deletion), queued rows marked uncertain are no longer deleted. The same happens when an email is stopped. An uncertain row is one whose last try got no answer, so Resend may already have sent it. Each such row is marked failed with the existing "Outcome unknown" reason:
+  - it is never retried;
+  - the person stays in the recipient set, so re-approval does not add them again;
+  - its daily count stays spent and shows in the report.
+
+  Non-uncertain queued rows are still deleted on withdrawal and kept on stop, as before.
+- **X2 trade-off.** This also removes it: after stop and edit, an uncertain row is no longer retried with the old words. It is failed as unknown instead.
+- **Tests.** Fail first, both red on c239de4 (`round4-fail-before.txt`): "a send whose answer was lost is not sent again after the email is edited and approved again" (verifier X1) and "... after the email is stopped then edited and approved again". After: 71/71.
+- **Mutants.** 58/58 caught. The two new ones: uncertain rows deleted on withdrawal, and nothing settled on stop.
+- **Suites** (`after.txt`): `pnpm test` 50 files, 400 passed; `pnpm typecheck` exit 0; `pnpm test:authority` 17 files, 101 passed; `pnpm verify:release` 37/37; `pnpm build` built; MCP 3/3.
+- **The "Outcome unknown" reason** says Resend "no longer remembers it". On a withdrawal that may not yet be true, but the meaning is the same: the result is unknown and it will not be retried. I kept the one reason, as asked.

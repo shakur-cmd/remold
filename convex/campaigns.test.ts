@@ -940,6 +940,22 @@ describe("campaign email", () => {
       expect(posts[1]!.headers["idempotency-key"]).toBe(posts[0]!.headers["idempotency-key"]);
     });
 
+    // Round 4 (verifier X1): a row whose answer was lost may already have gone out.
+    for (const how of ["edited", "stopped then edited"]) it(`a send whose answer was lost is not sent again after the email is ${how} and approved again`, async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      dropAnswer = () => true;
+      await tick(w.t);
+      dropAnswer = undefined;
+      expect(delivered).toHaveLength(1);
+      if (how !== "edited") await w.update(w.email, w.first, { status: "stopped" });
+      await w.update(w.email, w.first, { body: "Edited after the lost answer" });
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "failed", failReason: expect.stringMatching(/^Outcome unknown/) });
+      await w.approve(w.first);
+      later(MINUTE); await tick(w.t);
+      expect(calls.filter((c) => c.method === "POST")).toHaveLength(1);
+      expect(await w.sends()).toHaveLength(1);
+    });
+
     it("a sent email never shows as changed since approval", async () => {
       const w = await world({ people: ["Ava Stone"] });
       await tick(w.t);

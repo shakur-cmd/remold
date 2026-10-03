@@ -4,7 +4,7 @@ import { httpAction, internalAction, internalMutation, internalQuery, type Actio
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { MAX_ATTEMPTS, addNote, decide, exclusion, followUpsOf, logActivity, recipientOf, release, reserve, setStatus, standardItem, stateOf, suppress, value } from "./lib/campaign";
-import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart, fingerprint, resendPost, settingsProblems, validAddress, verifySvix, type Outcome } from "./lib/campaignText";
+import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart, fingerprint, resendPost, settingsProblems, validAddress, verifySvix, UNKNOWN, type Outcome } from "./lib/campaignText";
 
 // The campaign sender. An approval fixed each email's recipients as queued rows (see
 // snapshot in lib/campaign.ts). Every minute a tick claims a bounded batch of due rows
@@ -18,7 +18,6 @@ import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart
 // 24 hours, so a row still unknown after 23 hours is failed and never retried.
 const MINUTE = 60_000, HOUR = 60 * MINUTE, LEASE = 5 * MINUTE, BATCH = 25, RUNS_PER_TICK = 20, UNKNOWN_AFTER = 23 * HOUR;
 const MAX_FORWARD_ATTEMPTS = 5, FORWARDS_PER_SEND = 3;
-const UNKNOWN = "Outcome unknown: the send was interrupted and Resend no longer remembers it";
 
 type Claimed = { sendId: Id<"emailSends">; attempt: number; payload: string; key: string };
 

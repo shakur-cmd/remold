@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import type { Actor, Principal } from "../identity";
 import { fail } from "../errors";
-import { badTags } from "./campaignText";
+import { UNKNOWN, badTags } from "./campaignText";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const CONTENT = ["subject", "body", "campaign", "followsUp"];
@@ -53,9 +53,17 @@ export async function emailRules(ctx: MutationCtx, principal: Principal, object:
   if (!object.isStandard || object.key !== "email") return;
   const f = fieldsByKey(fields);
   const run = await ctx.db.query("emailRuns").withIndex("by_email", (q) => q.eq("emailRecordId", recordId)).unique();
+  // A queued row whose last try had no answer may already have gone out: it is failed as
+  // unknown (never sent again, still counted, still in the recipient set) rather than deleted.
+  const settleQueue = async (all: boolean) => {
+    for (const row of await ctx.db.query("emailSends").withIndex("by_email_status", (q) => q.eq("emailRecordId", recordId).eq("status", "queued")).collect()) {
+      if (row.uncertain) await ctx.db.patch(row._id, { status: "failed", failReason: UNKNOWN });
+      else if (all) await ctx.db.delete(row._id);
+    }
+  };
   const drop = async () => {
     if (run) await ctx.db.delete(run._id);
-    for (const row of await ctx.db.query("emailSends").withIndex("by_email_status", (q) => q.eq("emailRecordId", recordId).eq("status", "queued")).collect()) await ctx.db.delete(row._id);
+    await settleQueue(true);
   };
   if (!after) { await drop(); return; }
   if (!f.status) return;
@@ -67,6 +75,7 @@ export async function emailRules(ctx: MutationCtx, principal: Principal, object:
   }
   if (live && !entering && WATCHED.some((key) => f[key] && !same(before?.[f[key]._id], after[f[key]._id]))) return "withdraw";
   if (run && !live) {
+    if (now === "stopped") await settleQueue(false);
     if (now === "sent" || now === "stopped") await ctx.db.patch(run._id, { live: false });
     else await drop();
   }

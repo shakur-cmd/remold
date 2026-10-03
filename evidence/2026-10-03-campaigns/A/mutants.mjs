@@ -64,6 +64,9 @@ const mutants = [
   [C, 'return { name: readable("name") ? record.title : "",', "return { name: record.title,", "hides the person name"],
   [C, 'const companyId = readable("company") ? (value(record, person.f.company) as Id<"records"> | undefined) : undefined', 'const companyId = value(record, person.f.company) as Id<"records"> | undefined', "hides the person company"],
   [C, "company: company ? (await visibleTitle(ctx, principal, company)) || undefined : undefined", "company: company?.title || undefined", "hides the company name"],
+  // Round 4
+  [R, 'if (row.uncertain) await ctx.db.patch(row._id, { status: "failed", failReason: UNKNOWN });\n      else if (all)', "if (all)", "after the email is edited and approved again"],
+  [R, '    if (now === "stopped") await settleQueue(false);\n', "", "after the email is stopped then edited"],
 ];
 let caught = 0;
 for (const [file, from, to, test] of mutants) {

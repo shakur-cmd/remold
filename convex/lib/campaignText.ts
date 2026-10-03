@@ -93,6 +93,8 @@ function sameText(a: string, b: string) {
   return diff === 0;
 }
 
+export const UNKNOWN = "Outcome unknown: the send was interrupted and Resend no longer remembers it";
+
 // One POST to Resend. A refusal is final; 429 and 5xx may be retried. No answer at all
 // (network or timeout) means Resend may have sent it: the outcome is unknown, and only
 // the same key with the same bytes may try again. A string body goes out exactly as given.
