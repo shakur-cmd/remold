@@ -44,6 +44,7 @@ async function workspace(runtime, tenant, label) {
 
 export async function replaySweeps({ runtime, tenant, test }) {
   await test('Readonly workspace refuses every public human write and every agent REST write', async () => {
+    const deniedBlueprint = { version: 1, name: 'Denied', changes: [{ kind: 'addField', object: 'company', key: 'denied', label: 'Denied', type: 'text' }] };
     const w = await workspace(runtime, tenant, 'readonly-sweep'), { t } = w, orgId = t.orgId;
     const human = {
       'agents:create': () => t.human.action(fn('agents:create'), { orgId, name: 'denied', grants: [] }),
@@ -102,6 +103,9 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'suggestions:adopt': () => t.human.mutation(fn('suggestions:adopt'), { orgId, suggestionId: w.suggestions.adopt }),
       'shapeSuggestions:apply': () => t.human.mutation(fn('shapeSuggestions:apply'), { orgId, id: w.shapes.apply }),
       'shapeSuggestions:dismiss': () => t.human.mutation(fn('shapeSuggestions:dismiss'), { orgId, id: w.shapes.dismiss }),
+      'shapeSuggestions:applyBlueprint': () => t.human.action(fn('shapeSuggestions:applyBlueprint'), { orgId, id: w.shapes.apply, withRecords: false }),
+      'blueprints:apply': () => t.human.mutation(fn('blueprints:apply'), { orgId, blueprint: deniedBlueprint, withRecords: false }),
+      'blueprints:check': () => t.human.action(fn('blueprints:check'), { orgId, blueprint: deniedBlueprint }),
     };
     const rest = {
       'HTTP POST /api/v1/changes': ['/api/v1/changes', { action: 'create', object: 'company', values: { name: 'Denied' }, reason: 'readonly sweep' }],

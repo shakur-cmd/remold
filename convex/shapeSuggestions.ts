@@ -1,11 +1,13 @@
-import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { action, internalMutation, mutation, query, type QueryCtx, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { ConvexError, v } from "convex/values";
+import { api, internal } from "./_generated/api";
 import { requireMember, requireWriter, type AgentMembership, type Membership, type Principal } from "./identity";
 import { fail } from "./errors";
-import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "./authority/reads";
-import { checkNewField, checkObject, checkOptions, createField, createObject, fieldFor, requireLabel, requireUnrestricted, type FieldSpec, type Lifecycle, type Option, type ShapeChange } from "./lib/metadata";
-import { applyLifecycle, checkLifecycle } from "./lib/lifecycle";
+import { canReadObject, requireObjectAdministration } from "./authority/reads";
+import { requireUnrestricted, type Blueprint, type FieldSpec, type ShapeChange } from "./lib/metadata";
+import { changeFor, perform, type ChangeInput } from "./lib/proposals";
+import { diffOf, parseBlueprint, refusal, requireWholeWorkspace, runBlueprint, summaryOf } from "./lib/blueprint";
 
 type Ctx = QueryCtx | MutationCtx;
 type Row = Doc<"shapeSuggestions">;
@@ -13,10 +15,11 @@ const status = v.union(v.literal("pending"), v.literal("applied"), v.literal("di
 
 // A person sees, applies or dismisses a proposal only if Settings would let them
 // make the same change. Anything about an object they cannot read stays hidden.
-async function authorize(ctx: Ctx, principal: Membership, row: Row) {
+// A blueprint can touch any object, so only someone who sees every object may review one.
+export async function authorize(ctx: Ctx, principal: Membership, row: Row) {
   if (row.orgId !== principal.org._id) fail("NOT_FOUND", "Proposal not found");
   const change = row.change;
-  if (change.kind === "addObject" || change.kind === "reorderObjects") return requireUnrestricted(ctx, principal);
+  if (change.kind === "addObject" || change.kind === "reorderObjects" || change.kind === "blueprint") return requireUnrestricted(ctx, principal);
   const object = await ctx.db.get(change.objectId), target = change.kind === "addField" && change.field.targetObjectId ? await ctx.db.get(change.field.targetObjectId) : null;
   if (!object || !canReadObject(principal, object) || (target && !canReadObject(principal, target))) fail("NOT_FOUND", "Proposal not found");
   await requireObjectAdministration(ctx, principal, object);
@@ -32,6 +35,7 @@ function fieldDetail(field: FieldSpec, targets: Map<string, string>) {
 }
 export async function describe(ctx: Ctx, change: ShapeChange) {
   const label = async (id: Id<"objects"> | Id<"fields"> | undefined) => (id ? (await ctx.db.get(id))?.label : undefined) ?? "a removed item";
+  if (change.kind === "blueprint") return { summary: summaryOf(change.blueprint), details: [] };
   const specs = change.kind === "addObject" ? change.fields : change.kind === "addField" ? [change.field] : [];
   const targets = new Map(await Promise.all(specs.flatMap((f) => f.targetObjectId ? [f.targetObjectId] : []).map(async (id) => [id as string, await label(id)] as const)));
   switch (change.kind) {
@@ -52,168 +56,81 @@ export async function describe(ctx: Ctx, change: ShapeChange) {
   }
 }
 
-// Agent side: validates a proposal against exactly what applying it will check, so a
-// proposal a person cannot apply is refused now. Input names objects and fields by key.
-type FieldInput = { key: string; label: string; type: string; options?: Option[]; target?: string; withTime?: boolean; required?: boolean; indexed?: boolean };
-export type ProposalInput = { kind: string; reason: string; object?: string; field?: string; key?: string; label?: string; labelPlural?: string; icon?: string; type?: string; options?: Option[]; target?: string; withTime?: boolean; required?: boolean; indexed?: boolean; fields?: FieldInput[]; order?: string[] };
-const kinds = ["addObject", "addField", "addOptions", "relabel", "retireField", "restoreField", "reorderFields", "reorderObjects", "reorderOptions", "archiveObject", "unarchiveObject", "setTitleField"];
-const types = ["text", "number", "select", "date", "boolean", "lookup", "links"] as const;
-async function readableObject(ctx: Ctx, principal: Principal, key: string | undefined) {
-  if (!key) fail("VALIDATION", "object is required");
-  const object = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", principal.org._id).eq("key", key)).unique();
-  if (!object) fail("NOT_FOUND", "Object not found");
-  requireObjectRead(principal, object);
-  return object;
-}
-async function readableField(ctx: Ctx, principal: Principal, object: Doc<"objects">, key: string | undefined, retired = false) {
-  if (!key) fail("VALIDATION", "field is required");
-  const field = await ctx.db.query("fields").withIndex("by_object_key", (q) => q.eq("orgId", principal.org._id).eq("objectId", object._id).eq("key", key)).unique();
-  if (!field || (field.retired && !retired) || !canReadField(principal, object, field)) fail("NOT_FOUND", "Field not found");
-  return field;
-}
-async function specOf(ctx: Ctx, principal: Principal, input: Partial<FieldInput>): Promise<FieldSpec> {
-  if (!input.key || !input.label || !input.type) fail("VALIDATION", "key, label and type are required");
-  const type = types.find((t) => t === input.type); if (!type) fail("VALIDATION", `Unknown field type; use one of ${types.join(", ")}`);
-  // Unknown and unreadable targets answer alike, so a proposal cannot probe for objects.
-  const target = input.target === undefined ? undefined : await readableObject(ctx, principal, input.target);
-  return { key: input.key, label: input.label, type, ...(input.options ? { options: input.options } : {}), ...(target ? { targetObjectId: target._id } : {}), ...(input.withTime === undefined ? {} : { withTime: input.withTime }), ...(input.required === undefined ? {} : { required: input.required }), ...(input.indexed === undefined ? {} : { indexed: input.indexed }) };
-}
-// Names in an agent's order list become ids; one that names nothing breaks the list like a missing one would.
-const ids = <T extends string>(keys: string[] | undefined, docs: { key: string; _id: T }[]) => (keys ?? []).map((key) => docs.find((doc) => doc.key === key)?._id ?? (key as T));
-// The lifecycle kinds are validated by the very check a person's mutation runs (lib/lifecycle.ts).
-async function lifecycleFor(ctx: Ctx, principal: AgentMembership, input: ProposalInput): Promise<Lifecycle | null> {
-  const orgId = principal.org._id;
-  const change: Lifecycle | null = await (async () => {
-    switch (input.kind) {
-      case "reorderObjects": return { kind: "reorderObjects", objectIds: ids(input.order, await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect()) };
-      case "archiveObject": case "unarchiveObject": return { kind: input.kind, objectId: (await readableObject(ctx, principal, input.object))._id };
-      case "reorderFields": { const object = await readableObject(ctx, principal, input.object), fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", object._id)).collect(); return { kind: "reorderFields", objectId: object._id, fieldIds: ids(input.order, fields.filter((f) => !f.retired && canReadField(principal, object, f))) }; }
-      case "retireField": case "restoreField": case "setTitleField": case "reorderOptions": {
-        const object = await readableObject(ctx, principal, input.object), field = await readableField(ctx, principal, object, input.field, true);
-        return input.kind === "reorderOptions" ? { kind: input.kind, objectId: object._id, fieldId: field._id, optionIds: input.order ?? [] } : { kind: input.kind, objectId: object._id, fieldId: field._id };
-      }
-    }
-    return null;
-  })();
-  if (change) await checkLifecycle(ctx, principal, change);
-  return change;
-}
+// Agent side: the proposal is checked by the same code that will apply it (lib/proposals.ts).
+// A blueprint is checked by a trial run before it gets here (lib/blueprint.ts, http.ts).
+export type ProposalInput = ChangeInput & { reason: string; blueprint?: Blueprint };
 export async function proposalFor(ctx: Ctx, principal: AgentMembership, input: ProposalInput): Promise<ShapeChange> {
   if (principal.agent.role !== "admin") fail("FORBIDDEN", "Only an admin agent can propose shape changes");
   if (!input.reason.trim()) fail("VALIDATION", "reason is required");
-  const lifecycle = await lifecycleFor(ctx, principal, input);
-  if (lifecycle) return lifecycle;
-  switch (input.kind) {
-    case "addObject": {
-      if (!input.key || !input.label || !input.labelPlural) fail("VALIDATION", "key, label and labelPlural are required");
-      if ((input.fields?.length ?? 0) > 12) fail("VALIDATION", "A new object can start with at most 12 fields");
-      await requireUnrestricted(ctx, principal);
-      const spec = { key: input.key, label: input.label, labelPlural: input.labelPlural, ...(input.icon === undefined ? {} : { icon: input.icon }) }, fields = [];
-      for (const field of input.fields ?? []) fields.push(await specOf(ctx, principal, field));
-      await checkObject(ctx, principal, spec, fields);
-      return { kind: "addObject", ...spec, fields };
-    }
-    case "addField": {
-      const object = await readableObject(ctx, principal, input.object), field = await specOf(ctx, principal, input);
-      await checkNewField(ctx, principal, object, field);
-      return { kind: "addField", objectId: object._id, field };
-    }
-    case "addOptions": {
-      const object = await readableObject(ctx, principal, input.object), { field } = await fieldFor(ctx, principal, (await readableField(ctx, principal, object, input.field))._id);
-      const options = input.options ?? [], existing = field.options ?? [];
-      checkOptions(field, options);
-      if (existing.some((old) => { const next = options.find((o) => o.id === old.id); return JSON.stringify(next) !== JSON.stringify(old); })) fail("VALIDATION", "Agents can add options but not change existing ones");
-      const added = options.filter((o) => !existing.some((old) => old.id === o.id));
-      if (!added.length) fail("VALIDATION", "No new options");
-      return { kind: "addOptions", objectId: object._id, fieldId: field._id, options: added };
-    }
-    case "relabel": {
-      const object = await readableObject(ctx, principal, input.object);
-      requireLabel(input.label);
-      if (input.field !== undefined) {
-        if (input.labelPlural !== undefined) fail("VALIDATION", "Only objects have a plural label");
-        const { field } = await fieldFor(ctx, principal, (await readableField(ctx, principal, object, input.field))._id);
-        return { kind: "relabel", objectId: object._id, fieldId: field._id, label: input.label! };
-      }
-      await requireObjectAdministration(ctx, principal, object);
-      if (input.labelPlural !== undefined) requireLabel(input.labelPlural, "Plural label");
-      return { kind: "relabel", objectId: object._id, label: input.label!, ...(input.labelPlural === undefined ? {} : { labelPlural: input.labelPlural }) };
-    }
-  }
-  fail("VALIDATION", `Unknown kind; use one of ${kinds.join(", ")}`);
+  if (input.kind !== "blueprint") return changeFor(ctx, principal, input);
+  if (!input.blueprint) fail("VALIDATION", "blueprint is required");
+  await requireWholeWorkspace(ctx, principal);
+  if (!input.blueprint.changes.length && !input.blueprint.records?.length) fail("VALIDATION", "A blueprint needs at least one change");
+  return { kind: "blueprint", blueprint: parseBlueprint(input.blueprint) };
 }
 
-// Each helper checks everything before its first write, so a refusal caught here
-// leaves nothing behind and the proposal is marked failed instead.
-async function perform(ctx: MutationCtx, principal: Membership, change: ShapeChange): Promise<{ objectId?: Id<"objects">; fieldIds: Id<"fields">[] }> {
-  if (change.kind === "addObject") { const { kind, fields, ...spec } = change; return createObject(ctx, principal, spec, fields); }
-  if (change.kind === "reorderObjects") return { fieldIds: (await applyLifecycle(ctx, principal, change)).fieldIds };
-  if (change.kind !== "addField" && change.kind !== "addOptions" && change.kind !== "relabel") return { objectId: change.objectId, fieldIds: (await applyLifecycle(ctx, principal, change)).fieldIds };
-  const object = await ctx.db.get(change.objectId);
-  if (!object) fail("NOT_FOUND", "Object not found");
-  if (change.kind === "addField") return { objectId: object._id, fieldIds: [(await createField(ctx, principal, object, change.field)).fieldId] };
-  if (change.kind === "addOptions") {
-    const { field } = await fieldFor(ctx, principal, change.fieldId);
-    if (field.retired) fail("VALIDATION", "Field was retired");
-    if (change.options.some((o) => field.options?.some((old) => old.id === o.id))) fail("VALIDATION", "Option already exists");
-    const options = [...(field.options ?? []), ...change.options];
-    checkOptions(field, options);
-    await ctx.db.patch(field._id, { options });
-    return { objectId: object._id, fieldIds: [field._id] };
-  }
-  requireLabel(change.label);
-  if (change.fieldId) {
-    const { field } = await fieldFor(ctx, principal, change.fieldId);
-    if (field.retired) fail("VALIDATION", "Field was retired");
-    await ctx.db.patch(field._id, { label: change.label });
-    return { objectId: object._id, fieldIds: [field._id] };
-  }
-  await requireObjectAdministration(ctx, principal, object);
-  await ctx.db.patch(object._id, { label: change.label, ...(change.labelPlural === undefined ? {} : { labelPlural: change.labelPlural }) });
-  return { objectId: object._id, fieldIds: [] };
-}
 const stale = (error: unknown) => error instanceof ConvexError && ["VALIDATION", "NOT_FOUND", "SLOTS_EXHAUSTED"].includes((error.data as { code?: string })?.code ?? "");
 
 // What objects.impact needs to describe a retire or archive before it is applied. Each card
 // loads its own preview, so the list stays one bounded read however many proposals wait.
 const previewOf = (change: ShapeChange) => change.kind === "retireField" ? { objectId: change.objectId, fieldId: change.fieldId } : change.kind === "archiveObject" ? { objectId: change.objectId } : null;
-async function personRow(ctx: Ctx, row: Row) {
+async function personRow(ctx: Ctx, principal: Principal, row: Row) {
   const agent = await ctx.db.get(row.agentId);
-  return { _id: row._id, _creationTime: row._creationTime, kind: row.change.kind, status: row.status, ...await describe(ctx, row.change), preview: row.status === "pending" ? previewOf(row.change) : null, reason: row.reason, agentName: agent?.name ?? null, paused: row.status === "pending" && !active(agent, row), error: row.error ?? null, resolvedAt: row.resolvedAt ?? null };
+  return { _id: row._id, _creationTime: row._creationTime, kind: row.change.kind, status: row.status, ...await describe(ctx, row.change), blueprint: row.change.kind === "blueprint" ? await diffOf(ctx, principal, row.change.blueprint) : null, preview: row.status === "pending" ? previewOf(row.change) : null, reason: row.reason, agentName: agent?.name ?? null, paused: row.status === "pending" && !active(agent, row), error: row.error ?? null, resolvedAt: row.resolvedAt ?? null };
 }
 export const list = query({ args: { orgId: v.id("orgs"), status: v.optional(status) }, handler: async (ctx, args) => {
   const principal = await requireMember(ctx, args.orgId);
   if (principal.member.role === "member") return [];
   const rows = await ctx.db.query("shapeSuggestions").withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", args.status ?? "pending")).order("desc").take(200);
   const shown = [];
-  for (const row of rows) if (await visible(ctx, principal, row)) shown.push(await personRow(ctx, row));
+  for (const row of rows) if (await visible(ctx, principal, row)) shown.push(await personRow(ctx, principal, row));
   return shown;
 } });
 
-export const apply = mutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSuggestions") }, handler: async (ctx, args) => {
+export const apply = mutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSuggestions"), withRecords: v.optional(v.boolean()) }, handler: async (ctx, args) => {
   const principal = await requireWriter(ctx, args.orgId, "admin"), row = await ctx.db.get(args.id);
   if (!row) fail("NOT_FOUND", "Proposal not found");
   await authorize(ctx, principal, row);
   if (row.status !== "pending") return { status: "already" as const, current: row.status };
   const agent = await ctx.db.get(row.agentId);
   if (!active(agent, row)) fail("FORBIDDEN", "This agent's access changed after it proposed this. Dismiss it, or make the change yourself in Settings.");
-  let result;
-  try { result = await perform(ctx, principal, row.change); }
+  let result, created: Id<"objects">[] = [];
+  // A blueprint is all or nothing: a refusal at any step throws, so Convex discards the steps
+  // before it. applyBlueprint then records the failure in a transaction of its own.
+  if (row.change.kind === "blueprint") { created = (await runBlueprint(ctx, principal, row.change.blueprint, args.withRecords ? principal : null)).objectIds; result = { fieldIds: [] }; }
+  else try { result = await perform(ctx, principal, row.change); if (row.change.kind === "addObject" && result.objectId) created = [result.objectId]; }
   catch (error) {
     if (!stale(error)) throw error;
     const message = String(((error as ConvexError<{ message?: string }>).data)?.message ?? "No longer applies");
     await ctx.db.patch(row._id, { status: "failed", error: message, resolvedBy: principal.user._id, resolvedAt: Date.now() });
     return { status: "failed" as const, error: message };
   }
-  const { objectId, fieldIds } = result;
+  const { objectId, fieldIds } = result as { objectId?: Id<"objects">; fieldIds: Id<"fields">[] };
   await ctx.db.patch(row._id, { status: "applied", ...(objectId ? { result: { objectId, fieldIds } } : {}), resolvedBy: principal.user._id, resolvedAt: Date.now() });
-  // The agent asked for this object to work in it; without read access it could never use it.
-  if (row.change.kind === "addObject" && objectId && agent!.authorityVersion === 1) {
-    await ctx.db.patch(agent!._id, { readObjectIds: [...(agent!.readObjectIds ?? []), objectId] });
-    await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "agentReadExtended", targetId: agent!._id, objectIds: [objectId] });
+  // The agent asked for these objects to work in them; without read access it could never use them.
+  if (created.length && agent!.authorityVersion === 1) {
+    await ctx.db.patch(agent!._id, { readObjectIds: [...(agent!.readObjectIds ?? []), ...created] });
+    await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "agentReadExtended", targetId: agent!._id, objectIds: created });
   }
-  await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "shapeProposalApplied", targetId: row._id, objectIds: objectId ? [objectId] : row.change.kind === "reorderObjects" ? row.change.objectIds : [] });
+  await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "shapeProposalApplied", targetId: row._id, objectIds: objectId ? [objectId] : row.change.kind === "reorderObjects" ? row.change.objectIds : created });
   return { status: "applied" as const, ...result };
+} });
+
+// What Suggestions calls for a blueprint, so a refused one is marked failed (with nothing applied) instead of only raising an error.
+export const applyBlueprint = action({ args: { orgId: v.id("orgs"), id: v.id("shapeSuggestions"), withRecords: v.boolean() }, handler: async (ctx, args): Promise<{ status: "applied" | "already" | "failed"; error?: string }> => {
+  try { return { status: (await ctx.runMutation(api.shapeSuggestions.apply, args)).status }; }
+  catch (error) {
+    const message = refusal(error);
+    if (!message) throw error;
+    await ctx.runMutation(internal.shapeSuggestions.markFailed, { orgId: args.orgId, id: args.id, error: message });
+    return { status: "failed", error: message };
+  }
+} });
+export const markFailed = internalMutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSuggestions"), error: v.string() }, handler: async (ctx, args) => {
+  const principal = await requireMember(ctx, args.orgId, "admin"), row = await ctx.db.get(args.id);
+  if (!row) fail("NOT_FOUND", "Proposal not found");
+  await authorize(ctx, principal, row);
+  if (row.status === "pending") await ctx.db.patch(row._id, { status: "failed", error: args.error, resolvedBy: principal.user._id, resolvedAt: Date.now() });
 } });
 
 // Like suggestions.dismiss, a reduction: it stays available while the workspace is read only.

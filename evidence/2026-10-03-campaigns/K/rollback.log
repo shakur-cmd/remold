@@ -1,0 +1,6 @@
+this build wrote: service template with starter records, an applied blueprint proposal (Vans), a pending one (Parts). objects: company,person,opportunity,project,task,note,activity,campaign,invoice,post,email,job,quote,visit,van
+previous release as is: Schema validation failed. Document with ID "px76gjze5w40scgdvwm70e2ty98fkv24" in table "shapeSuggestions" does not match the schema: Value does not match validator.
+previous release code + this schema: functions ready
+old code: objects unchanged | job fields name,customer,company,quote,status,scheduledFor,price,address,notes | record created true | pending proposals listed [] | old apply of the pending blueprint refused: [Request ID: 71476ef3ff54a28a] Server Error
+forward again: objects unchanged | pending Apply blueprint Parts: 1 new object
+forward again: pending blueprint applies: applied | objects company,person,opportunity,project,task,note,activity,campaign,invoice,post,email,job,quote,visit,van,part

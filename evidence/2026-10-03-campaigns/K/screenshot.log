@@ -1,0 +1,9 @@
+GET /blueprints: service, agency, creator, retail
+agent proposes blueprint: 201 Apply blueprint Repair shop: 2 new objects, 3 other changes
+agent proposes blueprint with a dangling reference: 404 {"error":{"code":"NOT_FOUND","message":"Step 1 refers to object \"quote\", which is not in this workspace or this blueprint"}}
+after Apply all, objects: company, person, opportunity, project, task, note, activity, campaign, invoice, post, email, workshop (archived), repairJob, quote
+after Apply all, proposal status: blueprint:applied
+starter records in Repair Jobs: Cracked screen
+service template check text: Cannot apply: Step 2, add object quote: Object key already exists
+Apply all enabled on the refused template: false
+non-local requests blocked: none

@@ -25,6 +25,9 @@ export class RemoldClient {
   inboxAdd(args: Record<string, unknown>) { return this.request("POST", "/inbox", args); }
   proposeShape(args: Record<string, unknown>) { return this.request("POST", "/shape/proposals", args); }
   shapeProposals(args: Record<string, unknown> = {}) { return this.request("GET", `/shape/proposals?${params(args)}`); }
+  blueprints() { return this.request("GET", "/blueprints"); }
+  currentBlueprint() { return this.request("GET", "/blueprints/current"); }
+  proposeBlueprint(args: { blueprint: unknown; reason: string }) { return this.request("POST", "/shape/proposals", { kind: "blueprint", ...args }); }
   inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
   campaignReport(idOrRef: string) { return this.request("GET", `/campaigns/${encodeURIComponent(idOrRef)}/report`); }
   emailPreview(args: { idOrRef: string; person?: string }) { const query = params({ person: args.person }); return this.request("GET", `/emails/${encodeURIComponent(args.idOrRef)}/preview${query ? `?${query}` : ""}`); }

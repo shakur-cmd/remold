@@ -1,5 +1,6 @@
 import { getFunctionName, httpRouter, makeFunctionReference } from "convex/server";
 import { argumentsConform } from "./lib/shape";
+import { trialOf } from "./lib/blueprint";
 import * as agentApi from "./agentApi";
 import * as commands from "./integrations/commands";
 import * as grants from "./authority/grants";
@@ -43,6 +44,12 @@ async function idempotencyOf(request: Request, path: string, body: unknown) {
 }
 const intakeReply = (result: any): [unknown, number, Record<string, string>?] => result.limited ? [{ error: { code: "RATE_LIMITED", message: "Lead intake limit reached. Retry after the indicated delay.", retryAfter: result.limited.retryAfter } }, 429, { "retry-after": String(result.limited.retryAfter) }] : [result, 201];
 
+// A blueprint is first applied in a transaction that always rolls back, so it is refused now if it would be refused later.
+async function tried(mutation: (reference: any, args: any) => Promise<unknown>, body: any) {
+  if (body?.kind === "blueprint") await trialOf(() => mutation(internal.agentApi.trialBlueprint, { blueprint: body.blueprint }));
+  return body;
+}
+
 async function dispatch(ctx: any, request: Request) {
   if(request.method === "GET" && new URL(request.url).pathname === "/api/v1/_probe") return await validProbe(request) ? json({ok:true}) : bad("UNAUTHENTICATED", "Invalid probe", 401);
   const keyHash = await auth(request), url = new URL(request.url), path = url.pathname.replace(/^\/api\/v1\/?/, "").split("/").filter(Boolean), q = url.searchParams;
@@ -82,7 +89,9 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "POST" && path[0] === "suggestions" && path.length === 1) return json(await mutation(internal.agentApi.propose, body), 201);
   if (request.method === "POST" && path[0] === "changes" && path.length === 1) return json(await mutation(internal.agentApi.change, { ...body, idempotency: await idempotencyOf(request, url.pathname, body) }));
   if (request.method === "GET" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await query(internal.agentApi.shapeProposals, { status: q.get("status") ?? undefined }));
-  if (request.method === "POST" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await mutation(internal.agentApi.proposeShape, body), 201);
+  if (request.method === "POST" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await mutation(internal.agentApi.proposeShape, await tried(mutation, body)), 201);
+  if (request.method === "GET" && path[0] === "blueprints" && path.length === 1) return json(await query(internal.agentApi.blueprints, {}));
+  if (request.method === "GET" && path[0] === "blueprints" && path[1] === "current" && path.length === 2) return json(await query(internal.agentApi.currentBlueprint, {}));
   if (request.method === "GET" && path[0] === "inbox" && path.length === 1) return json(await query(internal.agentApi.inbox, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "inbox" && path.length === 1) return json(await mutation(internal.agentApi.inboxAdd, body), 201);
   if (request.method === "POST" && path[0] === "inbox" && path[2] === "resolve" && path.length === 3) return json(await mutation(internal.agentApi.inboxResolve, { id: path[1], ...body }));

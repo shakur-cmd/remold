@@ -1,7 +1,7 @@
 import { internalMutation, internalQuery } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
-import { recordGranted, requireAgent, type Principal } from "./identity";
+import { ownerOf, recordGranted, requireAgent, type Principal } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { pageRecords, listedRelated } from "./lib/list";
@@ -16,7 +16,9 @@ import { agentGuard } from "./authority/agentGuards";
 import { idempotency, remember, replay } from "./lib/idempotency";
 import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
-import { option } from "./lib/metadata";
+import { blueprint, changeInput } from "./lib/metadata";
+import { exportBlueprint, rollBack, runBlueprint } from "./lib/blueprint";
+import { templates } from "./lib/templates";
 import { slotsLeft } from "./lib/slots";
 import { agentRow, proposalFor } from "./shapeSuggestions";
 
@@ -147,7 +149,16 @@ export const inboxResolve = internalMutation({ args: { keyHash, id: v.id("agentI
 export const campaignReport = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return reportOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
 export const emailPreview = internalQuery({ args: { keyHash, idOrRef: v.string(), person: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const person = args.person ? await recordFor(ctx, principal.org._id, args.person) : undefined; return previewOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), person?._id); } });
 export const markReplied = internalMutation({ args: { keyHash, id: v.string() }, handler: async (ctx, args) => markSendReplied(ctx, await requireAgent(ctx, args.keyHash), args.id) });
-const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()) };
-const shapeArgs = { kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))), order: v.optional(v.array(v.string())) };
+const shapeArgs = { ...changeInput, reason: v.string(), blueprint: v.optional(blueprint) };
 export const proposeShape = internalMutation({ args: { keyHash, ...shapeArgs }, handler: async (ctx, { keyHash, ...input }) => { const principal = await requireAgent(ctx, keyHash); await writable(ctx, principal.org._id); const change = await proposalFor(ctx, principal, input); const id = await ctx.db.insert("shapeSuggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, change, reason: input.reason, status: "pending" }); return { proposal: await agentRow(ctx, (await ctx.db.get(id))!) }; } });
 export const shapeProposals = internalQuery({ args: { keyHash, status: v.optional(v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("failed"))) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return { proposals: await Promise.all((await ownShape(ctx, principal.agent, args.status, 100)).map((row) => agentRow(ctx, row))) }; } });
+// Blueprints: the built-in ones, this workspace's shape as one, and the trial run that checks
+// a proposed one with the very code that applies it, then rolls it back (lib/blueprint.ts).
+export const blueprints = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { await requireAgent(ctx, args.keyHash); return { blueprints: templates }; } });
+export const currentBlueprint = internalQuery({ args: { keyHash }, handler: async (ctx, args) => ({ blueprint: await exportBlueprint(ctx, await requireAgent(ctx, args.keyHash)) }) });
+export const trialBlueprint = internalMutation({ args: { keyHash, blueprint }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash);
+  if (principal.agent.role !== "admin") fail("FORBIDDEN", "Only an admin agent can propose shape changes");
+  await writable(ctx, principal.org._id);
+  rollBack(await runBlueprint(ctx, principal, args.blueprint, await ownerOf(ctx, principal.org._id)));
+} });

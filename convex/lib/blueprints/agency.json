@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "name": "Agency or consulting",
+  "description": "Clients, projects, retainers and deliverables, for studios, agencies and consultants.",
+  "changes": [
+    {
+      "kind": "relabel",
+      "object": "company",
+      "label": "Client",
+      "labelPlural": "Clients"
+    },
+    {
+      "kind": "addObject",
+      "key": "retainer",
+      "label": "Retainer",
+      "labelPlural": "Retainers",
+      "fields": [
+        {
+          "key": "client",
+          "label": "Client",
+          "type": "lookup",
+          "target": "company"
+        },
+        {
+          "key": "monthlyFee",
+          "label": "Monthly fee",
+          "type": "number"
+        },
+        {
+          "key": "hours",
+          "label": "Hours per month",
+          "type": "number"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "active",
+              "label": "Active"
+            },
+            {
+              "id": "paused",
+              "label": "Paused"
+            },
+            {
+              "id": "ended",
+              "label": "Ended"
+            }
+          ]
+        },
+        {
+          "key": "startDate",
+          "label": "Start date",
+          "type": "date"
+        },
+        {
+          "key": "renewsOn",
+          "label": "Renews on",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "deliverable",
+      "label": "Deliverable",
+      "labelPlural": "Deliverables",
+      "fields": [
+        {
+          "key": "project",
+          "label": "Project",
+          "type": "lookup",
+          "target": "project"
+        },
+        {
+          "key": "client",
+          "label": "Client",
+          "type": "lookup",
+          "target": "company"
+        },
+        {
+          "key": "dueDate",
+          "label": "Due date",
+          "type": "date"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "todo",
+              "label": "To do"
+            },
+            {
+              "id": "inProgress",
+              "label": "In progress"
+            },
+            {
+              "id": "inReview",
+              "label": "In review"
+            },
+            {
+              "id": "approved",
+              "label": "Approved"
+            },
+            {
+              "id": "delivered",
+              "label": "Delivered"
+            }
+          ]
+        },
+        {
+          "key": "owner",
+          "label": "Owner",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "link",
+          "label": "Link",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addField",
+      "object": "project",
+      "key": "retainer",
+      "label": "Retainer",
+      "type": "lookup",
+      "target": "retainer"
+    },
+    {
+      "kind": "addField",
+      "object": "project",
+      "key": "budget",
+      "label": "Budget",
+      "type": "number"
+    },
+    {
+      "kind": "addField",
+      "object": "project",
+      "key": "dueDate",
+      "label": "Due date",
+      "type": "date"
+    },
+    {
+      "kind": "addOptions",
+      "object": "project",
+      "field": "status",
+      "options": [
+        {
+          "id": "proposal",
+          "label": "Proposal"
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "object": "company",
+      "values": {
+        "name": "Northwind Studio"
+      }
+    },
+    {
+      "object": "retainer",
+      "values": {
+        "name": "Northwind monthly support",
+        "client": "Northwind Studio",
+        "monthlyFee": 2500,
+        "hours": 20,
+        "status": "active"
+      }
+    },
+    {
+      "object": "project",
+      "values": {
+        "name": "Northwind website",
+        "company": "Northwind Studio",
+        "status": "active",
+        "retainer": "Northwind monthly support"
+      }
+    },
+    {
+      "object": "deliverable",
+      "values": {
+        "name": "Homepage design",
+        "project": "Northwind website",
+        "client": "Northwind Studio",
+        "status": "inReview"
+      }
+    }
+  ]
+}

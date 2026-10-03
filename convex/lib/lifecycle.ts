@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { makeFunctionReference } from "convex/server";
 import { v } from "convex/values";
-import type { Membership, Principal } from "../identity";
+import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { canReadField, canReadObject, requireObjectAdministration } from "../authority/reads";
 import { fieldFor, fieldsOf, requireUnrestricted, type Lifecycle, type ShapeChange } from "./metadata";
@@ -100,14 +100,14 @@ export async function checkLifecycle(ctx: Ctx, principal: Principal, change: Lif
       if (object.titleFieldId === field._id) fail("VALIDATION", "This is already the title field");
       return { target: field._id, objectIds: [object._id], fieldIds: [field._id], write: async (m) => {
         await m.db.patch(object._id, { titleFieldId: field._id });
-        await retitlePage(m, object._id, null);
+        await retitlePage(m, object._id, null, true);
         return object.titleFieldId ? (await m.db.get(object.titleFieldId))?.key : undefined;
       } };
     }
   }
 }
 
-export async function applyLifecycle(ctx: MutationCtx, principal: Membership, change: Lifecycle) {
+export async function applyLifecycle(ctx: MutationCtx, principal: Principal, change: Lifecycle) {
   const { target, objectIds, fieldIds, write } = await checkLifecycle(ctx, principal, change), before = await write(ctx);
   await ctx.db.insert("authorityAudit", { orgId: principal.org._id, actor: principal.actor, action: change.kind, targetId: target, objectIds, ...(before ? { before } : {}) });
   return { objectIds, fieldIds };
@@ -119,11 +119,16 @@ export async function applyLifecycle(ctx: MutationCtx, principal: Membership, ch
 // reads the title field's value. Safe to re-run by hand with cursor null.
 const RETITLED = 50;
 const retitleRef = makeFunctionReference<"mutation", { objectId: Id<"objects">; cursor: string | null }>("lib/lifecycle:retitle");
-async function retitlePage(ctx: MutationCtx, objectId: Id<"objects">, cursor: string | null) {
+async function retitlePage(ctx: MutationCtx, objectId: Id<"objects">, cursor: string | null, first = false) {
   const object = await ctx.db.get(objectId), field = object?.titleFieldId ? await ctx.db.get(object.titleFieldId) : null;
   if (!object || field?.type !== "text") return;
-  const page = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).paginate({ cursor, numItems: RETITLED });
-  for (const record of page.page) { const value = record.values[field._id], title = value == null ? "" : String(value); if (record.title !== title) await ctx.db.patch(record._id, { title }); }
+  const rows = ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id));
+  const rewrite = async (page: Doc<"records">[]) => { for (const record of page) { const value = record.values[field._id], title = value == null ? "" : String(value); if (record.title !== title) await ctx.db.patch(record._id, { title }); } };
+  // Within the change itself a plain take: Convex allows one paginate per function, and a
+  // blueprint can retitle several objects. The rest pages from the start (rewrites are idempotent).
+  if (first) { const page = await rows.take(RETITLED + 1); await rewrite(page.slice(0, RETITLED)); if (page.length > RETITLED) await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id, cursor: null }); return; }
+  const page = await rows.paginate({ cursor, numItems: RETITLED });
+  await rewrite(page.page);
   if (!page.isDone) await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id, cursor: page.continueCursor });
 }
 export const retitle = internalMutation({ args: { objectId: v.id("objects"), cursor: v.union(v.string(), v.null()) }, handler: (ctx, args) => retitlePage(ctx, args.objectId, args.cursor) });
