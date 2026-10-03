@@ -1,8 +1,8 @@
 import { pauseWork } from './integrations/lifecycle';
 import { action, internalAction, internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-import type { MutationCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { v, type ObjectType } from "convex/values";
 import { memberAs, requireMember } from "./identity";
 import { fail } from "./errors";
@@ -10,6 +10,7 @@ import { expand, snapshot } from "./authority/migration";
 import { writable } from "./authority/readonly";
 import { grantIntake } from "./lib/intake";
 import { issue } from "./authority/grants";
+import { agentReads } from "./authority/reads";
 
 const grants = v.array(v.object({ action: v.union(v.literal("create"), v.literal("update"), v.literal("delete")), objectKey: v.string() }));
 const role = v.union(v.literal("admin"), v.literal("member"));
@@ -18,11 +19,11 @@ const hex = (bytes: Uint8Array) => [...bytes].map((byte) => byte.toString(16).pa
 export const list = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
   await requireMember(ctx, args.orgId);
   // Scoped keys act only through capability grants; access names the live ones, e.g. "create activity".
-  const keys = new Map((await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect()).map((o) => [o._id as string, o.key])), now = Date.now();
+  const objects = (await snapshot(ctx, args.orgId)).sort((a, b) => a.order - b.order), keys = new Map(objects.map((o) => [o._id as string, o.key])), now = Date.now(), org = (await ctx.db.get(args.orgId))!;
   const rows = await ctx.db.query("agents").withIndex("by_org", (q) => q.eq("orgId", args.orgId)).collect();
   return Promise.all(rows.map(async ({ keyHash: _keyHash, ...agent }) => {
     const live = (await ctx.db.query("capabilityGrants").withIndex("by_agent", (q) => q.eq("orgId", args.orgId).eq("agentId", agent._id)).collect()).filter((g) => g.revokedAt === undefined && g.expiresAt > now);
-    return { ...agent, grants: agent.grants.map(({ action, objectKey }) => ({ action, objectKey })), access: [...new Set(live.map((g) => `${g.capability.replace(/^record\./, "")}${g.scope.kind === "records" ? ` ${keys.get(g.scope.objectId) ?? "?"}` : ""}`))] };
+    return { ...agent, grants: agent.grants.map(({ action, objectKey }) => ({ action, objectKey })), access: [...new Set(live.map((g) => `${g.capability.replace(/^record\./, "")}${g.scope.kind === "records" ? ` ${keys.get(g.scope.objectId) ?? "?"}` : ""}`))], fixedScope: await fixedScope(ctx, agent), cannotRead: objects.filter((o) => !agentReads({ agent: agent as Doc<"agents">, org }, o)).map((o) => o.key) };
   }));
 } });
 
@@ -79,6 +80,31 @@ export const setGrants = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("
   await ctx.db.patch(agent._id, { grants: next, authorityVersion: 1, readObjectIds: agent.readObjectIds ?? frozen.map(o => o._id), authorityEpoch: (agent.authorityEpoch ?? 0) + 1 });
   await pauseWork(ctx, args.orgId);
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: caller.actor, action: "legacyGrantsReplaced", targetId: agent._id, objectIds: objects.map(o => o._id), epoch: (agent.authorityEpoch ?? 0) + 1 });
+} });
+
+// Keys made for one job (website intake, Gmail sync, other scoped keys) keep their fixed scope; an owner widens those with capability grants.
+async function fixedScope(ctx: QueryCtx, agent: Pick<Doc<"agents">, "_id" | "orgId" | "purpose">) {
+  return agent.purpose !== undefined || !!(await ctx.db.query("authorityAudit").withIndex("by_target", (q) => q.eq("orgId", agent.orgId).eq("targetId", agent._id)).filter((q) => q.eq(q.field("action"), "scopedAgentCreated")).first());
+}
+
+// Replaces what the agent reads. Reading never grants writes; write grants on objects it no longer reads are dropped,
+// so reading an object again does not bring them back. Hidden fields are kept: they hide nothing while unread, and again once read.
+export const setReadAccess = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("agents"), readAllObjects: v.boolean(), objectIds: v.array(v.id("objects")) }, handler: async (ctx, args) => {
+  const caller = await requireMember(ctx, args.orgId, "admin");
+  const agent = await ctx.db.get(args.agentId);
+  if (!agent || agent.orgId !== args.orgId) fail("NOT_FOUND", "Agent not found");
+  if (agent.revokedAt !== undefined || agent.state === "fired") fail("FORBIDDEN", "This agent's key is revoked");
+  if (await fixedScope(ctx, agent)) fail("FORBIDDEN", "This key has a fixed job, so its access does not change here");
+  if (agent.authorityVersion !== 1) fail("AUTHORITY_MIGRATING", "Workspace authority migration is pending; retry shortly", { retryable: true });
+  const objects = await snapshot(ctx, args.orgId), all = objects.map((o) => o._id);
+  if (args.objectIds.some((id) => !all.includes(id))) fail("NOT_FOUND", "Object not found");
+  const reads = args.readAllObjects ? all : [...new Set(args.objectIds)], before = agent.readAllObjects ? all : agent.readObjectIds ?? [];
+  if ((args.readAllObjects && !agent.readAllObjects) || reads.some((id) => !before.includes(id))) { await writable(ctx, args.orgId); await legacyCeiling(ctx, args.orgId, caller.user._id); }
+  const epoch = (agent.authorityEpoch ?? 0) + 1;
+  // readObjectIds also lists every current object under readAllObjects, so a release without the flag still reads them.
+  await ctx.db.patch(agent._id, { readAllObjects: args.readAllObjects || undefined, readObjectIds: reads, grants: agent.grants.filter((g) => !g.objectId || reads.includes(g.objectId)), authorityEpoch: epoch });
+  await pauseWork(ctx, args.orgId);
+  await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: caller.actor, action: "agentReadAccessChanged", targetId: agent._id, objectIds: reads, epoch });
 } });
 
 export const revoke = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("agents") }, handler: async (ctx, args) => {
