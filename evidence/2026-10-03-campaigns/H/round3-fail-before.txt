@@ -1,0 +1,15 @@
+   × a batch whose driver died offers Resume after one minute without another database write 69ms
+   × a stopped revoked-agent batch offers Dismiss so its remaining items can be discarded 13ms
+   × single delete preserves a person explicitly unlinked by a human before the company was deleted 792ms
+   × single delete preserves a campaign whose people a human removed before deleting that person 93ms
+   × batch delete skips an explicit human unlink even after deleting its former target 113ms
+   × agent batch status hides free-text reason after the field it describes is hidden 56ms
+   × human batch preview hides free-text reason when unrelated confidential fields are hidden 80ms
+   × conflicts after cascade cleanup too: any difference from the reviewed snapshot is a conflict; a person re-proposes 88ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  8 failed | 3 passed (11)
+     × counts many referrers across several bounded steps and gets the exact total 1864ms
+     × never scans a whole object for an unindexed lookup: it counts up to a cap and says N+ 197ms
+     × shows a failed count with Retry, refuses Apply until it is counted, and counts again on Retry 60ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  3 failed | 1 passed | 38 skipped (42)

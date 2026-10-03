@@ -54,7 +54,7 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
     if (!field || !canReadField(member, object, field, record?._id)) fail("NOT_FOUND", "Field not found");
   }
   if (suggestion.change.action === "update" || suggestion.change.action === "delete") {
-    const conflicts = await staleFields(ctx, suggestion.change.action, record!, suggestion.before, Object.keys(suggestion.change.values));
+    const conflicts = staleFields(suggestion.change.action, record!, suggestion.before, Object.keys(suggestion.change.values));
     if (conflicts.length) { await ctx.db.patch(suggestion._id, { status: "conflicted", conflicts }); return { status: "conflicted" as const, conflicts: (await row(ctx, member, { ...suggestion, conflicts }))?.suggestion.conflicts ?? [] }; }
   }
   // Link deltas apply to the links as they are now, so a person added meanwhile stays.

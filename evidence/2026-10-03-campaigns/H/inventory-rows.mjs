@@ -18,6 +18,9 @@ const rows = [
   row("batches:next", "query", "internal", false, "human", "not-a-write", "no-record-data", STOP, driver),
   row("batches:failItem", "mutation", "internal", true, "human", "refused", "no-record-data", STOP, driver),
   row("batches:count", "mutation", "internal", true, "human", "reduction-only", "no-record-data", "counts the links each delete would clear", "bookkeeping on a batch row; writes no record"),
+  row("batches:countDrive", "action", "internal", true, "human", "reduction-only", "no-record-data", "shows a failed count with Retry, refuses Apply until it is counted, and counts again on Retry", "bookkeeping on a batch row; writes no record"),
+  row("batches:countFailed", "mutation", "internal", true, "human", "reduction-only", "no-record-data", "shows a failed count with Retry, refuses Apply until it is counted, and counts again on Retry", "bookkeeping on a batch row; writes no record"),
+  row("batches:recount", "mutation", "public", true, "human", "reduction-only", "n/a", READONLY, "restarts the delete-impact count; writes no record"),
   row("batches:drive", "action", "internal", true, "human", "refused", "no-record-data", STOP, driver),
 ];
 const known = new Set(inventory.map((entry) => entry.id));

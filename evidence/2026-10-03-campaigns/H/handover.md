@@ -175,3 +175,55 @@ Mutants: 2 new (archived create accepted at submit; suggestions keep their own s
 ### Not redone in round 2
 
 The SERVICE runs (screenshots, rollback, scale) were not repeated after the merge. The rollback target is now df22614 rather than aa68030; the batch tables are still additive, and no existing table changed in this round. During the merge I briefly lost the merge parent: a temporary "wip" commit was reset. I restored `MERGE_HEAD` to df22614 before committing, so the final commit is a real two-parent merge.
+
+## Round 3 (independent verification: REVISE on 4ef1f92)
+
+Sol 6.1's verdict is in `~/work/briefs-1003/ivH/iv-H-verdict.md`. First, `origin/integ/campaigns` at e19eeef was merged as **c6b085d**. There were three conflicts:
+
+- `inventory.json`: integ's file plus my rows script, giving 310 unique rows with every row from both sides.
+- `agentApi.ts` imports: union of both sides.
+- MCP instructions: integ's template literal, which now starts with remold_map, plus a sentence on remold_propose_batch, remold_apply_batch and remold_batch_status.
+
+The fixes below were all made failing-first. Before: `round3-fail-before.txt`, 8 of Sol's repros plus 3 counting tests failing. After: `round3-after.txt`.
+
+1. **Stale deletes: the conservative rule (blocker).** `convex/lib/conflicts.ts` `staleFields` now treats any difference between the reviewed snapshot and the current record as a conflict. That includes a reference cleared by cascade cleanup; the exemption is gone. Single suggestions and batch items both use it, and a person re-proposes.
+   - Sol's three repros are adopted in `convex/batches.iv.test.ts`: human unlink of a lookup, human removal from a links field, and the batch version. Sol's positive control ("deleted after actual cascade cleanup applies") is inverted to expect `conflicted`, per the decision.
+   - Two of my own tests changed with the rule. A batch `[delete Acme, delete Ada (company Acme), delete Spring (links Acme)]` now applies 1 and conflicts 2. Listing the referrers before the record they point at applies all 3; both cases are tested. The MCP `remold_propose_batch` description now tells agents to order deletes that way.
+2. **Batch reasons (blocker).** `reasonFor` returns the free-text reason only to a viewer who can read every field of every object the batch touches, on all records; anyone else gets `""`. It is used by the human list and by every agent response: submit, Idempotency-Key replay and `GET /batches/<id>`. Both of Sol's repros are adopted. One more test covers an agent with a hidden field on submit and on replay; the human owner still sees the reason. The card shows no quote when the reason is empty.
+3. **BatchCard.**
+   - A timer (`useStale`) re-renders the card one minute after the last progress, so Resume appears for a stalled batch without a database write.
+   - Stopped batches, including a revoked agent's, show Dismiss.
+   - Sol's two UI repros are adopted in `src/components/BatchCard.test.tsx`, plus a test for Retry and "N+".
+4. **Bounded impact counting.**
+   - `batches:count` is one bounded step. It reads at most `BUDGET` (400) units, and every query costs at least one unit. It resumes from a cursor `{ phase, field, index, source, after: _creationTime }`. It pages incoming `links` and each indexed lookup's slot index with `.gt("_creationTime", after)`, so no `collect()` remains.
+   - An unindexed lookup is never scanned whole. Its source object is read up to `SCAN_CAP` (500) records, once per batch, using the new `batchItems.by_batch_record` index to find the deleted item. If there are more records, the total is marked partial and the card reads "N+ links".
+   - `batches:countDrive` (action) runs the steps. If a step throws, `batches:countFailed` sets `countError`. The card then shows "Could not count what deleting would clear." with a **Retry** button (`batches:recount`, public), and Apply is refused with 409 until the count succeeds.
+   - Retry bumps `countRun`; steps from an older run change nothing. A test caught the double count without this: two drivers produced 2204 instead of 1204.
+   - Tests: the count spans several steps (the first step is not done and has at most 400) and reaches the exact total, 1204; the unindexed cap gives `impact: 500, impactPartial: true`; a failed count shows Retry, refuses Apply, and counts again after Retry.
+
+Schema (all within the new tables): `batches.impactPartial`, `countRun`, `countError` (optional) and `batchItems.by_batch_record`. Inventory: 3 new rows (`batches:countDrive`, `batches:countFailed`, `batches:recount`; 12 `batches:*` rows in total). The readonly sweep calls `batches:recount`, which is reduction-only: it changes only batch bookkeeping.
+
+**SERVICE (local backend, `round3-scale.log`).** The first rerun of `scale.mjs` found a real problem. A count step over 1000 company deletes hit Convex's 1s limit, because empty index queries were not charged against the budget. With every query costing at least one unit, the rerun passed:
+- 1000 updates: submit 2.3s wall, applied 1000.
+- 1000 deletes: impact counted in 16.9s (250), applied 1000.
+- No function timeouts in the backend log.
+
+The screenshots and the rollback run were not repeated this round.
+
+**Mutants (`mutants.txt`).** 7 new, 6 caught: reason check skipping fields, deletes ignoring lookup changes, old count runs still counting, a failed count leaving counting on forever, the count cursor lost between pages, and Apply ignoring a failed count. 1 survived: scanning the whole object for an unindexed lookup gives the same result, and only the read cost differs, which convex-test does not enforce. The minimum query charge has the same limit; the SERVICE run above is the evidence for both. A no-op mutant I wrote by mistake was dropped.
+
+**Suites (final code):**
+
+| Suite | Result |
+|---|---|
+| `pnpm test` | **676/676** with `--testTimeout=60000 --maxWorkers=2`. At default parallelism, 675/676: gmailSync "newest past activity" timed out at its 5s limit, as in earlier rounds. |
+| `pnpm typecheck` | clean |
+| `pnpm test:authority` | 101/101 |
+| `pnpm verify:release` | 37/37 |
+| `pnpm build` | ok |
+| MCP tests | 12/12 |
+| `pnpm --dir packages/mcp build` | ok (tsc clean) |
+
+**Left for the next verification:**
+- Sol noted that booking is not a standard object on this branch, so booking status rules cannot be exercised here.
+- Rollback against df22614 or e19eeef was not rerun. The schema changes this round are optional fields and an index on the new tables only.

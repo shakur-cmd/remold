@@ -28,6 +28,13 @@ const mutants = [
   ['apply while counting', 'convex/batches.ts', '  if (batch.counting) fail("CONFLICT"', '  if (false) fail("CONFLICT"'],
   ['round 2: archived create accepted at submit', 'convex/agentApi.ts', '      if (input.action === "create") requireLive(object);', ''],
   ['round 2: suggestions keep their own stale rule', 'convex/suggestions.ts', 'const conflicts = await staleFields(ctx, suggestion.change.action, record!, suggestion.before, Object.keys(suggestion.change.values));', 'const conflicts = (Object.keys(suggestion.before).length ? [] : []) as any[];'],
+  ['round 3: reason check skips fields', 'convex/batches.ts', '(await fieldsOf(ctx, batch.orgId, id)).some((field) => !everywhere(principal, object, field))', 'false'],
+  ['round 3: deletes ignore lookup changes', 'convex/lib/conflicts.ts', 'keys.flatMap((id) => same(record.values[id], before[id])', 'keys.flatMap((id) => typeof before[id] === "string" || same(record.values[id], before[id])'],
+  ['round 3: old count runs still count', 'convex/batches.ts', ' || (batch.countRun ?? 0) !== args.run) return { done: true };', ') return { done: true };'],
+  ['round 3: failed count leaves counting forever', 'convex/batches.ts', 'catch { await ctx.runMutation(internal.batches.countFailed, { batchId, run }); return; }', 'catch { return; }'],
+  ['round 3: unindexed lookup scanned whole', 'convex/batches.ts', '.take(SCAN_CAP + 1);', '.collect();'],
+  ['round 3: count pages lose their cursor', 'convex/batches.ts', ': { ...c, after: rows.at(-1)!._creationTime };', ': { ...c, source: c.source + 1, after: null };'],
+  ['round 3: apply ignores a failed count', 'convex/batches.ts', '  if (batch.countError) fail(', '  if (false) fail('],
   ['no size limit', 'convex/agentApi.ts', 'export const MAX_BATCH = 1000;', 'export const MAX_BATCH = 100000;'],
   // Each reverts one fix from the independent review (Astra findings 1-7).
   ['review 1: person writes alone, cascades skip agent limits', 'convex/batches.ts', 'applyChange(ctx, actors.agent, change, actors.approver ? { approvedBy: actors.approver, actor: actors.approver.actor } : {})', 'applyChange(ctx, actors.approver ?? actors.agent, change, {})'],
@@ -49,7 +56,7 @@ for (const [name, file, before, after] of mutants.slice(from, to)) {
   if (original.split(before).length !== 2) { results.push(`AMBIGUOUS ${name}`); console.log(results.at(-1)); continue; }
   writeFileSync(file, original.replace(before, after)); restore = () => writeFileSync(file, original);
   try {
-    const run = spawnSync('pnpm', ['vitest', 'run', 'convex/batches.test.ts', '--testTimeout=30000', '--bail=1', '-t', '^(?!.*takes 1000 changes)'], { encoding: 'utf8', timeout: 420000 });
+    const run = spawnSync('pnpm', ['vitest', 'run', 'convex/batches.test.ts', 'convex/batches.iv.test.ts', '--testTimeout=30000', '--bail=1', '-t', '^(?!.*takes 1000 changes)'], { encoding: 'utf8', timeout: 420000 });
     const line = (run.stdout + run.stderr).split('\n').find((l) => /Tests\s/.test(l))?.trim() ?? (run.error ? 'run timed out' : 'no summary');
     results.push(`${run.status === 0 ? 'SURVIVED' : 'caught  '} ${name}: ${line}`);
   } finally { restore(); restore = null; }

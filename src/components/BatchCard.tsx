@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -25,11 +25,11 @@ const itemStatus = { queued: "", applied: "applied", conflicted: "skipped", fail
 export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) {
   const apply = useMutation(api.batches.apply);
   const dismiss = useMutation(api.batches.dismiss);
+  const recount = useMutation(api.batches.recount);
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<Filter>();
   const pending = row.status === "pending";
-  // A driver that has not reported for a minute probably died; resuming never applies an item twice.
-  const stale = row.status === "applying" && row.progressAt !== null && Date.now() - row.progressAt > 60_000;
+  const stale = useStale(row);
   const counts = [row.counts.update && plural(row.counts.update, "update"), row.counts.create && plural(row.counts.create, "new record"), row.counts.delete && plural(row.counts.delete, "delete")].filter(Boolean).join(" · ");
 
   async function act(action: () => Promise<{ status: string }>, success: string) {
@@ -57,9 +57,17 @@ export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) 
         <span className="font-medium">{row.summary}</span>
         <span className="text-[13px] text-muted-foreground">{counts}</span>
         {row.counting && <span className="text-[13px] text-muted-foreground">Counting what deleting would clear…</span>}
-        {!!row.impact && <span className="text-[13px] text-destructive">Deleting also clears {plural(row.impact, "link")} from other records.</span>}
+        {row.countError && (
+          <span className="flex flex-wrap items-center gap-x-2 text-[13px] text-destructive">
+            {row.countError}.
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" disabled={busy} onClick={() => act(() => recount({ orgId, batchId: row._id }), "Counting again")}>
+              Retry
+            </Button>
+          </span>
+        )}
+        {!!row.impact && <span className="text-[13px] text-destructive">Deleting also clears {row.impactPartial ? `${row.impact}+ links` : plural(row.impact, "link")} from other records.</span>}
       </div>
-      <p className="text-muted-foreground">“{row.reason}”</p>
+      {row.reason && <p className="text-muted-foreground">“{row.reason}”</p>}
       {!pending && <Progress row={row} />}
       {row.error && <p className="text-xs text-destructive">{row.error}</p>}
       {row.paused && <p className="text-xs text-muted-foreground">This agent's access changed since it asked. Dismiss it, or make the changes yourself.</p>}
@@ -77,11 +85,11 @@ export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) 
         <div className="flex gap-2">
           {!row.paused && (
             // Outline, not filled, like SuggestionCard: filled teal is kept to one per screen.
-            <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" disabled={busy || row.counting} onClick={() => act(() => apply({ orgId, batchId: row._id }), pending ? "Applying" : "Resumed")}>
+            <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" disabled={busy || row.counting || !!row.countError} onClick={() => act(() => apply({ orgId, batchId: row._id }), pending ? "Applying" : "Resumed")}>
               {!pending ? "Resume" : row.total === 1 ? "Apply" : `Apply all ${row.total}`}
             </Button>
           )}
-          {pending && (
+          {(pending || row.status === "stopped") && (
             <Button size="sm" variant="ghost" disabled={busy} onClick={() => act(() => dismiss({ orgId, batchId: row._id }), "Dismissed")}>
               Dismiss
             </Button>
@@ -90,6 +98,19 @@ export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) 
       )}
     </div>
   );
+}
+
+// A driver that has not reported for a minute probably died, so the card offers Resume
+// (resuming never applies an item twice). A timer re-renders the card when that minute is up.
+const STALE_MS = 60_000;
+function useStale(row: BatchRow) {
+  const watching = row.status === "applying" && row.progressAt !== null, [, setNow] = useState(0);
+  useEffect(() => {
+    if (!watching) return;
+    const timer = setTimeout(() => setNow(Date.now()), Math.max(0, row.progressAt! + STALE_MS + 1 - Date.now()));
+    return () => clearTimeout(timer);
+  }, [watching, row.progressAt]);
+  return watching && Date.now() - row.progressAt! > STALE_MS;
 }
 
 function Progress({ row }: { row: BatchRow }) {

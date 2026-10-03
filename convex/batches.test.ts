@@ -191,13 +191,19 @@ describe("batch proposals", () => {
     expect(page.page.map((item: any) => item.impact)).toEqual([4, 1, 0]);
   });
 
-  it("deletes records in one batch even when an earlier delete cleared their links", async () => {
+  // Round 3 (coordinator): a reference cleared by an earlier delete's cleanup is a conflict like any other
+  // change, so referrers are skipped when their target goes first; listing referrers first deletes them all.
+  it("skips a delete whose links an earlier delete in the batch cleared, and deletes all when referrers come first", async () => {
     const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
     const acme = await w.create(w.company, { name: "Acme" }), ada = await w.create(w.person, { name: "Ada", company: acme }), spring = await w.create(w.campaign, { name: "Spring", companies: [acme] });
     const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupes", changes: [{ action: "delete", record: acme }, { action: "delete", record: ada }, { action: "delete", record: spring }] });
     await run(w.t); await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
-    expect((await rest(w.t, agent.key)("GET", `/api/v1/batches/${posted.json.batch.id}`)).json.batch.progress).toEqual({ done: 3, applied: 3, conflicted: 0, failed: 0 });
-    expect(await w.get(ada)).toBeUndefined();
+    expect((await rest(w.t, agent.key)("GET", `/api/v1/batches/${posted.json.batch.id}`)).json.batch.progress).toEqual({ done: 3, applied: 1, conflicted: 2, failed: 0 });
+    expect(await w.get(ada)).toBeDefined();
+    const beta = await w.create(w.company, { name: "Beta" }), bo = await w.create(w.person, { name: "Bo", company: beta }), fall = await w.create(w.campaign, { name: "Fall", companies: [beta] });
+    const ordered = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupes", changes: [{ action: "delete", record: bo }, { action: "delete", record: fall }, { action: "delete", record: beta }] });
+    await run(w.t); await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: ordered.json.batch.id }); await run(w.t);
+    expect((await rest(w.t, agent.key)("GET", `/api/v1/batches/${ordered.json.batch.id}`)).json.batch.progress).toEqual({ done: 3, applied: 3, conflicted: 0, failed: 0 });
   });
 
   it("holds the agent's limits on reference cleanup when a person applies its delete", async () => {
@@ -499,14 +505,14 @@ describe("batches and the rest of the workspace", () => {
     } finally { vi.unstubAllGlobals(); for (const key of ["RESEND_API_KEY", "REMOLD_SENDER_DOMAINS", "REMOLD_CAMPAIGN_DAILY_CAP", "CONVEX_SITE_URL"]) delete process.env[key]; }
   });
 
-  it("uses one stale-change rule for suggestions and batches: a cleared reference is not an edit, a real edit is", async () => {
+  it("uses one stale-change rule for suggestions and batches: any difference, a cleared reference included, is a conflict", async () => {
     const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
     const acme = await w.create(w.company, { name: "Acme" }), ada = await w.create(w.person, { name: "Ada", company: acme }), ben = await w.create(w.person, { name: "Ben" });
     const propose = async (record: string) => (await rest(w.t, agent.key)("POST", "/api/v1/suggestions", { action: "delete", record, reason: "dupe" })).json.suggestion.id;
     const [forAda, forBen] = [await propose(ada), await propose(ben)];
     await w.client.mutation(api.records.remove, { orgId: w.orgId, recordId: acme });
     await w.client.mutation(api.records.update, { orgId: w.orgId, recordId: ben, values: { [w.person.fields.title._id]: "CEO" } });
-    expect(await w.client.mutation(api.suggestions.apply, { orgId: w.orgId, suggestionId: forAda })).toMatchObject({ status: "applied" });
+    expect(await w.client.mutation(api.suggestions.apply, { orgId: w.orgId, suggestionId: forAda })).toMatchObject({ status: "conflicted" });
     expect(await w.client.mutation(api.suggestions.apply, { orgId: w.orgId, suggestionId: forBen })).toMatchObject({ status: "conflicted" });
   });
 
@@ -525,5 +531,58 @@ describe("batches and the rest of the workspace", () => {
       const inbox: any[] = await w.t.run((ctx: any) => ctx.db.query("agentInbox").collect());
       expect(inbox.map((i: any) => i.text).sort()).toEqual(["Call Deal 0", "Call Deal 1", "Call Deal 2"]);
     } finally { delete process.env.REMOLD_AUTOMATION_DAILY_CAP; }
+  });
+});
+
+describe("round 3: bounded impact counting and hidden reasons", () => {
+  const people = (w: any, n: number, company: string) => w.t.run(async (ctx: any) => { for (let i = 0; i < n; i++) await ctx.db.insert("records", { orgId: w.orgId, objectId: w.person.object._id, values: { [w.person.fields.name._id]: `P${i}`, [w.person.fields.company._id]: company }, title: `P${i}`, createdBy: w.agentUser ?? (await ctx.db.query("users").first())._id, updatedAt: 0, [`${w.person.fields.company.slot.kind}${w.person.fields.company.slot.index}`]: company }); });
+
+  it("counts many referrers across several bounded steps and gets the exact total", async () => {
+    const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+    const acme = await w.create(w.company, { name: "Acme" });
+    await people(w, 1203, acme); await w.create(w.campaign, { name: "Spring", companies: [acme] });
+    const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupe", changes: [{ action: "delete", record: acme }] });
+    const first = await w.t.mutation(internal.batches.count, { batchId: posted.json.batch.id, run: 0 });
+    expect(first.done).toBe(false);
+    expect(((await w.t.run((ctx: any) => ctx.db.get(posted.json.batch.id))) as any).impact).toBeLessThanOrEqual(500);
+    // Start over cleanly, as Retry does, and let the driver finish.
+    await w.client.mutation(api.batches.recount, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0]).toMatchObject({ counting: false, countError: null, impact: 1204, impactPartial: false });
+  }, 60_000);
+
+  it("never scans a whole object for an unindexed lookup: it counts up to a cap and says N+", async () => {
+    const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+    const acme = await w.create(w.company, { name: "Acme" });
+    await people(w, 505, acme);
+    await w.t.run((ctx: any) => ctx.db.patch(w.person.fields.company._id, { slot: undefined }));
+    const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupe", changes: [{ action: "delete", record: acme }] });
+    await run(w.t);
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0]).toMatchObject({ counting: false, impact: 500, impactPartial: true });
+    void posted;
+  }, 60_000);
+
+  it("shows a failed count with Retry, refuses Apply until it is counted, and counts again on Retry", async () => {
+    const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+    const acme = await w.create(w.company, { name: "Acme" }); await w.create(w.person, { name: "Ada", company: acme });
+    const slot = w.person.fields.company.slot;
+    await w.t.run((ctx: any) => ctx.db.patch(w.person.fields.company._id, { slot: { kind: "s", index: 99 } }));
+    const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupe", changes: [{ action: "delete", record: acme }] });
+    await run(w.t);
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0]).toMatchObject({ counting: false, countError: "Could not count what deleting would clear" });
+    await expect(w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id })).rejects.toMatchObject({ data: { code: "CONFLICT" } });
+    await w.t.run((ctx: any) => ctx.db.patch(w.person.fields.company._id, { slot }));
+    await w.client.mutation(api.batches.recount, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0]).toMatchObject({ counting: false, countError: null, impact: 1 });
+    expect(await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id })).toMatchObject({ status: "applying" });
+  });
+
+  it("hides the reason from an agent that cannot read every field, on submit and on replay", async () => {
+    const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+    await w.t.run((ctx: any) => ctx.db.patch(agent.agentId, { hiddenFieldIds: [w.opp.fields.amount._id] }));
+    const [deal] = await deals(w, 1);
+    const send = () => w.t.fetch("/api/v1/batches", { method: "POST", headers: { authorization: `Bearer ${agent.key}`, "content-type": "application/json", "idempotency-key": "r3" }, body: JSON.stringify({ reason: "secret 4242", changes: stageAll([deal], "won") }) }).then((r: Response) => r.json());
+    expect((await send()).batch.reason).toBe("");
+    expect((await send()).batch.reason).toBe("");
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0].reason).toBe("secret 4242");
   });
 });

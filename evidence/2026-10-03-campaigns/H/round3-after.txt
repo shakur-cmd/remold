@@ -1,0 +1,31 @@
+Round 3 (after merge with e19eeef and the four fixes)
+== pnpm test
+     × is the newest past activity about each person, and skips activities the reader cannot see 6809ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 65 passed (66)
+      Tests  1 failed | 675 passed (676)
+   (default parallelism: 675/676; gmailSync 'newest past activity' timed out at its 5s limit)
+== pnpm test --testTimeout=60000 --maxWorkers=2
+ Test Files  66 passed (66)
+      Tests  676 passed (676)
+== pnpm typecheck
+clean
+== pnpm test:authority
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+== pnpm verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+== pnpm build
+✓ built in 1.24s
+== MCP tests
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+== pnpm --dir packages/mcp build
+ok (tsc clean)
+
+== after the count budget fix (every query costs at least one unit), final code:
+== pnpm test --testTimeout=60000 --maxWorkers=2
+ Test Files  66 passed (66)
+      Tests  676 passed (676)

@@ -106,6 +106,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'suggestions:adopt': () => t.human.mutation(fn('suggestions:adopt'), { orgId, suggestionId: w.suggestions.adopt }),
       'batches:apply': () => t.human.mutation(fn('batches:apply'), { orgId, batchId: w.batches.apply }),
       'batches:dismiss': () => t.human.mutation(fn('batches:dismiss'), { orgId, batchId: w.batches.dismiss }),
+      'batches:recount': () => t.human.mutation(fn('batches:recount'), { orgId, batchId: w.batches.apply }),
       'shapeSuggestions:apply': () => t.human.mutation(fn('shapeSuggestions:apply'), { orgId, id: w.shapes.apply }),
       'shapeSuggestions:dismiss': () => t.human.mutation(fn('shapeSuggestions:dismiss'), { orgId, id: w.shapes.dismiss }),
       'views:create': () => t.human.mutation(fn('views:create'), { orgId, objectId: w.company._id, name: 'Denied view', layout: 'table', columns: [], filters: [] }),

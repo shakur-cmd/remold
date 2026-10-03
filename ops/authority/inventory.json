@@ -3164,5 +3164,38 @@
     "masks": "no-record-data",
     "proof": "stops an applying batch when the workspace turns read only and resumes it later",
     "reason": "batch driver; a read-only workspace stops the batch before any item is written"
+  },
+  {
+    "id": "batches:countDrive",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "shows a failed count with Retry, refuses Apply until it is counted, and counts again on Retry",
+    "reason": "bookkeeping on a batch row; writes no record"
+  },
+  {
+    "id": "batches:countFailed",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "shows a failed count with Retry, refuses Apply until it is counted, and counts again on Retry",
+    "reason": "bookkeeping on a batch row; writes no record"
+  },
+  {
+    "id": "batches:recount",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write",
+    "reason": "restarts the delete-impact count; writes no record"
   }
 ]

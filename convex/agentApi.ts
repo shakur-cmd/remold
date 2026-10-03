@@ -23,7 +23,7 @@ import { option, requireLive } from "./lib/metadata";
 import { slotsLeft } from "./lib/slots";
 import { agentRow, proposalFor } from "./shapeSuggestions";
 import { linksOf } from "./suggestions";
-import { summaryOf } from "./batches";
+import { reasonFor, summaryOf } from "./batches";
 import { archived, forReader, runView } from "./lib/views";
 import { dryRun, history } from "./automations";
 
@@ -287,7 +287,7 @@ async function summarize(ctx: any, rows: Row[]) {
 
 const progressOf = (batch: Doc<"batches">) => ({ done: batch.applied + batch.conflicted + batch.failed, applied: batch.applied, conflicted: batch.conflicted, failed: batch.failed });
 // No delete impact here: it counts links from records the agent may not be able to read.
-const batchApi = async (ctx: any, principal: Principal, batch: Doc<"batches">) => ({ id: batch._id, status: batch.status, mode: batch.mode, summary: await summaryOf(ctx, principal, batch), reason: batch.reason, total: batch.total, counts: batch.counts, progress: progressOf(batch), createdAt: batch._creationTime, resolvedAt: batch.resolvedAt ?? null, ...(batch.error ? { error: batch.error } : {}) });
+const batchApi = async (ctx: any, principal: Principal, batch: Doc<"batches">) => ({ id: batch._id, status: batch.status, mode: batch.mode, summary: await summaryOf(ctx, principal, batch), reason: await reasonFor(ctx, principal, batch), total: batch.total, counts: batch.counts, progress: progressOf(batch), createdAt: batch._creationTime, resolvedAt: batch.resolvedAt ?? null, ...(batch.error ? { error: batch.error } : {}) });
 
 export const proposeBatch = internalMutation({ args: { keyHash, reason: v.string(), changes: v.array(batchChange), direct: v.optional(v.boolean()), idempotency }, handler: async (ctx, args) => {
   const principal = await requireAgent(ctx, args.keyHash), orgId = principal.org._id, direct = !!args.direct, prior = await replay(ctx, principal.agent._id, args.idempotency);
@@ -323,7 +323,7 @@ export const proposeBatch = internalMutation({ args: { keyHash, reason: v.string
   for (const [index, row] of rows.entries()) await ctx.db.insert("batchItems", { orgId, batchId, index, action: row.action, objectId: row.item.object._id, ...(row.record ? { recordId: row.record._id } : {}), values: row.values, ...(Object.keys(row.links).length ? { links: row.links } : {}), before: row.before, status: "queued" });
   if (direct) await ctx.scheduler.runAfter(0, internal.batches.drive, { batchId });
   // Counted after submit, a hundred deletes per transaction, so a large batch stays inside one mutation's time limit.
-  else if (counts.delete) await ctx.scheduler.runAfter(0, internal.batches.count, { batchId, after: -1 });
+  else if (counts.delete) await ctx.scheduler.runAfter(0, internal.batches.countDrive, { batchId, run: 0 });
   await remember(ctx, orgId, principal.agent._id, args.idempotency, { batchId });
   return { batch: await batchApi(ctx, principal, (await ctx.db.get(batchId))!) };
 } });
