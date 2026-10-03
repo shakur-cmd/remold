@@ -1,0 +1,252 @@
+
+ RUN  v5.0.1 /Users/urkel/scratch/job-E
+
+ ❯ convex/jobE.test.ts (13 tests | 10 failed) 278ms
+   ❯ Job E regression boundaries (13)
+     × delete proposal changed snapshot is checked 164ms
+     × delete proposal added snapshot is checked 14ms
+     × rejected CSV number row leaves no writes 13ms
+     × rejected CSV required row leaves no writes 8ms
+     × date bounds reject before storage and accepted dates survive REST projection 8ms
+     × retired none values preserve delete authority 12ms
+     × retired protected values preserve delete authority 8ms
+     × discovery projects live capabilities and field write modes 8ms
+     × MCP retry after response loss returns the original REST write and pages events 7ms
+     × REST Today uses the app selection for retained done values 11ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > delete proposal changed snapshot is checked
+AssertionError: expected 'applied' to be 'conflicted' // Object.is equality
+
+Expected: "conflicted"
+Received: "applied"
+
+ ❯ convex/jobE.test.ts:12:114
+     10|     const s = await call("POST", "/api/v1/suggestions", { action: "del…
+     11|     if (edit !== "fresh") await client.mutation(api.records.update, { …
+     12|     expect((await client.mutation(api.suggestions.apply, { orgId, sugg…
+       |                                                                                                                  ^
+     13|     expect(await t.run(ctx => ctx.db.get(r.recordId))).toEqual(edit ==…
+     14|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > delete proposal added snapshot is checked
+AssertionError: expected 'applied' to be 'conflicted' // Object.is equality
+
+Expected: "conflicted"
+Received: "applied"
+
+ ❯ convex/jobE.test.ts:12:114
+     10|     const s = await call("POST", "/api/v1/suggestions", { action: "del…
+     11|     if (edit !== "fresh") await client.mutation(api.records.update, { …
+     12|     expect((await client.mutation(api.suggestions.apply, { orgId, sugg…
+       |                                                                                                                  ^
+     13|     expect(await t.run(ctx => ctx.db.get(r.recordId))).toEqual(edit ==…
+     14|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > rejected CSV number row leaves no writes
+AssertionError: expected [ Array(4) ] to deeply equal [ [], [], [], [] ]
+
+- Expected
++ Received
+
+  [
++   [
++     {
++       "_creationTime": 1791032887073,
++       "_id": "0000000000000000000010082records",
++       "createdBy": "000000000000000000000010000users",
++       "objectId": "0000000000000000000010003objects",
++       "orgId": "0000000000000000000000010001orgs",
++       "ref": "creek-tundra-atlas",
++       "s0": "Ghost",
++       "title": "Ghost",
++       "updatedAt": 1791032887073,
++       "values": {
++         "00000000000000000000010014fields": "Ghost",
++       },
++     },
++   ],
+    [],
+-   [],
+-   [],
++   [
++     {
++       "_creationTime": 1791032887073.001,
++       "_id": "00000000000000000000010083events",
++       "action": "create",
++       "actor": {
++         "id": "000000000000000000000010000users",
++         "kind": "user",
++       },
++       "after": {
++         "00000000000000000000010014fields": "Ghost",
++       },
++       "before": null,
++       "objectId": "0000000000000000000010003objects",
++       "orgId": "0000000000000000000000010001orgs",
++       "reason": "Created by CSV import",
++       "recordId": "0000000000000000000010082records",
++     },
++   ],
+    [],
+  ]
+
+ ❯ convex/jobE.test.ts:21:101
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > rejected CSV required row leaves no writes
+AssertionError: expected [ Array(4) ] to deeply equal [ [], [], [], [] ]
+
+- Expected
++ Received
+
+  [
++   [
++     {
++       "_creationTime": 1791032887082,
++       "_id": "0000000000000000000010082records",
++       "createdBy": "000000000000000000000010000users",
++       "objectId": "0000000000000000000010003objects",
++       "orgId": "0000000000000000000000010001orgs",
++       "ref": "atlas-nectar-eager",
++       "s0": "Ghost",
++       "title": "Ghost",
++       "updatedAt": 1791032887082,
++       "values": {
++         "00000000000000000000010014fields": "Ghost",
++       },
++     },
++   ],
+    [],
+-   [],
+-   [],
++   [
++     {
++       "_creationTime": 1791032887082.001,
++       "_id": "00000000000000000000010083events",
++       "action": "create",
++       "actor": {
++         "id": "000000000000000000000010000users",
++         "kind": "user",
++       },
++       "after": {
++         "00000000000000000000010014fields": "Ghost",
++       },
++       "before": null,
++       "objectId": "0000000000000000000010003objects",
++       "orgId": "0000000000000000000000010001orgs",
++       "reason": "Created by CSV import",
++       "recordId": "0000000000000000000010082records",
++     },
++   ],
+    [],
+  ]
+
+ ❯ convex/jobE.test.ts:21:101
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > date bounds reject before storage and accepted dates survive REST projection
+AssertionError: expected 'INTERNAL' to be 'VALIDATION' // Object.is equality
+
+Expected: "VALIDATION"
+Received: "INTERNAL"
+
+ ❯ convex/jobE.test.ts:27:161
+     25|     for (const dueDate of [9007199254740991, -9007199254740991, Date.U…
+     26|       const before = await t.run(ctx => ctx.db.query("records").collec…
+     27|       expect((await call("POST", "/api/v1/changes", { action: "create"…
+       |                                                                                                                                                                 ^
+     28|       expect(await t.run(ctx => ctx.db.query("records").collect())).to…
+     29|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > retired none values preserve delete authority
+AssertionError: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ convex/jobE.test.ts:45:27
+     43|     if (restriction === "protected") await client.mutation(api.fields.…
+     44|     const result = await rest(t, a.key)("POST", "/api/v1/changes", { a…
+     45|     expect(result.status).toBe(restriction === "none" ? 200 : restrict…
+       |                           ^
+     46|     expect(await t.run(ctx => ctx.db.get(r.recordId))).toEqual(restric…
+     47|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > retired protected values preserve delete authority
+AssertionError: expected 400 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 400
+
+ ❯ convex/jobE.test.ts:45:27
+     43|     if (restriction === "protected") await client.mutation(api.fields.…
+     44|     const result = await rest(t, a.key)("POST", "/api/v1/changes", { a…
+     45|     expect(result.status).toBe(restriction === "none" ? 200 : restrict…
+       |                           ^
+     46|     expect(await t.run(ctx => ctx.db.get(r.recordId))).toEqual(restric…
+     47|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > discovery projects live capabilities and field write modes
+TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+ ❯ convex/jobE.test.ts:54:35
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > MCP retry after response loss returns the original REST write and pages events
+RemoldError: Invalid request body for this route
+ ❯ RemoldClient.request packages/mcp/src/client.ts:11:29
+
+ ❯ convex/jobE.test.ts:68:77
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  convex/jobE.test.ts > Job E regression boundaries > REST Today uses the app selection for retained done values
+AssertionError: expected [ '0000000000000000000010084records' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "0000000000000000000010084records",
++ ]
+
+ ❯ convex/jobE.test.ts:79:48
+     77|     const today = Math.floor(Date.now() / 86400000) * 86400000, app = …
+     78|     const result = (await rest(t, a.key)("GET", "/api/v1/today")).json;
+     79|     expect(result.tasks.map((r: any) => r.id)).toEqual(app.tasks.map(r…
+       |                                                ^
+     80|   });
+     81| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 3 passed (13)
+   Start at  09:08:06
+   Duration  470ms (tests 67%, transform 25%, import 7%)
+

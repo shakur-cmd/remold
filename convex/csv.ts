@@ -1,4 +1,5 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
@@ -74,12 +75,7 @@ async function coerce(run: Run, field: Doc<"fields">, raw: string): Promise<unkn
   }
 }
 
-// One batch of rows (the client sends up to 100 at a time). A bad row is
-// reported by its spreadsheet row number and skipped; good rows still land.
-export const importRows = mutation({
-  args: { orgId: v.id("orgs"), objectId: v.id("objects"), columns: v.array(v.union(v.id("fields"), v.null())), rows: v.array(v.array(v.string())), firstRow: v.number(), skipDuplicates: v.boolean(), createMissing: v.boolean() },
-  handler: async (ctx, args) => {
-    if (args.rows.length > 100) fail("VALIDATION", "At most 100 rows per batch");
+async function importTarget(ctx: MutationCtx, args: { orgId: Id<"orgs">; objectId: Id<"objects">; columns: (Id<"fields"> | null)[]; skipDuplicates: boolean }) {
     const membership = await requireWriter(ctx, args.orgId);
     const { object, fields } = await fieldsOf(ctx, args.orgId, args.objectId);
     requireObjectRead(membership, object);
@@ -87,28 +83,45 @@ export const importRows = mutation({
     const columns = args.columns.map((id) => (id ? byId.get(id) ?? fail("VALIDATION", "Unknown column field") : null));
     for (const field of columns) if (field) requireQueryField(membership, object, field);
     if (args.skipDuplicates && object.titleFieldId) { const title = byId.get(object.titleFieldId); if (title) requireQueryField(membership, object, title); }
-    const run: Run = { ctx, membership, orgId: args.orgId, createMissing: args.createMissing };
-    const seen = new Set<string>();
+    return { membership, object, fields, columns };
+}
+
+// One batch of rows (the client sends up to 100 at a time). A bad row is
+// reported by its spreadsheet row number and skipped; good rows still land.
+export const importRows = mutation({
+  args: { orgId: v.id("orgs"), objectId: v.id("objects"), columns: v.array(v.union(v.id("fields"), v.null())), rows: v.array(v.array(v.string())), firstRow: v.number(), skipDuplicates: v.boolean(), createMissing: v.boolean() },
+  handler: async (ctx, args): Promise<{ created: number; skipped: number; errors: { row: number; message: string }[] }> => {
+    if (args.rows.length > 100) fail("VALIDATION", "At most 100 rows per batch");
+    const { fields } = await importTarget(ctx, args), byId = new Map(fields.map(f => [f._id, f]));
     let created = 0, skipped = 0;
     const errors: { row: number; message: string }[] = [];
     for (const [index, row] of args.rows.entries()) {
       const rowNumber = args.firstRow + index;
       try {
-        const values: Record<string, unknown> = {};
-        for (const [col, field] of columns.entries()) if (field) { const value = await coerce(run, field, row[col] ?? ""); if (value !== undefined) values[field._id] = value; }
-        const title = object.titleFieldId ? String(values[object.titleFieldId] ?? "").trim().toLowerCase() : "";
-        if (args.skipDuplicates && title && (seen.has(title) || (await findReadableByTitle(ctx, membership, object, title)))) { skipped += 1; continue; }
-        await applyChange(ctx, membership, { action: "create", orgId: args.orgId, objectId: object._id, values, reason: "CSV import" });
-        if (title) seen.add(title);
-        created += 1;
+        // A nested mutation rolls back the entire rejected row, including lookup creations.
+        const result = await ctx.runMutation(internal.csv.importRow, { orgId: args.orgId, objectId: args.objectId, columns: args.columns, row, skipDuplicates: args.skipDuplicates, createMissing: args.createMissing });
+        created += result.created; skipped += result.skipped;
       } catch (error) {
-        // Validation throws before applyChange writes, so skipping the row is safe.
         const data = error instanceof ConvexError ? (error.data as { message?: string; fieldId?: string }) : null;
         const label = data?.fieldId ? byId.get(data.fieldId as Id<"fields">)?.label : undefined;
         errors.push({ row: rowNumber, message: data?.message ? (label && !data.message.startsWith(label) ? `${label}: ${data.message}` : data.message) : String(error) });
       }
     }
     return { created, skipped, errors };
+  },
+});
+
+export const importRow = internalMutation({
+  args: { orgId: v.id("orgs"), objectId: v.id("objects"), columns: v.array(v.union(v.id("fields"), v.null())), row: v.array(v.string()), skipDuplicates: v.boolean(), createMissing: v.boolean() },
+  handler: async (ctx, args) => {
+    const { membership, object, columns } = await importTarget(ctx, args);
+    const run: Run = { ctx, membership, orgId: args.orgId, createMissing: args.createMissing };
+    const values: Record<string, unknown> = {};
+    for (const [col, field] of columns.entries()) if (field) { const value = await coerce(run, field, args.row[col] ?? ""); if (value !== undefined) values[field._id] = value; }
+    const title = object.titleFieldId ? String(values[object.titleFieldId] ?? "").trim().toLowerCase() : "";
+    if (args.skipDuplicates && title && await findReadableByTitle(ctx, membership, object, title)) return { created: 0, skipped: 1 };
+    await applyChange(ctx, membership, { action: "create", orgId: args.orgId, objectId: object._id, values, reason: "CSV import" });
+    return { created: 1, skipped: 0 };
   },
 });
 

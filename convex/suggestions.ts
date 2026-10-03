@@ -49,9 +49,10 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
     const fieldId = ctx.db.normalizeId("fields", id), field = fieldId ? await ctx.db.get(fieldId) : null;
     if (!field || !canReadField(member, object, field, record?._id)) fail("NOT_FOUND", "Field not found");
   }
-  if (suggestion.change.action === "update") {
-    const conflicts = Object.keys(suggestion.change.values).flatMap((fieldId) => same(record!.values[fieldId], suggestion.before[fieldId]) ? [] : [{ fieldId, expected: suggestion.before[fieldId] ?? null, actual: record!.values[fieldId] ?? null }]);
-    if (conflicts.length) { await ctx.db.patch(suggestion._id, { status: "conflicted", conflicts }); return { status: "conflicted" as const, conflicts }; }
+  if (suggestion.change.action === "update" || suggestion.change.action === "delete") {
+    const reviewed = suggestion.change.action === "delete" ? [...new Set([...Object.keys(suggestion.before), ...Object.keys(record!.values)])] : Object.keys(suggestion.change.values);
+    const conflicts = reviewed.flatMap((fieldId) => same(record!.values[fieldId], suggestion.before[fieldId]) ? [] : [{ fieldId, expected: suggestion.before[fieldId] ?? null, actual: record!.values[fieldId] ?? null }]);
+    if (conflicts.length) { await ctx.db.patch(suggestion._id, { status: "conflicted", conflicts }); return { status: "conflicted" as const, conflicts: (await row(ctx, member, { ...suggestion, conflicts }))?.suggestion.conflicts ?? [] }; }
   }
   const agent = await ctx.db.get(suggestion.agentId), org = await ctx.db.get(args.orgId);
   if (!agent || !org) fail("NOT_FOUND", "Suggestion agent not found");

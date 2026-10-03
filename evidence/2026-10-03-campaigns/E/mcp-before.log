@@ -1,0 +1,43 @@
+$ vitest run src
+
+ RUN  v5.0.1 /Users/urkel/scratch/job-E/packages/mcp
+
+ ❯ src/client.test.ts (8 tests | 2 failed) 14ms
+   × sends stable write keys as headers, excluding them from JSON 2ms
+   × pages record events with encoded ids and cursors 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/client.test.ts > sends stable write keys as headers, excluding them from JSON
+AssertionError: expected null to be 'stable' // Object.is equality
+
+- Expected:
+"stable"
+
++ Received:
+null
+
+ ❯ src/client.test.ts:64:85
+     62|      expect(await write({ reason: "test", idempotencyKey: "stable" }))…
+     63|    }
+     64|    for (const request of requests) { expect(request.headers.get("Idemp…
+       |                                                                                     ^
+     65|  });
+     66|  it("pages record events with encoded ids and cursors", async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/client.test.ts > pages record events with encoded ids and cursors
+TypeError: client.recordEvents is not a function
+ ❯ src/client.test.ts:69:24
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  09:08:07
+   Duration  84ms (tests 42%, transform 40%, import 13%, worker 4%)
+
+[ELIFECYCLE] Test failed. See above for more details.

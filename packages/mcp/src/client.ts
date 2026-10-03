@@ -6,7 +6,8 @@ type Fetch = typeof fetch;
 export class RemoldClient {
   constructor(private readonly options: { url: string; key: string; fetch?: Fetch }) {}
   private async request(method: "GET" | "POST", path: string, body?: unknown) {
-    const response = await (this.options.fetch ?? fetch)(`${this.options.url.replace(/\/$/, "")}/api/v1${path}`, { method, headers: { authorization: `Bearer ${this.options.key}`, ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    const { idempotencyKey, ...payload } = (body ?? {}) as Record<string, unknown>;
+    const response = await (this.options.fetch ?? fetch)(`${this.options.url.replace(/\/$/, "")}/api/v1${path}`, { method, headers: { authorization: `Bearer ${this.options.key}`, ...(typeof idempotencyKey === "string" ? { "Idempotency-Key": idempotencyKey } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(payload) }) });
     const json = await response.json();
     if (!response.ok) throw new RemoldError(json.error?.message ?? "Remold request failed", json.error?.code ?? "INTERNAL");
     return json;
@@ -15,6 +16,7 @@ export class RemoldClient {
   objects() { return this.request("GET", "/objects"); }
   listRecords(args: Record<string, unknown>) { return this.request("GET", `/records?${params(args)}`); }
   getRecord(idOrRef: string) { return this.request("GET", `/records/${encodeURIComponent(idOrRef)}`); }
+  recordEvents(args: { idOrRef: string; cursor?: string; limit?: number }) { const { idOrRef, ...query } = args; return this.request("GET", `/records/${encodeURIComponent(idOrRef)}/events?${params(query)}`); }
   search(args: Record<string, unknown>) { return this.request("GET", `/search?${params(args)}`); }
   related(args: { idOrRef: string; field: string }) { return this.request("GET", `/records/${encodeURIComponent(args.idOrRef)}/related?${params({ field: args.field })}`); }
   today() { return this.request("GET", "/today"); }
@@ -25,10 +27,10 @@ export class RemoldClient {
   inboxAdd(args: Record<string, unknown>) { return this.request("POST", "/inbox", args); }
   proposeShape(args: Record<string, unknown>) { return this.request("POST", "/shape/proposals", args); }
   shapeProposals(args: Record<string, unknown> = {}) { return this.request("GET", `/shape/proposals?${params(args)}`); }
-  inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
+  inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string; idempotencyKey?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
   campaignReport(idOrRef: string) { return this.request("GET", `/campaigns/${encodeURIComponent(idOrRef)}/report`); }
   emailPreview(args: { idOrRef: string; person?: string }) { const query = params({ person: args.person }); return this.request("GET", `/emails/${encodeURIComponent(args.idOrRef)}/preview${query ? `?${query}` : ""}`); }
-  markReplied(sendId: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, {}); }
+  markReplied(sendId: string, idempotencyKey?: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, { idempotencyKey }); }
 }
 
 // filter (the original single form), filters and range become REST's filter[field]=value and range[field]=from..to.

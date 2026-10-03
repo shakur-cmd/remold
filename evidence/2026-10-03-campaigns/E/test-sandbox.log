@@ -1,0 +1,12 @@
+
+ RUN  v5.0.1 /Users/urkel/scratch/job-E
+
+
+ Test Files  52 passed (52)
+      Tests  413 passed | 1 skipped (414)
+   Start at  09:17:28
+   Duration  5.08s (tests 79%, transform 10%, import 9%, environment 2%, worker 1%)
+
+    Isolate  52 workers spawned · ~92ms startup each (spawn + environment, per file)
+             at least ~440ms faster with isolate: false — reuses workers across files instead of one per file
+
