@@ -1,9 +1,9 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { ConvexError } from "convex/values";
-import type { Actor, Membership, Principal } from "../identity";
+import { currentPrincipal, type Actor, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
-import { canReadField, canReadObject, canReadRecordId, requireObjectRead } from "../authority/reads";
+import { canPropose, canReadField, canReadObject, canReadRecordId, requireObjectRead } from "../authority/reads";
 import { createObject, fieldsOf, requireLabel, requireUnrestricted, validKey, type Blueprint, type FieldSpec } from "./metadata";
 import { changeFor, perform, type ChangeInput } from "./proposals";
 import { capacity, kindFor, type SlotKind } from "./slots";
@@ -125,12 +125,16 @@ export async function runBlueprint(ctx: MutationCtx, proposer: Principal, bluepr
     slots.push({ object: object.label, text: `${used.s} of ${capacity.s}`, number: `${used.n} of ${capacity.n}`, date: `${used.d} of ${capacity.d}`, boolean: `${used.b} of ${capacity.b}` });
   }
   let records = 0;
-  const author = agent && await ctx.db.get(agent._id), writer: Principal | null = !withRecords ? null : author ? { agent: author, org: person.org, actor: { kind: "agent", id: author._id } } : person;
+  // The author is the agent as it stands now, grants included, exactly what a direct proposal by it would see.
+  const author = agent && withRecords ? await currentPrincipal(ctx, { agent: (await ctx.db.get(agent._id))!, org: person.org, actor: { kind: "agent", id: agent._id } }) : null, writer: Principal | null = !withRecords ? null : author ?? person;
   if (writer) for (const [i, record] of (blueprint.records ?? []).entries()) {
     const object = (await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", person.org._id).eq("key", record.object)).unique())!;
     await within(`Starter record ${i + 1} (${object.label})`, async () => {
       requireObjectRead(writer, object);
-      const fields = (await fieldsOf(ctx, object.orgId, object._id)).filter((f) => !f.retired && canReadField(writer, object, f)), values = await resolveValues(ctx, writer, object, fields, record.values);
+      const fields = (await fieldsOf(ctx, object.orgId, object._id)).filter((f) => !f.retired && canReadField(writer, object, f));
+      // As in agentApi.propose: proposal scope first, before any value (a lookup by title) is resolved.
+      if (!canPropose(writer, object, undefined, fields.filter((f) => f.key in record.values).map((f) => f._id))) fail("FORBIDDEN", "Proposal scope required");
+      const values = await resolveValues(ctx, writer, object, fields, record.values);
       // applyChange refuses an empty required field too; this names the field.
       for (const field of fields) if (field.required && (values[field._id] === null || values[field._id] === undefined)) fail("VALIDATION", `${field.label} is required`);
       await applyChange(ctx, writer, { action: "create", orgId: object.orgId, objectId: object._id, values, reason: `Starter record from blueprint ${blueprint.name}` }, author ? { approvedBy: person } : {});

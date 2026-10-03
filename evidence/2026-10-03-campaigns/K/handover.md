@@ -229,3 +229,35 @@ Removed the duplicate, unreachable `case "addView"` in `describe` (`convex/shape
 
 ### Not redone in Round 3
 Screenshots (the card now has a starter-record list) and the SERVICE rollback were not rerun. There is no schema change in this round.
+
+## Round 4 (verifier PASS with one should-fix)
+
+### Merge
+Merged `origin/integ/campaigns` at e19eeef (work queue, time zone, agent onboarding map; merge commit 163da0d).
+- `ops/authority/inventory.json`: merged by id. All 297 integ rows plus this branch's 13 rows, 310 in total. No row was changed by both sides.
+- `convex/_generated/api.d.ts`: kept both sides (`lib/assignee`, `lib/queue`, `lib/blueprint`, `lib/proposals`).
+- MCP: integ's instructions are a template literal starting with `remold_map`. I added one sentence pointing agents to `remold_blueprints`, `remold_export_blueprint` and `remold_propose_blueprint` for a whole reshaping, noting that starter records are theirs and follow the same rules as their own proposals. The three blueprint tools are unchanged.
+
+### S1: the starter-record proposal rule is now explicit
+The verifier showed that "blueprint proposers read everything, so `canPropose` is implied", my reason for removing the check in Round 3, was wrong. An agent can read an object with `records: "all"` through a read capability grant while having no propose scope there. In Round 3 such a blueprint was refused only by accident, because the hand-built writer principal had no capabilities ("Object not found").
+
+Now:
+- The starter-record writer is the real agent principal from `currentPrincipal`, with its grants, which is what a direct proposal by that agent sees.
+- `canPropose(writer, object, undefined, fieldIds)` runs per record before any value is resolved, the same order and message as `agentApi.propose`. An agent's direct proposal and its blueprint therefore answer alike: 403 "Proposal scope required" and 403 "Starter record 1 (Company): Proposal scope required".
+- A shape-only blueprint from that agent is still accepted (201), as a direct shape proposal is.
+
+### Tests, failing first (`round4-fail-before.txt`, `round4-pass-after.txt`, `round4-mutants.txt`)
+- New: "an agent that reads Company through a read grant but may not propose there is refused alike, directly and in a blueprint". Before: × `[404, "Starter record 1 (Company): Object not found"]`. After: ✓.
+- Adopted the verifier's probe `iv-K3-probe-assignee.test.ts` ("an agent blueprint cannot hand a starter task to another agent, but may give it to a person or itself"). It passes both before and after on the merged code. It is a regression guard, because integ's handoff rule already applies through `resolveValues` as the agent.
+- Mutants:
+  - Removing `canPropose`: the new test goes red, and the blueprint is accepted (201).
+  - Building the writer without capabilities again: the new test goes red (404).
+  - So both the check and the real principal are now load-bearing.
+- `convex/blueprints.test.ts` plus `convex/blueprints.round3.test.ts`: 38/38.
+
+### Suites (`suites-round4.txt`)
+- `pnpm test`, default settings: 658/660. The two failures are the timing tests seen every round (`gmailSync` "last contact", `Calendar.drag` "keeps every post..."). With `--testTimeout=60000 --maxWorkers=2`: **660/660**.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: exit 0. `pnpm --dir packages/mcp build`: exit 0. `pnpm --dir packages/mcp test`: 11/11.
+
+### Still open
+Transaction headroom on a real backend (N1) and the export gaps (N4) are as in earlier sections. Screenshots and the SERVICE rollback were not rerun; there is no schema change in this round. As the verifier notes, an agent may still seed a draft automation whose `createTask` action assigns to another agent. It runs only once a person turns it on, and then as that person.

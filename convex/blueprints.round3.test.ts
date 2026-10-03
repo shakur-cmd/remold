@@ -177,3 +177,32 @@ describe("IV-K: templates on a lived-in workspace", () => {
     expect(outcomes).toEqual({ service: "Step 1, add object job: Object key already exists", agency: "ok", creator: "ok", retail: "ok" });
   }, 60_000);
 });
+
+// Round 4: the verifier's round 3 probe, adopted, and the proposal rule made explicit.
+const proposeTasks = (call: ReturnType<typeof rest>, records: unknown[]) => call("POST", "/api/v1/shape/proposals", { kind: "blueprint", reason: "probe", blueprint: { version: 1, name: "Tasks", description: "", changes: [{ kind: "addField", object: "company", key: "tier", label: "Tier", type: "text", indexed: false }], records } });
+describe("IV-K3: starter tasks and the work queue", () => {
+  it("an agent blueprint cannot hand a starter task to another agent, but may give it to a person or itself", async () => {
+    const f = await userAndOrg(); const me = await agentFor(f.client, f.orgId, { name: "shaper", role: "admin" }); await agentFor(f.client, f.orgId, { name: "other" });
+    const call = rest(f.t, me.key), user = await f.client.query(api.users.me, {});
+    const toAgent = await proposeTasks(call, [{ object: "task", values: { title: "Handed off", assignee: "other" } }]);
+    expect([toAgent.status, toAgent.json.error?.message]).toEqual([403, "Starter record 1 (Task): An agent can give a task to a person, not to another agent"]);
+    const toPerson = await proposeTasks(call, [{ object: "task", values: { title: "For you", assignee: user!.name } }, { object: "task", values: { title: "For me", assignee: "shaper" } }]);
+    expect(toPerson.status, JSON.stringify(toPerson.json)).toBe(201);
+  });
+});
+
+describe("round 4: starter records need the same proposal scope as a direct proposal", () => {
+  it("an agent that reads Company through a read grant but may not propose there is refused alike, directly and in a blueprint", async () => {
+    const { f, agent, call } = await adminAgent();
+    const company = await objectFields(f.client, f.orgId, "company"), all: any[] = await table(f, "objects");
+    await f.t.run((ctx: any) => ctx.db.patch(agent.agentId, { authorityVersion: 1, readObjectIds: all.filter((o) => o.key !== "company").map((o) => o._id) }));
+    await f.client.mutation(anyApi["authority/grants"].grant, { orgId: f.orgId, target: agent.agentId, capability: "read", scope: { kind: "records", objectId: company.object._id, records: "all", fields: Object.values(company.fields).map((x: any) => x._id) }, mode: "direct", delegate: false, expiresAt: Date.now() + 600000 });
+    const direct = await call("POST", "/api/v1/suggestions", { action: "create", object: "company", values: { name: "Acme" }, reason: "r" });
+    expect([direct.status, direct.json.error?.message]).toEqual([403, "Proposal scope required"]);
+    const viaBlueprint = await propose(call, withRecords([{ object: "company", values: { name: "Acme" } }]));
+    expect([viaBlueprint.status, viaBlueprint.json.error?.message]).toEqual([403, "Starter record 1 (Company): Proposal scope required"]);
+    // The same blueprint without starter records is a shape change, which this agent may propose.
+    expect((await propose(call, withRecords([]))).status).toBe(201);
+    expect((await call("GET", "/api/v1/records?object=company")).status).toBe(200);
+  });
+});
