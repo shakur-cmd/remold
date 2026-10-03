@@ -1,0 +1,27 @@
+CAUGHT suspended keys accepted | refuses suspended, intake-only and migrating keys exactly as REST does, for every message kind, and writes nothing
+CAUGHT intake-only keys accepted | refuses suspended, intake-only and migrating keys exactly as REST does, for every message kind, and writes nothing
+CAUGHT path ids not escaped | keeps every id a tool puts in a path inside that tool's own route ; lists saved views and runs one, passing the time zone ; pages record events with encoded ids and cursors
+CAUGHT initialize params not checked | refuses initialize without a string protocolVersion, a capabilities object and clientInfo with name and version
+CAUGHT clientInfo fields not checked | refuses initialize without a string protocolVersion, a capabilities object and clientInfo with name and version
+CAUGHT response with both result and error accepted | checks the JSON-RPC envelope before treating a message as a client response, and still accepts valid responses
+CAUGHT bad id on a response accepted | answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything ; checks the JSON-RPC envelope before treating a message as a client response, and still accepts valid responses
+CAUGHT valid client responses refused | checks the JSON-RPC envelope before treating a message as a client response, and still accepts valid responses
+CAUGHT no key check on messages | refuses a missing, malformed, unknown or revoked key with 401 and a JSON-RPC error, and writes nothing ; refuses suspended, intake-only and migrating keys exactly as REST does, for every message kind, and writes nothing
+CAUGHT no Origin refusal | answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything
+CAUGHT batches accepted as first message | answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything
+CAUGHT unknown tool as method-not-found | answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything ; list the same tools and instructions and give the same results and errors
+CAUGHT idempotency header dropped | replays a write sent again with the same idempotency key and refuses the key for a different write
+CAUGHT GET and DELETE not 405 | answers initialize, the initialized notification and ping per the stateless JSON mode
+CAUGHT initialize ignores requested version | answers initialize, the initialized notification and ping per the stateless JSON mode ; refuses initialize without a string protocolVersion, a capabilities object and clientInfo with name and version
+CAUGHT protocol header not checked | answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything
+CAUGHT REST body validation skipped | never puts the key or its hash in a response
+CAUGHT write rate limit off | shares the REST write rate limit with the agent's key
+CAUGHT mcp not measured | records each MCP request in the same operational telemetry as REST
+CAUGHT schema required ignored | refuses arguments that break the schema before sending anything, and drops unknown keys
+CAUGHT unknown keys kept | refuses arguments that break the schema before sending anything, and drops unknown keys
+CAUGHT maxItems ignored | refuses arguments that break the schema before sending anything, and drops unknown keys
+CAUGHT integers not checked | refuses arguments that break the schema before sending anything, and drops unknown keys
+CAUGHT hosted list drops a tool | list the same tools and instructions and give the same results and errors
+CAUGHT hosted instructions differ | a real MCP client initializes, lists every tool and calls one over Streamable HTTP ; list the same tools and instructions and give the same results and errors
+CAUGHT stdio idempotency header dropped | sends stable write keys as headers, excluding them from JSON
+26/26 caught

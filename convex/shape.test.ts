@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { anyApi } from "convex/server";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
-import { RemoldClient } from "../packages/mcp/src/client";
+import { agentFor, api, objectFields, rest, userAndOrg, mcpTool } from "./test.helpers";
 
 const shape = anyApi.shapeSuggestions;
 const propose = (call: ReturnType<typeof rest>, body: Record<string, unknown>) => call("POST", "/api/v1/shape/proposals", { reason: "the team tracks this", ...body });
@@ -214,10 +213,10 @@ describe("MCP list filters", () => {
     const company = await objectFields(f.client, f.orgId, "company"), person = await objectFields(f.client, f.orgId, "person");
     const companies = await Promise.all(["Atlas", "Borealis"].map((name) => f.client.mutation(api.records.create, { orgId: f.orgId, objectId: company.object._id, values: { [company.fields.name._id]: name } })));
     for (const [name, at] of [["Ada", 0], ["Ben", 1], ["Cy", 0]] as const) await f.client.mutation(api.records.create, { orgId: f.orgId, objectId: person.object._id, values: { [person.fields.name._id]: name, [person.fields.company._id]: companies[at]!.recordId } });
-    const client = new RemoldClient({ url: "https://remold.test", key: agent.key, fetch: (async (input: RequestInfo | URL, init?: RequestInit) => { const url = new URL(String(input)); return f.t.fetch(url.pathname + url.search, init); }) as typeof fetch });
-    const atlas = await client.listRecords({ object: "person", filters: [{ field: "company", value: companies[0]!.recordId }] });
+    const mcp = mcpTool(f.t, agent.key);
+    const atlas = await mcp("remold_list_records", { object: "person", filters: [{ field: "company", value: companies[0]!.recordId }] });
     expect(atlas.records.map((r: any) => r.title).sort()).toEqual(["Ada", "Cy"]);
-    const one = await client.listRecords({ object: "person", filters: [{ field: "company", value: companies[0]!.recordId }, { field: "name", value: "Cy" }] });
+    const one = await mcp("remold_list_records", { object: "person", filters: [{ field: "company", value: companies[0]!.recordId }, { field: "name", value: "Cy" }] });
     expect(one.records.map((r: any) => r.title)).toEqual(["Cy"]);
   });
 });

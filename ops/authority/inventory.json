@@ -10,6 +10,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "agentApi:checkKey",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "refuses a missing, malformed, unknown or revoked key with 401 and a JSON-RPC error, and writes nothing"
+  },
+  {
     "id": "agentApi:objects",
     "kind": "query",
     "visibility": "internal",

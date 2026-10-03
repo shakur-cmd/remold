@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { anyApi } from "convex/server";
-import { agentFor, api, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
-import { RemoldClient } from "../packages/mcp/src/client";
+import { agentFor, api, bulk, mcpTool, objectFields, rest, userAndOrg } from "./test.helpers";
 
 const shape = anyApi.shapeSuggestions, blueprints = anyApi.blueprints;
 type F = Awaited<ReturnType<typeof userAndOrg>>;
@@ -383,11 +382,11 @@ describe("round 2: views, archived objects and retitling inside blueprints", () 
 describe("MCP client", () => {
   it("lists, exports and proposes blueprints over REST", async () => {
     const requests: { method: string; url: string; body?: string }[] = [];
-    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_x", fetch: (async (url: string, init: RequestInit) => { requests.push({ method: init.method!, url, body: init.body as string | undefined }); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch });
-    await client.blueprints();
-    await client.currentBlueprint();
-    await client.proposeBlueprint({ blueprint: repair, reason: "repairs" });
-    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/blueprints"], ["GET", "https://remold.convex.site/api/v1/blueprints/current"], ["POST", "https://remold.convex.site/api/v1/shape/proposals"]]);
+    const call = mcpTool(null, "rm_x", (async (url: string, init: RequestInit) => { requests.push({ method: init.method!, url, body: init.body as string | undefined }); return new Response("{}", { status: 200 }); }) as any);
+    await call("remold_blueprints");
+    await call("remold_export_blueprint");
+    await call("remold_propose_blueprint", { blueprint: repair, reason: "repairs" });
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.test/api/v1/blueprints"], ["GET", "https://remold.test/api/v1/blueprints/current"], ["POST", "https://remold.test/api/v1/shape/proposals"]]);
     expect(JSON.parse(requests[2]!.body!)).toEqual({ kind: "blueprint", blueprint: repair, reason: "repairs" });
   });
 });

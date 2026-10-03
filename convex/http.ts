@@ -10,6 +10,7 @@ import { internal } from "./_generated/api";
 import { recordResponse, validProbe } from "./telemetryHttp";
 import { resendWebhook, unsubscribePage } from "./campaignSend";
 import { stripeWebhook } from "./bookings";
+import { mcp } from "./mcp";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
@@ -124,14 +125,17 @@ async function responseFor(ctx: any, request: Request) {
     return bad("INTERNAL", "Something went wrong", 500);
   }
 }
-const route = httpAction(async (ctx,request) => {
+const measured = (handle: (ctx: any, request: Request) => Promise<Response>) => httpAction(async (ctx,request) => {
   const startedAt=Date.now();
-  const response=await responseFor(ctx,request);
+  const response=await handle(ctx,request);
   await recordResponse(ctx,request,response,startedAt);
   return response;
 });
+const route = measured(responseFor);
 router.route({ pathPrefix: "/api/v1/", method: "GET", handler: route });
 router.route({ pathPrefix: "/api/v1/", method: "POST", handler: route });
+const mcpRoute = measured((ctx, request) => mcp(ctx, request, { keyHash: () => auth(request), run: (inner) => responseFor(ctx, inner) }));
+for (const method of ["GET", "POST", "DELETE"] as const) router.route({ path: "/mcp", method, handler: mcpRoute });
 router.route({ pathPrefix: "/api/integrations/v1/", method: "POST", handler: integrationRoute });
 router.route({ path: "/webhooks/resend", method: "POST", handler: resendWebhook });
 router.route({ pathPrefix: "/webhooks/stripe/", method: "POST", handler: stripeWebhook });

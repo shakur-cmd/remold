@@ -1,6 +1,8 @@
 import { api } from "./_generated/api";
 import { makeTest } from "./test.setup";
 import { applyChange } from "./lib/applyChange";
+import { callTool } from "../packages/mcp/src/tools";
+import { httpSend } from "../packages/mcp/src/client";
 
 export async function userAndOrg(name = "A") {
   const t = makeTest();
@@ -38,6 +40,19 @@ export async function bulk(t: any, orgId: any, write: (apply: (change: any) => P
     const membership = { user: await ctx.db.get(member.userId), actor: { kind: "user" as const, id: member.userId }, member, org: await ctx.db.get(orgId) };
     await write((change) => applyChange(ctx, membership, { orgId, ...change }));
   });
+}
+
+// fetch for code that calls the deployment by URL: routes it to this test's HTTP router.
+export const via = (t: any) => (url: string | URL | Request, init?: RequestInit) => { const u = new URL(url instanceof Request ? url.url : String(url)); return t.fetch(u.pathname + u.search, init); };
+
+// The MCP tools as the stdio server runs them, over this test's REST routes. Tool errors throw "CODE: message".
+export function mcpTool(t: any, key: string, fetch: (url: string | URL | Request, init?: RequestInit) => Promise<Response> = via(t)) {
+  return async (name: string, args: Record<string, unknown> = {}): Promise<any> => {
+    const result = await callTool(name, args, httpSend({ url: "https://remold.test", key, fetch: fetch as typeof globalThis.fetch }));
+    if (!result) throw new Error(`Unknown tool: ${name}`);
+    if (result.isError) throw new Error(result.content[0]!.text);
+    return JSON.parse(result.content[0]!.text);
+  };
 }
 
 export { api };

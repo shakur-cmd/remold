@@ -107,15 +107,24 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
               </>
             ) : (
               <>
-                <p className="text-muted-foreground">Build the connector once with pnpm --filter @remold/mcp build, then paste into your agent and replace /absolute/path/to/remold with your checkout. Claude Code:</p>
-                <CopyBlock text={setup.claudeCommand} label="Claude Code command" />
-                <p className="text-muted-foreground">Or in the project's .mcp.json:</p>
-                <CopyBlock text={setup.claudeJson} label="Claude Code .mcp.json" />
+                <p className="text-muted-foreground">Paste into your agent. Claude Code:</p>
+                <CopyBlock text={setup.hostedClaudeCommand} label="Claude Code command" />
                 <p className="text-muted-foreground">Codex, in ~/.codex/config.toml:</p>
-                <CopyBlock text={setup.codex} label="Codex config" />
+                <CopyBlock text={setup.hostedCodex} label="Codex config" />
                 <p className="text-muted-foreground">Any other MCP client:</p>
-                <CopyBlock text={setup.generic} label="MCP JSON" />
+                <CopyBlock text={setup.hostedJson} label="MCP JSON" />
                 <p className="text-muted-foreground">{setup.test}</p>
+                <details className="grid gap-2">
+                  <summary className="cursor-pointer text-muted-foreground">Run it locally instead (offline or development)</summary>
+                  <p className="text-muted-foreground">Build the connector once with pnpm --filter @remold/mcp build, then replace /absolute/path/to/remold with your checkout. Claude Code:</p>
+                  <CopyBlock text={setup.claudeCommand} label="Claude Code local command" />
+                  <p className="text-muted-foreground">Or in the project's .mcp.json:</p>
+                  <CopyBlock text={setup.claudeJson} label="Claude Code .mcp.json" />
+                  <p className="text-muted-foreground">Codex, in ~/.codex/config.toml:</p>
+                  <CopyBlock text={setup.codex} label="Codex local config" />
+                  <p className="text-muted-foreground">Any other MCP client:</p>
+                  <CopyBlock text={setup.generic} label="Local MCP JSON" />
+                </details>
               </>
             )}
             <Button size="sm" variant="outline" className="justify-self-start" onClick={() => setIssued(null)}>
