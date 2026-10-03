@@ -1,0 +1,46 @@
+
+ RUN  v5.0.1 /Users/urkel/scratch/job-E
+
+ ❯ convex/jobE.test.ts (14 tests | 1 failed) 291ms
+   × REST write keys deduplicate proposals and inbox writes 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/jobE.test.ts > REST write keys deduplicate proposals and inbox writes
+AssertionError: expected { suggestion: { …(11) } } to deeply equal { suggestion: { …(11) } }
+
+- Expected
++ Received
+
+@@ -1,12 +1,12 @@
+  {
+    "suggestion": {
+      "action": "create",
+      "agent": "agent",
+      "before": {},
+-     "createdAt": 1791032993592,
+-     "id": "000000000000000010084suggestions",
++     "createdAt": 1791032993592.002,
++     "id": "000000000000000010086suggestions",
+      "object": "company",
+      "reason": "test",
+      "record": null,
+      "resolvedAt": null,
+      "status": "pending",
+
+ ❯ convex/jobE.test.ts:93:64
+     91|     [mcp.proposeShape.bind(mcp), { kind: "addField", object: "company"…
+     92|   ] as const) {
+     93|     const first = await write(args); expect(await write(args)).toEqual…
+       |                                                                ^
+     94|     expect(await t.run(ctx => ctx.db.query(table).collect())).toHaveLe…
+     95|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  09:09:53
+   Duration  457ms (tests 71%, transform 23%, import 6%)
+

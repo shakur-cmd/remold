@@ -12,12 +12,12 @@ const SECRET_KEY = Buffer.from("campaign-webhook-test-secret-key");
 const env = { RESEND_API_KEY: "re_test_key", REMOLD_SENDER_DOMAINS: "mail.example.com, other.example.com", REMOLD_CAMPAIGN_DAILY_CAP: "100", CONVEX_SITE_URL: "https://site.example.com", RESEND_WEBHOOK_SECRET: `whsec_${SECRET_KEY.toString("base64")}` };
 const ENV_KEYS = [...Object.keys(env), "REMOLD_INBOUND_DOMAIN"];
 
-type Call = { url: string; method: string; headers: Record<string, string>; body: any };
+type Call = { url: string; method: string; headers: Record<string, string>; body: any; raw?: string };
 let calls: Call[], delivered: Call[], byKey: Map<string, string>, inbound: string;
-let failWith: ((call: Call) => Response | undefined) | undefined, onSend: ((call: Call) => Promise<void>) | undefined;
+let dropAnswer: ((call: Call) => boolean) | undefined, failWith: ((call: Call) => Response | undefined) | undefined, onSend: ((call: Call) => Promise<void>) | undefined;
 // A fake Resend: an Idempotency-Key it has seen returns the first answer and sends nothing new.
 async function fakeResend(url: string, init: any = {}) {
-  const call: Call = { url: String(url), method: init.method ?? "GET", headers: Object.fromEntries(new Headers(init.headers).entries()), body: init.body ? JSON.parse(init.body) : undefined };
+  const call: Call = { url: String(url), method: init.method ?? "GET", headers: Object.fromEntries(new Headers(init.headers).entries()), body: init.body ? JSON.parse(init.body) : undefined, raw: init.body };
   calls.push(call);
   if (call.method === "GET" && call.url.startsWith("https://api.resend.com/emails/receiving/")) return Response.json({ object: "email", id: call.url.split("/").pop(), text: inbound });
   await onSend?.(call);
@@ -28,11 +28,13 @@ async function fakeResend(url: string, init: any = {}) {
   const id = `re_${delivered.length + 1}`;
   if (key) byKey.set(key, id);
   delivered.push(call);
+  // Resend took it, but the answer never arrives.
+  if (dropAnswer?.(call)) throw new TypeError("fetch failed");
   return Response.json({ id });
 }
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime(start); Object.assign(process.env, env);
-  calls = []; delivered = []; byKey = new Map(); inbound = ""; failWith = undefined; onSend = undefined;
+  calls = []; delivered = []; byKey = new Map(); inbound = ""; failWith = undefined; onSend = undefined; dropAnswer = undefined;
   vi.stubGlobal("fetch", vi.fn(fakeResend));
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
@@ -58,14 +60,18 @@ async function world(options: { t?: any; name?: string; people?: string[]; limit
   const save = (change: Record<string, unknown> = {}) => client.mutation(api.campaigns.saveSettings, { ...settings, ...change });
   await save();
   const draft = (values: Record<string, unknown>) => create(email, { status: "draft", campaign: campaignId, ...values });
-  const approve = (emailId: any) => client.mutation(api.campaigns.approve, { orgId, emailId, confirmed: true });
+  // Approval as the campaign page does it: from the preview the admin just saw.
+  const approve = async (emailId: any, as = client) => { const { version } = await as.query(api.campaigns.preview, { orgId, emailId }); return as.mutation(api.campaigns.approve, { orgId, emailId, confirmed: true, version: version ?? "" }); };
   const first = await draft({ subject: "Quick call, {{firstName|there}}?", body: "Hi {{firstName|there}},\n\nFive minutes for $5 at {{company}}? https://example.com/book" });
   await approve(first);
   const read = (id: any) => t.run((ctx: any) => ctx.db.get(id));
   const sends = async (emailId: any = first) => (await t.run((ctx: any) => ctx.db.query("emailSends").collect())).filter((s: any) => s.emailRecordId === emailId);
   const sendTo = async (who: string, emailId: any = first) => (await sends(emailId)).find((s: any) => s.personRecordId === people[who]);
   const titlesAbout = async (o: any, recordId: any) => (await t.run((ctx: any) => ctx.db.query("records").collect())).filter((r: any) => r.objectId === o.object._id && r.values[o.fields.about._id] === recordId).map((r: any) => r.title);
-  return { t, client, orgId, person, company, campaign, email, activity, note, people, campaignId, first, create, update, save, draft, approve, read, sends, sendTo, titlesAbout };
+  const member = async (who: string) => { const { token } = await client.mutation(api.invites.create, { orgId, role: "member" }); const m = t.withIdentity({ tokenIdentifier: `clerk|${who}`, name: who, email: `${who}@example.com` }); await m.mutation(api.users.store, {}); await m.mutation(api.invites.accept, { token }); return m; };
+  const updateAs = (as: any, o: any, recordId: any, values: Record<string, unknown>) => as.mutation(api.records.update, { orgId, recordId, values: ids(o, values) });
+  const runOf = (emailId: any) => t.run((ctx: any) => ctx.db.query("emailRuns").withIndex("by_email", (q: any) => q.eq("emailRecordId", emailId)).unique());
+  return { t, client, orgId, person, company, campaign, email, activity, note, people, campaignId, first, create, update, save, draft, approve, read, sends, sendTo, titlesAbout, member, updateAs, runOf };
 }
 const tick = (t: any) => t.action(internal.campaignSend.tick, {});
 
@@ -124,7 +130,7 @@ describe("campaign email", () => {
       const mail = delivered.find((call) => to(call) === "ava@people.test")!;
       expect(mail.url).toBe("https://api.resend.com/emails");
       expect(mail.headers.authorization).toBe("Bearer re_test_key");
-      expect(mail.headers["idempotency-key"]).toBe(ava._id);
+      expect(mail.headers["idempotency-key"]).toMatch(new RegExp(`^${ava._id}:`));
       expect(mail.body).toMatchObject({ from: "Owner Co <hi@mail.example.com>", subject: "Quick call, Ava?", reply_to: "owner@example.com", tags: [{ name: "send", value: ava._id }] });
       expect(mail.body.text).toContain("Hi Ava,\n\nFive minutes for $5 at Acme Plumbing? https://example.com/book");
       expect(mail.body.text).toContain("1 Main St, Springfield");
@@ -132,7 +138,7 @@ describe("campaign email", () => {
       expect(mail.body.html).toContain('<a href="https://example.com/book">https://example.com/book</a>');
       expect(mail.body.html).toContain("<br>");
       expect(mail.body.headers).toEqual({ "List-Unsubscribe": `<https://site.example.com/u/${ava.token}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
-      expect(ava).toMatchObject({ status: "sent", providerId: mail.body && byKey.get(ava._id), sentAt: start, attempts: 1 });
+      expect(ava).toMatchObject({ status: "sent", providerId: mail.body && byKey.get(mail.headers["idempotency-key"]), sentAt: start, attempts: 1 });
       expect(ava.token).toMatch(/^[a-z0-9]{32,}$/);
       expect((await w.read(w.first)).values[w.email.fields.status._id]).toBe("sent");
       expect(await w.titlesAbout(w.activity, w.people.Ava)).toEqual(["Sent: Quick call, Ava?"]);
@@ -145,16 +151,16 @@ describe("campaign email", () => {
     const gates: [string, (w: Awaited<ReturnType<typeof world>>) => Promise<unknown>][] = [
       ["the Resend API key is set", async () => delete process.env.RESEND_API_KEY],
       ["sender domains are allowed", async () => delete process.env.REMOLD_SENDER_DOMAINS],
-      ["the from address is on an allowed domain", (w) => w.save({ fromAddress: "hi@elsewhere.example.com" })],
+      ["the from address is on an allowed domain", async (w) => { await w.save({ fromAddress: "hi@elsewhere.example.com" }); await w.approve(w.first); }],
       ["the webhook secret is set, so bounces and complaints come back", async () => delete process.env.RESEND_WEBHOOK_SECRET],
-      ["the org has a postal address", (w) => w.save({ postalAddress: "" })],
+      ["the org has a postal address", async (w) => { await w.save({ postalAddress: "" }); await w.approve(w.first); }],
       ["the org has a daily limit", (w) => w.save({ dailyLimit: 0 })],
       ["the deployment has a daily cap", async () => delete process.env.REMOLD_CAMPAIGN_DAILY_CAP],
       ["the deployment cap is a whole number", async () => { process.env.REMOLD_CAMPAIGN_DAILY_CAP = "1e3"; }],
       ["the campaign is active", (w) => w.update(w.campaign, w.campaignId, { status: "paused" })],
       ["the email is approved", (w) => w.update(w.email, w.first, { status: "draft" })],
       ["a person approved it on the campaign page", async (w) => { await w.update(w.email, w.first, { status: "draft" }); await w.update(w.email, w.first, { status: "approved" }); }],
-      ["its send time has come", (w) => w.update(w.email, w.first, { sendAt: start + DAY })],
+      ["its send time has come", async (w) => { await w.update(w.email, w.first, { sendAt: start + DAY }); await w.approve(w.first); }],
     ];
     for (const [gate, remove] of gates) it(`sends nothing unless ${gate}`, async () => {
       const w = await world();
@@ -171,6 +177,7 @@ describe("campaign email", () => {
       const gone = await w.create(w.person, { name: "Gone Person", email: "gone@people.test" });
       await w.t.run((ctx: any) => ctx.db.insert("consent", { orgId: w.orgId, recipient: "gone@people.test", channel: "email", purpose: "marketing", suppressed: true, source: "unsubscribe", version: 1, at: start }));
       await w.update(w.campaign, w.campaignId, { people: [w.people.Ava, none, bad, twin, gone] });
+      await w.approve(w.first);
       await tick(w.t);
       expect(delivered.map(to)).toEqual(["ava@people.test"]);
       const reasons = Object.fromEntries((await w.sends()).map((s: any) => [s.personRecordId, s.skipReason ?? s.status]));
@@ -226,7 +233,7 @@ describe("campaign email", () => {
       const claimed = await w.t.mutation(internal.campaignSend.claim, {});
       expect(claimed).toHaveLength(2);
       // The crashed run reached Resend for the first person before it died.
-      await fetch("https://api.resend.com/emails", { method: "POST", headers: { "idempotency-key": claimed[0].sendId }, body: JSON.stringify({ to: [claimed[0].mail.to] }) });
+      await fetch("https://api.resend.com/emails", { method: "POST", headers: { "idempotency-key": claimed[0].key }, body: claimed[0].payload });
       await tick(w.t);
       expect(delivered).toHaveLength(1);
       expect((await w.sends()).map((s: any) => s.status)).toEqual(["sending", "sending"]);
@@ -305,6 +312,8 @@ describe("campaign email", () => {
       process.env.RESEND_WEBHOOK_SECRET = env.RESEND_WEBHOOK_SECRET;
       expect(await hook(w.t, event, { signature: "v1,bm90IGEgc2lnbmF0dXJl" })).toBe(401);
       expect(await hook(w.t, event, { key: Buffer.from("some-other-secret") })).toBe(401);
+      const ts = String(Math.floor(Date.now() / 1000));
+      expect(await hook(w.t, event, { id: "msg_short", ts: Number(ts), signature: sign("msg_short", ts, JSON.stringify(event)).slice(0, 20) })).toBe(401);
       expect(await hook(w.t, event, { ts: Math.floor(Date.now() / 1000) - 6 * 60 })).toBe(401);
       expect(await hook(w.t, event, { ts: Math.floor(Date.now() / 1000) + 6 * 60 })).toBe(401);
       expect(await state()).toEqual(before);
@@ -390,6 +399,7 @@ describe("campaign email", () => {
       expect((await w.sendTo("Ava")).repliedAt).toBe(start + MINUTE);
       expect(await w.titlesAbout(w.note, w.people.Ava)).toEqual(["Yes please, Tuesday works."]);
       expect(await w.titlesAbout(w.activity, w.people.Ava)).toContain("Replied: Quick call, Ava?");
+      await tick(w.t);
       const forwarded = delivered.slice(1);
       expect(forwarded).toHaveLength(1);
       expect(forwarded[0]!.body).toMatchObject({ from: "Owner Co <hi@mail.example.com>", to: ["owner@example.com"], reply_to: "ava@people.test", subject: "Re: Quick call, Ava?" });
@@ -399,6 +409,10 @@ describe("campaign email", () => {
     it("without an inbound domain, replies go to the org's reply-to address", async () => {
       const w = await world({ people: ["Ava Stone"] });
       await w.save({ replyTo: "sales@example.com" });
+      // Sender settings are part of what was approved: changed settings wait for a new approval.
+      await tick(w.t);
+      expect(delivered).toEqual([]);
+      await w.approve(w.first);
       await tick(w.t);
       expect(delivered[0]!.body.reply_to).toBe("sales@example.com");
     });
@@ -423,10 +437,12 @@ describe("campaign email", () => {
       const elsewhere = await w.create(w.email, { subject: "Elsewhere", body: "x", campaign: other, status: "draft" });
       await bad({ subject: "Hi", body: "Hi", followsUp: elsewhere });
       const fine = await w.draft({ subject: "Hi {{name}}", body: "Hello {{firstName|friend}} at {{company|your company}}", followsUp: w.first });
-      await expect(w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: fine, confirmed: false })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      await expect(w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: fine, confirmed: false, version: (await w.client.query(api.campaigns.preview, { orgId: w.orgId, emailId: fine })).version! })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
       await w.approve(fine);
       expect((await w.read(fine)).values[w.email.fields.status._id]).toBe("approved");
-      await expect(w.update(w.email, fine, { body: "Now {{oops}}" })).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      // Editing an approved email is allowed, but it is a draft again and needs a new approval.
+      await w.update(w.email, fine, { body: "Now {{oops}}" });
+      expect((await w.read(fine)).values[w.email.fields.status._id]).toBe("draft");
     });
 
     it("an agent drafts emails and may stop one, but cannot approve, start a campaign or touch an approved email", async () => {
@@ -542,7 +558,7 @@ describe("campaign email", () => {
       await expect(member.query(api.campaigns.settings, { orgId: w.orgId })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
       await expect(member.mutation(api.campaigns.saveSettings, { orgId: w.orgId, dailyLimit: 1000 })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
       const draft = await w.draft({ subject: "Hi", body: "Hi" });
-      await expect(member.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: draft, confirmed: true })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+      await expect(member.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: draft, confirmed: true, version: "x" })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
     });
   });
 
@@ -558,6 +574,412 @@ describe("campaign email", () => {
       later(DAY);
       expect(await send("No key")).toMatchObject({ status: "blocked" });
       expect(delivered).toHaveLength(1);
+    });
+  });
+
+  // Round 2: findings from the independent verifier and the second review.
+  describe("an approval covers exactly what the admin saw", () => {
+    it("people linked after approval get nothing until an admin approves again, whoever linked them", async () => {
+      const w = await world({ limit: 1 });
+      await tick(w.t);
+      expect(delivered.map(to)).toEqual(["ava@people.test"]);
+      const agent = await agentFor(w.client, w.orgId, { name: "lister", grants: [{ action: "update", objectKey: "campaign" }, { action: "create", objectKey: "person" }] });
+      const call = rest(w.t, agent.key);
+      const stranger = (await call("POST", "/api/v1/changes", { action: "create", object: "person", values: { name: "Stranger Danger", email: "stranger@people.test" }, reason: "x" })).json.record.id;
+      expect((await call("POST", "/api/v1/changes", { action: "update", record: w.campaignId, values: { people: [...Object.values(w.people), stranger] }, reason: "x" })).status).toBe(200);
+      for (const day of [6, 7]) { vi.setSystemTime(Date.UTC(2026, 9, day, 0, 1)); await tick(w.t); }
+      expect(delivered.map(to)).toEqual(["ava@people.test", "ben@people.test"]);
+      const report = await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId });
+      expect(report.emails[0]).toMatchObject({ status: "sent", added: 1 });
+      await w.approve(w.first);
+      vi.setSystemTime(Date.UTC(2026, 9, 8, 0, 1)); await tick(w.t);
+      expect(delivered.map(to)).toEqual(["ava@people.test", "ben@people.test", "stranger@people.test"]);
+      expect((await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId })).emails[0].added).toBe(0);
+    });
+
+    it("approval is refused if the email, its settings or its people changed after the preview", async () => {
+      const w = await world();
+      const next = await w.draft({ subject: "Hello", body: "Hi {{firstName}}" });
+      const seen = async () => (await w.client.query(api.campaigns.preview, { orgId: w.orgId, emailId: next })).version!;
+      const approve = (version: string) => w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: next, confirmed: true, version });
+      const changes = [
+        () => w.update(w.email, next, { body: "Hi {{firstName}}, changed" }),
+        () => w.update(w.email, next, { sendAt: start + DAY }),
+        () => w.save({ postalAddress: "2 Other St" }),
+        async () => w.update(w.campaign, w.campaignId, { people: [...Object.values(w.people), await w.create(w.person, { name: "Cy Diaz", email: "cy@people.test" })] }),
+      ];
+      for (const change of changes) {
+        const version = await seen();
+        await change();
+        await expect(approve(version)).rejects.toMatchObject({ data: { code: "CONFLICT" } });
+        expect((await w.read(next)).values[w.email.fields.status._id]).toBe("draft");
+      }
+      await approve(await seen());
+      expect((await w.runOf(next)).confirmed).toBe(true);
+    });
+
+    it("any change to what goes out after approval sends it back to draft with its queue cleared, and says why", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      const mo = await w.member("mo");
+      const zed = await w.create(w.person, { name: "Zed Unconfirmed", email: "zed@people.test" });
+      const other = await w.create(w.campaign, { name: "Other", status: "active", people: [zed] });
+      const changes: [string, Record<string, unknown>, any][] = [["body", { body: "Totally different text from a member" }, mo], ["campaign", { campaign: other }, w.client], ["subject", { subject: "New" }, w.client], ["sendAt", { sendAt: start - DAY }, w.client], ["waitDays", { waitDays: 1 }, w.client], ["sendTo", { sendTo: "everyone" }, w.client]];
+      for (const [field, values, as] of changes) {
+        if ((await w.read(w.first)).values[w.email.fields.status._id] !== "approved") { await w.update(w.email, w.first, { campaign: w.campaignId }); await w.approve(w.first); }
+        expect((await w.sends()).filter((s: any) => s.status === "queued"), field).toHaveLength(1);
+        await w.updateAs(as, w.email, w.first, values);
+        expect((await w.read(w.first)).values[w.email.fields.status._id], field).toBe("draft");
+        expect(await w.runOf(w.first), field).toBeNull();
+        expect((await w.sends()).filter((s: any) => s.status === "queued"), field).toEqual([]);
+      }
+      const events = await w.t.run((ctx: any) => ctx.db.query("events").withIndex("by_record", (q: any) => q.eq("orgId", w.orgId).eq("recordId", w.first)).collect());
+      expect(events.filter((e: any) => e.reason === "Changed after approval, so it needs approving again")).toHaveLength(changes.length);
+      await tick(w.t);
+      expect(delivered).toEqual([]);
+    });
+
+    it("a plain member cannot approve through the status field, and the refused change leaves nothing behind", async () => {
+      const w = await world();
+      const mo = await w.member("mo");
+      const next = await w.draft({ subject: "Hi", body: "Hi" });
+      await expect(w.updateAs(mo, w.email, next, { status: "approved" })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+      expect((await w.read(next)).values[w.email.fields.status._id]).toBe("draft");
+      expect(await w.runOf(next)).toBeNull();
+    });
+
+    it("a CSV row the email rules refuse writes no record, event or approval", async () => {
+      const w = await world();
+      const state = () => w.t.run(async (ctx: any) => ({ records: (await ctx.db.query("records").collect()).length, events: (await ctx.db.query("events").collect()).length, links: (await ctx.db.query("links").collect()).length, runs: (await ctx.db.query("emailRuns").collect()).length }));
+      const before = await state();
+      const result = await w.client.mutation(api.csv.importRows, { orgId: w.orgId, objectId: w.email.object._id, columns: [w.email.fields.subject._id, w.email.fields.body._id, w.email.fields.status._id], rows: [["Imported", "Hi {{oops}}", "approved"]], firstRow: 1, skipDuplicates: false, createMissing: false });
+      expect(result.errors).toHaveLength(1);
+      expect(await state()).toEqual(before);
+    });
+
+    it("the campaign page shows an email approved through the status field as waiting for confirmation, and confirming sends it", async () => {
+      const w = await world();
+      const next = await w.draft({ subject: "Second", body: "Hi" });
+      await w.update(w.email, next, { status: "approved" });
+      const report = await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId });
+      expect(report.emails.find((e: any) => e.id === next)!.problems).toContain("Not approved on the campaign page with the list confirmed");
+      await tick(w.t);
+      expect(delivered.filter((c) => c.body.subject === "Second")).toEqual([]);
+      await w.approve(next);
+      await tick(w.t);
+      expect(delivered.filter((c) => c.body.subject === "Second")).toHaveLength(2);
+    });
+  });
+
+  describe("sending, round 2", () => {
+    it("a read-only workspace sends nothing", async () => {
+      const w = await world();
+      await w.t.run((ctx: any) => ctx.db.patch(w.orgId, { flags: { readonly: true } }));
+      await tick(w.t);
+      expect(delivered).toEqual([]);
+    });
+
+    it("an earlier unsubscribe, bounce or complaint on any send leaves the address out of every campaign, even without a consent row", async () => {
+      for (const key of ["unsubscribedAt", "bouncedAt", "complainedAt"]) {
+        const w = await world({ people: ["Ava Stone"] });
+        const old = await w.create(w.campaign, { name: "Old" });
+        await w.t.run((ctx: any) => ctx.db.insert("emailSends", { orgId: w.orgId, emailRecordId: w.first, campaignRecordId: old, personRecordId: w.people.Ava, to: "ava@people.test", token: "0".repeat(32), status: "sent", attempts: 1, [key]: start - DAY }));
+        const next = await w.draft({ subject: "Later", body: "Hi" });
+        await w.approve(next);
+        await tick(w.t);
+        expect(delivered.filter((c) => c.body.subject === "Later"), key).toEqual([]);
+      }
+    });
+
+    it("a reply leaves a person out of that campaign's later emails only, not other campaigns", async () => {
+      const w = await world();
+      await tick(w.t);
+      await w.client.mutation(api.campaigns.markReplied, { orgId: w.orgId, sendId: (await w.sendTo("Ava"))._id });
+      const sameCampaign = await w.draft({ subject: "Same campaign", body: "Hi" });
+      const other = await w.create(w.campaign, { name: "Next quarter", status: "active", people: Object.values(w.people) });
+      const otherEmail = await w.create(w.email, { subject: "Other campaign", body: "Hi", campaign: other, status: "draft" });
+      expect((await w.client.query(api.campaigns.preview, { orgId: w.orgId, emailId: sameCampaign })).excluded.map((r: any) => [r.address, r.reason])).toEqual([["ava@people.test", "replied"]]);
+      expect((await w.client.query(api.campaigns.preview, { orgId: w.orgId, emailId: otherEmail })).excluded).toEqual([]);
+    });
+
+    it("a late finish from a crashed attempt changes nothing", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      const claimed = await w.t.mutation(internal.campaignSend.claim, {});
+      later(10 * MINUTE);
+      await w.t.mutation(internal.campaignSend.claim, {});
+      expect((await w.sends())[0]).toMatchObject({ status: "sending", attempts: 2 });
+      await w.t.mutation(internal.campaignSend.finish, { sendId: claimed[0].sendId, attempt: 1, outcome: { ok: true, id: "re_late" } });
+      expect((await w.sends())[0]).toMatchObject({ status: "sending", attempts: 2 });
+      expect((await w.sends())[0].providerId).toBeUndefined();
+    });
+
+    it("a send still unknown after 23 hours is failed as outcome unknown and never retried", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      await w.t.mutation(internal.campaignSend.claim, {});
+      later(23 * 60 * MINUTE + MINUTE);
+      await tick(w.t);
+      expect(calls).toEqual([]);
+      expect((await w.sends())[0]).toMatchObject({ status: "failed", failReason: expect.stringMatching(/^Outcome unknown/) });
+      later(DAY);
+      await tick(w.t);
+      expect(calls).toEqual([]);
+    });
+
+    it("when Resend's answer is lost the send keeps its daily count, so the next person waits, and the retry sends nothing new", async () => {
+      const w = await world({ limit: 1 });
+      dropAnswer = (call) => to(call) === "ava@people.test" && delivered.length === 1;
+      await tick(w.t);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "queued", uncertain: true });
+      later(MINUTE);
+      await tick(w.t);
+      expect(delivered.map(to)).toEqual(["ava@people.test"]);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "sent", providerId: "re_1" });
+      expect((await w.sendTo("Ben")).status).toBe("queued");
+      later(MINUTE);
+      await tick(w.t);
+      expect(delivered.map(to)).toEqual(["ava@people.test"]);
+    });
+
+    it("a send whose answer was lost and then sat paused for 23 hours is failed as outcome unknown, not retried", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      dropAnswer = () => true;
+      await tick(w.t);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "queued", uncertain: true });
+      await w.update(w.campaign, w.campaignId, { status: "paused" });
+      later(24 * 60 * MINUTE);
+      await w.update(w.campaign, w.campaignId, { status: "active" });
+      await tick(w.t);
+      expect(calls.filter((c) => c.method === "POST")).toHaveLength(1);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "failed", failReason: expect.stringMatching(/^Outcome unknown/) });
+    });
+
+    it("a confirmation withdrawn mid-batch stops the rest", async () => {
+      const w = await world({ people: ["A1 x", "A2 x", "A3 x"] });
+      onSend = async () => { if (delivered.length === 0) { const run = await w.runOf(w.first); await w.t.run((ctx: any) => ctx.db.patch(run._id, { confirmed: false })); } };
+      await tick(w.t);
+      expect(delivered).toHaveLength(1);
+    });
+
+    it("a webhook about a send whose answer was lost settles it as sent", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      dropAnswer = () => true;
+      await tick(w.t);
+      const ava = await w.sendTo("Ava");
+      expect(ava).toMatchObject({ status: "queued", uncertain: true });
+      expect(await hook(w.t, { type: "email.delivered", data: { email_id: "re_1", tags: { send: ava._id } } })).toBe(200);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "sent", providerId: "re_1", deliveredAt: start });
+    });
+
+    it("a retry after a definite refusal is composed again, so it says what is true now, under a new key", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      failWith = () => (calls.filter((c) => c.method === "POST").length === 1 ? new Response("{}", { status: 503 }) : undefined);
+      await tick(w.t);
+      await w.update(w.person, w.people.Ava, { name: "Avery Stone" });
+      later(MINUTE);
+      await tick(w.t);
+      const posts = calls.filter((c) => c.method === "POST");
+      expect(posts).toHaveLength(2);
+      expect(posts[1]!.headers["idempotency-key"]).not.toBe(posts[0]!.headers["idempotency-key"]);
+      expect([posts[0]!.body.subject, posts[1]!.body.subject]).toEqual(["Quick call, Ava?", "Quick call, Avery?"]);
+    });
+
+    it("blocked emails cannot starve an eligible one behind them", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      const paused = await w.create(w.campaign, { name: "Paused", status: "paused", people: [w.people.Ava] });
+      await w.update(w.email, w.first, { status: "draft" });
+      for (let i = 0; i < 101; i++) { const id = await w.create(w.email, { subject: `Blocked ${i}`, body: "x", campaign: paused, status: "draft" }); await w.approve(id); }
+      await w.approve(w.first);
+      let ticks = 0;
+      while (!delivered.length && ticks < 10) { await tick(w.t); later(MINUTE); ticks++; }
+      expect(delivered.map((c) => c.body.subject)).toEqual(["Quick call, Ava?"]);
+      expect(ticks).toBeLessThanOrEqual(7);
+    }, 60_000);
+
+    it("one tick stays small with 3,000 people on a campaign: it reads and claims one batch", async () => {
+      const w = await world({ people: [], limit: 5000 });
+      process.env.REMOLD_CAMPAIGN_DAILY_CAP = "5000";
+      const ids: any[] = await w.t.run(async (ctx: any) => {
+        const out = [];
+        for (let i = 0; i < 3000; i++) out.push(await ctx.db.insert("records", { orgId: w.orgId, objectId: w.person.object._id, values: { [w.person.fields.name._id]: `P${i} x`, [w.person.fields.email._id]: `p${i}@people.test` }, title: `P${i} x`, createdBy: (await ctx.db.query("users").first())._id, updatedAt: start }));
+        return out;
+      });
+      await w.t.run(async (ctx: any) => { const c = await ctx.db.get(w.campaignId); await ctx.db.patch(w.campaignId, { values: { ...c.values, [w.campaign.fields.people._id]: ids } }); });
+      await w.update(w.email, w.first, { status: "draft" });
+      await w.approve(w.first);
+      expect((await w.sends()).filter((s: any) => s.status === "queued")).toHaveLength(3000);
+      const claimed = await w.t.mutation(internal.campaignSend.claim, {});
+      expect(claimed).toHaveLength(25);
+      expect((await w.sends()).filter((s: any) => s.status === "sending")).toHaveLength(25);
+    }, 120_000);
+  });
+
+  describe("replies, round 2", () => {
+    const reply = (w: any, send: any, n: number, emailId = `in_${n}`) => hook(w.t, { type: "email.received", data: { email_id: emailId, from: `writer${n}@elsewhere.test`, to: [`r-${send.token}@reply.example.com`] } });
+    it("a reply is counted once per Resend email, at most three are forwarded per send, and forwards use the daily limit", async () => {
+      process.env.REMOLD_INBOUND_DOMAIN = "reply.example.com";
+      const w = await world({ people: ["Ava Stone"], limit: 3 });
+      await tick(w.t);
+      const ava = await w.sendTo("Ava");
+      inbound = "Sure.";
+      await reply(w, ava, 0);
+      await reply(w, ava, 1, "in_0");
+      for (let n = 2; n < 7; n++) await reply(w, ava, n);
+      expect(await w.titlesAbout(w.note, w.people.Ava)).toHaveLength(6);
+      await tick(w.t);
+      later(MINUTE); await tick(w.t);
+      const forwards = delivered.slice(1);
+      expect(forwards).toHaveLength(2);
+      expect(await w.t.run((ctx: any) => ctx.db.query("emailForwards").collect())).toHaveLength(3);
+      vi.setSystemTime(Date.UTC(2026, 9, 6, 0, 1)); await tick(w.t);
+      expect(delivered.slice(1)).toHaveLength(3);
+    });
+
+    it("a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it", async () => {
+      process.env.REMOLD_INBOUND_DOMAIN = "reply.example.com";
+      const w = await world({ people: ["Ava Stone"] });
+      await tick(w.t);
+      inbound = "Yes please.";
+      await reply(w, await w.sendTo("Ava"), 0);
+      await w.t.run((ctx: any) => ctx.db.patch(w.orgId, { flags: { readonly: true } }));
+      await tick(w.t);
+      expect(delivered).toHaveLength(1);
+      await w.t.run((ctx: any) => ctx.db.patch(w.orgId, { flags: { readonly: false } }));
+      failWith = (call) => (call.body.to[0] === "owner@example.com" && calls.filter((c) => c.body?.to?.[0] === "owner@example.com").length === 1 ? new Response("{}", { status: 500 }) : undefined);
+      await tick(w.t);
+      later(MINUTE); await tick(w.t);
+      later(MINUTE); await tick(w.t);
+      const forwards = delivered.slice(1);
+      expect(forwards).toHaveLength(1);
+      expect(forwards[0]!.body.text).toContain("Yes please.");
+      const attempts = calls.filter((c) => c.body?.to?.[0] === "owner@example.com");
+      expect(attempts.map((c) => c.headers["idempotency-key"])).toEqual([attempts[0]!.headers["idempotency-key"], attempts[0]!.headers["idempotency-key"]]);
+    });
+
+    it("a reply to a send that never went out is ignored", async () => {
+      process.env.REMOLD_INBOUND_DOMAIN = "reply.example.com";
+      const w = await world({ people: ["Ava Stone"] });
+      failWith = () => new Response("{}", { status: 422 });
+      await tick(w.t);
+      const ava = await w.sendTo("Ava");
+      expect(ava.status).toBe("failed");
+      await reply(w, ava, 0);
+      expect(await w.titlesAbout(w.note, w.people.Ava)).toEqual([]);
+      expect((await w.sendTo("Ava")).repliedAt).toBeUndefined();
+    });
+  });
+
+  describe("previews show only what the caller may read", () => {
+    const secret = { subject: "SECRET SUBJECT", body: "SECRET BODY", name: "Secretname Person", company: "Secret Company Inc" };
+    const hidden: [string, (w: any) => any, string[]][] = [
+      ["email subject", (w) => w.email.fields.subject._id, [secret.subject]],
+      ["email body", (w) => w.email.fields.body._id, [secret.body]],
+      ["person name", (w) => w.person.fields.name._id, [secret.name, "Secretname"]],
+      ["person company", (w) => w.person.fields.company._id, [secret.company]],
+      ["company name", (w) => w.company.fields.name._id, [secret.company]],
+    ];
+    for (const [label, field, words] of hidden) it(`hides the ${label} and anything rendered from it`, async () => {
+      const w = await world({ people: [] });
+      const corp = await w.create(w.company, { name: secret.company });
+      const someone = await w.create(w.person, { name: secret.name, email: "someone@people.test", company: corp });
+      await w.update(w.campaign, w.campaignId, { people: [someone] });
+      const next = await w.draft({ subject: `${secret.subject} {{firstName}}`, body: `${secret.body} {{name}} at {{company}}` });
+      const agent = await agentFor(w.client, w.orgId, { name: "masked" });
+      const look = async () => JSON.stringify((await rest(w.t, agent.key)("GET", `/api/v1/emails/${next}/preview?person=${someone}`)).json);
+      const open = await look();
+      for (const word of words) expect(open).toContain(word);
+      await w.t.run((ctx: any) => ctx.db.patch(agent.agentId, { hiddenFieldIds: [field(w)] }));
+      const masked = await look();
+      for (const word of words) expect(masked).not.toContain(word);
+      if (label !== "company name") expect(JSON.parse(masked).version).toBeNull();
+    });
+  });
+
+  // Round 3: the verifier's probes N1, N2, N3 and N6.
+  describe("round 3", () => {
+    const report = (w: any) => w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId });
+    const firstFails = () => { failWith = () => (calls.filter((x) => x.method === "POST").length === 1 ? new Response("{}", { status: 503 }) : undefined); };
+
+    it("a row requeued after a refusal is composed again from what was last approved, under a new key", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      firstFails();
+      await tick(w.t);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "queued", attempts: 1 });
+      await w.save({ postalAddress: "9 New Road" });
+      later(MINUTE); await tick(w.t);
+      expect(delivered).toEqual([]);
+      expect((await report(w)).emails[0].problems).toContain("The email or the sending settings changed since approval");
+      await w.approve(w.first);
+      later(MINUTE); await tick(w.t);
+      expect(delivered).toHaveLength(1);
+      expect(delivered[0]!.body.text).toContain("9 New Road");
+      const keys = calls.filter((c) => c.method === "POST").map((c) => c.headers["idempotency-key"]);
+      expect(new Set(keys).size).toBe(2);
+    });
+
+    it("stop, edit, approve again: a row tried before the stop goes out with the new words", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      firstFails();
+      await tick(w.t);
+      await w.update(w.email, w.first, { status: "stopped" });
+      await w.update(w.email, w.first, { body: "Brand new words" });
+      await w.approve(w.first);
+      later(MINUTE); await tick(w.t);
+      expect(delivered).toHaveLength(1);
+      expect(delivered[0]!.body.text).toContain("Brand new words");
+    });
+
+    it("an uncertain retry keeps both its bytes and its key", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      dropAnswer = () => true;
+      await tick(w.t);
+      dropAnswer = undefined;
+      await w.update(w.person, w.people.Ava, { name: "Avery Stone" });
+      later(MINUTE); await tick(w.t);
+      const posts = calls.filter((c) => c.method === "POST");
+      expect(posts).toHaveLength(2);
+      expect(posts[1]!.raw).toBe(posts[0]!.raw);
+      expect(posts[1]!.headers["idempotency-key"]).toBe(posts[0]!.headers["idempotency-key"]);
+    });
+
+    // Round 4 (verifier X1): a row whose answer was lost may already have gone out.
+    for (const how of ["edited", "stopped then edited"]) it(`a send whose answer was lost is not sent again after the email is ${how} and approved again`, async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      dropAnswer = () => true;
+      await tick(w.t);
+      dropAnswer = undefined;
+      expect(delivered).toHaveLength(1);
+      if (how !== "edited") await w.update(w.email, w.first, { status: "stopped" });
+      await w.update(w.email, w.first, { body: "Edited after the lost answer" });
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "failed", failReason: expect.stringMatching(/^Outcome unknown/) });
+      await w.approve(w.first);
+      later(MINUTE); await tick(w.t);
+      expect(calls.filter((c) => c.method === "POST")).toHaveLength(1);
+      expect(await w.sends()).toHaveLength(1);
+    });
+
+    it("a sent email never shows as changed since approval", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      await tick(w.t);
+      expect((await w.read(w.first)).values[w.email.fields.status._id]).toBe("sent");
+      await w.save({ postalAddress: "9 New Road" });
+      expect((await report(w)).emails[0].problems).not.toContain("The email or the sending settings changed since approval");
+    });
+
+    it("a forward whose action died is uncertain: a later definite failure keeps its count", async () => {
+      process.env.REMOLD_INBOUND_DOMAIN = "reply.example.com";
+      const w = await world({ people: ["Ava Stone"], limit: 5 });
+      await tick(w.t);
+      inbound = "hi";
+      await hook(w.t, { type: "email.received", data: { email_id: "in_1", from: "ava@people.test", to: [`r-${(await w.sendTo("Ava")).token}@reply.example.com`] } });
+      const claimed = await w.t.mutation(internal.campaignSend.claimForwards, {});
+      expect(claimed).toHaveLength(1);
+      later(10 * MINUTE);
+      const again = await w.t.mutation(internal.campaignSend.claimForwards, {});
+      expect(again).toHaveLength(1);
+      expect((await w.t.run((ctx: any) => ctx.db.get(claimed[0].forwardId))).uncertain).toBe(true);
+      const used = async () => (await w.t.run((ctx: any) => ctx.db.query("emailCaps").collect())).map((c: any) => c.used);
+      const before = await used();
+      await w.t.mutation(internal.campaignSend.forwarded, { forwardId: again[0].forwardId, attempt: again[0].attempt, outcome: { ok: false, retry: false, reason: "Resend 422" } });
+      expect(await used()).toEqual(before);
     });
   });
 });

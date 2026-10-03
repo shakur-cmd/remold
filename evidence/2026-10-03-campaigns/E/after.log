@@ -1,0 +1,31 @@
+
+ RUN  v5.0.1 /Users/urkel/scratch/job-E
+
+ ✓ convex/csv.test.ts > CSV import > turns spreadsheet text into typed values, links by name, and reports bad rows by row number 127ms
+ ✓ convex/csv.test.ts > CSV import > refuses a missing link when asked not to create records 9ms
+ ✓ convex/csv.test.ts > CSV export > writes readable values that the import reads back 25ms
+ ✓ convex/csv.test.ts > CSV export > keeps the time of a with-time date through export and import 26ms
+ ✓ convex/csv.test.ts > CSV export > refuses timed values that are not real ISO 8601 instants on with-time fields, and keeps plain dates as days 22ms
+ ✓ convex/csv.test.ts > CSV export > refuses impossible calendar dates in every accepted format, on plain and with-time fields 36ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > delete proposal changed snapshot is checked 370ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > delete proposal added snapshot is checked 19ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > delete proposal fresh snapshot is checked 16ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > rejected CSV row leaves no writes: number 33ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > rejected CSV row leaves no writes: required 17ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > rejected CSV row leaves no writes: lookup 12ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > date bounds reject before storage and accepted dates survive REST projection 42ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > retired none values preserve delete authority 55ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > retired hidden values preserve delete authority 15ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > retired protected values preserve delete authority 14ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > discovery projects live capabilities and field write modes 16ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > MCP retry after response loss returns the original REST write and pages events 24ms
+ ✓ convex/jobE.test.ts > Job E regression boundaries > REST Today uses the app selection for retained done values 29ms
+ ✓ convex/jobE.test.ts > REST write keys deduplicate proposals and inbox writes 33ms
+ ✓ convex/jobE.test.ts > stale delete conflicts do not reveal newly hidden values 15ms
+ ✓ convex/jobE.test.ts > discovery describes direct update fields limited to named records 20ms
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  09:17:28
+   Duration  1.12s (tests 63%, transform 30%, import 7%)
+

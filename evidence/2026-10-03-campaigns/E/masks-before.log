@@ -1,0 +1,42 @@
+
+ RUN  v5.0.1 /Users/urkel/scratch/job-E
+
+ ❯ convex/jobE.test.ts (16 tests | 2 failed) 452ms
+   × stale delete conflicts do not reveal newly hidden values 11ms
+   × discovery describes direct update fields limited to named records 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/jobE.test.ts > stale delete conflicts do not reveal newly hidden values
+AssertionError: expected '{"conflicts":[{"actual":"SECRET CITY"…' not to contain 'SECRET CITY'
+
+Expected: "SECRET CITY"
+Received: "{"conflicts":[{"actual":"SECRET CITY","expected":null,"fieldId":"00000000000000000000010016fields"}],"status":"conflicted"}"
+
+ ❯ convex/jobE.test.ts:106:80
+    104|   await t.run(async ctx => { const member = (await ctx.db.query("membe…
+    105|   const result = await client.mutation(api.suggestions.apply, { orgId,…
+    106|   expect(result.status).toBe("conflicted"); expect(JSON.stringify(resu…
+       |                                                                                ^
+    107| });
+    108| it("discovery describes direct update fields limited to named records"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  convex/jobE.test.ts > discovery describes direct update fields limited to named records
+AssertionError: expected 'propose' to be 'direct' // Object.is equality
+
+Expected: "direct"
+Received: "propose"
+
+ ❯ convex/jobE.test.ts:113:66
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  09:15:41
+   Duration  883ms (tests 57%, transform 35%, import 7%)
+

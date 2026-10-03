@@ -1,0 +1,46 @@
+$ node --test ops/release/release.test.mjs ops/deploy/prod.test.mjs ops/deploy/deploy.test.mjs ops/backup/backup.test.mjs
+✔ a backup lands in the folder with a UTC-stamped name and a checksum line, deleting nothing (6.984167ms)
+✔ a relative REMOLD_BACKUP_DIR keeps the zip and its checksum where the caller meant (300.145125ms)
+✔ a backup refuses to run without a production key for the deployment (0.406333ms)
+✔ the drill only trusts a zip whose checksum the export recorded (0.992667ms)
+✔ row counts cover app and component tables, and a table the index names but the zip lacks is reported (89.006ms)
+✔ any table whose restored count differs, or that did not come back, fails the comparison (0.191917ms)
+✔ a passing deploy runs every check and the build, then Convex before the Worker (5873.677833ms)
+✔ a dry run does everything but deploy (3689.286833ms)
+✔ any failing check stops the deploy (5153.073791ms)
+✔ a rollback whose restore drill fails deploys nothing (3382.004875ms)
+✔ a prod.json with a placeholder left in it refuses to build (2.917833ms)
+✔ the target must be a Convex cloud URL and a well-formed WorkOS client (0.939875ms)
+✔ only a production deploy key for the target deployment is accepted (0.097833ms)
+✔ a dirty tree, a detached HEAD or a commit missing from origin is refused (1489.462375ms)
+✔ a commit whose only origin branch was deleted on origin is refused, even though a stale local ref still names it (1097.295667ms)
+✔ a rollback ref older than the pinned rollback target is refused (561.901ms)
+✔ a bundle aimed at any deployment but the target is refused (2.070333ms)
+✔ deploy pushes Convex functions before the frontend that calls them (0.408542ms)
+✔ unchanged release verifies only for its full commit and pinned manifest digest (3.674625ms)
+✔ changed, missing and injected artifact bytes are refused (4.455375ms)
+✔ verification invoked through a symlink checks the artifact and refuses changed bytes (133.297041ms)
+✔ rewriting manifest checksums does not defeat the separately pinned digest (1.354583ms)
+✔ version metadata must name the artifact commit (0.784334ms)
+✔ symlink artifacts are refused instead of reading files outside the build (0.820584ms)
+✔ failed real process halts checks before a later process can run (36.714334ms)
+✔ successful real processes run in order (81.685625ms)
+✔ persisted source cannot claim a UI-only snapshot exemption (0.232292ms)
+✔ missing metadata and destructive contraction are refused (0.097708ms)
+✔ a rollback to a schema without the expanded fields is refused (0.118833ms)
+✔ persisted preflight requires a receipt bound to release, schema, and manifest (0.486625ms)
+✔ preflight refuses a receipt for any snapshot other than the expected backup (263.787708ms)
+✔ UI-only artifacts can skip snapshot rehearsal without authorizing a deployment (0.192833ms)
+✔ canonical snapshot data ignores JSONL order and catches changed documents (272.3115ms)
+✔ verification subprocesses receive fixture config and cannot inherit provider secrets (47.866791ms)
+✔ PR changes use their common ancestor when the target branch advances independently (524.439166ms)
+✔ after the I1 freeze, rollback to code that predates I1 authority is refused (1742.864875ms)
+✔ a refused rollback floor says what failed: squash, shallow clone, missing pin, tree, missing core file (1922.701709ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18156.941792

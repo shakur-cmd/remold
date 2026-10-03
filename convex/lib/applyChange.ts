@@ -5,7 +5,7 @@ import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { agentGuard } from "../authority/agentGuards";
-import { emailRules } from "./emailRules";
+import { emailCheck, emailRules } from "./emailRules";
 import { automationAfter, automationRules, type Chain } from "./automation";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
@@ -62,8 +62,8 @@ export async function lookupReferrers(ctx: QueryCtx, orgId: Id<"orgs">, target: 
   return found;
 }
 
-async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">, actor: Actor) {
-  for (const { record, field } of await lookupReferrers(ctx, orgId, deleted)) await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
+async function clearReferencesTo(ctx: MutationCtx, membership: Principal, orgId: Id<"orgs">, deleted: Doc<"records">, actor: Actor, automation?: Chain) {
+  for (const { record, field } of await lookupReferrers(ctx, orgId, deleted)) await applyChange(ctx, membership, { action: "update", orgId, recordId: record._id, values: { [field._id]: null }, reason: "Linked record was deleted" }, { clearingReference: true, actor, automation });
 }
 
 // Whether a principal's read scopes let it make this change to these fields. The
@@ -122,13 +122,13 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
       if (row.fromRecordId === record!._id) continue;
       const source = await ctx.db.get(row.fromRecordId);
       const current = (source?.values[row.fieldId] as string[] | undefined) ?? [];
-      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true, actor });
+      if (source) await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId: source._id, values: { [row.fieldId]: current.filter((id) => id !== record!._id) }, reason: "Linked record was deleted" }, { clearingReference: true, actor, automation: options.automation });
     }
     const rows = await ctx.db.query("links").withIndex("by_record_any", (q) => q.eq("orgId", change.orgId).eq("fromRecordId", record!._id)).collect();
     for (const row of rows) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
-    await clearReferencesTo(ctx, membership, change.orgId, record!, actor);
-    await emailRules(ctx, membership, actor, object, fields, record!.values, null, record!._id);
+    await clearReferencesTo(ctx, membership, change.orgId, record!, actor, options.automation);
+    await emailRules(ctx, membership, object, fields, record!.values, null, record!._id);
     const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
     await automationAfter(ctx, membership, object, fields, "delete", record!.values, null, record!._id, eventId);
     return { recordId: record!._id, eventId };
@@ -153,6 +153,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const status = object.isStandard && object.key === "post" ? fields.find((f) => f.key === "status") : undefined, link = status && fields.find((f) => f.key === "publishedLink");
   const linked = !!link && !link.retired && typeof values[link._id] === "string" && !!(values[link._id] as string).trim();
   if (status && values[status._id] === "published" && !linked && (change.action === "create" || status._id in validated || (!!link && link._id in validated))) fail("VALIDATION", "A published post needs its published link", { fieldId: link?._id ?? status._id });
+  await emailCheck(ctx, membership, actor, object, fields, record?.values ?? null, values, record?._id);
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;
@@ -173,7 +174,11 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
   const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
-  await emailRules(ctx, membership, actor, object, fields, record?.values ?? null, values, recordId, options.clearingReference);
+  // An approved email changed after approval goes back to draft, with its own event saying why.
+  if (await emailRules(ctx, membership, object, fields, record?.values ?? null, values, recordId) === "withdraw") {
+    const status = fields.find((f) => f.key === "status")!;
+    await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId, values: { [status._id]: "draft" }, reason: "Changed after approval, so it needs approving again" }, { clearingReference: true, actor: { kind: "automation", id: "Campaign email" }, automation: options.automation });
+  }
   await automationAfter(ctx, membership, object, fields, change.action, record?.values ?? null, values, recordId, eventId, options.automation);
   return { recordId, eventId };
 }

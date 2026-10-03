@@ -1,0 +1,24 @@
+       × without an inbound domain, replies go to the org's reply-to address 14ms
+       × checks subject, body, merge tags, campaign and the email it follows on every approval path 25ms
+       × only admins read and change them, and the checklist names what is missing without showing secrets 14ms
+       × people linked after approval get nothing until an admin approves again, whoever linked them 17ms
+       × approval is refused if the email, its settings or its people changed after the preview 10ms
+       × any change to what goes out after approval sends it back to draft with its queue cleared, and says why 9ms
+       × a CSV row the email rules refuse writes no record, event or approval 22ms
+       × a reply leaves a person out of that campaign's later emails only, not other campaigns 16ms
+       × a send still unknown after 23 hours is failed as outcome unknown and never retried 12ms
+       × when Resend's answer is lost the send keeps its daily count, so the next person waits, and the retry sends nothing new 11ms
+       × a send whose answer was lost and then sat paused for 23 hours is failed as outcome unknown, not retried 10ms
+       × a webhook about a send whose answer was lost settles it as sent 10ms
+       × a retry sends exactly the bytes of the first try, even if the person was renamed in between 13ms
+       × blocked emails cannot starve an eligible one behind them 660ms
+       × one tick stays small with 3,000 people on a campaign: it reads and claims one batch 651ms
+       × a reply is counted once per Resend email, at most three are forwarded per send, and forwards use the daily limit 18ms
+       × a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it 13ms
+       × hides the email subject and anything rendered from it 13ms
+       × hides the email body and anything rendered from it 11ms
+       × hides the person name and anything rendered from it 11ms
+       × hides the person company and anything rendered from it 11ms
+       × hides the company name and anything rendered from it 11ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  22 failed | 42 passed (64)
