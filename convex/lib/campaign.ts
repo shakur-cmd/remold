@@ -27,13 +27,16 @@ const addressOf = (raw: unknown) => (typeof raw === "string" && raw.trim() ? nor
 // Who a person is to merge tags: their name and their company's name.
 export async function recipientOf(ctx: Ctx, person: Item, record: Doc<"records">): Promise<Recipient> {
   const companyId = value(record, person.f.company) as Id<"records"> | undefined, company = companyId ? await ctx.db.get(companyId) : null;
-  return { name: record.title, company: company?.title || undefined };
+  // The current title field's value: stored titles lag while an object is retitling.
+  const title = (r: Doc<"records">, titleFieldId: Id<"fields"> | undefined) => { const value = titleFieldId ? r.values[titleFieldId] : undefined; return value == null ? r.title : String(value); };
+  const companyObject = company ? await ctx.db.get(company.objectId) : null;
+  return { name: title(record, person.object.titleFieldId), company: company ? title(company, companyObject?.titleFieldId) || undefined : undefined };
 }
 // The same, as far as a caller may read the person's name and company.
 async function visibleRecipient(ctx: Ctx, principal: Principal, person: Item, record: Doc<"records">): Promise<Recipient> {
   const readable = (key: string) => !!person.f[key] && canReadField(principal, person.object, person.f[key]!, record._id);
   const companyId = readable("company") ? (value(record, person.f.company) as Id<"records"> | undefined) : undefined, company = companyId ? await ctx.db.get(companyId) : null;
-  return { name: readable("name") ? record.title : "", company: company ? (await visibleTitle(ctx, principal, company)) || undefined : undefined };
+  return { name: await visibleTitle(ctx, principal, record), company: company ? (await visibleTitle(ctx, principal, company)) || undefined : undefined };
 }
 
 // Why an address may not get this campaign's email, or null. Unsubscribes, bounces and
@@ -239,11 +242,11 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
   requireRecordRead(principal, campaignObject, campaign);
   const item = await standardItem(ctx, principal.org._id, "email"), person = await standardItem(ctx, principal.org._id, "person");
   const booked = await campaignBookings(ctx, campaign._id), bookings = booked.counts;
-  if (!item?.f.campaign?.slot || !canReadObject(principal, item.object)) return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, bookings, emails: [] };
+  if (!item?.f.campaign?.slot || !canReadObject(principal, item.object)) return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: await visibleTitle(ctx, principal, campaign) }, bookings, emails: [] };
   const slot = `${item.f.campaign.slot.kind}${item.f.campaign.slot.index}`, now = Date.now();
   const emails: Doc<"records">[] = (await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", principal.org._id).eq("objectId", item.object._id).eq(slot, campaign._id)).collect()).filter((e: Doc<"records">) => canReadRecord(principal, item.object, e));
   const shown = (record: Doc<"records">, key: string) => { const field = item.f[key]; return field && canReadField(principal, item.object, field, record._id) ? record.values[field._id] ?? null : null; };
-  return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, bookings, emails: await Promise.all(chain(emails, item).map(async (email) => {
+  return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: await visibleTitle(ctx, principal, campaign) }, bookings, emails: await Promise.all(chain(emails, item).map(async (email) => {
     const rows = await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect();
     const count = (test: (s: Doc<"emailSends">) => unknown) => rows.filter(test).length, sent = count((s) => s.status === "sent");
     const counts = { recipients: count((s) => s.status !== "skipped"), queued: count((s) => s.status === "queued" || s.status === "sending"), waiting: count((s) => s.status === "queued" && (s.notBefore ?? 0) > now), sent, failed: count((s) => s.status === "failed"), skipped: count((s) => s.status === "skipped"), delivered: count((s) => s.deliveredAt), opened: count((s) => s.openedAt), clicked: count((s) => s.clickedAt), replied: count((s) => s.repliedAt), bounced: count((s) => s.bouncedAt), unsubscribed: count((s) => s.unsubscribedAt) };
@@ -252,7 +255,7 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
       const record = person ? await ctx.db.get(s.personRecordId) : null;
       if (!record || !person || !canReadRecord(principal, person.object, record)) continue;
       const address = person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? s.to || null : null;
-      recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: person.f.name && canReadField(principal, person.object, person.f.name, record._id) ? record.title : null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt, booked: !!booked.people.get(s.personRecordId)?.booked, paid: !!booked.people.get(s.personRecordId)?.paid });
+      recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: (await visibleTitle(ctx, principal, record)) || null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt, booked: !!booked.people.get(s.personRecordId)?.booked, paid: !!booked.people.get(s.personRecordId)?.paid });
     }
     const state = await stateOf(ctx, email, now), status = value(email, item.f.status);
     // People linked to the campaign after its approval: they get nothing until an admin approves again.
@@ -285,7 +288,7 @@ export async function emailPreview(ctx: Ctx, principal: Principal, email: Doc<"r
   const listed = [];
   for (const c of candidates.slice(0, 200)) {
     const record = await ctx.db.get(c.personId);
-    if (record && canReadRecord(principal, person.object, record)) listed.push({ c, record, row: { person: { id: record._id, ref: record.ref ?? null }, name: person.f.name && canReadField(principal, person.object, person.f.name, record._id) ? record.title : null, address: person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? c.address : null, ...(c.reason ? { reason: c.reason } : {}) } });
+    if (record && canReadRecord(principal, person.object, record)) listed.push({ c, record, row: { person: { id: record._id, ref: record.ref ?? null }, name: (await visibleTitle(ctx, principal, record)) || null, address: person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? c.address : null, ...(c.reason ? { reason: c.reason } : {}) } });
   }
   let target = personId ? listed.find(({ c }) => c.personId === personId)?.record : listed.find(({ c }) => !c.reason)?.record;
   if (personId && !target) { const record = await ctx.db.get(personId); if (!record || record.orgId !== principal.org._id || !canReadRecord(principal, person.object, record)) fail("NOT_FOUND", "Person not found"); target = record; }

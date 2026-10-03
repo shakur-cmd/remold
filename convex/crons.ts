@@ -7,4 +7,6 @@ crons.cron("Operator alerts","* * * * *",internal.alerts.check,{});
 crons.cron("Daily reminder email","0 11 * * *",internal.reminders.send,{});
 crons.cron("Campaign email","* * * * *",internal.campaignSend.tick,{});
 crons.cron("Expire booking holds","* * * * *",internal.bookings.expire,{});
+crons.cron("Automations","* * * * *",internal.automations.tick,{});
+crons.cron("Resume title rewrites","* * * * *",internal.lib.lifecycle.resumeRetitles,{});
 export default crons;

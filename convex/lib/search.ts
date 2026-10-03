@@ -10,12 +10,21 @@ const score = (title: string, terms: string[]) => { const have = words(title); r
 // True when the caller can read every record of the object and its search title,
 // so the search index holds no match they cannot see.
 async function fullySearchable(ctx: QueryCtx, principal: Principal, object: Doc<"objects">, depth = 0): Promise<boolean> {
-  if (depth > 5 || listedRecordIds(principal, object) !== null || !object.titleFieldId) return false;
+  if (depth > 5 || listedRecordIds(principal, object) !== null || !object.titleFieldId || !await storedTitlesReadable(ctx, principal, object)) return false;
   const field = await ctx.db.get(object.titleFieldId);
   if (!field || !canQueryField(principal, object, field)) return false;
   if (field.type !== "lookup") return true;
   const target = field.targetObjectId ? await ctx.db.get(field.targetObjectId) : null;
   return !!target && fullySearchable(ctx, principal, target, depth + 1);
+}
+
+// While an object is retitling (lib/lifecycle.ts) its stored titles may still hold
+// earlier title fields' values. Matching on them is safe only for a caller who can query
+// every one of those fields; anyone else gets no title matches from the object until the
+// rewrite ends, rather than learning a hidden value from which record matched.
+export async function storedTitlesReadable(ctx: QueryCtx, principal: Principal, object: Doc<"objects">) {
+  for (const id of object.retitling?.from ?? []) { const field = await ctx.db.get(id); if (field && !canQueryField(principal, object, field)) return false; }
+  return true;
 }
 
 // Title search and recent-first lists for pickers, the search box and agents. No
@@ -25,7 +34,9 @@ async function fullySearchable(ctx: QueryCtx, principal: Principal, object: Doc<
 export async function searchRecords(ctx: QueryCtx, principal: Principal, text: string, objectId: Id<"objects"> | undefined, limit: number): Promise<Doc<"records">[]> {
   const orgId = principal.org._id;
   if (limit <= 0) return [];
-  const objects = objectId ? [await ctx.db.get(objectId)].filter((o): o is Doc<"objects"> => !!o && o.orgId === orgId) : await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
+  // Archived objects drop out of open searches; naming one (a picker for a link to it) still finds its records.
+  const all = objectId ? [await ctx.db.get(objectId)].filter((o): o is Doc<"objects"> => !!o && o.orgId === orgId) : await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", orgId)).collect();
+  const objects = objectId ? all : all.filter((o) => !o.archived);
   // Defence in depth: the index paths only meet readable rows, so this drops nothing.
   const byId = new Map(objects.map(o => [o._id, o]));
   const readableOnly = (rows: Doc<"records">[]) => rows.filter(r => { const o = byId.get(r.objectId); return !!o && canReadRecord(principal, o, r); });
@@ -35,7 +46,7 @@ export async function searchRecords(ctx: QueryCtx, principal: Principal, text: s
     return listed ? listed.sort((a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime).slice(0, limit) : readableOnly(await ctx.db.query("records").withIndex("by_object_updated", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).order("desc").take(limit));
   }
   const searchable = await Promise.all(objects.map(object => fullySearchable(ctx, principal, object)));
-  if (!objectId && searchable.every(Boolean)) return readableOnly(await ctx.db.query("records").withSearchIndex("search_title", (q) => q.search("title", text).eq("orgId", orgId)).take(limit));
+  if (!objectId && objects.length === all.length && searchable.every(Boolean)) return readableOnly(await ctx.db.query("records").withSearchIndex("search_title", (q) => q.search("title", text).eq("orgId", orgId)).take(limit));
   const terms = words(text);
   const perObject = await Promise.all(objects.map(async (object, i) => {
     if (searchable[i]) return readableOnly(await ctx.db.query("records").withSearchIndex("search_title", (q) => q.search("title", text).eq("orgId", orgId).eq("objectId", object._id)).take(limit));

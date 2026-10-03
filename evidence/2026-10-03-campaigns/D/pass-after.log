@@ -1,0 +1,15 @@
+
+ RUN  v5.0.1 /home/old-mac-pro/work/jobs/D-access
+
+ ✓ convex/agentAccess.test.ts > agent object access > an agent made before an object existed cannot read it, can after Let it read, and loses it, with any in-flight proposal, when removed 593ms
+ ✓ convex/agentAccess.test.ts > agent object access > reading all objects covers objects added later, and hidden fields stay hidden 99ms
+ ✓ convex/agentAccess.test.ts > agent object access > reading never implies writing, and removing read drops write grants so reading again does not bring them back 75ms
+ ✓ convex/agentAccess.test.ts > agent object access > only unrestricted admins change access, for live agents with no fixed job, to objects in their own workspace 117ms
+ ✓ convex/agentAccess.test.ts > agent object access > an agent learns what it can read from /me 52ms
+ ✓ convex/agentAccess.test.ts > agent object access > an agent made before Email existed drafts an email and reads the campaign report once an admin lets it read Email 96ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  09:05:39
+   Duration  1.64s (tests 71%, transform 22%, import 7%)
+

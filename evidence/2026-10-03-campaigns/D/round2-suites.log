@@ -1,0 +1,42 @@
+== pnpm test (default timeout)
+     × is the newest past activity about each person, and skips activities the reader cannot see 13073ms
+       × pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar 6397ms
+       × a page asked for with its endCursor returns everything up to that end, so an insert grows it instead of shifting a post onto the next page 5196ms
+   × dragging a post to another day saves that day and keeps its local time, even when the new time is midnight UTC 5079ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 17932ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 15657ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  3 failed | 49 passed (52)
+      Tests  6 failed | 394 passed (400)
+== pnpm test --testTimeout=60000
+   × follows a page that is not done and shows the records of the next one, without resubscribing 17746ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 15911ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 51 passed (52)
+      Tests  2 failed | 398 passed (400)
+== typecheck
+$ tsc -b && tsc --noEmit -p convex
+== test:authority
+     × lists every registered function, concrete HTTP branch, cron and scheduled target 5066ms
+   × no single production test can stand in for more than five groups 5045ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+Error: Test timed out in 5000ms.
+Error: Test timed out in 5000ms.
+ Test Files  2 failed | 15 passed (17)
+      Tests  2 failed | 99 passed (101)
+== test:authority --testTimeout=60000
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+== verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+== build
+✓ built in 1.73s
+== mcp
+      Tests  5 passed (5)
+ 09:42:47 up 1 day, 20:00,  4 users,  load average: 9.61, 9.18, 6.41
+== pnpm test --testTimeout=60000 --maxWorkers=2
+ Test Files  52 passed (52)
+      Tests  400 passed (400)
+ 09:43:31 up 1 day, 20:01,  4 users,  load average: 6.32, 8.35, 6.26

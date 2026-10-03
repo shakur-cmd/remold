@@ -35,12 +35,13 @@ const statuses = (f: Record<string, Doc<"fields">>, before: Record<string, unkno
 
 // Runs inside applyChange before an Email record is written, so a refusal leaves nothing
 // behind even for a caller that catches it (CSV import). Only an admin approves;
-// Sending and Sent are Remold's to set; approval checks the content.
+// Sending and Sent are the campaign sender's to set (actor "Campaign email"), never an
+// automation record's; approval checks the content.
 export async function emailCheck(ctx: MutationCtx, principal: Principal, actor: Actor, object: Doc<"objects">, fields: Doc<"fields">[], before: Record<string, unknown> | null, after: Record<string, unknown>, recordId?: Id<"records">) {
   if (!object.isStandard || object.key !== "email") return;
   const f = fieldsByKey(fields);
   if (!f.status) return;
-  const { was, now, entering } = statuses(f, before, after), engine = actor.kind === "automation";
+  const { was, now, entering } = statuses(f, before, after), engine = actor.kind === "automation" && actor.id === "Campaign email";
   if ((now === "sending" || now === "sent") && was !== now && !engine) fail("VALIDATION", "Remold sets Sending and Sent itself", { fieldId: f.status._id });
   if (!entering) return;
   if (!engine && (!("member" in principal) || principal.member.role === "member")) fail("FORBIDDEN", "Only an admin can approve an email");

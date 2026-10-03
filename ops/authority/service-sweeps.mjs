@@ -24,6 +24,7 @@ async function workspace(runtime, tenant, label) {
   const proposeShape = async key => (await (await request(runtime, shaper.key, 'POST', '/api/v1/shape/proposals', { kind: 'addField', object: 'company', key, label: key, type: 'number', reason: 'sweep' })).json()).proposal.id;
   const shapes = { apply: await proposeShape('sweepApply'), dismiss: await proposeShape('sweepDismiss') };
   const inboxId = await t.human.mutation(anyApi.inbox.add, { orgId: t.orgId, text: 'Sweep note' });
+  const view = await t.human.mutation(anyApi.views.create, { orgId: t.orgId, objectId: company._id, name: 'Sweep view', layout: 'table', columns: [city._id], filters: [], shared: true });
   const memberClient = runtime.client('sweep-member-' + randomUUID()), memberUserId = await memberClient.mutation(anyApi.users.store, {});
   const invite = await t.human.mutation(anyApi.invites.create, { orgId: t.orgId, role: 'member' }); await memberClient.mutation(anyApi.invites.accept, { token: invite.token });
   const leaver = runtime.client('sweep-leaver-' + randomUUID()); await leaver.mutation(anyApi.users.store, {}); const leaveInvite = await t.human.mutation(anyApi.invites.create, { orgId: t.orgId, role: 'member' }); await leaver.mutation(anyApi.invites.accept, { token: leaveInvite.token });
@@ -39,7 +40,7 @@ async function workspace(runtime, tenant, label) {
   const claimerOp = await (await request(runtime, claimer.key, 'POST', '/api/v1/operations', { logical: 'claimer-op', bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 1 })).json();
   const secondSecret = runtime.run('integrations/connections:registerSecret', { orgId: t.orgId, provider: 'fake', environment: 'test', account: 'sweep-second-' + randomUUID(), handle: 'vault:' + randomUUID() });
   const money = await financial(t);
-  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, shaper, shapes, inboxId, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
+  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, shaper, shapes, inboxId, view, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
 }
 
 export async function replaySweeps({ runtime, tenant, test }) {
@@ -52,6 +53,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'agents:createGmailSync': () => t.human.action(fn('agents:createGmailSync'), { orgId }),
       'agents:setGrants': () => t.human.mutation(fn('agents:setGrants'), { orgId, agentId: w.agent.agentId, grants: [{ action: 'create', objectKey: 'person' }] }),
       'agents:setSharedInbox': () => t.human.mutation(fn('agents:setSharedInbox'), { orgId, agentId: w.agent.agentId, enabled: true }),
+      'agents:setReadAccess': () => t.human.mutation(fn('agents:setReadAccess'), { orgId, agentId: w.agent.agentId, readAllObjects: true, objectIds: [] }),
       'agents:revoke': () => t.human.mutation(fn('agents:revoke'), { orgId, agentId: w.target.agentId }),
       'authority/grants:grant': () => t.human.mutation(fn('authority/grants:grant'), { orgId, target: w.target.agentId, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 1, maxSteps: 1 }, mode: 'direct', delegate: false, expiresAt: Date.now() + 60000 }),
       'authority/grants:revoke': () => t.human.mutation(fn('authority/grants:revoke'), { orgId, id: w.grantId }),
@@ -65,6 +67,12 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'fields:create': () => t.human.mutation(fn('fields:create'), { orgId, objectId: w.company._id, key: 'denied', label: 'Denied', type: 'text' }),
       'fields:update': () => t.human.mutation(fn('fields:update'), { orgId, fieldId: w.city._id, label: 'Denied' }),
       'fields:retire': () => t.human.mutation(fn('fields:retire'), { orgId, fieldId: w.city._id }),
+      'fields:restore': () => t.human.mutation(fn('fields:restore'), { orgId, fieldId: w.city._id }),
+      'fields:reorder': () => t.human.mutation(fn('fields:reorder'), { orgId, objectId: w.company._id, fieldIds: [w.city._id, w.name._id] }),
+      'fields:reorderOptions': () => t.human.mutation(fn('fields:reorderOptions'), { orgId, fieldId: w.city._id, optionIds: [] }),
+      'objects:reorder': () => t.human.mutation(fn('objects:reorder'), { orgId, objectIds: [w.company._id] }),
+      'objects:setArchived': () => t.human.mutation(fn('objects:setArchived'), { orgId, objectId: w.company._id, archived: true }),
+      'objects:setTitleField': () => t.human.mutation(fn('objects:setTitleField'), { orgId, objectId: w.company._id, fieldId: w.city._id }),
       'inbox:add': () => t.human.mutation(fn('inbox:add'), { orgId, text: 'Denied note' }),
       'inbox:remove': () => t.human.mutation(fn('inbox:remove'), { orgId, id: w.inboxId }),
       'integrations/bindings:provision': () => t.human.mutation(fn('integrations/bindings:provision'), { orgId, connectionId: t.connectionId, logical: 'denied', kind: 'model', remove: false }),
@@ -96,6 +104,11 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'suggestions:adopt': () => t.human.mutation(fn('suggestions:adopt'), { orgId, suggestionId: w.suggestions.adopt }),
       'shapeSuggestions:apply': () => t.human.mutation(fn('shapeSuggestions:apply'), { orgId, id: w.shapes.apply }),
       'shapeSuggestions:dismiss': () => t.human.mutation(fn('shapeSuggestions:dismiss'), { orgId, id: w.shapes.dismiss }),
+      'views:create': () => t.human.mutation(fn('views:create'), { orgId, objectId: w.company._id, name: 'Denied view', layout: 'table', columns: [], filters: [] }),
+      'views:update': () => t.human.mutation(fn('views:update'), { orgId, viewId: w.view, name: 'Denied rename' }),
+      'views:reorder': () => t.human.mutation(fn('views:reorder'), { orgId, viewIds: [w.view] }),
+      'views:remove': () => t.human.mutation(fn('views:remove'), { orgId, viewId: w.view }),
+      'automations:setOn': () => t.human.mutation(fn('automations:setOn'), { orgId, recordId: w.record, on: true }),
     };
     const rest = {
       'HTTP POST /api/v1/changes': ['/api/v1/changes', { action: 'create', object: 'company', values: { name: 'Denied' }, reason: 'readonly sweep' }],
@@ -152,7 +165,8 @@ export async function replaySweeps({ runtime, tenant, test }) {
     const person = (await t.human.query(anyApi.objects.list, { orgId })).find(object => object.key === 'person'), personFields = await t.human.query(anyApi.fields.list, { orgId, objectId: person._id });
     const reverse = personFields.find(field => field.key === 'company');
     const standard = async key => { const object = (await t.human.query(anyApi.objects.list, { orgId })).find(o => o.key === key), detail = await t.human.query(anyApi.objects.get, { orgId, objectId: object._id }); return { object, f: Object.fromEntries(detail.fields.map(field => [field.key, field._id])) }; };
-    const campaign = await standard('campaign'), email = await standard('email');
+    const campaign = await standard('campaign'), email = await standard('email'), automation = await standard('automation');
+    const automationId = (await t.human.mutation(anyApi.records.create, { orgId, objectId: automation.object._id, values: { [automation.f.name]: 'Sweep automation', [automation.f.when]: 'recordCreated', [automation.f.object]: 'company', [automation.f.actions]: JSON.stringify([{ type: 'inbox', text: 'New {{record.city}}' }]) } })).recordId;
     const campaignId = (await t.human.mutation(anyApi.records.create, { orgId, objectId: campaign.object._id, values: { [campaign.f.name]: 'Sweep campaign' } })).recordId;
     const emailId = (await t.human.mutation(anyApi.records.create, { orgId, objectId: email.object._id, values: { [email.f.subject]: 'Sweep email', [email.f.body]: 'Hello', [email.f.campaign]: campaignId, [email.f.status]: 'draft' } })).recordId;
     const queries = {
@@ -161,7 +175,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'invites:get': { token: w.pendingInvite.token }, 'objects:list': { orgId }, 'objects:get': { orgId, objectId: w.company._id }, 'orgs:mine': {}, 'orgs:get': { orgId }, 'orgs:members': { orgId },
       'records:list': { orgId, objectId: w.company._id, paginationOpts: page }, 'records:get': { orgId, recordId: w.record }, 'records:related': { orgId, recordId: w.record, fieldId: reverse._id, paginationOpts: page },
       'records:reverseFields': { orgId, objectId: w.company._id }, 'records:byRef': { orgId, ref: record.ref ?? 'none' }, 'records:search': { orgId, text: canary }, 'suggestions:list': { orgId }, 'shapeSuggestions:list': { orgId }, 'suggestions:forRecord': { orgId, recordId: w.record },
-      'today:get': { orgId, today: Date.now() }, 'users:me': {}, 'campaigns:settings': { orgId }, 'campaigns:report': { orgId, campaignId }, 'campaigns:preview': { orgId, emailId },
+      'today:get': { orgId, today: Date.now() }, 'users:me': {}, 'campaigns:settings': { orgId }, 'campaigns:report': { orgId, campaignId }, 'campaigns:preview': { orgId, emailId }, 'automations:view': { orgId, recordId: automationId },
     };
     for (const entry of inventory.filter(entry => entry.visibility === 'public' && entry.kind === 'query')) {
       assert.ok(queries[entry.id], 'No mask sweep call for ' + entry.id);
@@ -177,7 +191,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
       assert.equal(response.status, 404, 'agent ' + path + ' must refuse a hidden field: ' + text); assert.ok(!text.includes(canary));
     }
-    const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'shape/proposals', 'inbox', 'campaigns/' + campaignId + '/report', 'emails/' + emailId + '/preview'];
+    const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'shape/proposals', 'inbox', 'campaigns/' + campaignId + '/report', 'emails/' + emailId + '/preview', 'automations/' + automationId + '/runs'];
     for (const path of gets) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
       assert.ok(response.status < 500, path + ' failed: ' + text); assert.ok(!text.includes(canary), path + ' leaked a hidden field value');

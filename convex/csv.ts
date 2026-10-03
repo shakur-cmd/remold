@@ -1,4 +1,5 @@
 import { internalMutation, mutation, query } from "./_generated/server";
+import { requireLive } from "./lib/metadata";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
@@ -92,7 +93,8 @@ export const importRows = mutation({
   args: { orgId: v.id("orgs"), objectId: v.id("objects"), columns: v.array(v.union(v.id("fields"), v.null())), rows: v.array(v.array(v.string())), firstRow: v.number(), skipDuplicates: v.boolean(), createMissing: v.boolean() },
   handler: async (ctx, args): Promise<{ created: number; skipped: number; errors: { row: number; message: string }[] }> => {
     if (args.rows.length > 100) fail("VALIDATION", "At most 100 rows per batch");
-    const { fields } = await importTarget(ctx, args), byId = new Map(fields.map(f => [f._id, f]));
+    const { fields, object } = await importTarget(ctx, args), byId = new Map(fields.map(f => [f._id, f]));
+    requireLive(object);
     let created = 0, skipped = 0;
     const errors: { row: number; message: string }[] = [];
     for (const [index, row] of args.rows.entries()) {

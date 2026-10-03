@@ -1,0 +1,50 @@
+## pnpm test
+     × is the newest past activity about each person, and skips activities the reader cannot see 16347ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 20160ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 16046ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/gmailSync.test.ts > last contact > is the newest past activity about each person, and skips activities the reader cannot see
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+ Test Files  2 failed | 51 passed (53)
+      Tests  3 failed | 414 passed (417)
+## pnpm typecheck
+$ tsc -b && tsc --noEmit -p convex
+exit 0
+## pnpm test:authority
+     × lists every registered function, concrete HTTP branch, cron and scheduled target 5055ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  ops/authority/inventory.test.ts > authority inventory > lists every registered function, concrete HTTP branch, cron and scheduled target
+ Test Files  1 failed | 16 passed (17)
+      Tests  1 failed | 100 passed (101)
+## pnpm verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+## pnpm build
+✓ built in 2.94s
+## packages/mcp test
+      Tests  7 passed (7)
+
+## rerun pnpm test:authority (first run timed out at 5055ms while other job worktrees were compiling)
+      Tests  101 passed (101)
+## rerun pnpm test
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/gmailSync.test.ts > last contact > is the newest past activity about each person, and skips activities the reader cannot see
+ FAIL  convex/posts.test.ts > posts > read budget > pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+ Test Files  3 failed | 50 passed (53)
+      Tests  4 failed | 413 passed (417)
+## pnpm test --testTimeout=60000 (same suite, longer per-test timeout)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+ Test Files  1 failed | 52 passed (53)
+      Tests  2 failed | 415 passed (417)
+ 09:50:17 up 1 day, 21:10,  7 users,  load average: 16.05, 10.39, 6.35
+## the full-suite failures, run alone
+     × is the newest past activity about each person, and skips activities the reader cannot see 5367ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 22 passed (23)

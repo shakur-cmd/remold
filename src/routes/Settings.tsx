@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate, useOutletContext } from "react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { Check, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
@@ -14,8 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
 import { PaymentsCard } from "@/components/Bookings";
-import { attempt } from "@/lib/errors";
+import { attempt, errorMessage } from "@/lib/errors";
 import { toKey } from "@/lib/fields";
+import { capacity, slotsLeft, type SlotKind } from "../../convex/lib/slots";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 export function Settings() {
@@ -210,6 +211,36 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
   );
 }
 
+// The confirm still opens when the preview cannot load, and says so; the error is also shown as a toast.
+async function impactLines(load: () => Promise<string[]>) {
+  try {
+    return (await load()).join("\n");
+  } catch (error) {
+    toast.error(`Could not count what this touches: ${errorMessage(error)}`);
+    return `Could not count what this touches: ${errorMessage(error)}`;
+  }
+}
+
+// Moves one item a place up or down; the server takes the whole new order.
+function moved<T>(list: T[], index: number, by: -1 | 1) {
+  const next = [...list];
+  [next[index], next[index + by]] = [next[index + by]!, next[index]!];
+  return next;
+}
+
+function MoveButtons({ label, index, count, onMove }: { label: string; index: number; count: number; onMove: (by: -1 | 1) => void }) {
+  return (
+    <>
+      <Button size="icon-xs" variant="ghost" className="text-muted-foreground" aria-label={`Move ${label} up`} disabled={index === 0} onClick={() => onMove(-1)}>
+        <ArrowUp />
+      </Button>
+      <Button size="icon-xs" variant="ghost" className="text-muted-foreground" aria-label={`Move ${label} down`} disabled={index === count - 1} onClick={() => onMove(1)}>
+        <ArrowDown />
+      </Button>
+    </>
+  );
+}
+
 function ObjectsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Doc<"objects">[]; admin: boolean }) {
   const create = useMutation(api.objects.create);
   const [selected, setSelected] = useState<Id<"objects"> | undefined>(objects[0]?._id);
@@ -221,9 +252,10 @@ function ObjectsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Do
     <Card>
       <CardHeader>
         <CardTitle>Objects and fields</CardTitle>
-        <CardDescription>Shape Remold around your work: add an object like Lead or Job, then give it fields.</CardDescription>
+        <CardDescription>Shape Remold around your work: add an object like Lead or Job, then give it fields. Nothing is deleted: retired fields and archived objects keep their data and can come back.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {admin && <ObjectOrder orgId={orgId} objects={objects} />}
         <Select value={selected} onValueChange={(v) => setSelected(v as Id<"objects">)}>
           <SelectTrigger className="w-full sm:w-72" aria-label="Object">
             <SelectValue placeholder="Choose an object" />
@@ -232,6 +264,7 @@ function ObjectsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Do
             {objects.map((o) => (
               <SelectItem key={o._id} value={o._id}>
                 {o.labelPlural}
+                {o.archived && " (archived)"}
               </SelectItem>
             ))}
           </SelectContent>
@@ -261,13 +294,58 @@ function ObjectsCard({ orgId, objects, admin }: { orgId: Id<"orgs">; objects: Do
   );
 }
 
+// The navigation order, and archiving custom objects. Standard objects cannot be archived.
+function ObjectOrder({ orgId, objects }: { orgId: Id<"orgs">; objects: Doc<"objects">[] }) {
+  const reorder = useMutation(api.objects.reorder);
+  const setArchived = useMutation(api.objects.setArchived);
+  const convex = useConvex();
+  const shown = objects.filter((o) => !o.archived), archived = objects.filter((o) => o.archived);
+  async function archive(object: Doc<"objects">) {
+    const impact = await impactLines(() => convex.query(api.objects.impact, { orgId, objectId: object._id }));
+    if (confirm(`Archive ${object.labelPlural}?\n\n${impact}`)) await attempt(() => setArchived({ orgId, objectId: object._id, archived: true }), "Archived");
+  }
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-sm font-medium">Navigation</span>
+      <ul className="grid divide-y rounded-md border text-sm">
+        {shown.map((object, index) => (
+          <li key={object._id} className="flex min-h-9 items-center gap-1 px-3 py-1">
+            <span className="mr-auto">{object.labelPlural}</span>
+            <MoveButtons label={object.labelPlural} index={index} count={shown.length} onMove={(by) => attempt(() => reorder({ orgId, objectIds: moved(shown, index, by).map((o) => o._id) }))} />
+            {!object.isStandard && (
+              <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => void attempt(() => archive(object))}>
+                Archive
+              </Button>
+            )}
+          </li>
+        ))}
+        {archived.map((object) => (
+          <li key={object._id} className="flex min-h-9 items-center gap-2 px-3 py-1 text-muted-foreground">
+            <span className="mr-auto">{object.labelPlural}</span>
+            <Badge variant="outline">archived</Badge>
+            <Button size="xs" variant="ghost" onClick={() => attempt(() => setArchived({ orgId, objectId: object._id, archived: false }), "Back in the navigation")}>
+              Unarchive
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const SLOT_NAMES: Record<SlotKind, string> = { s: "text", n: "number", d: "date", b: "yes/no" };
 const TYPES = ["text", "number", "select", "date", "boolean", "lookup", "links"] as const;
 
 function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: Doc<"objects">; objects: Doc<"objects">[]; admin: boolean }) {
   const fields = useQuery(api.fields.list, { orgId, objectId: object._id });
   const create = useMutation(api.fields.create);
   const retire = useMutation(api.fields.retire);
+  const restore = useMutation(api.fields.restore);
+  const reorder = useMutation(api.fields.reorder);
+  const setTitle = useMutation(api.objects.setTitleField);
+  const convex = useConvex();
   const [label, setLabel] = useState("");
+  const [indexed, setIndexed] = useState(true);
   const [type, setType] = useState<(typeof TYPES)[number]>("text");
   const [options, setOptions] = useState("");
   const [target, setTarget] = useState<Id<"objects"> | undefined>();
@@ -283,21 +361,56 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
         .map((s) => s.trim())
         .filter(Boolean)
         .map((s) => ({ id: s.toLowerCase().replace(/[^a-z0-9]+/g, "_"), label: s }));
-      const result = await create({ orgId, objectId: object._id, key, label: label.trim(), type, options: type === "select" ? parsed : undefined, targetObjectId: linking ? target : undefined, withTime: type === "date" && withTime ? true : undefined });
-      if (!result.slot) toast.warning("Slots for this type are used up: the field stores values but cannot sort or filter.");
+      const result = await create({ orgId, objectId: object._id, key, label: label.trim(), type, options: type === "select" ? parsed : undefined, targetObjectId: linking ? target : undefined, withTime: type === "date" && withTime ? true : undefined, indexed: type === "text" && !indexed ? false : undefined });
+      if (!result.slot && (type !== "text" || indexed)) toast.warning("Slots for this type are used up: the field stores values but cannot sort or filter.");
       setLabel("");
+      setIndexed(true);
       setOptions("");
       setWithTime(false);
     }, "Field added");
   }
 
+  const live = fields?.filter((f) => !f.retired) ?? [], retired = fields?.filter((f) => f.retired) ?? [];
+  // Retired fields keep their slots so they can come back.
+  const left = slotsLeft(fields ?? []), kind: SlotKind | undefined = type === "number" ? "n" : type === "date" ? "d" : type === "boolean" ? "b" : type === "links" ? undefined : "s";
+  async function retireField(field: Doc<"fields">) {
+    const impact = await impactLines(() => convex.query(api.objects.impact, { orgId, objectId: object._id, fieldId: field._id }));
+    if (confirm(`Retire ${field.label}?\n\n${impact}`)) await attempt(() => retire({ orgId, fieldId: field._id }), "Retired");
+  }
   return (
     <div className="grid gap-3">
       <ul className="grid divide-y rounded-md border text-sm">
-        {fields?.map((field) => (
-          <FieldRow key={field._id} orgId={orgId} field={field} isTitle={field._id === object.titleFieldId} admin={admin} onRetire={() => confirm(`Retire ${field.label}? Its values stay in history.`) && attempt(() => retire({ orgId, fieldId: field._id }), "Retired")} />
+        {live.map((field, index) => (
+          <FieldRow
+            key={field._id}
+            orgId={orgId}
+            field={field}
+            isTitle={field._id === object.titleFieldId}
+            admin={admin}
+            move={admin ? <MoveButtons label={field.label} index={index} count={live.length} onMove={(by) => attempt(() => reorder({ orgId, objectId: object._id, fieldIds: moved(live, index, by).map((f) => f._id) }))} /> : null}
+            onRetire={() => void attempt(() => retireField(field))}
+            onTitle={() => attempt(() => setTitle({ orgId, objectId: object._id, fieldId: field._id }), `${field.label} is now the title`)}
+          />
         ))}
       </ul>
+      {retired.length > 0 && (
+        <div className="grid gap-1.5">
+          <span className="text-xs text-muted-foreground">Retired. Values are kept; restore one to bring it back.</span>
+          <ul className="grid divide-y rounded-md border text-sm">
+            {retired.map((field) => (
+              <li key={field._id} className="flex min-h-9 items-center gap-2 px-3 py-1 text-muted-foreground">
+                <span className="line-through">{field.label}</span>
+                <span className="text-xs">{field.type}</span>
+                {admin && (
+                  <Button size="xs" variant="ghost" className="ml-auto" onClick={() => attempt(() => restore({ orgId, fieldId: field._id }), "Restored")}>
+                    Restore
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {admin && (
         <form onSubmit={add} className="grid gap-2 sm:grid-cols-[1fr_10rem_auto]">
           <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="New field, e.g. Source" aria-label="Field label" required />
@@ -317,6 +430,13 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
             Add field
           </Button>
           {type === "select" && <Input className="sm:col-span-3" value={options} onChange={(e) => setOptions(e.target.value)} placeholder="Options, comma separated: New, Contacted, Won" aria-label="Options" required />}
+          {type === "text" && (
+            <label className="flex items-center gap-2 text-sm sm:col-span-3">
+              <Checkbox checked={indexed} onCheckedChange={(checked) => setIndexed(checked === true)} aria-label="Searchable and sortable" />
+              Searchable and sortable
+              <span className="text-xs text-muted-foreground">Uses one of the text slots. Turn off for notes and long text.</span>
+            </label>
+          )}
           {type === "date" && (
             <label className="flex items-center gap-2 text-sm sm:col-span-3">
               <Checkbox checked={withTime} onCheckedChange={(checked) => setWithTime(checked === true)} aria-label="Keep time of day" />
@@ -329,7 +449,7 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
                 <SelectValue placeholder="Links to which object?" />
               </SelectTrigger>
               <SelectContent>
-                {objects.map((o) => (
+                {objects.filter((o) => !o.archived).map((o) => (
                   <SelectItem key={o._id} value={o._id}>
                     {o.label}
                   </SelectItem>
@@ -337,15 +457,26 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
               </SelectContent>
             </Select>
           )}
+          <p className="text-xs text-muted-foreground sm:col-span-3" aria-label="Index slots left">
+            Searchable and sortable slots left on {object.labelPlural}:{" "}
+            {(["s", "n", "d", "b"] as const).map((k, i) => (
+              <span key={k} className={k === kind ? "font-medium text-foreground" : undefined}>
+                {i > 0 && ", "}
+                {SLOT_NAMES[k]} {left[k]} of {capacity[k]}
+              </span>
+            ))}
+            . Text, select and lookup fields share the text slots. A field added when they run out still stores values but cannot sort or filter.
+          </p>
         </form>
       )}
     </div>
   );
 }
 
-function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs">; field: Doc<"fields">; isTitle: boolean; admin: boolean; onRetire: () => void }) {
+function FieldRow({ orgId, field, isTitle, admin, move, onRetire, onTitle }: { orgId: Id<"orgs">; field: Doc<"fields">; isTitle: boolean; admin: boolean; move: ReactNode; onRetire: () => void; onTitle: () => void }) {
   const update = useMutation(api.fields.update);
   const [draft, setDraft] = useState<string | null>(null);
+  const [ordering, setOrdering] = useState(false);
   if (draft !== null)
     return (
       <li className="px-3 py-1.5">
@@ -375,7 +506,7 @@ function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs"
       {!field.slot && field.type !== "links" && <Badge variant="outline" title="Stores values, cannot sort or filter">unindexed</Badge>}
       {!admin && field.protectedFromAgents && <Badge variant="outline" title="Agents cannot change this field">protected from agents</Badge>}
       {admin && !field.retired && (
-        <span className="ml-auto flex items-center gap-1">
+        <span className="ml-auto flex flex-wrap items-center gap-1">
           <label className="mr-1 flex items-center gap-1.5 text-xs text-muted-foreground" title="Agents cannot change this field, even with a grant. People still can.">
             <Checkbox checked={field.protectedFromAgents === true} onCheckedChange={(on) => attempt(() => update({ orgId, fieldId: field._id, protectedFromAgents: on === true }), on === true ? "Protected from agents" : "Agents may edit again")} aria-label={`Protect ${field.label} from agents`} />
             Protect from agents
@@ -383,13 +514,40 @@ function FieldRow({ orgId, field, isTitle, admin, onRetire }: { orgId: Id<"orgs"
           <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setDraft(field.label)}>
             Rename
           </Button>
+          {field.type === "select" && (
+            <Button size="xs" variant="ghost" className="text-muted-foreground" aria-expanded={ordering} onClick={() => setOrdering(!ordering)}>
+              Order options
+            </Button>
+          )}
+          {!isTitle && field.type === "text" && (
+            <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={onTitle}>
+              Use as title
+            </Button>
+          )}
           {!isTitle && (
             <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={onRetire}>
               Retire
             </Button>
           )}
+          {move}
         </span>
       )}
+      {ordering && <OptionOrder orgId={orgId} field={field} />}
     </li>
+  );
+}
+
+function OptionOrder({ orgId, field }: { orgId: Id<"orgs">; field: Doc<"fields"> }) {
+  const reorder = useMutation(api.fields.reorderOptions);
+  const options = field.options ?? [];
+  return (
+    <ol className="grid w-full gap-0.5 rounded-md bg-muted/50 p-1.5 text-[13px]" aria-label={`Order of ${field.label} options`}>
+      {options.map((option, index) => (
+        <li key={option.id} className="flex items-center gap-1 pl-2">
+          <span className="mr-auto">{option.label}</span>
+          <MoveButtons label={option.label} index={index} count={options.length} onMove={(by) => attempt(() => reorder({ orgId, fieldId: field._id, optionIds: moved(options, index, by).map((o) => o.id) }))} />
+        </li>
+      ))}
+    </ol>
   );
 }

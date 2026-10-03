@@ -1,0 +1,17 @@
+GET /api/v1/views -> 200 opportunity:Quotes out, opportunity:Pipeline, task:Overdue
+GET /api/v1/views/<Overdue>/records?tz=America/New_York -> 200 Call Ortiz about tile | Send Chen revised quote
+GET /api/v1/views/<Overdue>/records?tz=Asia/Tokyo -> 200 Call Ortiz about tile | Send Chen revised quote
+GET /api/v1/views/<Quotes out>/records -> 200 Kitchen remodel, Ortiz {"amount":18500,"closeDate":"2026-10-06","stage":"proposal"} | Bathroom refresh, Kim {"amount":12700,"closeDate":"2026-09-29","stage":"proposal"} | Deck rebuild, Chen {"amount":9200,"closeDate":"2026-10-12","stage":"proposal"}
+bad tz -> 400
+POST addView proposal -> 201 Add view Closing this week to Opportunities
+Quotes out rows in the app: Kitchen remodel, Ortiz
+ | Bathroom refresh, Kim
+ | Deck rebuild, Chen
+
+board view url: ?v=qd7agxh3y3mnv2bf1bkx0cz9n58fjhxw&view=board
+saved from the dialog: {"shared":true,"pinned":true,"filters":["qualified"]}
+Overdue rows in the app: Call Ortiz about tile
+ | Send Chen revised quote
+
+after Apply, pinned links: Quotes out, Pipeline, Ready to quote, Closing this week
+non-local requests blocked: none

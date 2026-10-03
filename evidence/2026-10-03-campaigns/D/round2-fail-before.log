@@ -1,0 +1,106 @@
+
+ RUN  v5.0.1 /tmp/D-r1
+
+ ✓ convex/agentAccess.test.ts > agent object access > an agent made before an object existed cannot read it, can after Let it read, and loses it, with any in-flight proposal, when removed 1283ms
+ ✓ convex/agentAccess.test.ts > agent object access > reading all objects covers objects added later, and hidden fields stay hidden 134ms
+ ✓ convex/agentAccess.test.ts > agent object access > reading never implies writing, and removing read drops write grants so reading again does not bring them back 71ms
+ ✓ convex/agentAccess.test.ts > agent object access > only unrestricted admins change access, for live agents with no fixed job, to objects in their own workspace 110ms
+ ✓ convex/agentAccess.test.ts > agent object access > an agent learns what it can read from /me 44ms
+ ✓ convex/agentAccess.test.ts > agent object access > an agent made before Email existed drafts an email and reads the campaign report once an admin lets it read Email 120ms
+ × convex/agentAccess.test.ts > agent object access, round 2 > an admin who sees only some objects changes only those; the agent keeps everything else 51ms
+   → expected [ 'company', 'opportunity', …(9) ] to deeply equal [ 'opportunity', 'venue' ]
+ × convex/agentAccess.test.ts > agent object access, round 2 > an agent sees the shared inbox only while it reads every object 42ms
+   → expected undefined to be false // Object.is equality
+ × convex/agentAccess.test.ts > agent object access, round 2 > removing read revokes capability write grants on that object, and the list hides grants on objects it cannot read 42ms
+   → expected undefined to be defined
+ ✓ convex/agentAccess.test.ts > agent object access, round 2 > a read-all agent proposes on objects added later 36ms
+ ✓ convex/agentAccess.test.ts > agent object access, round 2 > widening is refused while the workspace is read only; narrowing is not 35ms
+ ✓ convex/agentAccess.test.ts > agent object access, round 2 > /me ignores the read-all flag on an agent that has not been migrated 34ms
+ × convex/agentAccess.test.ts > agent object access, round 2 > write grants need read first 32ms
+   → promise resolved "null" instead of rejecting
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/agentAccess.test.ts > agent object access, round 2 > an admin who sees only some objects changes only those; the agent keeps everything else
+AssertionError: expected [ 'company', 'opportunity', …(9) ] to deeply equal [ 'opportunity', 'venue' ]
+
+- Expected
++ Received
+
+  [
++   "company",
+    "opportunity",
++   "project",
++   "task",
++   "note",
++   "activity",
++   "campaign",
++   "invoice",
++   "post",
++   "email",
+    "venue",
+  ]
+
+ ❯ convex/agentAccess.test.ts:179:69
+    177|     expect(seen.length).toBe(2);
+    178|     await setAccess(admin, orgId, agent.agentId, false, seen.filter((i…
+    179|     expect((await listed(client, orgId, agent.agentId)).cannotRead).to…
+       |                                                                     ^
+    180|     expect((await listed(client, orgId, agent.agentId)).grants).toEqua…
+    181|     expect((await t.run((ctx: any) => ctx.db.get(agent.agentId)) as an…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  convex/agentAccess.test.ts > agent object access, round 2 > an agent sees the shared inbox only while it reads every object
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ convex/agentAccess.test.ts:201:72
+    199|     const shared = async () => (await call("GET", "/api/v1/inbox")).js…
+    200|     expect(await shared()).toBe(1);
+    201|     expect((await listed(client, orgId, agent.agentId)).inboxNeedsAll)…
+       |                                                                        ^
+    202|     await venue(client, orgId);
+    203|     expect(await shared()).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  convex/agentAccess.test.ts > agent object access, round 2 > removing read revokes capability write grants on that object, and the list hides grants on objects it cannot read
+AssertionError: expected undefined to be defined
+ ❯ convex/agentAccess.test.ts:221:79
+    219|     expect((await listed(client, orgId, agent.agentId)).access).toEqua…
+    220|     await setAccess(client, orgId, agent.agentId, false, base);
+    221|     expect((await t.run((ctx: any) => ctx.db.get(grantId)) as any).rev…
+       |                                                                               ^
+    222|     expect(await audit(t, grantId)).toEqual(["capabilityGranted", "cap…
+    223|     await setAccess(client, orgId, agent.agentId, false, [...base, v.o…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  convex/agentAccess.test.ts > agent object access, round 2 > write grants need read first
+AssertionError: promise resolved "null" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+null
+
+ ❯ convex/agentAccess.test.ts:262:143
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 9 passed (13)
+   Start at  09:31:27
+   Duration  3.06s (tests 70%, transform 23%, import 6%)
+
