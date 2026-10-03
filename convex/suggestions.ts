@@ -63,6 +63,7 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
       ? { action: "update" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, values: suggestion.change.values, reason: suggestion.reason }
       : { action: "delete" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, reason: suggestion.reason };
   if (suggestion.adoptedBy && (suggestion.adoptedBy !== member.user._id || (suggestion.authorityEpoch ?? 0) !== (member.member.authorityEpoch ?? 0))) fail("FORBIDDEN", "Only the adopting member can apply this action");
+  // The agent principal omits readsEverything on purpose: absent fails closed (not a shared-inbox reader).
   const result = await applyChange(ctx, suggestion.adoptedBy ? member : { agent, org, actor: { kind: "agent", id: agent._id } }, change, { suggestionId: suggestion._id, approvedBy: member });
   await ctx.db.patch(suggestion._id, { status: "applied", resolvedBy: member.user._id, resolvedAt: Date.now(), ...(result.eventId ? { eventId: result.eventId } : {}) });
   if (suggestion.inboxId) { const inbox = await ctx.db.get(suggestion.inboxId); if (inbox?.orgId === args.orgId && inbox.status === "pending") await ctx.db.patch(inbox._id, { status: "resolved", resolvedAt: Date.now(), suggestionId: suggestion._id }); }

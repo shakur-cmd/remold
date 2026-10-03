@@ -81,10 +81,12 @@ export const setGrants = mutation({ args: { orgId: v.id("orgs"), agentId: v.id("
   const frozen = await snapshot(ctx, args.orgId, caller.org.authorityFrozenAt), before = agent.authorityVersion === 1 ? agent.grants : expand(agent.grants, frozen);
   // A write grant needs read on its object, so reading it later never switches on writes set earlier.
   const reads = agent.readAllObjects ? objects.map(o => o._id) : agent.readObjectIds ?? frozen.map(o => o._id), next = expand(args.grants, objects);
+  // The list hides write grants on unread objects, so the UI never sends them back; keep them (inert until read returns, as in setReadAccess).
+  const kept = before.filter(g => g.objectId && !reads.includes(g.objectId) && !next.some(n => n.action === g.action && n.objectId === g.objectId));
   const unread = next.find(g => !reads.includes(g.objectId!) && !before.some(old => old.action === g.action && old.objectId === g.objectId));
   if (unread) fail("FORBIDDEN", `Let it read ${objects.find(o => o._id === unread.objectId)!.labelPlural} before it changes them`);
   if (next.some(g => !before.some(old => old.action === g.action && old.objectId === g.objectId))) { await writable(ctx, args.orgId); await legacyCeiling(ctx, args.orgId, caller.user._id); }
-  await ctx.db.patch(agent._id, { grants: next, authorityVersion: 1, readObjectIds: agent.readObjectIds ?? frozen.map(o => o._id), authorityEpoch: (agent.authorityEpoch ?? 0) + 1 });
+  await ctx.db.patch(agent._id, { grants: [...next, ...kept], authorityVersion: 1, readObjectIds: agent.readObjectIds ?? frozen.map(o => o._id), authorityEpoch: (agent.authorityEpoch ?? 0) + 1 });
   await pauseWork(ctx, args.orgId);
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: caller.actor, action: "legacyGrantsReplaced", targetId: agent._id, objectIds: objects.map(o => o._id), epoch: (agent.authorityEpoch ?? 0) + 1 });
 } });

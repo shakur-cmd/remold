@@ -228,6 +228,17 @@ describe("agent object access, round 2", () => {
     expect((await listed(client, orgId, agent.agentId)).grants).toEqual([]);
   });
 
+  it("toggling a grant keeps a stored grant on an object the agent cannot read", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "toggled" }), v = await venue(client, orgId);
+    await t.run((ctx: any) => ctx.db.patch(agent.agentId, { grants: [{ action: "create", objectKey: "venue", objectId: v.objectId }] }));
+    await client.mutation(api.agents.setGrants, { orgId, agentId: agent.agentId, grants: [{ action: "update", objectKey: "company" }] });
+    const stored = (await t.run((ctx: any) => ctx.db.get(agent.agentId)) as any).grants.map((g: any) => `${g.action} ${g.objectKey}`).sort();
+    expect(stored).toEqual(["create venue", "update company"]);
+    // Still inert and unshown until read returns.
+    expect((await listed(client, orgId, agent.agentId)).grants.map((g: any) => `${g.action} ${g.objectKey}`)).toEqual(["update company"]);
+  });
+
   it("a read-all agent proposes on objects added later", async () => {
     const { t, client, orgId } = await userAndOrg();
     const agent = await agentFor(client, orgId, { name: "proposer" });
