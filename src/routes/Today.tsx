@@ -56,7 +56,7 @@ export function Today() {
                 <div key={record._id} className={ROW}>
                   {task?.doneFieldId && <Checkbox aria-label={`Mark ${record.title} done`} onCheckedChange={() => complete(record._id)} />}
                   <div className={MAIN}>
-                    <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className={TITLE}>
+                    <Link to={`/o/${org._id}/${data.taskKey}/${record._id}`} className={TITLE}>
                       {record.title || "Untitled"}
                     </Link>
                     <div className={META}>
@@ -72,7 +72,7 @@ export function Today() {
                 {data.waiting.map(({ record, on }) => (
                   <div key={record._id} className={ROW}>
                     <div className={MAIN}>
-                      <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className={TITLE}>
+                      <Link to={`/o/${org._id}/${data.taskKey}/${record._id}`} className={TITLE}>
                         {record.title || "Untitled"}
                       </Link>
                       <div className={META}>

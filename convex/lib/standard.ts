@@ -1,6 +1,7 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { allocateSlot, kindFor } from "./slots";
+import { assigneeNeedsSlot, NEEDS_SLOT } from "./assignee";
 
 type FieldDef = { key: string; label: string; type: "text" | "number" | "select" | "date" | "boolean" | "lookup" | "links"; required?: boolean; indexed?: false; target?: string; withTime?: true; protectedFromAgents?: true; options?: { id: string; label: string }[] };
 type ObjectDef = { key: string; label: string; plural: string; fields: FieldDef[] };
@@ -43,6 +44,11 @@ export async function seedStandard(ctx: MutationCtx, orgId: Id<"orgs">) {
       const fieldId = await ctx.db.insert("fields", { orgId, objectId, key: field.key, label: field.label, type: field.type, options: field.options, targetObjectId: field.target ? ids[field.target] : undefined, required: field.required ?? false, ...(field.withTime ? { withTime: true } : {}), ...(field.protectedFromAgents ? { protectedFromAgents: true } : {}), slot: kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined, encoding: 1, retired: false, order });
       if (order === 0) await ctx.db.patch(objectId, { titleFieldId: fieldId });
     }
+  }
+  // A field that cannot get a slot is still added, so nothing is lost, but its queue is degraded: say so once.
+  if (await assigneeNeedsSlot(ctx, orgId)) {
+    const org = await ctx.db.get(orgId), pending = await ctx.db.query("agentInbox").withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "pending")).collect();
+    if (org && !pending.some((n) => n.text === NEEDS_SLOT)) await ctx.db.insert("agentInbox", { orgId, text: NEEDS_SLOT, source: "ensureStandard", from: { kind: "user", id: org.createdBy }, status: "pending", audience: "org" });
   }
 }
 

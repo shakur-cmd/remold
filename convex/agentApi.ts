@@ -79,7 +79,7 @@ export const listRecords = internalQuery({ args: { keyHash, object: v.string(), 
   const sort = args.sort ? { fieldId: known(args.sort.field)._id, direction: args.sort.direction } : undefined;
   // Query strings arrive as text; the slot holds the field's real type, so each value is coerced like any agent input.
   const filters = [];
-  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }))[field._id] }); }
+  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }, undefined, "filter"))[field._id] }); }
   // A bare date as the end of a range means through the end of that day (UTC).
   const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instantBound(text); if (ms === undefined) fail("VALIDATION", "Range bounds must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
   // On a with-time field, all-day values match by the calendar date written in each bound, so offset bounds name local days.

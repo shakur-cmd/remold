@@ -1,5 +1,7 @@
 import type { Doc } from "../../convex/_generated/dataModel";
 import { type Field, allDay, fromInstant, localDay } from "@/lib/fields";
+import { dayStart, wallOfDay, wallTime } from "../../convex/lib/zone";
+import { workspaceZone } from "@/lib/zone";
 
 // Calendar days are local dates encoded as UTC midnight, like plain date values and "today".
 const DAY = 86400000;
@@ -21,7 +23,7 @@ export const shiftAnchor = (anchor: number, mode: "month" | "week", step: number
 };
 // The viewer's local days firstDay..lastDay: their dates, and the instants from
 // local midnight to the next local midnight minus 1 ms (23 or 25 hours on DST days).
-const localMidnight = (day: number) => { const d = new Date(day); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).getTime(); };
+const localMidnight = (day: number) => { const zone = workspaceZone(); if (zone) return dayStart(zone, day); const d = new Date(day); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).getTime(); };
 export const localSpan = (firstDay: number, lastDay: number) => ({ firstDay, lastDay, start: localMidnight(firstDay), end: localMidnight(lastDay + DAY) - 1 });
 
 export function byDay(records: Doc<"records">[], field: Field) {
@@ -38,6 +40,8 @@ export function byDay(records: Doc<"records">[], field: Field) {
 // an all-day value becomes that day.
 export function moveToDay(field: Field, ms: number, day: number) {
   if (allDay(field, ms)) return day;
+  const zone = workspaceZone();
+  if (zone) return fromInstant(wallTime(zone, day, wallOfDay(zone, ms) / 60000));
   const from = new Date(Math.floor(ms)), to = new Date(day);
   return fromInstant(new Date(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate(), from.getHours(), from.getMinutes(), from.getSeconds(), from.getMilliseconds()).getTime());
 }

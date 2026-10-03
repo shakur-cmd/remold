@@ -71,13 +71,13 @@ function scalar(field: Doc<"fields">, value: unknown, fieldKey: string) {
   return value;
 }
 
-export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc<"objects">, fields: Doc<"fields">[], input: Record<string, unknown>, pending?: Pending) {
+export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc<"objects">, fields: Doc<"fields">[], input: Record<string, unknown>, pending?: Pending, mode: "write" | "filter" = "write") {
   const byKey = new Map(fields.map((field) => [field.key, field]));
   const values: Record<string, unknown> = {};
   for (const [fieldKey, inputValue] of Object.entries(input)) {
     const field = byKey.get(fieldKey);
     if (!field || field.retired || !canReadField(principal, _object, field)) fail("VALIDATION", `Unknown field \"${fieldKey}\"`, { fieldKey });
-    if (_object.key === "task" && field.key === "assignee") values[field._id] = empty(inputValue) ? null : await resolveAssignee(ctx, principal, inputValue, fieldKey);
+    if (_object.key === "task" && field.key === "assignee") values[field._id] = empty(inputValue) ? null : await resolveAssignee(ctx, principal, inputValue, fieldKey, mode);
     else if (field.type === "lookup") values[field._id] = empty(inputValue) ? null : await related(ctx, principal, field, inputValue, fieldKey, pending);
     else if (field.type === "links") { if (empty(inputValue)) values[field._id] = null; else { if (!Array.isArray(inputValue)) fail("VALIDATION", "Expected record array", { fieldKey }); values[field._id] = await Promise.all(inputValue.map((value) => related(ctx, principal, field, value, fieldKey, pending))); } }
     else values[field._id] = scalar(field, inputValue, fieldKey);

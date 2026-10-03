@@ -7,6 +7,7 @@ import { requireWriter, requireMember } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { isRef } from "./lib/ref";
+import { resolveAssignee } from "./lib/assignee";
 import { findReadableByTitle } from "./lib/find";
 import { allDay, instant } from "./lib/values";
 import { pageRecords, whereArgs } from "./lib/list";
@@ -28,7 +29,7 @@ async function fieldsOf(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects"
   return { object, fields };
 }
 
-type Run = { ctx: MutationCtx; membership: Awaited<ReturnType<typeof requireMember>>; orgId: Id<"orgs">; createMissing: boolean };
+type Run = { object: Doc<"objects">; ctx: MutationCtx; membership: Awaited<ReturnType<typeof requireMember>>; orgId: Id<"orgs">; createMissing: boolean };
 
 async function resolveRecord(run: Run, field: Doc<"fields">, text: string): Promise<string> {
   const { ctx, orgId } = run;
@@ -55,7 +56,7 @@ async function coerce(run: Run, field: Doc<"fields">, raw: string): Promise<unkn
   if (!text) return undefined;
   const bad = (what: string): never => { throw new ConvexError({ code: "VALIDATION", message: `${field.label}: "${text}" ${what}` }); };
   switch (field.type) {
-    case "text": return text;
+    case "text": return run.object.key === "task" && field.key === "assignee" ? resolveAssignee(run.ctx, run.membership, text, field.key) : text;
     case "number": { const n = Number(text.replace(/[$,\s]/g, "")); return Number.isFinite(n) ? n : bad("is not a number"); }
     case "boolean": return TRUE.has(text.toLowerCase()) ? true : FALSE.has(text.toLowerCase()) ? false : bad("is not yes or no");
     case "date": {
@@ -115,7 +116,7 @@ export const importRow = internalMutation({
   args: { orgId: v.id("orgs"), objectId: v.id("objects"), columns: v.array(v.union(v.id("fields"), v.null())), row: v.array(v.string()), skipDuplicates: v.boolean(), createMissing: v.boolean() },
   handler: async (ctx, args) => {
     const { membership, object, columns } = await importTarget(ctx, args);
-    const run: Run = { ctx, membership, orgId: args.orgId, createMissing: args.createMissing };
+    const run: Run = { object, ctx, membership, orgId: args.orgId, createMissing: args.createMissing };
     const values: Record<string, unknown> = {};
     for (const [col, field] of columns.entries()) if (field) { const value = await coerce(run, field, args.row[col] ?? ""); if (value !== undefined) values[field._id] = value; }
     const title = object.titleFieldId ? String(values[object.titleFieldId] ?? "").trim().toLowerCase() : "";

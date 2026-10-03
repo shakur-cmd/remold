@@ -67,6 +67,7 @@ export async function daily(ctx: QueryCtx, principal: Principal, zone: string, t
   for (const r of [...shown, ...mine, ...waiting.map(w => w.record)]) { const value = due && canReadField(principal, task!.object, due, r._id) ? r.values[due._id] : undefined; if (typeof value === "number") days[r._id] = dayOf(value); }
   return {
     task: task && due && canReadObject(principal, task.object) && canReadField(principal, task.object, due) ? { objectKey: task.object.key, dueFieldId: due._id, dueField: due, doneFieldId: done?._id ?? null } : null,
+    taskKey: task && canReadObject(principal, task.object) ? task.object.key : null,
     tasks: shown,
     mine,
     waiting,

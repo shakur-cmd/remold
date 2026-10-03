@@ -57,9 +57,38 @@ Schema is additive (`orgs.timeZone` optional; Task `assignee` is a new field row
 Deploy with `pnpm deploy:prod`, then `seed:ensureStandard` per existing org to add Task.assignee. Set each workspace's time zone in Settings (default UTC, so nothing changes until then). Give agents a task grant (create/update) if they should take or hand off tasks.
 
 ## Left undone or uncertain
-- `ensureStandard` adds an indexed text slot; an org with all 8 text slots used by custom fields would fail to seed (same as any new standard field). Not handled.
+- (Corrected in Round 2) `ensureStandard` does not fail when Task has no free text slot: it adds `assignee` without a slot. See Round 2, S1.
 - Automations are not wired to `orgZone`/`orgDay`; the helpers are ready for that branch.
 - `ops/authority/service-sweeps.mjs` (service-level mask/readonly sweeps) not extended with the new functions.
 - Calendar page, invoices `pastDue` and other client-day features still use whatever `today` the client sends; only Today, the agent Today and the reminder were moved to the workspace zone. The Today page passes the workspace day to posts and unpaid invoices.
 - `Intl.supportedValuesOf` feeds the zone list in Settings; the Convex runtime's ICU support for zone names was exercised in convex-test (Node) and the local backend, not on a hosted deployment.
 - Assignee picker saves on the Save button, not instantly, so a custom text field named "assignee" on another object is not saved per keystroke.
+
+
+## Round 2 (after independent verification REVISE on b990224)
+
+Merged origin/integ/campaigns (761de78, saved views and automations) into the branch first (merge 07934a1). Conflicts were in `api.d.ts` (kept both sides), `packages/mcp/src/index.ts` (kept the other side's text plus my one sentence) and `ops/authority/inventory.json` (took the other side whole, re-added my rows: agentApi:myTasks, HTTP GET /api/v1/my-tasks, queue:assignees, orgs:setTimeZone, and now queue:status). Every entry from both sides is in.
+Evidence: `round2-before.txt` (new tests against the pre-fix code: 12 failed), `round2-after.txt` (queue, zone, reminders, automations: all pass), `test-final2.txt`.
+
+| Finding | Fix | Test (fails before, passes after) |
+|---|---|---|
+| B1 Mine empty after 200 done tasks | `convex/lib/queue.ts` filters `done` before anything is capped. Indexed path reads the person's tasks newest first, keeps only open ones, stops at 200 kept or 5000 rows read. Record-scoped path filters then slices. | `B1 shows an open task however many finished tasks...` (1201 done + 1 open), `B1 holds for a member who can read only some tasks` (205 done + 1 open, record-scoped) |
+| S1 no free Task text slot | `ensureStandard` still adds `assignee` (unindexed) and writes one pending workspace inbox note, "Task assignee needs a free text slot: retire or unindex a Task text field. Until then the work queue only looks at the 2000 most recently updated open tasks." (not repeated on later runs). `queue.status` reports `assigneeNeedsSlot`; Settings shows "Task assignee needs a free text slot: retire or unindex a Task text field." in the Organisation card. `myQueue` without a slot scans `by_object_updated` newest first: at most **2000 open tasks and 8000 rows read** (finished tasks cost rows but not the 2000). I used the inbox note, not an ops alert (the alert cron is for operator signals, not per-workspace setup). | `S1 ... still gets an assignee field, an inbox note once, and a status`, `reports no problem when the slot exists`, `builds Mine from a scan... skipping finished ones`, `looks only at the 2000 most recently updated open tasks` |
+| S2 Today crash with hidden dueDate | `today.get` returns `taskKey` independent of the due field; Mine and Waiting links use it (no `task!`). | `S2 Today names the task object when the member cannot read the due date` |
+| S3 read filter hit the handoff rule | `resolveAssignee` has a mode; the REST list filter passes "filter", so no agent-to-agent refusal. Writes unchanged. | `S3 an agent may filter tasks by another agent` (by id and name) |
+| S4 CSV assignee by name | `csv.ts` resolves Task.assignee through `resolveAssignee`; an unknown name is reported on its row ("Mars" is not a person or agent in this workspace). | `S4 a CSV assignee column takes a member's or an agent's name...` |
+| N2 zone spelling | `validZone` saves what was typed; only capitalisation is taken from Intl (`america/new_york` becomes `America/New_York`; `Asia/Kolkata`, `Europe/Kyiv`, `US/Pacific` stay as typed). | `keeps a zone's spelling as typed...` |
+| N1 Calendar and record page days | New `src/lib/zone.ts` holds the workspace zone (set by `OrgLayout`, UTC if unset). `localToday`, `localDay`, `dayRange`, `timeOfDay`, calendar `localSpan` and `moveToDay` use it, and the shared helpers in `convex/lib/zone.ts`. RecordPage's "today" uses `localToday`. Outside the app (a bare component test) the browser zone still applies. | `src/lib/calendar.test.ts`: byDay, 23 hour spring-forward span, and moveToDay in Auckland while the browser is New York |
+| Automations | `nextDue(text, from, zone)` finds the wall clock time on local days (DST safe, `wallTime`); the tick's once-per-day key, `dateReached` day window and `{{today}}` / `dueInDays` use the workspace's local date; the sentence and error text say "workspace time zone" instead of UTC. The reminder and automations share `convex/lib/zone.ts`. | `schedules and dates follow the workspace time zone, through the spring-forward change` (daily 09:00 at 13:00Z after the clock change, not 14:00Z; a date that stays "today" until local midnight) |
+
+### Suites (Round 2)
+This machine's load average was about 10 (other sessions), so default timeouts fail unrelated tests. I used `--testTimeout=60000 --maxWorkers=2` where noted.
+- `pnpm typecheck`: clean. `pnpm build`: built. `pnpm verify:release`: 37/37.
+- `pnpm test:authority`: 101/101 with `--testTimeout=60000 --maxWorkers=2` (with default settings one run had 2 timeouts in different tests each time: inventory, masks, h0-parity).
+- `pnpm test` with `--testTimeout=60000 --maxWorkers=2`: 562 passed, 1 skipped, 2 failed (`test-final2.txt`). The two failures are `Calendar.drag.test.tsx` tests that set their own 15 s timeout, so the flag does not reach them. They fail the same way, alone, on the untouched origin/integ/campaigns checkout under this load (verified in a scratch worktree, since removed), and I did not change calendar paging. The slow `automations` "daily cap" test also passes only with the longer timeout. I could not get these to pass here; the verifier reported the full suite green on an unloaded machine.
+
+### Still true / left
+- If a workspace changes its time zone, schedule automations already on keep their next due time until they fire once (then use the new zone). Not recomputed on change.
+- Rollback: unchanged (additive; the previous release ignores `orgs.timeZone` and the extra field).
+- The unindexed-assignee fallback limit (2000 open tasks) and the indexed path's 5000-row read limit are real limits: a person with more than 5000 newer finished-or-open assigned tasks ahead of an open one would not see the older open one. Fixing that needs an index on assignee plus done.
+- Screenshots were not retaken; the UI change is two lines in Today (link key) and a Settings notice.

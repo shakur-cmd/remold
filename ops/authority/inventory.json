@@ -2895,5 +2895,15 @@
     "readonly": "refused",
     "masks": "n/a",
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "queue:status",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
   }
 ]

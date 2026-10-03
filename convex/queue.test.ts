@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { internal } from "./_generated/api";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
+import { agentFor, api, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
 
 const DAY = 86_400_000, now = Date.UTC(2026, 9, 1, 15), today = Date.UTC(2026, 9, 1);
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); });
@@ -23,7 +23,7 @@ async function workspace() {
     return (await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: byKey })).recordId;
   };
   const set = (recordId: any, values: Record<string, unknown>, who = client) => who.mutation(api.records.update, { orgId, recordId, values: Object.fromEntries(Object.entries(values).map(([k, v]) => [task.fields[k]._id, v])) });
-  return { ...base, ben, id, ada: id("Ada"), benId: id("Ben"), scout, other, task, add, set, scoutCall: rest(t, scout.key), otherCall: rest(t, other.key) };
+  return { ...base, ben, id, ada: id("Ada"), benId: id("Ben"), benMemberId: people.find((p: any) => p.user.name === "Ben")!.member._id, scout, other, task, add, set, scoutCall: rest(t, scout.key), otherCall: rest(t, other.key) };
 }
 const titles = (rows: any[]) => rows.map((r) => r.title);
 
@@ -215,5 +215,103 @@ describe("Today in the workspace's time zone", () => {
     await client.mutation(api.orgs.setTimeZone, { orgId, timeZone: "Pacific/Auckland" });
     vi.setSystemTime(Date.UTC(2026, 9, 3, 12));
     expect((await scoutCall("GET", "/api/v1/today")).json.day).toMatchObject({ zone: "Pacific/Auckland", date: "2026-10-04" });
+  });
+});
+
+describe("round 2: independent verification findings", () => {
+  it("B1 shows an open task however many finished tasks are assigned to the same person", async () => {
+    const { t, client, orgId, ada, task } = await workspace();
+    await bulk(t, orgId, async (apply) => {
+      for (let n = 0; n < 1201; n++) await apply({ action: "create", objectId: task.object._id, values: { [task.fields.title._id]: `Done ${n}`, [task.fields.assignee._id]: ada, [task.fields.done._id]: true } });
+      await apply({ action: "create", objectId: task.object._id, values: { [task.fields.title._id]: "Still open", [task.fields.assignee._id]: ada } });
+    });
+    expect(titles((await client.query(api.today.get, { orgId })).mine)).toEqual(["Still open"]);
+  }, 120_000);
+
+  it("B1 holds for a member who can read only some tasks", async () => {
+    const { t, client, ben, benId, benMemberId, orgId, task } = await workspace();
+    const ids: any[] = [];
+    await bulk(t, orgId, async (apply) => {
+      for (let n = 0; n < 205; n++) ids.push((await apply({ action: "create", objectId: task.object._id, values: { [task.fields.title._id]: `Done ${n}`, [task.fields.assignee._id]: benId, [task.fields.done._id]: true } })).recordId);
+      ids.push((await apply({ action: "create", objectId: task.object._id, values: { [task.fields.title._id]: "Still open", [task.fields.assignee._id]: benId } })).recordId);
+    });
+    await client.mutation(api.authority.policies.setMember, { orgId, memberId: benMemberId, scopes: [{ objectId: task.object._id, records: ids, fields: "all" }], hiddenFieldIds: [] });
+    expect(titles((await ben.query(api.today.get, { orgId })).mine)).toEqual(["Still open"]);
+  }, 120_000);
+
+  describe("S1 a Task with no free text slot", () => {
+    async function full() {
+      const w = await workspace();
+      await w.t.run(async (ctx: any) => ctx.db.delete(w.task.fields.assignee._id));
+      for (let n = 0; n < 8; n++) await w.client.mutation(api.fields.create, { orgId: w.orgId, objectId: w.task.object._id, key: `custom${n}`, label: `Custom ${n}`, type: "text" }).catch(() => {});
+      await w.t.mutation(internal.seed.ensureStandard, { orgId: w.orgId });
+      const task = await objectFields(w.client, w.orgId, "task");
+      const add = async (title: string, values: Record<string, unknown> = {}) => (await w.client.mutation(api.records.create, { orgId: w.orgId, objectId: task.object._id, values: Object.fromEntries(Object.entries({ title, ...values }).map(([k, v]) => [task.fields[k]._id, v])) })).recordId;
+      return { ...w, task, add };
+    }
+    it("still gets an assignee field, an inbox note once, and a status the Settings page can show", async () => {
+      const { t, client, orgId, task } = await full();
+      expect(task.fields.assignee.slot).toBeUndefined();
+      expect(await client.query(api.queue.status, { orgId })).toEqual({ assigneeNeedsSlot: true });
+      await t.mutation(internal.seed.ensureStandard, { orgId });
+      const notes = (await t.run(async (ctx: any) => ctx.db.query("agentInbox").collect())).filter((n: any) => /Task assignee needs a free text slot/.test(n.text));
+      expect(notes).toHaveLength(1);
+      expect(notes[0]).toMatchObject({ audience: "org", status: "pending" });
+    });
+    it("reports no problem when the slot exists", async () => {
+      const { client, orgId } = await workspace();
+      expect(await client.query(api.queue.status, { orgId })).toEqual({ assigneeNeedsSlot: false });
+    });
+    it("builds Mine from a scan of the most recent open tasks, skipping finished ones", async () => {
+      const { t, client, orgId, ada, task, add } = await full();
+      const mine = await add("Mine after seed", { assignee: ada });
+      await bulk(t, orgId, async (apply) => { for (let n = 0; n < 300; n++) await apply({ action: "create", objectId: task.object._id, values: { [task.fields.title._id]: `Done ${n}`, [task.fields.assignee._id]: ada, [task.fields.done._id]: true } }); });
+      expect(titles((await client.query(api.today.get, { orgId })).mine)).toEqual(["Mine after seed"]);
+      void mine;
+    }, 120_000);
+    it("looks only at the 2000 most recently updated open tasks", async () => {
+      const { t, client, orgId, ada, benId, task, add } = await full();
+      await add("Oldest, mine", { assignee: ada });
+      await bulk(t, orgId, async (apply) => { for (let n = 0; n < 2000; n++) await apply({ action: "create", objectId: task.object._id, values: { [task.fields.title._id]: `Other ${n}`, [task.fields.assignee._id]: benId } }); });
+      expect(titles((await client.query(api.today.get, { orgId })).mine)).toEqual([]);
+      await add("Newest, mine", { assignee: ada });
+      expect(titles((await client.query(api.today.get, { orgId })).mine)).toEqual(["Newest, mine"]);
+    }, 180_000);
+  });
+
+  it("S2 Today names the task object when the member cannot read the due date", async () => {
+    const { client, ben, benId, benMemberId, orgId, task, add, set } = await workspace();
+    await set(await add("Ben's"), { assignee: benId });
+    await client.mutation(api.authority.policies.setMember, { orgId, memberId: benMemberId, hiddenFieldIds: [task.fields.dueDate._id] });
+    const data = await ben.query(api.today.get, { orgId });
+    expect(titles(data.mine)).toEqual(["Ben's"]);
+    expect(data.taskKey).toBe("task");
+  });
+
+  it("S3 an agent may filter tasks by another agent: a read is not a handoff", async () => {
+    const { other, add, set, scoutCall } = await workspace();
+    await set(await add("Other's"), { assignee: other.agentId });
+    for (const value of [other.agentId, "Other"]) {
+      const res = await scoutCall("GET", `/api/v1/records?object=task&filter=assignee&value=${value}`);
+      expect(res.status).toBe(200);
+      expect(titles(res.json.records)).toEqual(["Other's"]);
+    }
+  });
+
+  it("S4 a CSV assignee column takes a member's or an agent's name, and names who is not found", async () => {
+    const { t, client, orgId, benId, scout, task } = await workspace();
+    const result = await client.mutation(api.csv.importRows, { orgId, objectId: task.object._id, columns: [task.fields.title._id, task.fields.assignee._id], rows: [["For Ben", "Ben"], ["For Scout", "scout"], ["For nobody", "Mars"]], firstRow: 1, skipDuplicates: false, createMissing: false });
+    expect(result.created).toBe(2);
+    expect(result.errors).toEqual([expect.objectContaining({ row: 3, message: expect.stringContaining("Mars") })]);
+    const stored = (await t.run(async (ctx: any) => ctx.db.query("records").collect())).filter((r: any) => r.objectId === task.object._id);
+    expect(Object.fromEntries(stored.map((r: any) => [r.title, r.values[task.fields.assignee._id]]))).toEqual({ "For Ben": benId, "For Scout": scout.agentId });
+  });
+
+  it("keeps a zone's spelling as typed, fixing only its capitalisation", async () => {
+    const { client, orgId } = await workspace();
+    for (const [typed, saved] of [["Asia/Kolkata", "Asia/Kolkata"], ["Europe/Kyiv", "Europe/Kyiv"], ["america/new_york", "America/New_York"], ["US/Pacific", "US/Pacific"]]) {
+      await client.mutation(api.orgs.setTimeZone, { orgId, timeZone: typed });
+      expect((await client.query(api.orgs.get, { orgId })).timeZone).toBe(saved);
+    }
   });
 });

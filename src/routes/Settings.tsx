@@ -35,6 +35,7 @@ export function Settings() {
 
 function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
   const rename = useMutation(api.orgs.rename);
+  const queue = useQuery(api.queue.status, { orgId: org._id });
   const [name, setName] = useState(org.name);
   return (
     <Card>
@@ -55,6 +56,7 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
           </Button>
         </form>
         <TimeZone org={org} admin={admin} />
+        {queue?.assigneeNeedsSlot && <p className="mt-4 text-sm text-destructive">Task assignee needs a free text slot: retire or unindex a Task text field.</p>}
       </CardContent>
     </Card>
   );

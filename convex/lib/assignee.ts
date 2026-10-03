@@ -28,15 +28,22 @@ export async function assignees(ctx: Reader, orgId: Id<"orgs">): Promise<Assigne
 }
 
 // The id a written assignee names: an id, or a name that is the same as exactly one person or agent.
-// An agent may take a task, leave it, or hand it to a person, but not give it to another agent.
-export async function resolveAssignee(ctx: Reader, principal: Principal, input: unknown, fieldKey: string): Promise<string> {
+// Writing, an agent may take a task, leave it, or hand it to a person, but not give it to another agent; filtering by anyone is a read.
+export async function resolveAssignee(ctx: Reader, principal: Principal, input: unknown, fieldKey: string, mode: "write" | "filter" = "write"): Promise<string> {
   if (typeof input !== "string" || !input.trim()) fail("VALIDATION", "Expected a person or agent", { fieldKey });
   const text = input.trim(), all = await assignees(ctx, principal.org._id);
   const named = all.filter((a) => a.id === text || a.name.toLowerCase() === text.toLowerCase());
   const exact = named.filter((a) => a.id === text);
   const found = exact.length ? exact : named;
-  if (found.length === 0) fail("VALIDATION", "Not a person or agent in this workspace", { fieldKey });
+  if (found.length === 0) fail("VALIDATION", `"${text}" is not a person or agent in this workspace`, { fieldKey });
   if (found.length > 1) fail("VALIDATION", `More than one match for "${text}"; use the id`, { fieldKey });
-  if ("agent" in principal && found[0]!.kind === "agent" && found[0]!.id !== principal.agent._id) fail("FORBIDDEN", "An agent can give a task to a person, not to another agent", { fieldKey });
+  if (mode === "write" && "agent" in principal && found[0]!.kind === "agent" && found[0]!.id !== principal.agent._id) fail("FORBIDDEN", "An agent can give a task to a person, not to another agent", { fieldKey });
   return found[0]!.id;
 }
+
+export async function assigneeNeedsSlot(ctx: Reader, orgId: Id<"orgs">) {
+  const task = await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", orgId).eq("key", "task")).unique();
+  const field = task && (await ctx.db.query("fields").withIndex("by_object_key", (q) => q.eq("orgId", orgId).eq("objectId", task._id).eq("key", "assignee")).unique());
+  return !!field && !field.retired && !field.slot;
+}
+export const NEEDS_SLOT = "Task assignee needs a free text slot: retire or unindex a Task text field. Until then the work queue only looks at the 2000 most recently updated open tasks.";

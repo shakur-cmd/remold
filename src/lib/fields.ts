@@ -1,4 +1,6 @@
 import type { Doc } from "../../convex/_generated/dataModel";
+import { dayStart, localDate } from "../../convex/lib/zone";
+import { workspaceZone } from "@/lib/zone";
 
 export type Field = Doc<"fields">;
 export type Values = Record<string, unknown>;
@@ -33,7 +35,7 @@ export const inputToDate = (value: string, field?: Field) => {
 export const fromInstant = (ms: number) => (sinceMidnight(ms) === 0 ? ms + 0.5 : ms);
 
 // The viewer's local date, encoded as UTC midnight like plain date fields.
-export const localToday = () => { const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
+export const localToday = () => { const zone = workspaceZone(); if (zone) return localDate(zone, Date.now()); const now = new Date(); return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()); };
 
 // A range of the viewer's calendar days on a date field, inclusive; an empty end stays open.
 // Plain dates are UTC midnights. On with-time fields an instant counts from local midnight
@@ -41,7 +43,7 @@ export const localToday = () => { const now = new Date(); return Date.UTC(now.ge
 // counts by its calendar date, which `days` bounds.
 export const dayRange = (field: Field, from: string, to: string) => {
   const utc = (day: string) => Date.parse(`${day}T00:00:00Z`);
-  const local = (day: string, plus = 0) => { const [y, m, d] = day.split("-").map(Number); return new Date(y!, m! - 1, d! + plus).getTime(); };
+  const local = (day: string, plus = 0) => { const [y, m, d] = day.split("-").map(Number), zone = workspaceZone(); return zone ? dayStart(zone, Date.UTC(y!, m! - 1, d! + plus)) : new Date(y!, m! - 1, d! + plus).getTime(); };
   if (!field.withTime) return { ...(from ? { from: utc(from) } : {}), ...(to ? { to: utc(to) } : {}) };
   return { ...(from ? { from: local(from) } : {}), ...(to ? { to: local(to, 1) - 1 } : {}), ...(from || to ? { days: { ...(from ? { from: utc(from) } : {}), ...(to ? { to: utc(to) } : {}) } } : {}) };
 };
@@ -49,6 +51,8 @@ export const dayRange = (field: Field, from: string, to: string) => {
 // The local day a date falls on, encoded as UTC midnight like plain dates and "today".
 export const localDay = (field: Field | undefined, ms: number) => {
   if (allDay(field, ms)) return ms;
+  const zone = workspaceZone();
+  if (zone) return localDate(zone, ms);
   const d = new Date(Math.floor(ms));
   return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
 };
@@ -83,7 +87,7 @@ export const formatContact = (ms: number, dayOnly = false) =>
   dayOnly && !allDay(WITH_TIME, ms) ? new Date(Math.floor(ms)).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : formatFieldDate(WITH_TIME, ms);
 
 // Time of day alone, "2:32 PM", or null for an all-day value.
-export const timeOfDay = (field: Field | undefined, ms: number, timeZone?: string) => (allDay(field, ms) ? null : new Date(Math.floor(ms)).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZone }));
+export const timeOfDay = (field: Field | undefined, ms: number, timeZone?: string) => (allDay(field, ms) ? null : new Date(Math.floor(ms)).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZone: timeZone ?? workspaceZone() }));
 
 // Only the standard "amount" field is money; any other number is a plain count. USD for the US launch.
 export const isMoney = (field: Field) => field.type === "number" && field.key === "amount";
