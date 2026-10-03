@@ -1,0 +1,24 @@
+Found seven concrete issues:
+
+1. **High — Proposal deletes bypass agent protections on cascading writes.** [convex/batches.ts:113](/home/old-mac-pro/work/jobs/H-bulk/convex/batches.ts:113)  
+   `applyChange` receives the approving member; the explicit `agentGuard` only checks the target record. Deleting a company can therefore clear a person’s `protectedFromAgents` company lookup, or modify an approved post through reference cleanup. Applying the same single suggestion retains the agent principal and rejects those cascading writes.
+
+2. **High — Revocation does not stop an approved proposal batch.** [convex/batches.ts:93](/home/old-mac-pro/work/jobs/H-bulk/convex/batches.ts:93)  
+   `actorsFor` checks the agent’s revocation/state/epoch only for direct batches. Approve a proposal batch, revoke the agent before the next chunk, and remaining items still execute as the member. Resuming also bypasses the pending-only revocation check. Single suggestions require explicit adoption after revocation.
+
+3. **High — Batch visibility combines permissions from different records.** [convex/batches.ts:29](/home/old-mac-pro/work/jobs/H-bulk/convex/batches.ts:29)  
+   Suppose a member can read names on all records, but salary only on record A. Calling `canReadField` without a record ID accepts their salary permission for a batch updating record B. `items` then returns B’s salary before/after values unmasked. The eventual write fails authorization, but the confidential value has already leaked.
+
+4. **High — Delete conflicts disclose newly populated hidden fields.** [convex/batches.ts:59](/home/old-mac-pro/work/jobs/H-bulk/convex/batches.ts:59)  
+   Propose deleting a record whose hidden `secret` field is empty. Another user populates `secret` before application. The delete comparison stores that value in `conflicts.actual`, and `items` returns it verbatim. Because `batch.fieldIds` reflects the original snapshot, the hidden field never participates in the visibility gate.
+
+5. **High — Generated summaries reveal hidden record titles.** [convex/agentApi.ts:221](/home/old-mac-pro/work/jobs/H-bulk/convex/agentApi.ts:221)  
+   An agent permitted to update a campaign’s people field, but denied its name field, can submit one link-delta item. `summarize` interpolates raw `record.title`, returning “Add … to SECRET NAME” in the POST response. The stored summary also reaches restricted members and subsequent status/replay responses.
+
+6. **Medium — A batch’s own reference cleanup causes later deletes to be skipped.** [convex/batches.ts:105](/home/old-mac-pro/work/jobs/H-bulk/convex/batches.ts:105)  
+   Submit `[delete company C, delete person P]` where `P.company = C`. Deleting C clears P’s lookup. P’s subsequent deletion compares against its original snapshot, reports a conflict, and permanently skips P—even with no concurrent external edits. This happens within a chunk as well as across chunks.
+
+7. **Medium — Delete impact counts reveal hidden relationships.** [convex/agentApi.ts:200](/home/old-mac-pro/work/jobs/H-bulk/convex/agentApi.ts:200)  
+   An agent that can access a company but cannot read opportunities can propose its deletion and receive the count of hidden opportunities referencing it. `impactCounter` scans/counts all referrers without permission filtering, and the response exposes that count before any approval.
+
+No files edited. I checked focused logic in memory; I did not run the full Convex suite. The latest file and supplied diff both use `joined(...)`, so the earlier observed link-replacement discrepancy is excluded.

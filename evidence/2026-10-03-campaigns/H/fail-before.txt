@@ -1,0 +1,36 @@
+     × refuses the whole batch when one item is invalid, naming its index and message 966ms
+     × refuses more than 1000 changes, an empty batch and the same record twice 81ms
+     × takes 1000 changes in one batch and applies every one 2028ms
+     × enforces agent guards and protected fields per item 66ms
+     × refuses items outside the agent's proposal scope 40ms
+     × shows one card with a summary and counts, applies in chunks with the person as actor, and attributes every event 103ms
+     × skips items whose record changed since review and applies the rest 43ms
+     × records an item that fails at apply time as failed and still applies the others 38ms
+     × still holds the agent's limits at apply time, failing an item a person approved meanwhile 37ms
+     × resumes after an interrupted run without applying anything twice 64ms
+     × dismisses a batch without changing anything 33ms
+     × counts the links each delete would clear 38ms
+     × deletes records in one batch even when an earlier delete cleared their links 57ms
+     × holds the agent's limits on reference cleanup when a person applies its delete 36ms
+     × stops an approved batch when the agent is revoked mid-run, and the rest can be dismissed 79ms
+     × adds people to a campaign without dropping a person a teammate added meanwhile 37ms
+     × summarises adding people to one campaign 32ms
+     × applies a single suggestion's link delta on top of the current links 37ms
+     × keeps a suggestion's link delta when a person adopts it 36ms
+     × applies a direct change's link delta and refuses a non-links field or the same person twice 33ms
+     × applies a granted batch at once, replays its Idempotency-Key, and is attributed to the agent 39ms
+     × refuses a direct batch when any item lacks a grant, naming the item 30ms
+     × a member-role person cannot see or apply a batch touching an object they cannot write 56ms
+     × a member-role person with full access applies, and the events name them 32ms
+     × a person with a hidden field the batch writes cannot apply it 34ms
+     × a person who sees a field only on some records cannot see a batch writing it on others 34ms
+     × does not show a conflict on a field the reader cannot see 31ms
+     × names a record in a summary only for readers who may see its title 31ms
+     × refuses a batch from an agent whose access was revoked 31ms
+     × refuses new batches and applies while the workspace is read only, but still dismisses 33ms
+     × stops an applying batch when the workspace turns read only and resumes it later 33ms
+     × only the submitting agent reads a batch over REST 31ms
+     × an agent proposes a batch, applies a granted one and reads both through the real REST client 35ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 33 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed (1)
+      Tests  33 failed (33)
