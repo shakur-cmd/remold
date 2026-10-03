@@ -220,6 +220,16 @@
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
+    "id": "agents:setReadAccess",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
     "id": "agents:createScoped",
     "kind": "action",
     "visibility": "public",
