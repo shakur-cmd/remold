@@ -93,13 +93,26 @@ function sameText(a: string, b: string) {
   return diff === 0;
 }
 
-// One POST to Resend. 429, 5xx and network trouble may be retried; anything else is final.
-export type Outcome = { ok: true; id: string } | { ok: false; retry: boolean; reason: string };
-export async function resendPost(body: Record<string, unknown>, idempotencyKey: string): Promise<Outcome> {
-  try {
-    const response = await fetch("https://api.resend.com/emails", { method: "POST", redirect: "error", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json", "idempotency-key": idempotencyKey }, body: JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
-    const json = await response.json().catch(() => ({})) as { id?: string; message?: string };
-    if (response.ok && json.id) return { ok: true, id: json.id };
-    return { ok: false, retry: response.status === 429 || response.status >= 500, reason: `Resend ${response.status}${json.message ? `: ${String(json.message).slice(0, 120)}` : ""}` };
-  } catch { return { ok: false, retry: true, reason: "Resend request did not complete" }; }
+// One POST to Resend. A refusal is final; 429 and 5xx may be retried. No answer at all
+// (network or timeout) means Resend may have sent it: the outcome is unknown, and only
+// the same key with the same bytes may try again. A string body goes out exactly as given.
+export type Outcome = { ok: true; id: string } | { ok: false; retry: boolean; unknown?: boolean; reason: string };
+export async function resendPost(body: Record<string, unknown> | string, idempotencyKey: string): Promise<Outcome> {
+  let response: Response;
+  try { response = await fetch("https://api.resend.com/emails", { method: "POST", redirect: "error", headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, "content-type": "application/json", "idempotency-key": idempotencyKey }, body: typeof body === "string" ? body : JSON.stringify(body), signal: AbortSignal.timeout(10_000) }); }
+  catch { return { ok: false, retry: true, unknown: true, reason: "No answer from Resend" }; }
+  const json = await response.json().catch(() => ({})) as { id?: string; message?: string };
+  if (response.ok && json.id) return { ok: true, id: json.id };
+  return { ok: false, retry: response.status === 429 || response.status >= 500, reason: `Resend ${response.status}${json.message ? `: ${String(json.message).slice(0, 120)}` : ""}` };
+}
+
+// A short fingerprint (cyrb53) of what an approval covered: it tells whether the
+// thing being approved, or sent, is the same thing a person saw.
+export function fingerprint(value: unknown) {
+  const text = JSON.stringify(value);
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < text.length; i++) { const c = text.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 }

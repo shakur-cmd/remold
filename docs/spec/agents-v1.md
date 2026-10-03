@@ -258,7 +258,7 @@ The daily cap is `REMOLD_INTAKE_DAILY_CAP` leads per workspace per UTC day. Miss
 
 ## Campaign email amendment, 2026-10-03
 
-Email steps are records of the standard `email` object (subject, body, campaign, followsUp, waitDays, sendTo, sendAt, status), drafted with `POST /api/v1/changes` or `/suggestions`. Agents may create and edit draft emails and may set `stopped`; they cannot set `approved`, `sending` or `sent`, cannot change an approved email, and cannot set a campaign's status to `active` (403). A person approves on the campaign page.
+Email steps are records of the standard `email` object (subject, body, campaign, followsUp, waitDays, sendTo, sendAt, status), drafted with `POST /api/v1/changes` or `/suggestions`. Agents may create and edit draft emails and may set `stopped`; they cannot set `approved`, `sending` or `sent`, cannot change an approved email, and cannot set a campaign's status to `active` (403). A person approves on the campaign page, from a preview: the approval fixes the words, sender settings and exact recipients, any later change sends the email back to draft, and people linked to the campaign afterwards need another approval. A reply excludes a person from later emails of the same campaign; unsubscribes, bounces and complaints apply to every campaign.
 
 ```
 GET  /api/v1/campaigns/{idOrRef}/report                 per email: status, problems, counts, rates, recipients (sendId, person, name, address, status, opened, clicked, replied, skipReason)
