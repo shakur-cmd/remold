@@ -1,0 +1,60 @@
+
+ RUN  v5.0.1 /home/shakur/work/jobs/L-queue
+
+ ❯ convex/gmailSync.test.ts (5 tests | 1 failed) 16261ms
+   ❯ last contact (1)
+     × is the newest past activity about each person, and skips activities the reader cannot see 12049ms
+ ❯ src/components/Calendar.drag.test.tsx (4 tests | 2 failed) 36070ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 17618ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 15475ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/gmailSync.test.ts > last contact > is the newest past activity about each person, and skips activities the reader cannot see
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/gmailSync.test.ts:95:3
+     93|
+     94| describe("last contact", () => {
+     95|   it("is the newest past activity about each person, and skips activit…
+       |   ^
+     96|     const { t, client, orgId, create, activity, person, ada } = await …
+     97|     const bob = await create(person, { name: "Bob", email: "bob@exampl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/Calendar.drag.test.tsx:116:1
+    114| }
+    115|
+    116| it("follows a page that is not done and shows the records of the next …
+       | ^
+    117|   const { orgId, detail } = await busyDay();
+    118|   await sync(() => week(orgId, detail));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/Calendar.drag.test.tsx:127:1
+    125|
+    126| // Astra's r3 live probe: two pages loaded, then a post lands before t…
+    127| it("keeps every post when an insert moves an earlier page boundary whi…
+       | ^
+    128|   const { orgId, detail, create } = await busyDay();
+    129|   await sync(() => week(orgId, detail));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 54 passed (56)
+      Tests  3 failed | 492 passed (495)
+   Start at  10:20:19
+   Duration  100.47s (tests 88%, import 7%, transform 3%, environment 1%)
+
+    Isolate  56 workers spawned · ~626ms startup each (spawn + environment, per file)
+             at least ~8.14s faster with isolate: false — reuses workers across files instead of one per file
+

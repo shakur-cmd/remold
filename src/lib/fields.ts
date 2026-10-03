@@ -83,7 +83,7 @@ export const formatContact = (ms: number, dayOnly = false) =>
   dayOnly && !allDay(WITH_TIME, ms) ? new Date(Math.floor(ms)).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : formatFieldDate(WITH_TIME, ms);
 
 // Time of day alone, "2:32 PM", or null for an all-day value.
-export const timeOfDay = (field: Field | undefined, ms: number) => (allDay(field, ms) ? null : new Date(Math.floor(ms)).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }));
+export const timeOfDay = (field: Field | undefined, ms: number, timeZone?: string) => (allDay(field, ms) ? null : new Date(Math.floor(ms)).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZone }));
 
 // Only the standard "amount" field is money; any other number is a plain count. USD for the US launch.
 export const isMoney = (field: Field) => field.type === "number" && field.key === "amount";

@@ -10,23 +10,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loading } from "@/components/Loading";
 import { InboxCard } from "@/components/InboxCard";
 import { attempt } from "@/lib/errors";
-import { localSpan } from "@/lib/calendar";
 import { useAllPages } from "@/lib/pages";
-import { formatMoney, localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
+import { formatMoney, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 import { useWaiting } from "@/routes/Suggestions";
 
 export function Today() {
   const { org, objects } = useOutletContext<OrgContext>();
-  const today = localToday();
-  const { start, end } = localSpan(today, today);
-  const data = useQuery(api.today.get, { orgId: org._id, today, start, end });
+  const data = useQuery(api.today.get, { orgId: org._id });
   const waiting = useWaiting(org._id);
   const update = useMutation(api.records.update);
   if (!data) return <Loading />;
-  const { task } = data;
+  // The day, and each task's due day, come from the workspace's time zone.
+  const { task } = data, { today, start, end, zone } = data.day;
   const at = (record: Doc<"records">) => (task ? (record.values[task.dueFieldId] as number) : 0);
-  const due = (record: Doc<"records">) => localDay(task?.dueField, at(record));
+  const due = (record: Doc<"records">) => data.days[record._id] ?? today;
+  const dueText = (record: Doc<"records">) => (data.days[record._id] === undefined ? null : `${relativeDay(due(record), today)}${task && timeOfDay(task.dueField, at(record), zone) ? ` ${timeOfDay(task.dueField, at(record), zone)}` : ""}`);
   const groups = [
     { label: "Overdue", rows: data.tasks.filter((r) => due(r) < today) },
     { label: "Today", rows: data.tasks.filter((r) => due(r) === today) },
@@ -44,6 +43,51 @@ export function Today() {
           </Link>
         )}
       </div>
+      {(data.mine.length > 0 || data.waiting.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Mine</CardTitle>
+            <CardDescription>Your tasks that are ready to start, due first.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4">
+            <section className="grid grid-cols-1 gap-0.5">
+              {data.mine.length === 0 && <p className="px-2 text-sm text-muted-foreground">Nothing ready. What is left is waiting on other tasks.</p>}
+              {data.mine.map((record) => (
+                <div key={record._id} className={ROW}>
+                  {task?.doneFieldId && <Checkbox aria-label={`Mark ${record.title} done`} onCheckedChange={() => complete(record._id)} />}
+                  <div className={MAIN}>
+                    <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className={TITLE}>
+                      {record.title || "Untitled"}
+                    </Link>
+                    <div className={META}>
+                      {dueText(record) && <span className={cn("shrink-0 whitespace-nowrap text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>{dueText(record)}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </section>
+            {data.waiting.length > 0 && (
+              <section className="grid grid-cols-1 gap-0.5">
+                <h2 className="px-2 pb-1 text-xs text-muted-foreground">Waiting on others</h2>
+                {data.waiting.map(({ record, on }) => (
+                  <div key={record._id} className={ROW}>
+                    <div className={MAIN}>
+                      <Link to={`/o/${org._id}/${task!.objectKey}/${record._id}`} className={TITLE}>
+                        {record.title || "Untitled"}
+                      </Link>
+                      <div className={META}>
+                        <span className="min-w-0 max-w-64 truncate text-xs text-muted-foreground" title={on.map((b) => b.title).join(", ")}>
+                          Waiting on {on.map((b) => b.title || "Untitled").join(", ")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Follow-ups</CardTitle>
@@ -68,8 +112,7 @@ export function Today() {
                           </Link>
                         )}
                         <span className={cn("shrink-0 whitespace-nowrap text-xs tabular-nums", due(record) < today ? "font-medium text-destructive" : "text-muted-foreground")}>
-                          {relativeDay(due(record), today)}
-                          {task && timeOfDay(task.dueField, at(record)) && ` ${timeOfDay(task.dueField, at(record))}`}
+                          {dueText(record)}
                         </span>
                       </div>
                     </div>
@@ -81,7 +124,7 @@ export function Today() {
         </CardContent>
       </Card>
       <UnpaidInvoices orgId={org._id} invoice={objects.find((o) => o.key === "invoice")} today={today} />
-      {data.post && <PostsToday orgId={org._id} post={data.post} day={{ today, start, end }} />}
+      {data.post && <PostsToday orgId={org._id} post={data.post} day={{ today, start, end }} zone={zone} />}
       {data.quiet.length > 0 && data.dealKey && (
         <Card>
           <CardHeader>
@@ -166,7 +209,7 @@ function UnpaidInvoices({ orgId, invoice, today }: { orgId: Id<"orgs">; invoice?
 type PostMeta = { objectKey: string; plannedFieldId: Id<"fields">; plannedField: Doc<"fields">; statusField: Doc<"fields"> | null };
 
 // Posts planned for the viewer's day that are still to go out, every page, pinned.
-function PostsToday({ orgId, post, day }: { orgId: Id<"orgs">; post: PostMeta; day: { today: number; start: number; end: number } }) {
+function PostsToday({ orgId, post, day, zone }: { orgId: Id<"orgs">; post: PostMeta; day: { today: number; start: number; end: number }; zone: string }) {
   const posts = useAllPages<Doc<"records">>(api.today.posts, { orgId, ...day }, 50);
   if (!posts.results.length && !posts.loading && !posts.more) return null;
   const status = post.statusField;
@@ -188,7 +231,7 @@ function PostsToday({ orgId, post, day }: { orgId: Id<"orgs">; post: PostMeta; d
             <Link key={record._id} to={`/o/${orgId}/${post.objectKey}/${record._id}`} className="flex h-8 items-center gap-3 rounded-md px-2 text-sm hover:bg-muted">
               <span className="min-w-0 flex-1 truncate">{record.title || "Untitled"}</span>
               {status && value !== undefined && <span className="text-xs text-muted-foreground">{optionLabel(status, value)}</span>}
-              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground tabular-nums">{timeOfDay(post.plannedField, record.values[post.plannedFieldId] as number) ?? "Today"}</span>
+              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground tabular-nums">{timeOfDay(post.plannedField, record.values[post.plannedFieldId] as number, zone) ?? "Today"}</span>
             </Link>
           );
         })}
