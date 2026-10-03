@@ -292,3 +292,16 @@ Commits: `95ce56a` merges `origin/integ/campaigns` (907d000: work queue, onboard
 - Confirm anyway has no "time already passed" check, so an admin could confirm a past slot (verifier note; not decided, not changed).
 - Attention holds still never expire on their own.
 - No real Stripe delivery.
+
+## Round 4 (registry merge)
+
+`cf00702` merges `origin/integ/campaigns` (3b9f8a8: hosted `/mcp` and one shared tool registry in `packages/mcp/src/tools.ts`; `RemoldClient` removed). Builder: Claude Opus 5.5. Not re-verified yet.
+
+- Conflicts: `convex/http.ts` (both imports kept), and the three MCP files, where integ's side wins. My client method and old client test are gone with `RemoldClient`.
+- Ported into `tools.ts`: `remold_bookings` (optional `page`, `from`, `to` strings; `GET /bookings`), the booking pages sentence at the end of `instructions`, and the campaign report description now names its booking fields (bookings, paid bookings, revenue, refunds due, per-recipient booked and paid). Both stdio and hosted `/mcp` serve them from the registry.
+- Tests, failing first (`round4-registry-fail-before.txt`):
+  - `packages/mcp/src/client.test.ts`: the stdio route through `callTool` and `httpSend`, plus a bad argument type refused, plus the report description.
+  - `convex/mcp.test.ts`: a real booking in convex-test, then `remold_bookings` over hosted Streamable HTTP and over the stdio server (in-memory), with the same result for four argument sets (all, page with day range, empty future, invalid date as a tool error).
+- Inventory: no conflict. A check against both parents finds no lost id (328 ours, 311 theirs, 329 merged, no duplicates).
+- Suites (`round4-registry-after.txt`): `pnpm test` default workers 730/734 (load timeouts in gmailSync, automations caps and posts paging, plus the flake below). `--maxWorkers=3` 733/734 (gmailSync timeout only). `pnpm typecheck` exit 0, `test:authority` 101/101, `verify:release` 37/37, `pnpm build` exit 0, `pnpm --dir packages/mcp build` exit 0, `pnpm --dir packages/mcp test` 15/15, `convex/mcp.test.ts` 15/15, `convex/bookings.test.ts` 58/58.
+- **Pre-existing flake in integ's test:** `convex/mcp.test.ts` "shares the REST write rate limit with the agent's key" fails when run alone (`-t`), 3 of 3 times on this branch and 3 of 3 on base 3b9f8a8, and passes as part of its file on both. It takes 120 tokens from a real-clock 120-a-minute bucket, which refills during a slow cold run. I did not change it.
