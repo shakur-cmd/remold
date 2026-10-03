@@ -189,26 +189,7 @@ export const shapeProposals = internalQuery({ args: { keyHash, status: v.optiona
 // proposal (or, when direct, a single granted change). One bad item refuses the batch.
 export const MAX_BATCH = 1000;
 const batchChange = v.object({ action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), links });
-type Row = { action: ChangeInput["action"]; item: Item; record: Doc<"records"> | null; values: Record<string, unknown>; links: Deltas; before: Record<string, unknown>; impact?: number };
-
-// Incoming links and lookups a delete would clear. Lookup fields are listed once per batch;
-// unindexed ones are scanned once and counted by target.
-async function impactCounter(ctx: any, orgId: Id<"orgs">) {
-  const objects = await ctx.db.query("objects").withIndex("by_org", (q: any) => q.eq("orgId", orgId)).collect() as Doc<"objects">[];
-  const lookups = (await Promise.all(objects.map((o) => ctx.db.query("fields").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", o._id)).collect()))).flat().filter((f: Doc<"fields">) => f.type === "lookup") as Doc<"fields">[];
-  const scanned = new Map<string, Map<string, number>>();
-  return async (record: Doc<"records">) => {
-    let count = (await ctx.db.query("links").withIndex("by_target_any", (q: any) => q.eq("orgId", orgId).eq("toRecordId", record._id)).collect()).filter((row: Doc<"links">) => row.fromRecordId !== record._id).length;
-    for (const field of lookups) {
-      if (field.targetObjectId && field.targetObjectId !== record.objectId) continue;
-      if (field.slot) { const name = `${field.slot.kind}${field.slot.index}`; count += (await ctx.db.query("records").withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", field.objectId).eq(name, record._id)).collect()).filter((r: Doc<"records">) => r._id !== record._id).length; continue; }
-      let byTarget = scanned.get(field._id);
-      if (!byTarget) { byTarget = new Map(); for (const r of await ctx.db.query("records").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", field.objectId)).collect() as Doc<"records">[]) { const to = r.values[field._id]; if (typeof to === "string" && to !== r._id) byTarget.set(to, (byTarget.get(to) ?? 0) + 1); } scanned.set(field._id, byTarget); }
-      count += byTarget.get(record._id) ?? 0;
-    }
-    return count;
-  };
-}
+type Row = { action: ChangeInput["action"]; item: Item; record: Doc<"records"> | null; values: Record<string, unknown>; links: Deltas; before: Record<string, unknown> };
 
 const counted = (n: number, object: Doc<"objects">) => `${n} ${n === 1 ? object.label : object.labelPlural}`;
 const listed = (parts: string[]) => parts.length < 2 ? parts.join("") : `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}`;
@@ -248,7 +229,6 @@ export const proposeBatch = internalMutation({ args: { keyHash, reason: v.string
   await writable(ctx, orgId);
   if (args.changes.length < 1 || args.changes.length > MAX_BATCH) fail("VALIDATION", `A batch needs 1 to ${MAX_BATCH} changes`);
   const cache: Cache = new Map(), seen = new Set<string>(), rows: Row[] = [], errors: { index: number; code: string; message: string }[] = [];
-  const impact = args.changes.some((c) => c.action === "delete") ? await impactCounter(ctx, orgId) : null;
   for (const [index, input] of args.changes.entries()) {
     try {
       const target = await targetOf(ctx, orgId, input, cache), { object } = target.item, recordId = target.record?._id;
@@ -260,7 +240,7 @@ export const proposeBatch = internalMutation({ args: { keyHash, reason: v.string
       const result = await proposed(ctx, principal, input, target);
       agentGuard(principal, object, result.item.fields, result.record, input.action === "delete" ? "delete" : result.merged);
       if (!allowed(Object.keys(input.action === "delete" ? result.before : result.merged))) refuse();
-      rows.push({ action: input.action, item: result.item, record: result.record, values: result.values, links: result.links, before: result.before, ...(input.action === "delete" && impact ? { impact: await impact(result.record!) } : {}) });
+      rows.push({ action: input.action, item: result.item, record: result.record, values: result.values, links: result.links, before: result.before });
     } catch (error) {
       const data = error instanceof ConvexError ? error.data as { code?: string; message?: string } : null;
       if (!data?.code) throw error;
@@ -271,9 +251,11 @@ export const proposeBatch = internalMutation({ args: { keyHash, reason: v.string
   if (errors.length) fail(errors[0]!.code as any, errors.length === 1 ? `Change ${errors[0]!.index}: ${errors[0]!.message}. Nothing was saved.` : `${errors.length} changes cannot be made, starting with change ${errors[0]!.index}: ${errors[0]!.message}. Nothing was saved.`, { items: errors });
   const counts = { create: 0, update: 0, delete: 0 }; for (const row of rows) counts[row.action]++;
   const touched = new Set<Id<"fields">>(); for (const row of rows) for (const id of Object.keys(row.action === "delete" ? row.before : { ...row.values, ...row.links })) touched.add(id as Id<"fields">);
-  const batchId = await ctx.db.insert("batches", { orgId, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, mode: direct ? "direct" : "proposal", status: direct ? "applying" : "pending", reason: args.reason, summary: await summarize(ctx, rows), ...(rows.length === 1 && rows[0]!.record ? { subjectId: rows[0]!.record._id } : {}), total: rows.length, counts, impact: rows.reduce((sum, row) => sum + (row.impact ?? 0), 0), objectIds: [...new Set(rows.map((row) => row.item.object._id))], fieldIds: [...touched], applied: 0, conflicted: 0, failed: 0, ...(direct ? { progressAt: Date.now() } : {}) });
-  for (const [index, row] of rows.entries()) await ctx.db.insert("batchItems", { orgId, batchId, index, action: row.action, objectId: row.item.object._id, ...(row.record ? { recordId: row.record._id } : {}), values: row.values, ...(Object.keys(row.links).length ? { links: row.links } : {}), before: row.before, ...(row.impact !== undefined ? { impact: row.impact } : {}), status: "queued" });
+  const batchId = await ctx.db.insert("batches", { orgId, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, mode: direct ? "direct" : "proposal", status: direct ? "applying" : "pending", reason: args.reason, summary: await summarize(ctx, rows), ...(rows.length === 1 && rows[0]!.record ? { subjectId: rows[0]!.record._id } : {}), total: rows.length, counts, impact: 0, ...(counts.delete && !direct ? { counting: true } : {}), objectIds: [...new Set(rows.map((row) => row.item.object._id))], fieldIds: [...touched], applied: 0, conflicted: 0, failed: 0, ...(direct ? { progressAt: Date.now() } : {}) });
+  for (const [index, row] of rows.entries()) await ctx.db.insert("batchItems", { orgId, batchId, index, action: row.action, objectId: row.item.object._id, ...(row.record ? { recordId: row.record._id } : {}), values: row.values, ...(Object.keys(row.links).length ? { links: row.links } : {}), before: row.before, status: "queued" });
   if (direct) await ctx.scheduler.runAfter(0, internal.batches.drive, { batchId });
+  // Counted after submit, a hundred deletes per transaction, so a large batch stays inside one mutation's time limit.
+  else if (counts.delete) await ctx.scheduler.runAfter(0, internal.batches.count, { batchId, after: -1 });
   await remember(ctx, orgId, principal.agent._id, args.idempotency, { batchId });
   return { batch: await batchApi(ctx, principal, (await ctx.db.get(batchId))!) };
 } });

@@ -48,7 +48,7 @@ export const list = query({ args: { orgId: v.id("orgs"), status: v.optional(stat
     if (!await visible(ctx, principal, batch)) continue;
     const agent = await ctx.db.get(batch.agentId);
     // Delete impact counts links from records anywhere, so only a reader who sees everything gets it.
-    rows.push({ _id: batch._id, status: batch.status, mode: batch.mode, summary: await summaryOf(ctx, principal, batch), reason: batch.reason, total: batch.total, counts: batch.counts, impact: unrestrictedHuman(principal) ? batch.impact : null, progress: progressOf(batch), agentName: agent?.name ?? null, paused: (batch.status === "pending" || batch.status === "stopped") && paused(agent, batch), createdAt: batch._creationTime, progressAt: batch.progressAt ?? null, resolvedAt: batch.resolvedAt ?? null, error: batch.error ?? null });
+    rows.push({ _id: batch._id, status: batch.status, mode: batch.mode, summary: await summaryOf(ctx, principal, batch), reason: batch.reason, total: batch.total, counts: batch.counts, impact: unrestrictedHuman(principal) ? batch.impact : null, counting: !!batch.counting, progress: progressOf(batch), agentName: agent?.name ?? null, paused: (batch.status === "pending" || batch.status === "stopped") && paused(agent, batch), createdAt: batch._creationTime, progressAt: batch.progressAt ?? null, resolvedAt: batch.resolvedAt ?? null, error: batch.error ?? null });
   }
   return rows;
 } });
@@ -79,6 +79,7 @@ export const items = query({ args: { orgId: v.id("orgs"), batchId: v.id("batches
 export const apply = mutation({ args: { orgId: v.id("orgs"), batchId: v.id("batches") }, handler: async (ctx, args) => {
   const member = await requireWriter(ctx, args.orgId), batch = await visibleBatch(ctx, member, args.orgId, args.batchId);
   if (batch.status === "done" || batch.status === "dismissed") return { status: "already" as const, current: batch.status };
+  if (batch.counting) fail("CONFLICT", "Still counting what the deletes would clear. Try again in a moment.");
   if (paused(await ctx.db.get(batch.agentId), batch)) fail("FORBIDDEN", "This agent's access changed since it asked; dismiss the batch");
   await ctx.db.patch(batch._id, { status: "applying", error: undefined, progressAt: Date.now(), ...(batch.mode === "proposal" ? { approvedBy: member.user._id, approverEpoch: member.member.authorityEpoch ?? 0 } : {}), ...(batch.status === "pending" ? { resolvedBy: member.user._id } : {}) });
   await ctx.scheduler.runAfter(0, internal.batches.drive, { batchId: batch._id });
@@ -160,6 +161,35 @@ export const failItem = internalMutation({ args: { itemId: v.id("batchItems"), m
   if (!item || !batch || item.status !== "queued" || batch.status !== "applying") return;
   await ctx.db.patch(item._id, { status: "failed", error: args.message });
   await ctx.db.patch(batch._id, { failed: batch.failed + 1, progressAt: Date.now() });
+} });
+
+// Incoming links and lookups a delete would clear. Lookup fields are listed once per batch;
+// unindexed ones are scanned once and counted by target.
+async function impactCounter(ctx: any, orgId: Id<"orgs">) {
+  const objects = await ctx.db.query("objects").withIndex("by_org", (q: any) => q.eq("orgId", orgId)).collect() as Doc<"objects">[];
+  const lookups = (await Promise.all(objects.map((o) => ctx.db.query("fields").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", o._id)).collect()))).flat().filter((f: Doc<"fields">) => f.type === "lookup") as Doc<"fields">[];
+  const scanned = new Map<string, Map<string, number>>();
+  return async (record: Doc<"records">) => {
+    let count = (await ctx.db.query("links").withIndex("by_target_any", (q: any) => q.eq("orgId", orgId).eq("toRecordId", record._id)).collect()).filter((row: Doc<"links">) => row.fromRecordId !== record._id).length;
+    for (const field of lookups) {
+      if (field.targetObjectId && field.targetObjectId !== record.objectId) continue;
+      if (field.slot) { const name = `${field.slot.kind}${field.slot.index}`; count += (await ctx.db.query("records").withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", field.objectId).eq(name, record._id)).collect()).filter((r: Doc<"records">) => r._id !== record._id).length; continue; }
+      let byTarget = scanned.get(field._id);
+      if (!byTarget) { byTarget = new Map(); for (const r of await ctx.db.query("records").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", field.objectId)).collect() as Doc<"records">[]) { const to = r.values[field._id]; if (typeof to === "string" && to !== r._id) byTarget.set(to, (byTarget.get(to) ?? 0) + 1); } scanned.set(field._id, byTarget); }
+      count += byTarget.get(record._id) ?? 0;
+    }
+    return count;
+  };
+}
+// Fills in each delete's impact and the batch total; Apply waits until it is done.
+export const count = internalMutation({ args: { batchId: v.id("batches"), after: v.number() }, handler: async (ctx, args) => {
+  const batch = await ctx.db.get(args.batchId);
+  if (!batch?.counting) return;
+  const items = await ctx.db.query("batchItems").withIndex("by_batch", (q) => q.eq("batchId", batch._id).gt("index", args.after)).take(100), impact = await impactCounter(ctx, batch.orgId);
+  let total = 0;
+  for (const item of items) { if (item.action !== "delete" || !item.recordId) continue; const record = await ctx.db.get(item.recordId); const n = record ? await impact(record) : 0; total += n; await ctx.db.patch(item._id, { impact: n }); }
+  await ctx.db.patch(batch._id, { impact: batch.impact + total, ...(items.length < 100 ? { counting: false } : {}) });
+  if (items.length === 100) await ctx.scheduler.runAfter(0, internal.batches.count, { batchId: batch._id, after: items.at(-1)!.index });
 } });
 
 const messageOf = (error: unknown) => error instanceof ConvexError && typeof (error.data as { message?: unknown })?.message === "string" ? (error.data as { message: string }).message : "Something went wrong";

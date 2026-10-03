@@ -182,7 +182,11 @@ describe("batch proposals", () => {
     expect(posted.json.batch).toMatchObject({ summary: "Delete 2 Companies and 1 Person", counts: { create: 0, update: 0, delete: 3 } });
     // The agent is not told: the count includes links from records it may not read.
     expect(posted.json.batch.impact).toBeUndefined();
-    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0].impact).toBe(5);
+    // Counted in the background, a hundred deletes per transaction; Apply waits for it.
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0].counting).toBe(true);
+    await expect(w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id })).rejects.toMatchObject({ data: { code: "CONFLICT" } });
+    await run(w.t);
+    expect((await w.client.query(api.batches.list, { orgId: w.orgId }))[0]).toMatchObject({ counting: false, impact: 5 });
     const page = await w.client.query(api.batches.items, { orgId: w.orgId, batchId: posted.json.batch.id, paginationOpts: { cursor: null, numItems: 10 } });
     expect(page.page.map((item: any) => item.impact)).toEqual([4, 1, 0]);
   });
@@ -191,7 +195,7 @@ describe("batch proposals", () => {
     const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
     const acme = await w.create(w.company, { name: "Acme" }), ada = await w.create(w.person, { name: "Ada", company: acme }), spring = await w.create(w.campaign, { name: "Spring", companies: [acme] });
     const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupes", changes: [{ action: "delete", record: acme }, { action: "delete", record: ada }, { action: "delete", record: spring }] });
-    await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+    await run(w.t); await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
     expect((await rest(w.t, agent.key)("GET", `/api/v1/batches/${posted.json.batch.id}`)).json.batch.progress).toEqual({ done: 3, applied: 3, conflicted: 0, failed: 0 });
     expect(await w.get(ada)).toBeUndefined();
   });
@@ -201,7 +205,7 @@ describe("batch proposals", () => {
     const acme = await w.create(w.company, { name: "Acme" }), ada = await w.create(w.person, { name: "Ada", company: acme });
     await w.client.mutation(api.fields.update, { orgId: w.orgId, fieldId: w.person.fields.company._id, protectedFromAgents: true });
     const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "dupe", changes: [{ action: "delete", record: acme }] });
-    await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+    await run(w.t); await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
     expect((await rest(w.t, agent.key)("GET", `/api/v1/batches/${posted.json.batch.id}`)).json.items[0]).toMatchObject({ status: "failed", error: "Company is protected from agents; a person must change it" });
     expect((await w.get(ada)).values[w.person.fields.company._id]).toBe(acme);
   });
@@ -367,7 +371,7 @@ describe("who may apply", () => {
     const deal = await w.create(w.opp, { name: "Quiet" });
     const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "q", changes: [{ action: "delete", record: deal }] });
     await w.client.mutation(api.records.update, { orgId: w.orgId, recordId: deal, values: { [w.opp.fields.amount._id]: 123456 } });
-    await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+    await run(w.t); await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
     const m = await member(w);
     await w.t.run(async (ctx: any) => { const row = (await ctx.db.query("members").collect()).find((x: any) => x.role === "member"); await ctx.db.patch(row._id, { hiddenFieldIds: [w.opp.fields.amount._id] }); });
     const page = await m.query(api.batches.items, { orgId: w.orgId, batchId: posted.json.batch.id, paginationOpts: { cursor: null, numItems: 5 } });

@@ -50,12 +50,13 @@ export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) 
       <div className="grid gap-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className="text-xs text-muted-foreground">
-            {row.agentName ?? "An agent"} {row.mode === "direct" ? "made" : "wants to make"} {plural(row.total, "change")}
+            {row.agentName ?? "An agent"} {row.mode === "direct" ? "made" : pending ? "wants to make" : "asked for"} {plural(row.total, "change")}
           </span>
           {!pending && <Badge variant={row.status === "stopped" ? "destructive" : "outline"} className="ml-auto">{row.status === "done" ? "finished" : row.status}</Badge>}
         </div>
         <span className="font-medium">{row.summary}</span>
         <span className="text-[13px] text-muted-foreground">{counts}</span>
+        {row.counting && <span className="text-[13px] text-muted-foreground">Counting what deleting would clear…</span>}
         {!!row.impact && <span className="text-[13px] text-destructive">Deleting also clears {plural(row.impact, "link")} from other records.</span>}
       </div>
       <p className="text-muted-foreground">“{row.reason}”</p>
@@ -64,7 +65,7 @@ export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) 
       {row.paused && <p className="text-xs text-muted-foreground">This agent's access changed since it asked. Dismiss it, or make the changes yourself.</p>}
       {row.status === "done" && row.progress.conflicted + row.progress.failed > 0 && (
         <div className="flex gap-1">
-          {([[undefined, "All"], ["conflicted", `Skipped ${row.progress.conflicted}`], ["failed", `Failed ${row.progress.failed}`]] as const).map(([value, label]) => (
+          {([[undefined, "All", 1], ["conflicted", `Skipped ${row.progress.conflicted}`, row.progress.conflicted], ["failed", `Failed ${row.progress.failed}`, row.progress.failed]] as const).filter(([, , n]) => n > 0).map(([value, label]) => (
             <Button key={label} size="sm" variant={filter === value ? "secondary" : "ghost"} className="h-7 px-2 text-xs" onClick={() => setFilter(value)}>
               {label}
             </Button>
@@ -76,7 +77,7 @@ export function BatchCard({ orgId, row }: { orgId: Id<"orgs">; row: BatchRow }) 
         <div className="flex gap-2">
           {!row.paused && (
             // Outline, not filled, like SuggestionCard: filled teal is kept to one per screen.
-            <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" disabled={busy} onClick={() => act(() => apply({ orgId, batchId: row._id }), pending ? "Applying" : "Resumed")}>
+            <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground" disabled={busy || row.counting} onClick={() => act(() => apply({ orgId, batchId: row._id }), pending ? "Applying" : "Resumed")}>
               {!pending ? "Resume" : row.total === 1 ? "Apply" : `Apply all ${row.total}`}
             </Button>
           )}

@@ -2720,5 +2720,16 @@
     "masks": "no-record-data",
     "proof": "stops an applying batch when the workspace turns read only and resumes it later",
     "reason": "batch driver; a read-only workspace stops the batch before any item is written"
+  },
+  {
+    "id": "batches:count",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "counts the links each delete would clear",
+    "reason": "bookkeeping on a batch row; writes no record"
   }
 ]
