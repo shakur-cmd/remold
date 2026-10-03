@@ -260,7 +260,7 @@ Still additive: optional `expectedPrice` on bookings, nothing else in the schema
 
 Verifier: Claude Fable 5.1 (`~/work/briefs-1003/iv-B3-verdict.md`). Builder: Claude Opus 5.5. Not re-verified yet. Levels: SIM (convex-test) and SERVICE (local backend, 21/21). Nothing LIVE.
 
-Commits: `95ce56a` merges `origin/integ/campaigns` (907d000: work queue, onboarding map, blueprints), then the round 4 fixes with this section, then one commit recording hashes. Final: `git log -1 campaigns/booking`.
+Commits: `95ce56a` merges `origin/integ/campaigns` (907d000: work queue, onboarding map, blueprints), then `5b86c51` (round 4 fixes and this section), then one commit recording hashes. Final: `git log -1 campaigns/booking`.
 
 ### Merge with integ/campaigns (907d000)
 
