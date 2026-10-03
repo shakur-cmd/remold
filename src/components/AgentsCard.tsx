@@ -106,7 +106,11 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
             ) : (
               <>
                 <p className="text-muted-foreground">Connect Claude Code:</p>
-                <CopyBlock text={`claude mcp add remold -e REMOLD_URL=${siteUrl} -e REMOLD_KEY=${issued.key} -- node <path to remold>/packages/mcp/dist/index.js`} label="Claude Code command" />
+                <CopyBlock text={`claude mcp add --transport http remold ${siteUrl}/mcp --header "Authorization: Bearer ${issued.key}"`} label="Claude Code command" />
+                <p className="text-muted-foreground">Codex, in ~/.codex/config.toml:</p>
+                <CopyBlock text={`[mcp_servers.remold]\nurl = "${siteUrl}/mcp"\nhttp_headers = { "Authorization" = "Bearer ${issued.key}" }`} label="Codex config" />
+                <p className="text-muted-foreground">Any other MCP client:</p>
+                <CopyBlock text={JSON.stringify({ mcpServers: { remold: { type: "http", url: `${siteUrl}/mcp`, headers: { Authorization: `Bearer ${issued.key}` } } } }, null, 2)} label="MCP JSON config" />
                 <p className="text-muted-foreground">Or call REST directly:</p>
                 <CopyBlock text={`curl -H "Authorization: Bearer ${issued.key}" ${siteUrl}/api/v1/me`} label="REST example" />
               </>

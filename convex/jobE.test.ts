@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
-import { RemoldClient } from "../packages/mcp/src/client";
+import { agentFor, api, objectFields, rest, userAndOrg, mcpTool } from "./test.helpers";
 
 describe("Job E regression boundaries", () => {
   for (const edit of ["changed", "added", "fresh"]) it(`delete proposal ${edit} snapshot is checked`, async () => {
@@ -63,14 +62,14 @@ describe("Job E regression boundaries", () => {
   it("MCP retry after response loss returns the original REST write and pages events", async () => {
     const { client, orgId, t } = await userAndOrg(), a = await agentFor(client, orgId, { name: "writer", grants: [{ action: "create", objectKey: "company" }] });
     let lost = true, original: any;
-    const mcp = new RemoldClient({ url: "http://local", key: a.key, fetch: async (input, init) => { const r = new Request(input, init), response = await t.fetch(new URL(r.url).pathname + new URL(r.url).search, init); if (lost) { lost = false; original = await response.json(); throw new Error("response lost"); } return response; } });
+    const mcp = mcpTool(t, a.key, async (input, init) => { const r = new Request(input, init), response = await t.fetch(new URL(r.url).pathname + new URL(r.url).search, init); if (lost) { lost = false; original = await response.json(); throw new Error("response lost"); } return response; });
     const args = { action: "create", object: "company", values: { name: "Once" }, reason: "retry", idempotencyKey: "stable" };
-    await expect(mcp.change(args)).rejects.toThrow("response lost"); expect(await mcp.change(args)).toEqual(original);
+    await expect(mcp("remold_apply_change", args)).rejects.toThrow("INTERNAL: Something went wrong"); expect(await mcp("remold_apply_change", args)).toEqual(original);
     expect(await t.run(ctx => ctx.db.query("records").collect())).toHaveLength(1); expect(await t.run(ctx => ctx.db.query("events").collect())).toHaveLength(1);
     const company = await objectFields(client, orgId, "company");
     await client.mutation(api.records.update, { orgId, recordId: original.record.id, values: { [company.fields.city._id]: "Boston" } });
-    const page: any = await mcp.recordEvents({ idOrRef: original.record.id, limit: 1 }); expect(page.events).toHaveLength(1);
-    const next: any = await mcp.recordEvents({ idOrRef: original.record.id, limit: 1, cursor: page.nextCursor }); expect(next.events).toHaveLength(1); expect(next.events[0].action).toBe("create");
+    const page: any = await mcp("remold_record_events", { idOrRef: original.record.id, limit: 1 }); expect(page.events).toHaveLength(1);
+    const next: any = await mcp("remold_record_events", { idOrRef: original.record.id, limit: 1, cursor: page.nextCursor }); expect(next.events).toHaveLength(1); expect(next.events[0].action).toBe("create");
   });
   it("REST Today uses the app selection for retained done values", async () => {
     const { client, orgId, t } = await userAndOrg(), task = await objectFields(client, orgId, "task"), a = await agentFor(client, orgId, { name: "agent" });
@@ -85,17 +84,17 @@ describe("Job E regression boundaries", () => {
 
 it("REST write keys deduplicate proposals and inbox writes", async () => {
   const { client, orgId, t } = await userAndOrg(), a = await agentFor(client, orgId, { name: "agent", role: "admin" });
-  const mcp = new RemoldClient({ url: "http://local", key: a.key, fetch: (input, init) => t.fetch(new URL(String(input)).pathname, init) });
+  const mcp = mcpTool(t, a.key);
   for (const [write, args, table] of [
-    [mcp.propose.bind(mcp), { action: "create", object: "company", values: { name: "Once" }, reason: "test", idempotencyKey: "proposal" }, "suggestions"],
-    [mcp.inboxAdd.bind(mcp), { text: "Once", idempotencyKey: "inbox" }, "agentInbox"],
-    [mcp.proposeShape.bind(mcp), { kind: "addField", object: "company", key: "extra", label: "Extra", type: "text", reason: "test", idempotencyKey: "shape" }, "shapeSuggestions"],
+    ["remold_propose_change", { action: "create", object: "company", values: { name: "Once" }, reason: "test", idempotencyKey: "proposal" }, "suggestions"],
+    ["remold_inbox_add", { text: "Once", idempotencyKey: "inbox" }, "agentInbox"],
+    ["remold_propose_shape", { kind: "addField", object: "company", key: "extra", label: "Extra", type: "text", reason: "test", idempotencyKey: "shape" }, "shapeSuggestions"],
   ] as const) {
-    const first = await write(args); expect(await write(args)).toEqual(first);
+    const first = await mcp(write, args); expect(await mcp(write, args)).toEqual(first);
     expect(await t.run(ctx => ctx.db.query(table).collect())).toHaveLength(1);
   }
-  const inbox: any = await mcp.inbox(); const args = { id: inbox[0].id, note: "Done", idempotencyKey: "resolve" };
-  expect(await mcp.inboxResolve(args)).toEqual(await mcp.inboxResolve(args));
+  const inbox: any = await mcp("remold_inbox"); const args = { id: inbox[0].id, note: "Done", idempotencyKey: "resolve" };
+  expect(await mcp("remold_inbox_resolve", args)).toEqual(await mcp("remold_inbox_resolve", args));
 });
 it("stale delete conflicts do not reveal newly hidden values", async () => {
   const { client, orgId, t } = await userAndOrg(), c = await objectFields(client, orgId, "company"), a = await agentFor(client, orgId, { name: "agent" });

@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { internal } from "./_generated/api";
-import { agentFor, api, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
-import { RemoldClient } from "../packages/mcp/src/client";
+import { agentFor, api, bulk, objectFields, rest, userAndOrg, mcpTool } from "./test.helpers";
 import crons from "./crons";
 
 // Automations: agents draft them as records, a person turns them on, and Remold runs
@@ -603,10 +602,9 @@ describe("automations", () => {
     expect(res.json.automation).toMatchObject({ id, status: "on", sentence: expect.stringMatching(/^When an Opportunity's Stage becomes Won/) });
     expect(res.json.runs).toEqual([expect.objectContaining({ status: "done", error: null, depth: 1, enabledBy: "Owner", trigger: expect.objectContaining({ id: opp, title: "Acme website" }), created: expect.arrayContaining([expect.objectContaining({ title: "Delivery: Acme website" })]) })]);
     expect(res.json.runs[0].created).toHaveLength(4);
-    const fetchVia = (url: any, init: any) => w.t.fetch(new URL(url).pathname, init);
-    const client = new RemoldClient({ url: "https://remold.test", key: agent.key, fetch: fetchVia as any });
-    expect((await client.automationRuns(ref)).runs).toHaveLength(1);
-    expect((await client.automationTest({ idOrRef: ref, record: opp })).steps).toHaveLength(4);
+    const mcp = mcpTool(w.t, agent.key);
+    expect((await mcp("remold_automation_runs", { idOrRef: ref })).runs).toHaveLength(1);
+    expect((await mcp("remold_automation_test", { idOrRef: ref, record: opp })).steps).toHaveLength(4);
     const view = await w.client.query(api.automations.view, { orgId: w.orgId, recordId: id });
     expect(view).toMatchObject({ sentence: res.json.automation.sentence, status: "on", runs: [expect.objectContaining({ status: "done" })] });
   });

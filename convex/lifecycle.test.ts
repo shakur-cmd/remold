@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { anyApi } from "convex/server";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
-import { RemoldClient } from "../packages/mcp/src/client";
+import { agentFor, api, objectFields, rest, userAndOrg, mcpTool } from "./test.helpers";
 
 // Job G: retire, restore, reorder, archive and retitle, for a person in Settings and for
 // an admin agent through a shape proposal that a person applies.
@@ -250,9 +249,9 @@ describe("archive and unarchive", () => {
     await w.client.mutation(shape.apply, { orgId: w.orgId, id: row._id });
     expect(await restObject(w, "venue")).toBeUndefined();
     expect(await restObject(w, "venue", "?include=archived")).toMatchObject({ key: "venue", archived: true });
-    const mcp = new RemoldClient({ url: "https://remold.test", key: w.agent.key, fetch: (async (input: RequestInfo | URL, init?: RequestInit) => { const url = new URL(String(input)); return w.t.fetch(url.pathname + url.search, init); }) as typeof fetch });
-    expect((await mcp.objects() as any[]).map((o) => o.key)).not.toContain("venue");
-    expect((await mcp.objects({ includeArchived: true }) as any[]).find((o) => o.key === "venue")).toMatchObject({ archived: true });
+    const mcp = mcpTool(w.t, w.agent.key);
+    expect((await mcp("remold_objects") as any[]).map((o) => o.key)).not.toContain("venue");
+    expect((await mcp("remold_objects", { includeArchived: true }) as any[]).find((o) => o.key === "venue")).toMatchObject({ archived: true });
     expect((await w.call("GET", "/api/v1/search?q=Hall")).json).toEqual([]);
     expect(await w.client.query(api.records.search, { orgId: w.orgId, text: "Hall" })).toEqual([]);
     // Records and links are untouched.

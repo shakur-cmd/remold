@@ -1,0 +1,32 @@
+     × a real MCP client initializes, lists every tool and calls one over Streamable HTTP 155ms
+     × answers initialize, the initialized notification and ping per the stateless JSON mode 10ms
+     × refuses a missing, malformed, unknown or revoked key with 401 and a JSON-RPC error, and writes nothing 8ms
+     × answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything 7ms
+     × gives a scoped agent exactly its REST permissions: reads, proposals, refused applies and hidden fields 24ms
+     × shares the REST write rate limit with the agent's key 45ms
+     × replays a write sent again with the same idempotency key and refuses the key for a different write 8ms
+     × never puts the key or its hash in a response 7ms
+     × records each MCP request in the same operational telemetry as REST 7ms
+     × list the same tools and instructions and give the same results and errors 8ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > a real MCP client initializes, lists every tool and calls one over Streamable HTTP
+Error: Streamable HTTP error: Error POSTing to endpoint: No HttpAction routed for /mcp
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > answers initialize, the initialized notification and ping per the stateless JSON mode
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > refuses a missing, malformed, unknown or revoked key with 401 and a JSON-RPC error, and writes nothing
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > gives a scoped agent exactly its REST permissions: reads, proposals, refused applies and hidden fields
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > shares the REST write rate limit with the agent's key
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > replays a write sent again with the same idempotency key and refuses the key for a different write
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > never puts the key or its hash in a response
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > hosted MCP endpoint > records each MCP request in the same operational telemetry as REST
+SyntaxError: Unexpected token 'N', "No HttpAct"... is not valid JSON
+ FAIL  convex/mcp.test.ts > stdio and hosted MCP parity > list the same tools and instructions and give the same results and errors
+Error: Streamable HTTP error: Error POSTing to endpoint: No HttpAction routed for /mcp
+      Tests  10 failed (10)
