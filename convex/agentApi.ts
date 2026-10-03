@@ -20,6 +20,8 @@ import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
 import { option } from "./lib/metadata";
 import { agentRow, proposalFor } from "./shapeSuggestions";
+import { archived, forReader, runView } from "./lib/views";
+import { dryRun, history } from "./automations";
 
 const keyHash = v.string();
 const action = v.union(v.literal("create"), v.literal("update"), v.literal("delete"));
@@ -169,7 +171,39 @@ export const inboxResolve = internalMutation({ args: { keyHash, id: v.id("agentI
 export const campaignReport = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return reportOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
 export const emailPreview = internalQuery({ args: { keyHash, idOrRef: v.string(), person: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const person = args.person ? await recordFor(ctx, principal.org._id, args.person) : undefined; return previewOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), person?._id); } });
 export const markReplied = internalMutation({ args: { keyHash, id: v.string(), idempotency }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), prior = await replay(ctx, principal.agent._id, args.idempotency); if (prior) return prior.result; return remember(ctx, principal.org._id, principal.agent._id, args.idempotency, await markSendReplied(ctx, principal, args.id)); } });
+// Automations for agents: what one did (run history) and what it would do for a record, writing nothing.
+export const automationRuns = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return history(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
+export const automationTest = internalQuery({ args: { keyHash, idOrRef: v.string(), record: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return dryRun(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), args.record ? await recordFor(ctx, principal.org._id, args.record) : null); } });
 const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()) };
-const shapeArgs = { kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))) };
+const viewInput = { name: v.optional(v.string()), layout: v.optional(v.string()), columns: v.optional(v.array(v.string())), filters: v.optional(v.array(v.object({ field: v.string(), value: v.any() }))), range: v.optional(v.object({ field: v.string(), from: v.optional(v.string()), to: v.optional(v.string()), relative: v.optional(v.string()) })), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), groupBy: v.optional(v.string()), dateField: v.optional(v.string()), pinned: v.optional(v.boolean()) };
+const shapeArgs = { ...viewInput, kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))) };
 export const proposeShape = internalMutation({ args: { keyHash, ...shapeArgs, idempotency }, handler: async (ctx, { keyHash, idempotency, ...input }) => { const principal = await requireAgent(ctx, keyHash); const prior = await replay(ctx, principal.agent._id, idempotency); if (prior) { const proposal = await ctx.db.get(prior.result.id as Id<"shapeSuggestions">); if (!proposal) fail("NOT_FOUND"); return { proposal: await agentRow(ctx, proposal) }; } await writable(ctx, principal.org._id); const change = await proposalFor(ctx, principal, input); const id = await ctx.db.insert("shapeSuggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, change, reason: input.reason, status: "pending" }); await remember(ctx, principal.org._id, principal.agent._id, idempotency, { id }); return { proposal: await agentRow(ctx, (await ctx.db.get(id))!) }; } });
 export const shapeProposals = internalQuery({ args: { keyHash, status: v.optional(v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("failed"))) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return { proposals: await Promise.all((await ownShape(ctx, principal.agent, args.status, 100)).map((row) => agentRow(ctx, row))) }; } });
+
+// Saved views for agents: the shared ones, by key, as far as the key may read. A view
+// that filters or sorts by a field the key cannot read is listed as not usable.
+async function viewApi(ctx: any, principal: Principal, object: Doc<"objects">, view: Doc<"views">) {
+  const { spec, fields, blocked, dropped, createdBy } = await forReader(ctx, principal, object, view), key = (id: Id<"fields">) => fields.get(id)!.key;
+  return { id: view._id, object: object.key, name: view.name, layout: spec.layout, columns: spec.columns.map(key), filters: spec.filters.map((f) => ({ field: key(f.fieldId), value: f.value })), range: spec.range ? { field: key(spec.range.fieldId), ...(spec.range.from ? { from: spec.range.from } : {}), ...(spec.range.to ? { to: spec.range.to } : {}), ...(spec.range.relative ? { relative: spec.range.relative } : {}) } : null, sort: spec.sort ? { field: key(spec.sort.fieldId), direction: spec.sort.direction } : null, groupBy: spec.groupFieldId ? key(spec.groupFieldId) : null, dateField: spec.dateFieldId ? key(spec.dateFieldId) : null, pinned: !!view.pinned, createdBy, usable: !blocked, dropped, updatedAt: view.updatedAt };
+}
+async function sharedView(ctx: any, principal: Principal, id: string) {
+  const viewId = ctx.db.normalizeId("views", id), view = viewId ? await ctx.db.get(viewId) as Doc<"views"> | null : null, object = view ? await ctx.db.get(view.objectId) as Doc<"objects"> | null : null;
+  if (!view || !object || view.orgId !== principal.org._id || view.ownerId || archived(object) || !canReadObject(principal, object)) fail("NOT_FOUND", "View not found");
+  return { view, object };
+}
+export const views = internalQuery({ args: { keyHash, object: v.optional(v.string()) }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), only = args.object === undefined ? undefined : (await objectFor(ctx, principal.org._id, args.object)).object;
+  const objects = (await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect()).filter((o) => !archived(o) && canReadObject(principal, o) && (!only || o._id === only._id)).sort((a, b) => a.order - b.order);
+  if (only && !objects.length) fail("NOT_FOUND", "Object not found");
+  const out = [];
+  for (const object of objects) for (const view of (await ctx.db.query("views").withIndex("by_object", (q) => q.eq("orgId", principal.org._id).eq("objectId", object._id)).collect()).filter((view) => !view.ownerId).sort((a, b) => a.order - b.order || a._creationTime - b._creationTime)) out.push(await viewApi(ctx, principal, object, view));
+  return { views: out };
+} });
+// Runs a shared view with the key's own read access. tz names the zone its dates are read in (default UTC).
+export const viewRecords = internalQuery({ args: { keyHash, id: v.string(), cursor: v.optional(v.string()), limit: v.optional(v.number()), tz: v.optional(v.string()) }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), { view, object } = await sharedView(ctx, principal, args.id);
+  const { spec, page } = await runView(ctx, principal, view, { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 25) || 25, 1), 100) }, args.tz);
+  const fields = (await objectForId(ctx, principal.org._id, object._id)).fields, columns = new Set(fields.filter((f) => spec.columns.includes(f._id)).map((f) => f.key));
+  const records = await Promise.all(page.page.filter((record) => canReadRecord(principal, object, record)).map(async (record) => { const full = await readable(ctx, principal, record, object, fields); return columns.size ? { ...full, values: Object.fromEntries(Object.entries(full.values).filter(([key]) => columns.has(key))) } : full; }));
+  return { view: await viewApi(ctx, principal, object, view), records, cursor: page.isDone ? null : page.continueCursor };
+} });

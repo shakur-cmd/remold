@@ -5,6 +5,8 @@ import { requireMember, requireWriter, type AgentMembership, type Membership, ty
 import { fail } from "./errors";
 import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "./authority/reads";
 import { checkNewField, checkObject, checkOptions, createField, createObject, fieldFor, requireLabel, requireUnrestricted, type FieldSpec, type Option, type ShapeChange } from "./lib/metadata";
+import { checkView, viewDetails, type ViewSpec } from "./lib/views";
+import { insertView } from "./views";
 
 type Ctx = QueryCtx | MutationCtx;
 type Row = Doc<"shapeSuggestions">;
@@ -16,6 +18,13 @@ async function authorize(ctx: Ctx, principal: Membership, row: Row) {
   if (row.orgId !== principal.org._id) fail("NOT_FOUND", "Proposal not found");
   const change = row.change;
   if (change.kind === "addObject") return requireUnrestricted(ctx, principal);
+  // A view changes no shape: anyone who may share views and can read every field it names.
+  if (change.kind === "addView") {
+    const object = await ctx.db.get(change.objectId), view = change.view, ids = [...view.columns, ...view.filters.map((f) => f.fieldId), view.range?.fieldId, view.sort?.fieldId, view.groupFieldId, view.dateFieldId].filter((id) => id !== undefined);
+    const fields = await Promise.all(ids.map((id) => ctx.db.get(id)));
+    if (!object || !canReadObject(principal, object) || fields.some((field) => field && !canReadField(principal, object, field))) fail("NOT_FOUND", "Proposal not found");
+    return;
+  }
   const object = await ctx.db.get(change.objectId), target = change.kind === "addField" && change.field.targetObjectId ? await ctx.db.get(change.field.targetObjectId) : null;
   if (!object || !canReadObject(principal, object) || (target && !canReadObject(principal, target))) fail("NOT_FOUND", "Proposal not found");
   await requireObjectAdministration(ctx, principal, object);
@@ -37,6 +46,7 @@ export async function describe(ctx: Ctx, change: ShapeChange) {
     case "addObject": return { summary: `Add object ${change.label}${change.fields.length ? ` with ${plural(change.fields.length, "field")}` : ""}`, details: change.fields.map((f) => fieldDetail(f, targets)) };
     case "addField": return { summary: `Add field ${change.field.label} (${typeLabel(change.field, targets)}) to ${await label(change.objectId)}`, details: change.field.options || change.field.required || change.field.withTime ? [fieldDetail(change.field, targets)] : [] };
     case "addOptions": return { summary: `Add ${change.options.length === 1 ? "option" : "options"} ${change.options.map((o) => o.label).join(", ")} to ${await label(change.fieldId)} on ${await label(change.objectId)}`, details: [] };
+    case "addView": return { summary: `Add view ${change.view.name} to ${(await ctx.db.get(change.objectId))?.labelPlural ?? "a removed object"}`, details: await viewDetails(ctx, change.view, change.pinned) };
     case "relabel": return change.fieldId
       ? { summary: `Rename field ${await label(change.fieldId)} to ${change.label} on ${await label(change.objectId)}`, details: [] }
       : { summary: `Rename object ${await label(change.objectId)} to ${change.label}${change.labelPlural ? ` (plural ${change.labelPlural})` : ""}`, details: [] };
@@ -46,7 +56,8 @@ export async function describe(ctx: Ctx, change: ShapeChange) {
 // Agent side: validates a proposal against exactly what applying it will check, so a
 // proposal a person cannot apply is refused now. Input names objects and fields by key.
 type FieldInput = { key: string; label: string; type: string; options?: Option[]; target?: string; withTime?: boolean; required?: boolean };
-export type ProposalInput = { kind: string; reason: string; object?: string; field?: string; key?: string; label?: string; labelPlural?: string; icon?: string; type?: string; options?: Option[]; target?: string; withTime?: boolean; required?: boolean; fields?: FieldInput[] };
+type ViewInput = { name?: string; layout?: string; columns?: string[]; filters?: { field: string; value: unknown }[]; range?: { field: string; from?: string; to?: string; relative?: string }; sort?: { field: string; direction: "asc" | "desc" }; groupBy?: string; dateField?: string; pinned?: boolean };
+export type ProposalInput = ViewInput & { kind: string; reason: string; object?: string; field?: string; key?: string; label?: string; labelPlural?: string; icon?: string; type?: string; options?: Option[]; target?: string; withTime?: boolean; required?: boolean; fields?: FieldInput[] };
 const types = ["text", "number", "select", "date", "boolean", "lookup", "links"] as const;
 async function readableObject(ctx: Ctx, principal: Principal, key: string | undefined) {
   if (!key) fail("VALIDATION", "object is required");
@@ -95,6 +106,20 @@ export async function proposalFor(ctx: Ctx, principal: AgentMembership, input: P
       if (!added.length) fail("VALIDATION", "No new options");
       return { kind: "addOptions", objectId: object._id, fieldId: field._id, options: added };
     }
+    case "addView": {
+      // Fields by key, then the same check as a person saving it, which coerces filter values.
+      const object = await readableObject(ctx, principal, input.object), field = async (key: string) => (await readableField(ctx, principal, object, key))._id;
+      const layout = (["table", "board", "calendar"] as const).find((l) => l === (input.layout ?? "table")); if (!layout) fail("VALIDATION", "Unknown layout; use table, board or calendar");
+      const relative = input.range?.relative === undefined ? undefined : (["today", "next7", "thisMonth", "overdue"] as const).find((r) => r === input.range!.relative);
+      if (input.range?.relative !== undefined && !relative) fail("VALIDATION", "Unknown relative range; use today, next7, thisMonth or overdue");
+      const filters = [];
+      for (const f of input.filters ?? []) filters.push({ fieldId: await field(f.field), value: f.value });
+      const view: ViewSpec = { name: input.name ?? "", layout, columns: await Promise.all((input.columns ?? []).map(field)), filters,
+        ...(input.range ? { range: { fieldId: await field(input.range.field), ...(input.range.from === undefined ? {} : { from: input.range.from }), ...(input.range.to === undefined ? {} : { to: input.range.to }), ...(relative ? { relative } : {}) } } : {}),
+        ...(input.sort ? { sort: { fieldId: await field(input.sort.field), direction: input.sort.direction } } : {}),
+        ...(input.groupBy ? { groupFieldId: await field(input.groupBy) } : {}), ...(input.dateField ? { dateFieldId: await field(input.dateField) } : {}) };
+      return { kind: "addView", objectId: object._id, view: await checkView(ctx, principal, object, view), ...(input.pinned ? { pinned: true } : {}) };
+    }
     case "relabel": {
       const object = await readableObject(ctx, principal, input.object);
       requireLabel(input.label);
@@ -108,15 +133,17 @@ export async function proposalFor(ctx: Ctx, principal: AgentMembership, input: P
       return { kind: "relabel", objectId: object._id, label: input.label!, ...(input.labelPlural === undefined ? {} : { labelPlural: input.labelPlural }) };
     }
   }
-  fail("VALIDATION", "Unknown kind; use addObject, addField, addOptions or relabel");
+  fail("VALIDATION", "Unknown kind; use addObject, addField, addOptions, relabel or addView");
 }
 
 // Each helper checks everything before its first write, so a refusal caught here
 // leaves nothing behind and the proposal is marked failed instead.
-async function perform(ctx: MutationCtx, principal: Membership, change: ShapeChange): Promise<{ objectId: Id<"objects">; fieldIds: Id<"fields">[] }> {
+async function perform(ctx: MutationCtx, principal: Membership, row: Row): Promise<{ objectId: Id<"objects">; fieldIds: Id<"fields">[]; viewId?: Id<"views"> }> {
+  const change = row.change;
   if (change.kind === "addObject") { const { kind, fields, ...spec } = change; return createObject(ctx, principal, spec, fields); }
   const object = await ctx.db.get(change.objectId);
   if (!object) fail("NOT_FOUND", "Object not found");
+  if (change.kind === "addView") return { objectId: object._id, fieldIds: [], viewId: await insertView(ctx, principal, object, change.view, { shared: true, pinned: change.pinned, createdBy: { kind: "agent", id: row.agentId } }) };
   if (change.kind === "addField") return { objectId: object._id, fieldIds: [(await createField(ctx, principal, object, change.field)).fieldId] };
   if (change.kind === "addOptions") {
     const { field } = await fieldFor(ctx, principal, change.fieldId);
@@ -161,7 +188,7 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSugg
   const agent = await ctx.db.get(row.agentId);
   if (!active(agent, row)) fail("FORBIDDEN", "This agent's access changed after it proposed this. Dismiss it, or make the change yourself in Settings.");
   let result;
-  try { result = await perform(ctx, principal, row.change); }
+  try { result = await perform(ctx, principal, row); }
   catch (error) {
     if (!stale(error)) throw error;
     const message = String(((error as ConvexError<{ message?: string }>).data)?.message ?? "No longer applies");
@@ -191,5 +218,5 @@ export const dismiss = mutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSu
 // What an agent sees of its own proposals: keys rather than ids, so it can use the result.
 export async function agentRow(ctx: Ctx, row: Row) {
   const object = row.result ? await ctx.db.get(row.result.objectId) : null, fields = row.result ? await Promise.all(row.result.fieldIds.map((id) => ctx.db.get(id))) : [];
-  return { id: row._id, kind: row.change.kind, status: row.status, ...await describe(ctx, row.change), reason: row.reason, createdAt: row._creationTime, resolvedAt: row.resolvedAt ?? null, error: row.error ?? null, result: object ? { object: object.key, fields: fields.flatMap((f) => f ? [f.key] : []) } : null };
+  return { id: row._id, kind: row.change.kind, status: row.status, ...await describe(ctx, row.change), reason: row.reason, createdAt: row._creationTime, resolvedAt: row.resolvedAt ?? null, error: row.error ?? null, result: object ? { object: object.key, fields: fields.flatMap((f) => f ? [f.key] : []), ...(row.result?.viewId ? { view: row.result.viewId } : {}) } : null };
 }

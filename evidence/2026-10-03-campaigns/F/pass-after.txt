@@ -1,0 +1,29 @@
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > today is the local date, which differs from the UTC date just after UTC midnight 46ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > next 7 days runs from today through six days later, across a month end 1ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > this month is its first through last day, leap February included 1ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > overdue is everything before today, with no start 1ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > refuses a time zone it does not know 2ms
+ ✓ convex/lib/days.test.ts > day bounds > a plain date field compares whole dates 1ms
+ ✓ convex/lib/days.test.ts > day bounds > a with-time field gets a 23-hour day when clocks spring forward 1ms
+ ✓ convex/lib/days.test.ts > day bounds > a with-time field gets a 25-hour day when clocks fall back 1ms
+ ✓ convex/lib/days.test.ts > day bounds > a day whose midnight is skipped starts when the clocks jump, east or west of UTC 1ms
+ ✓ convex/lib/days.test.ts > day bounds > an open end stays open 1ms
+ ✓ convex/views.test.ts > saved views > returns exactly what the same ad-hoc filters, range and sort return 732ms
+ ✓ convex/views.test.ts > saved views > resolves a relative range when it is read, in the caller's time zone, across UTC midnight and a DST change 162ms
+ ✓ convex/views.test.ts > saved views > run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields 130ms
+ ✓ convex/views.test.ts > saved views > keeps personal views to their owner; only admins share 98ms
+ ✓ convex/views.test.ts > saved views > can be renamed, reordered, pinned and deleted 83ms
+ ✓ convex/views.test.ts > saved views > cannot be saved or changed while the workspace is read only, but can be deleted 69ms
+ ✓ convex/views.test.ts > saved views > keeps working when a field it uses is retired, with that column, filter and sort dropped and flagged 88ms
+ ✓ convex/views.test.ts > agents propose views > are refused by the same rules as a person saving the view 181ms
+ ✓ convex/views.test.ts > agents propose views > is applied by an admin from Suggestions and creates the shared view 96ms
+ Test Files  2 passed (2)
+      Tests  19 passed (19)
+ ✓ src/client.test.ts > RemoldClient > posts proposals with bearer auth 47ms
+ ✓ src/client.test.ts > RemoldClient > reads a campaign report, previews an email for one person and marks a reply 2ms
+ ✓ src/client.test.ts > RemoldClient > throws REST errors with their code 2ms
+ ✓ src/client.test.ts > RemoldClient > passes multi-field filters and a range to REST 1ms
+ ✓ src/client.test.ts > RemoldClient > still accepts the single filter and sends it as REST's filter[field] 8ms
+ ✓ src/client.test.ts > RemoldClient > proposes shape changes and lists the agent's own proposals 1ms
+ ✓ src/client.test.ts > RemoldClient > lists saved views and runs one, passing the time zone 1ms
+      Tests  7 passed (7)
