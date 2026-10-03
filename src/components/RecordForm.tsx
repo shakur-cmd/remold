@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AssigneeInput, isAssignee } from "@/components/Assignee";
 import { RecordMultiPicker, RecordPicker } from "@/components/RecordPicker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,6 +92,7 @@ export function FieldInput({ orgId, field, value, onChange, autoFocus }: { orgId
   const id = field._id;
   switch (field.type) {
     case "text":
+      if (isAssignee(field)) return <AssigneeInput orgId={orgId} field={field} value={(value as string) ?? ""} onChange={onChange} autoFocus={autoFocus} />;
       return isLongText(field) ? (
         <Textarea id={id} autoFocus={autoFocus} value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} />
       ) : (

@@ -40,6 +40,7 @@ export function Settings() {
 
 function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
   const rename = useMutation(api.orgs.rename);
+  const queue = useQuery(api.queue.status, { orgId: org._id });
   const [name, setName] = useState(org.name);
   return (
     <Card>
@@ -59,8 +60,35 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
             Rename
           </Button>
         </form>
+        <TimeZone org={org} admin={admin} />
+        {queue?.assigneeNeedsSlot && <p className="mt-4 text-sm text-destructive">Task assignee needs a free text slot: retire or unindex a Task text field.</p>}
       </CardContent>
     </Card>
+  );
+}
+
+// The zone the workspace's days run in: Today, the daily reminder and due dates.
+function TimeZone({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
+  const set = useMutation(api.orgs.setTimeZone);
+  const saved = org.timeZone ?? "UTC", [zone, setZone] = useState(saved);
+  return (
+    <form
+      className="mt-4 grid gap-1.5"
+      onSubmit={(e: FormEvent) => {
+        e.preventDefault();
+        void attempt(() => set({ orgId: org._id, timeZone: zone.trim() }), "Time zone saved");
+      }}
+    >
+      <label htmlFor="time-zone" className="text-sm font-medium">Time zone</label>
+      <div className="flex gap-2">
+        <Input id="time-zone" list="time-zones" value={zone} onChange={(e) => setZone(e.target.value)} disabled={!admin} />
+        <datalist id="time-zones">{Intl.supportedValuesOf("timeZone").map((name) => <option key={name} value={name} />)}</datalist>
+        <Button type="submit" variant="outline" disabled={!admin || !zone.trim() || zone.trim() === saved}>
+          Save
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Where a day starts and ends for Today and the daily reminder. Use a name such as America/New_York.</p>
+    </form>
   );
 }
 
@@ -71,7 +99,7 @@ function RemindersCard({ orgId }: { orgId: Id<"orgs"> }) {
     <Card>
       <CardHeader>
         <CardTitle>Daily reminder</CardTitle>
-        <CardDescription>An email at 11:00 UTC with your overdue tasks, tasks due today and deals gone quiet in this organisation. Nothing is sent on days with nothing to list.</CardDescription>
+        <CardDescription>An email at 11:00 UTC with your overdue tasks, tasks due today and deals gone quiet in this organisation. Today follows the organisation's time zone. Nothing is sent on days with nothing to list.</CardDescription>
       </CardHeader>
       <CardContent>
         <label className="flex items-center gap-2 text-sm">

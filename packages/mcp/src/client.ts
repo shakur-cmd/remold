@@ -13,6 +13,7 @@ export class RemoldClient {
     return json;
   }
   me() { return this.request("GET", "/me"); }
+  map() { return this.request("GET", "/map"); }
   objects(args: { includeArchived?: boolean } = {}) { return this.request("GET", args.includeArchived ? "/objects?include=archived" : "/objects"); }
   listRecords(args: Record<string, unknown>) { return this.request("GET", `/records?${params(args)}`); }
   getRecord(idOrRef: string) { return this.request("GET", `/records/${encodeURIComponent(idOrRef)}`); }
@@ -20,6 +21,7 @@ export class RemoldClient {
   search(args: Record<string, unknown>) { return this.request("GET", `/search?${params(args)}`); }
   related(args: { idOrRef: string; field: string }) { return this.request("GET", `/records/${encodeURIComponent(args.idOrRef)}/related?${params({ field: args.field })}`); }
   today() { return this.request("GET", "/today"); }
+  myTasks(args: { cursor?: string; limit?: number } = {}) { return this.request("GET", `/my-tasks?${params(args)}`); }
   propose(args: Record<string, unknown>) { return this.request("POST", "/suggestions", args); }
   change(args: Record<string, unknown>) { return this.request("POST", "/changes", args); }
   listSuggestions(args: Record<string, unknown> = {}) { return this.request("GET", `/suggestions?${params(args)}`); }

@@ -1,6 +1,7 @@
 /// <reference types="node" />
 process.env.TZ = "America/New_York";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { setWorkspaceZone } from "./zone";
 import { type Field, dateToInput, inputToDate } from "./fields";
 import { byDay, dayKey, localSpan, monthDays, moveToDay, weekDays } from "./calendar";
 
@@ -63,3 +64,24 @@ describe("localSpan", () => {
   });
 });
 
+
+// The browser here is in New York; the workspace is in Auckland, which put its clocks forward on 2026-09-27.
+describe("days in the workspace's time zone", () => {
+  afterEach(() => setWorkspaceZone(undefined));
+  it("places a timed record on the workspace's day, not the browser's", () => {
+    setWorkspaceZone("Pacific/Auckland");
+    const record = { _id: "a", values: { f1: Date.UTC(2026, 9, 5, 12) } } as any; // 01:00 on the 6th in Auckland, 08:00 on the 5th in New York
+    expect([...byDay([record], timed).keys()]).toEqual([Date.UTC(2026, 9, 6)]);
+  });
+  it("spans a day from the workspace's midnight, 23 hours long on the day its clocks change", () => {
+    setWorkspaceZone("Pacific/Auckland");
+    const span = localSpan(Date.UTC(2026, 8, 27), Date.UTC(2026, 8, 27));
+    expect(span.start).toBe(Date.UTC(2026, 8, 26, 12));
+    expect(span.end - span.start + 1).toBe(23 * 3_600_000);
+  });
+  it("moves a timed record to another day at the same wall clock time in the workspace's zone", () => {
+    setWorkspaceZone("Pacific/Auckland");
+    const at = Date.UTC(2026, 8, 26, 20, 30); // 09:30 on the 27th in Auckland (after the clock change)
+    expect(moveToDay(timed, at, Date.UTC(2026, 8, 29))).toBe(Date.UTC(2026, 8, 28, 20, 30)); // 09:30 NZDT on the 29th
+  });
+});

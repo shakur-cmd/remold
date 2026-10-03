@@ -25,7 +25,7 @@ export function Home() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
-    if (!(await attempt(async () => navigate(`/o/${await create({ name: name.trim() })}`)))) setBusy(false);
+    if (!(await attempt(async () => navigate(`/o/${await create({ name: name.trim(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}`)))) setBusy(false);
   }
 
   return (

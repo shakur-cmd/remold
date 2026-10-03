@@ -9,7 +9,7 @@ export const importFields: Record<string, Record<string, string>> = {
   person: { name: "", email: "", phone: "", title: "", company: "company", linkedin: "" },
   opportunity: { name: "", amount: "", stage: "", closeDate: "", company: "company", person: "person", campaign: "campaign" },
   project: { name: "", status: "", company: "company" },
-  task: { title: "", dueDate: "", done: "", project: "project", blockedBy: "task[]", about: "*" },
+  task: { title: "", dueDate: "", done: "", project: "project", blockedBy: "task[]", about: "*", assignee: "" },
   note: { body: "", about: "*" },
   activity: { title: "", type: "", when: "", about: "*", source: "" },
   campaign: { name: "", status: "", channel: "", startDate: "", goal: "", people: "person[]", companies: "company[]" },

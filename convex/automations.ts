@@ -8,6 +8,7 @@ import { fail, type ErrorCode } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { allDay, fromInstant, readableMap, resolveValues } from "./lib/values";
 import { canReadField, canReadRecord, requireRecordRead, visibleTitle } from "./authority/reads";
+import { localDate, orgZone } from "./lib/zone";
 import { DAY, TAG, definitionOf, enqueue, fieldOf, itemByKey, nextDue, nextQueued, patchValues, pause, sentence, triggerAccess, type Chain, type Definition, type Item } from "./lib/automation";
 
 // The automation runner. A trigger (lib/automation.ts) or the minute cron queues a run
@@ -72,7 +73,7 @@ type Writer = { actor: Actor; reason: string; automation: Chain; inbox: (text: s
 // Runs the actions in order. Without a writer it is the dry run: the same rendering and
 // value checks, nothing written, new records stood in for by "(the new Project)".
 export async function perform(ctx: Ctx, principal: Principal, d: Definition, trigger: Trigger, write?: Writer, viewer?: Principal) {
-  const orgId = principal.org._id, env: Env = { principal, viewer, trigger, created: new Map(), today: Math.floor(Date.now() / DAY) * DAY };
+  const orgId = principal.org._id, env: Env = { principal, viewer, trigger, created: new Map(), today: localDate(principal.org.timeZone ?? "UTC", Date.now()) };
   const steps: Record<string, unknown>[] = [], problems: string[] = [], created: Id<"records">[] = [], standIns = new Set<string>([HIDDEN]);
   let last: { item: Item; id: string } | null = null;
   for (const [index, action] of d.actions.entries()) {
@@ -214,12 +215,12 @@ export const run = internalAction({ args: { runId: v.id("automationRuns") }, han
   if (next) await ctx.scheduler.runAfter(0, internal.automations.run, { runId: next });
 } });
 
-// Every minute: schedules that are due today and dates that land on today (UTC), once per day each.
+// Every minute: schedules that are due now and dates that land on today in the workspace time zone, once per local day each.
 // Scale limits per minute: 200 due schedules, 100 date automations (oldest scan first, so
 // all are reached in turn) and 200 records per date automation per day.
 const SCHEDULES_PER_TICK = 200, DATES_PER_TICK = 100, RECORDS_PER_DATE = 200;
 export const tick = internalMutation({ args: {}, handler: async (ctx) => {
-  const now = Date.now(), today = Math.floor(now / DAY) * DAY;
+  const now = Date.now(), zones = new Map<Id<"orgs">, string>(), zoneOf = async (orgId: Id<"orgs">) => { if (!zones.has(orgId)) zones.set(orgId, await orgZone(ctx, orgId)); return zones.get(orgId)!; };
   // A queue whose runner died (a crash, a deploy) is picked up again; a run already done is never redone.
   const stuck = new Set<Id<"records">>();
   for (const run of await ctx.db.query("automationRuns").withIndex("by_status", (q) => q.eq("status", "queued").lt("_creationTime", now - 10 * 60_000)).take(100)) if (!stuck.has(run.automationId)) { stuck.add(run.automationId); await ctx.scheduler.runAfter(0, internal.automations.run, { runId: run._id }); }
@@ -227,8 +228,9 @@ export const tick = internalMutation({ args: {}, handler: async (ctx) => {
   // Schedules: only those due now, through the due-time index, then the next due time.
   for (const state of await ctx.db.query("automationState").withIndex("by_due", (q) => q.eq("on", true).eq("when", "schedule").lte("dueAt", now)).take(SCHEDULES_PER_TICK)) {
     const d = await definition(state), dueAt = state.dueAt!;
-    await enqueue(ctx, state, { key: `${state.automationId}:day:${Math.floor(dueAt / DAY) * DAY}`, depth: 1, chain: [state.automationId] });
-    const next = nextDue(d?.schedule, now + 1);
+    const zone = await zoneOf(state.orgId);
+    await enqueue(ctx, state, { key: `${state.automationId}:day:${localDate(zone, dueAt)}`, depth: 1, chain: [state.automationId] });
+    const next = nextDue(d?.schedule, now + 1, zone);
     await ctx.db.patch(state._id, next === undefined ? { on: false } : { dueAt: next });
   }
   // Dates: the automations scanned longest ago, each over its date's index for one day.
@@ -236,7 +238,7 @@ export const tick = internalMutation({ args: {}, handler: async (ctx) => {
     await ctx.db.patch(state._id, { scannedAt: now });
     const d = await definition(state), trigger = await itemByKey(ctx, state.orgId, d?.object), field = fieldOf(trigger, d?.field);
     if (!d || !trigger || field?.type !== "date" || !field.slot) continue;
-    const day = today - (d.offsetDays ?? 0) * DAY, slot = `${field.slot.kind}${field.slot.index}`;
+    const today = localDate(await zoneOf(state.orgId), now), day = today - (d.offsetDays ?? 0) * DAY, slot = `${field.slot.kind}${field.slot.index}`;
     const records: Doc<"records">[] = await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", state.orgId).eq("objectId", trigger.object._id).gte(slot, day).lt(slot, day + DAY)).take(RECORDS_PER_DATE);
     for (const record of records) await enqueue(ctx, state, { key: `${state.automationId}:${record._id}:${today}`, triggerRecordId: record._id, depth: 1, chain: [state.automationId] });
   }

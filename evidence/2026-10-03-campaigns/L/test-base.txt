@@ -1,0 +1,179 @@
+
+ RUN  v5.0.1 /home/shakur/scratch/L-base
+
+ ❯ convex/posts.test.ts (14 tests | 2 failed) 26694ms
+   ❯ posts (14)
+     ❯ read budget (6)
+       × pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar 7287ms
+       × a page asked for with its endCursor returns everything up to that end, so an insert grows it instead of shifting a post onto the next page 5251ms
+ ❯ convex/gmailSync.test.ts (5 tests | 2 failed) 29683ms
+   ❯ Gmail sync key (3)
+     × reads only person name and email, creates activities, and can do nothing else 5066ms
+   ❯ last contact (1)
+     × is the newest past activity about each person, and skips activities the reader cannot see 20890ms
+ ❯ convex/intake.test.ts (59 tests | 1 failed) 31031ms
+   ❯ Idempotency-Key on POST /api/v1/changes (10)
+     × returns the original result for a repeated key and body without writing again 5095ms
+stderr | convex/rateLimit.test.ts
+Error when running scheduled function telemetry:record Error: Invalid operational span
+    at handler (/home/shakur/scratch/L-base/convex/telemetry.ts:16:228)
+    at file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:83
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at runWithGlobalOverrides (file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1667:35)
+    at handler (file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1970:24)
+    at invokeFunction (file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:56:36)
+    at invokeMutation (file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:42:24)
+    at Function.func.invokeMutation (file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/dist/esm/server/impl/registration_impl.js:125:38)
+    at invokeRaw (file:///home/shakur/work/jobs/L-queue/node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1987:39)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:61:14)
+
+ ❯ convex/rateLimit.test.ts (2 tests | 2 failed) 10088ms
+   × limits writes per key without starving reads or other agents 5066ms
+   × refills the key allowance over time and still rejects a revoked key 5019ms
+ ❯ src/components/Calendar.drag.test.tsx (4 tests | 3 failed) 51472ms
+   × dragging a post to another day saves that day and keeps its local time, even when the new time is midnight UTC 6009ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 19760ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 25639ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/gmailSync.test.ts > Gmail sync key > reads only person name and email, creates activities, and can do nothing else
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/gmailSync.test.ts:16:3
+     14|
+     15| describe("Gmail sync key", () => {
+     16|   it("reads only person name and email, creates activities, and can do…
+       |   ^
+     17|     const { t, client, orgId, create, activity, ada, acme } = await fi…
+     18|     const { key, agentId } = await client.action(api.agents.createGmai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  convex/gmailSync.test.ts > last contact > is the newest past activity about each person, and skips activities the reader cannot see
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/gmailSync.test.ts:95:3
+     93|
+     94| describe("last contact", () => {
+     95|   it("is the newest past activity about each person, and skips activit…
+       |   ^
+     96|     const { t, client, orgId, create, activity, person, ada } = await …
+     97|     const bob = await create(person, { name: "Bob", email: "bob@exampl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  convex/intake.test.ts > Idempotency-Key on POST /api/v1/changes > returns the original result for a repeated key and body without writing again
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/intake.test.ts:26:3
+     24|
+     25| describe("Idempotency-Key on POST /api/v1/changes", () => {
+     26|   it("returns the original result for a repeated key and body without …
+       |   ^
+     27|     const { t, client, orgId } = await userAndOrg();
+     28|     const agent = await agentFor(client, orgId, { name: "writer", gran…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  convex/posts.test.ts > posts > read budget > pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/posts.test.ts:227:5
+    225|     });
+    226|
+    227|     it("pages past a full day: 1,000 published posts before the one st…
+       |     ^
+    228|       const w = await world();
+    229|       await clones(w, 1000, { title: "Out", status: "published", publi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  convex/posts.test.ts > posts > read budget > a page asked for with its endCursor returns everything up to that end, so an insert grows it instead of shifting a post onto the next page
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/posts.test.ts:239:5
+    237|     });
+    238|
+    239|     it("a page asked for with its endCursor returns everything up to t…
+       |     ^
+    240|       const w = await world();
+    241|       await clones(w, 501, { title: "Post", planned: Date.UTC(2026, 9,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  convex/rateLimit.test.ts > limits writes per key without starving reads or other agents
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/rateLimit.test.ts:6:1
+      4| afterEach(() => vi.restoreAllMocks());
+      5|
+      6| it("limits writes per key without starving reads or other agents", asy…
+       | ^
+      7|   vi.spyOn(Date, "now").mockReturnValue(1_800_000_000_000);
+      8|   const { t, client, orgId } = await userAndOrg();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  convex/rateLimit.test.ts > refills the key allowance over time and still rejects a revoked key
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/rateLimit.test.ts:28:1
+     26| });
+     27|
+     28| it("refills the key allowance over time and still rejects a revoked ke…
+       | ^
+     29|   const clock = vi.spyOn(Date, "now").mockReturnValue(1_800_000_000_00…
+     30|   const { t, client, orgId } = await userAndOrg();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  src/components/Calendar.drag.test.tsx > dragging a post to another day saves that day and keeps its local time, even when the new time is midnight UTC
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/Calendar.drag.test.tsx:72:1
+     70| afterEach(() => { act(() => root.unmount()); host.remove(); vi.restore…
+     71|
+     72| it("dragging a post to another day saves that day and keeps its local …
+       | ^
+     73|   const { t, client, orgId } = await userAndOrg();
+     74|   backend.client = client;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/Calendar.drag.test.tsx:116:1
+    114| }
+    115|
+    116| it("follows a page that is not done and shows the records of the next …
+       | ^
+    117|   const { orgId, detail } = await busyDay();
+    118|   await sync(() => week(orgId, detail));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/Calendar.drag.test.tsx:127:1
+    125|
+    126| // Astra's r3 live probe: two pages loaded, then a post lands before t…
+    127| it("keeps every post when an insert moves an earlier page boundary whi…
+       | ^
+    128|   const { orgId, detail, create } = await busyDay();
+    129|   await sync(() => week(orgId, detail));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  5 failed | 49 passed (54)
+      Tests  10 failed | 459 passed (469)
+   Start at  10:13:34
+   Duration  108.98s (tests 86%, import 8%, transform 5%, environment 1%)
+
+    Isolate  54 workers spawned · ~1.22s startup each (spawn + environment, per file)
+             at least ~8.20s faster with isolate: false — reuses workers across files instead of one per file
+
+done
