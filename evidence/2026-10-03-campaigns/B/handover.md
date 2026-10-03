@@ -1,7 +1,7 @@
 # Job B handover: booking pages and paid bookings
 
 - Branch: `campaigns/booking`, based on `c5e2e6b` (Job A merged with Job C).
-- Commits: `fb7ba89` (backend), `7043926` (UI and MCP), `4d6abbb` (harness, screenshots, mutants, spec), then one commit with this handover. Final commit: `git log -1 campaigns/booking`.
+- Commits: `fb7ba89` (backend), `7043926` (UI and MCP), `4d6abbb` (harness, screenshots, mutants, spec), then `0e60dd8` (this handover), then one commit that only records these hashes. Final commit: `git log -1 campaigns/booking`.
 - Builder: Claude Opus 5.5. Nothing here is independently verified yet. Levels: SIM (convex-test, Resend and Stripe faked) and SERVICE (local Convex backend + Vite + headless Chromium, signed Stripe webhook sent to the local HTTP router). Nothing LIVE: no deploy, no email sent, no call to stripe.com or resend.com.
 
 ## What changed
