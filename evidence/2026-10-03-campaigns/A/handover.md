@@ -1,7 +1,7 @@
 # Job A handover: campaign email (send, track, reply, follow up)
 
 - Branch: `campaigns/email`, based on `cc9ed1c` (code identical to `371a62c`; the worktree started at 371a62c and was moved to cc9ed1c, which only adds the briefs).
-- Final commit: the commit that adds this file (see `git log -1 campaigns/email`).
+- Commits: `feb6036` (all code, tests and evidence), then one commit that only records this hash here. Final commit: `git log -1 campaigns/email`.
 - Builder: Claude Opus 5.5. Nothing here is independently verified yet. Level: SIM (convex-test with Resend mocked) and SERVICE (local Convex backend for screenshots and the authority sweep). Nothing LIVE: no deploy, no real email, no calls to resend.com.
 
 ## What changed
