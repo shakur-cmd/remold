@@ -205,7 +205,7 @@ Use `pathPrefix: "/api/v1/"` with one dispatcher that splits the remaining path,
 Server instructions (passed to McpServer): "Remold is the team's CRM. Records are named by a three-word code like brisk-ember-oyster; use codes or ids when you refer to one. Start with remold_inbox: pending items are work left for you. Prefer remold_propose_change; a person applies it. remold_apply_change only works for actions the team granted you."
 
 Tools (one per section 7 function, names and argument shapes mirror it, descriptions written for a model reading them cold):
-`remold_me`, `remold_objects`, `remold_list_records`, `remold_get_record`, `remold_search`, `remold_related`, `remold_today`, `remold_propose_change`, `remold_apply_change`, `remold_list_suggestions`, `remold_inbox`, `remold_inbox_add`, `remold_inbox_resolve`.
+`remold_me`, `remold_objects`, `remold_list_records`, `remold_get_record`, `remold_search`, `remold_related`, `remold_today`, `remold_my_tasks`, `remold_propose_change`, `remold_apply_change`, `remold_list_suggestions`, `remold_inbox`, `remold_inbox_add`, `remold_inbox_resolve`.
 Each tool returns the JSON body pretty-printed as text; an error response returns `isError: true` with the error message and code.
 
 README: what it is, `pnpm --filter @remold/mcp build`, the exact `claude mcp add remold -e REMOLD_URL=... -e REMOLD_KEY=... -- node <abs path>/packages/mcp/dist/index.js` line and the Codex `~/.codex/config.toml` equivalent, and a curl example against REST.

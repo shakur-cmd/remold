@@ -12,6 +12,7 @@ import { automationAfter, automationRules, type Chain } from "./automation";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 import { dateValue } from "./values";
+import { assigneeOf } from "./assignee";
 
 export type Change =
   | { action: "create"; orgId: Id<"orgs">; objectId: Id<"objects">; values: Record<string, unknown>; reason?: string }
@@ -23,11 +24,12 @@ async function fieldsFor(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects
   return ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
 }
 
-async function validateValue(ctx: MutationCtx, field: Doc<"fields">, value: unknown, orgId: Id<"orgs">) {
+async function validateValue(ctx: MutationCtx, object: Doc<"objects">, field: Doc<"fields">, value: unknown, orgId: Id<"orgs">) {
   if (empty(value)) return undefined;
   const invalid = (message: string): never => fail("VALIDATION", message, { fieldId: field._id });
   if (field.type === "number" && (typeof value !== "number" || !Number.isFinite(value))) invalid("Expected a finite number");
   if (field.type === "text" && typeof value !== "string") invalid("Expected text");
+  if (object.key === "task" && field.key === "assignee" && !(await assigneeOf(ctx, orgId, value))) invalid("Not a person or agent in this workspace");
   if (field.type === "select" && (typeof value !== "string" || !field.options?.some((option) => option.id === value))) invalid("Invalid select option");
   if (field.type === "date" && !dateValue(field, value)) invalid("Expected a date timestamp");
   if (field.type === "boolean" && typeof value !== "boolean") invalid("Expected boolean");
@@ -142,7 +144,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
     const field = byId.get(fieldId as Id<"fields">);
     // Reference cleanup may touch a retired field: its stored links still exist.
     if (!field || (field.retired && !options.clearingReference)) fail("VALIDATION", "Unknown or retired field", { fieldId });
-    validated[fieldId] = await validateValue(ctx, field, value, change.orgId);
+    validated[fieldId] = await validateValue(ctx, object, field, value, change.orgId);
   }
   const values: Record<string, unknown> = change.action === "create" ? {} : { ...record!.values };
   for (const [fieldId, value] of Object.entries(validated)) { if (empty(value)) delete values[fieldId]; else values[fieldId] = value; }

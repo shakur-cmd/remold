@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "name": "Service business",
+  "description": "Jobs, quotes and visits, for work done at the customer's place: trades, cleaning, repairs.",
+  "changes": [
+    {
+      "kind": "addObject",
+      "key": "job",
+      "label": "Job",
+      "labelPlural": "Jobs",
+      "fields": [
+        {
+          "key": "customer",
+          "label": "Customer",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "company",
+          "label": "Company",
+          "type": "lookup",
+          "target": "company"
+        },
+        {
+          "key": "quote",
+          "label": "Quote",
+          "type": "lookup",
+          "target": "quote"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "new",
+              "label": "New"
+            },
+            {
+              "id": "scheduled",
+              "label": "Scheduled"
+            },
+            {
+              "id": "inProgress",
+              "label": "In progress"
+            },
+            {
+              "id": "done",
+              "label": "Done"
+            },
+            {
+              "id": "invoiced",
+              "label": "Invoiced"
+            }
+          ]
+        },
+        {
+          "key": "scheduledFor",
+          "label": "Scheduled for",
+          "type": "date",
+          "withTime": true
+        },
+        {
+          "key": "price",
+          "label": "Price",
+          "type": "number"
+        },
+        {
+          "key": "address",
+          "label": "Address",
+          "type": "text",
+          "indexed": false
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "quote",
+      "label": "Quote",
+      "labelPlural": "Quotes",
+      "fields": [
+        {
+          "key": "customer",
+          "label": "Customer",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "amount",
+          "label": "Amount",
+          "type": "number"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "draft",
+              "label": "Draft"
+            },
+            {
+              "id": "sent",
+              "label": "Sent"
+            },
+            {
+              "id": "accepted",
+              "label": "Accepted"
+            },
+            {
+              "id": "declined",
+              "label": "Declined"
+            }
+          ]
+        },
+        {
+          "key": "sentOn",
+          "label": "Sent on",
+          "type": "date"
+        },
+        {
+          "key": "validUntil",
+          "label": "Valid until",
+          "type": "date"
+        },
+        {
+          "key": "details",
+          "label": "Details",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "visit",
+      "label": "Visit",
+      "labelPlural": "Visits",
+      "fields": [
+        {
+          "key": "job",
+          "label": "Job",
+          "type": "lookup",
+          "target": "job"
+        },
+        {
+          "key": "when",
+          "label": "When",
+          "type": "date",
+          "withTime": true
+        },
+        {
+          "key": "technician",
+          "label": "Technician",
+          "type": "text"
+        },
+        {
+          "key": "outcome",
+          "label": "Outcome",
+          "type": "select",
+          "options": [
+            {
+              "id": "completed",
+              "label": "Completed"
+            },
+            {
+              "id": "followUp",
+              "label": "Follow-up needed"
+            },
+            {
+              "id": "noAccess",
+              "label": "No access"
+            }
+          ]
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addOptions",
+      "object": "opportunity",
+      "field": "stage",
+      "options": [
+        {
+          "id": "siteVisit",
+          "label": "Site visit"
+        },
+        {
+          "id": "quoted",
+          "label": "Quoted"
+        }
+      ]
+    },
+    {
+      "kind": "addField",
+      "object": "invoice",
+      "key": "job",
+      "label": "Job",
+      "type": "lookup",
+      "target": "job"
+    },
+    {
+      "kind": "addView",
+      "object": "job",
+      "name": "Open jobs by stage",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "customer",
+        "scheduledFor",
+        "price"
+      ],
+      "sort": {
+        "field": "scheduledFor",
+        "direction": "asc"
+      },
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "visit",
+      "name": "Visit calendar",
+      "layout": "calendar",
+      "dateField": "when",
+      "columns": [
+        "name",
+        "job",
+        "technician"
+      ]
+    }
+  ],
+  "records": [
+    {
+      "object": "quote",
+      "values": {
+        "name": "Boiler service quote",
+        "amount": 180,
+        "status": "sent"
+      }
+    },
+    {
+      "object": "job",
+      "values": {
+        "name": "Boiler service",
+        "quote": "Boiler service quote",
+        "status": "scheduled",
+        "price": 180,
+        "address": "12 Mill Lane"
+      }
+    },
+    {
+      "object": "visit",
+      "values": {
+        "name": "First visit",
+        "job": "Boiler service",
+        "technician": "Sam",
+        "outcome": "completed"
+      }
+    }
+  ]
+}

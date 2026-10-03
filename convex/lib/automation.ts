@@ -5,6 +5,7 @@ import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { canReadField, canReadRecordId } from "../authority/reads";
 import { projections } from "./slots";
+import { localDate, orgZone, wallTime } from "./zone";
 
 // The rules an Automation record follows on every write, and the event triggers. The
 // runner itself (actions, caps, the cron) is convex/automations.ts.
@@ -32,18 +33,18 @@ export async function itemByKey(ctx: Ctx, orgId: Id<"orgs">, key: string | undef
 }
 export const fieldOf = (item: Item | null, key: string | undefined) => (key ? item?.fields.find((field) => field.key === key) : undefined);
 
-// "daily 09:00" or "weekly mon 09:00", in UTC.
+// "daily 09:00" or "weekly mon 09:00", in the workspace's time zone.
 export function parseSchedule(text: string | undefined) {
   const match = /^(?:daily|weekly (sun|mon|tue|wed|thu|fri|sat)) ([01]\d|2[0-3]):([0-5]\d)$/i.exec(text?.trim() ?? "");
   return match ? { weekday: match[1] ? DAYS.indexOf(match[1].toLowerCase()) : undefined, minutes: +match[2]! * 60 + +match[3]! } : null;
 }
 
-// The next time a schedule is due at or after `from` (UTC).
-export function nextDue(text: string | undefined, from: number) {
+// The next time a schedule is due at or after `from`: its wall clock time on a local day in `zone`.
+export function nextDue(text: string | undefined, from: number, zone = "UTC") {
   const schedule = parseSchedule(text);
   if (!schedule) return undefined;
-  const day = Math.floor(from / DAY) * DAY;
-  for (let i = 0; i <= 7; i++) { const at = day + i * DAY + schedule.minutes * 60_000; if (at >= from && (schedule.weekday === undefined || new Date(day + i * DAY).getUTCDay() === schedule.weekday)) return at; }
+  const day = localDate(zone, from);
+  for (let i = 0; i <= 8; i++) { const at = wallTime(zone, day + i * DAY, schedule.minutes); if (at >= from && (schedule.weekday === undefined || new Date(day + i * DAY).getUTCDay() === schedule.weekday)) return at; }
   return undefined;
 }
 
@@ -90,7 +91,7 @@ export async function check(ctx: Ctx, orgId: Id<"orgs">, d: Definition, complete
   if (d.when === "dateReached" && field && field.type !== "date") bad(`${field.label} is not a date`);
   if (d.when === "dateReached" && field?.type === "date" && !field.slot) bad(`${field.label} is not indexed, so it cannot start an automation`);
   if (field?.type === "select" && d.equals && !field.options?.some((o) => matches(field, o.id, d.equals))) bad(`${field.label} has no option "${d.equals}"`);
-  if (d.schedule && !parseSchedule(d.schedule)) bad('Schedule must look like "daily HH:MM" or "weekly mon HH:MM" (UTC)');
+  if (d.schedule && !parseSchedule(d.schedule)) bad('Schedule must look like "daily HH:MM" or "weekly mon HH:MM" (in the workspace time zone)');
   if (d.offsetDays !== undefined && !Number.isSafeInteger(d.offsetDays)) bad("Offset days must be a whole number");
   const hasRecord = d.when !== "schedule";
   const created = new Map<string, Item>();
@@ -153,7 +154,7 @@ export async function check(ctx: Ctx, orgId: Id<"orgs">, d: Definition, complete
   if (!d.when) bad("Choose when it runs");
   if (hasRecord && !trigger) bad("Choose the object it watches");
   if ((d.when === "fieldChanged" || d.when === "dateReached") && !field) bad("Choose the field it watches");
-  if (d.when === "schedule" && !d.schedule) bad('Add a schedule, like "daily 09:00" or "weekly mon 09:00" (UTC)');
+  if (d.when === "schedule" && !d.schedule) bad('Add a schedule, like "daily 09:00" or "weekly mon 09:00" (in the workspace time zone)');
   if (!d.actions.length) bad("Add at least one action");
 }
 
@@ -169,7 +170,7 @@ export async function sentence(ctx: Ctx, orgId: Id<"orgs">, d: Definition) {
   const when = d.when === "recordCreated" ? `When ${what} is created${field && equals ? ` with ${fieldName} ${equals}` : ""}`
     : d.when === "fieldChanged" ? `When ${what}'s ${fieldName} ${equals ? `becomes ${equals}` : "changes"}`
     : d.when === "dateReached" ? (offset ? `${Math.abs(offset)} ${Math.abs(offset) === 1 ? "day" : "days"} ${offset < 0 ? "before" : "after"} ${what}'s ${fieldName}` : `On ${what}'s ${fieldName}`)
-    : d.when === "schedule" ? (schedule ? `Every ${schedule.weekday === undefined ? "day" : DAY_NAMES[schedule.weekday]} at ${time(schedule.minutes)} UTC` : "On a schedule not set yet")
+    : d.when === "schedule" ? (schedule ? `Every ${schedule.weekday === undefined ? "day" : DAY_NAMES[schedule.weekday]} at ${time(schedule.minutes)} ${await orgZone(ctx, orgId)}` : "On a schedule not set yet")
     : "When nothing yet";
   const groups: { verb: string; noun: string; key: string; count: number }[] = [];
   for (const action of d.actions) {
@@ -214,7 +215,7 @@ export async function automationAfter(ctx: MutationCtx, principal: Principal, ob
     const status = fields.find((f) => f.key === "status" && !f.retired), now = status && after[status._id], was = status && before?.[status._id];
     if (now === "on" && was !== "on" && "member" in principal) {
       const d = definitionOf({ object, fields: fields.filter((f) => !f.retired) }, after);
-      const now = Date.now(), dueAt = d.when === "schedule" ? nextDue(d.schedule, now) : undefined;
+      const now = Date.now(), dueAt = d.when === "schedule" ? nextDue(d.schedule, now, principal.org.timeZone ?? "UTC") : undefined;
       const row = { orgId: object.orgId, automationId: recordId, on: true, objectKey: d.when === "schedule" ? "" : d.object ?? "", when: d.when ?? "", enabledBy: principal.user._id, memberId: principal.member._id, epoch: principal.member.authorityEpoch ?? 0, enabledAt: now, failures: 0, ...(dueAt !== undefined ? { dueAt } : {}), ...(d.when === "dateReached" ? { scannedAt: 0 } : {}) };
       if (state) await ctx.db.replace(state._id, row); else await ctx.db.insert("automationState", row);
     } else if (now !== "on" && state?.on) await ctx.db.patch(state._id, { on: false });

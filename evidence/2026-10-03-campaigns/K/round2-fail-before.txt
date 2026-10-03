@@ -1,0 +1,20 @@
+## blueprint kinds without addView (pre-merge state)
+     × a blueprint adds a shared view to an object it creates, credited to the proposing agent 738ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: {"error":{"code":"VALIDATION","message":"Step 2: kind must be one of addObject, addField, addOptions, relabel, reorderFields, reorderObjects, reorderOptions, archiveObject, setTitleField, retireField"}}: expected 400 to be 201 // Object.is equa
+      Tests  1 failed | 2 passed | 18 skipped (21)
+## views not deferred to the end
+     × a blueprint adds a shared view to an object it creates, credited to the proposing agent 684ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: {"error":{"code":"NOT_FOUND","message":"Step 2, add view job \"Open jobs by stage\": Field not found"}}: expected 404 to be 201 // Object.is equality
+      Tests  1 failed | 2 passed | 18 skipped (21)
+## integ's inline paginate kept for setTitleField
+     × setTitleField inside a blueprint marks the object retitling, hides old titles from restricted readers, then finishes 239ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 500 to be 201 // Object.is equality
+      Tests  1 failed | 2 passed | 18 skipped (21)
+## archived objects accept new records (pre-merge rule)
+     × a blueprint that archives an object refuses starter records on it 71ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'message')
+      Tests  1 failed | 2 passed | 18 skipped (21)

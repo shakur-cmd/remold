@@ -1,0 +1,50 @@
+     × applies a blueprint whose new objects refer to each other, shown as one grouped card 514ms
+     × creates starter records only when the person ticks the box, linked and attributed to them 46ms
+     × a person picks a built-in template, checks it and applies it, records only when asked 35ms
+     × slot exhaustion summed across every change in the blueprint 51ms
+     × key collisions, with the workspace and within the blueprint 41ms
+     × dangling references, to objects, fields and records 40ms
+     × format: version, kinds, size limits 39ms
+     × a blueprint made stale before apply fails plainly and leaves nothing half applied 58ms
+     × a person's direct apply of an invalid blueprint changes nothing 31ms
+     × exporting a reshaped workspace and applying it to a new one reproduces the shape 29ms
+     × an untouched workspace exports an empty blueprint 22ms
+     × export leaves out objects and fields the caller cannot read 25ms
+     × each validates and applies, with its starter records, to a fresh workspace, and agents can list them 23ms
+     × member-role agents and people are refused 27ms
+     × an admin agent that cannot read every object cannot propose a blueprint 27ms
+     × lists, exports and proposes blueprints over REST 1ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/blueprints.test.ts > blueprints apply as one reviewed proposal > applies a blueprint whose new objects refer to each other, shown as one grouped card
+AssertionError: expected 400 to be 201 // Object.is equality
+ FAIL  convex/blueprints.test.ts > blueprints apply as one reviewed proposal > creates starter records only when the person ticks the box, linked and attributed to them
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/blueprints.test.ts > blueprints apply as one reviewed proposal > a person picks a built-in template, checks it and applies it, records only when asked
+Error: Could not find module for: "blueprints"
+ FAIL  convex/blueprints.test.ts > blueprint validation names the problem and stores nothing > slot exhaustion summed across every change in the blueprint
+AssertionError: expected { code: 'VALIDATION', …(1) } to match object { code: 'SLOTS_EXHAUSTED', …(1) }
+ FAIL  convex/blueprints.test.ts > blueprint validation names the problem and stores nothing > key collisions, with the workspace and within the blueprint
+AssertionError: expected 'Invalid request body for this route' to be 'Step 1, add object company: Object ke…' // Object.is equality
+ FAIL  convex/blueprints.test.ts > blueprint validation names the problem and stores nothing > dangling references, to objects, fields and records
+AssertionError: expected 'Invalid request body for this route' to be 'Step 1 refers to object "depot", whic…' // Object.is equality
+ FAIL  convex/blueprints.test.ts > blueprint validation names the problem and stores nothing > format: version, kinds, size limits
+AssertionError: expected 'Invalid request body for this route' to be 'Unsupported blueprint version; use 1' // Object.is equality
+ FAIL  convex/blueprints.test.ts > blueprint apply is all or nothing > a blueprint made stale before apply fails plainly and leaves nothing half applied
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/blueprints.test.ts > blueprint apply is all or nothing > a person's direct apply of an invalid blueprint changes nothing
+Error: Could not find module for: "blueprints"
+ FAIL  convex/blueprints.test.ts > blueprint export > exporting a reshaped workspace and applying it to a new one reproduces the shape
+TypeError: Cannot read properties of undefined (reading 'find')
+ FAIL  convex/blueprints.test.ts > blueprint export > an untouched workspace exports an empty blueprint
+Error: Could not find module for: "blueprints"
+ FAIL  convex/blueprints.test.ts > blueprint export > export leaves out objects and fields the caller cannot read
+Error: Could not find module for: "blueprints"
+ FAIL  convex/blueprints.test.ts > built-in blueprints > each validates and applies, with its starter records, to a fresh workspace, and agents can list them
+TypeError: Cannot read properties of undefined (reading 'map')
+ FAIL  convex/blueprints.test.ts > blueprints need an admin > member-role agents and people are refused
+AssertionError: expected [ 400, 'VALIDATION' ] to deeply equal [ 403, 'FORBIDDEN' ]
+ FAIL  convex/blueprints.test.ts > blueprints need an admin > an admin agent that cannot read every object cannot propose a blueprint
+AssertionError: expected [ 400, 'VALIDATION' ] to deeply equal [ 403, 'FORBIDDEN' ]
+ FAIL  convex/blueprints.test.ts > MCP client > lists, exports and proposes blueprints over REST
+TypeError: client.blueprints is not a function
+      Tests  16 failed (16)

@@ -1,0 +1,281 @@
+
+ RUN  v5.0.1 /home/shakur/work/jobs/L-queue
+
+ ❯ convex/queue.test.ts (17 tests | 17 failed) 1592ms
+   ❯ task assignee (7)
+     × is a standard task field, added once however often the standard objects are ensured 299ms
+     × shows the person's or agent's name over REST, and filters by name or id 135ms
+     × lists the people and active agents a task can go to 40ms
+     × refuses an assignee who is not in this workspace 76ms
+     × lets an agent take a task, leave it, or hand it to a person, but not give it to another agent 488ms
+     × writes a handoff event naming who gave the task to whom 42ms
+     × records an agent's handoff to a person as the agent's event 90ms
+   ❯ Mine and Waiting on others (7)
+     × shows a person their ready tasks, due and overdue first then undated, and nobody else's 50ms
+     × shows an agent only the tasks assigned to it 40ms
+     × holds back a task until everything it is blocked by is done, down a chain 41ms
+     × stays blocked until every blocker is done, and names only the ones still open 40ms
+     × leaves finished tasks out of both lists 32ms
+     × shows an agent its blocked task with the task that blocks it 38ms
+     × pages an agent's own ready tasks over REST 40ms
+   ❯ Today in the workspace's time zone (3)
+     × counts a task due at 22:00 New York time as due on that local day even after UTC has rolled over 32ms
+     × starts the next day at local midnight across the spring-forward change 62ms
+     × gives an agent the same local day 46ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/queue.test.ts > task assignee > is a standard task field, added once however often the standard objects are ensured
+AssertionError: expected undefined to match object { type: 'text', retired: false }
+
+- Expected:
+{
+  "retired": false,
+  "type": "text",
+}
+
++ Received:
+undefined
+
+ ❯ convex/queue.test.ts:33:34
+     31|   it("is a standard task field, added once however often the standard …
+     32|     const { t, client, orgId, task } = await workspace();
+     33|     expect(task.fields.assignee).toMatchObject({ type: "text", retired…
+       |                                  ^
+     34|     const count = async () => (await t.run(async (ctx: any) => (await …
+     35|     expect(await count()).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  convex/queue.test.ts > task assignee > shows the person's or agent's name over REST, and filters by name or id
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:25:218
+
+ ❯ set convex/queue.test.ts:25:186
+ ❯ convex/queue.test.ts:48:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  convex/queue.test.ts > task assignee > lists the people and active agents a task can go to
+Error: Could not find module for: "queue"
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1468:19
+ ❯ resolveFunction node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2398:76
+ ❯ Object.queryFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2085:40
+ ❯ query node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2172:41
+ ❯ node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:80
+ ❯ Object.result.<computed> [as query] node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1886:56
+ ❯ convex/queue.test.ts:63:31
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  convex/queue.test.ts > task assignee > refuses an assignee who is not in this workspace
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:71:157
+     69|     const stranger = await userAndOrg("Zed"), zed = (await stranger.cl…
+     70|     const id = await add("Mine");
+     71|     for (const assignee of [zed, "nobody", "Mars"]) await expect(clien…
+       |                                                                                                                                                             ^
+     72|   });
+     73|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  convex/queue.test.ts > task assignee > lets an agent take a task, leave it, or hand it to a person, but not give it to another agent
+AssertionError: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ convex/queue.test.ts:78:50
+     76|     const id = await add("Shared");
+     77|     const change = (assignee: unknown) => scoutCall("POST", "/api/v1/c…
+     78|     expect((await change(scout.agentId)).status).toBe(200);
+       |                                                  ^
+     79|     expect((await change(other.agentId)).status).toBe(403);
+     80|     expect((await change("Other")).status).toBe(403);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  convex/queue.test.ts > task assignee > writes a handoff event naming who gave the task to whom
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:25:218
+
+ ❯ set convex/queue.test.ts:25:186
+ ❯ convex/queue.test.ts:89:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  convex/queue.test.ts > task assignee > records an agent's handoff to a person as the agent's event
+AssertionError: expected { …(11) } to match object { Object (actor, reason) }
+(11 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "actor": {
+-     "id": "00000000000000000000010085agents",
+-     "kind": "agent",
++     "id": "000000000000000000000010000users",
++     "kind": "user",
+    },
+-   "reason": "needs a person",
+  }
+
+ ❯ convex/queue.test.ts:101:19
+     99|     await scoutCall("POST", "/api/v1/changes", { action: "update", rec…
+    100|     const [event] = await client.query(api.events.forRecord, { orgId, …
+    101|     expect(event).toMatchObject({ actor: { kind: "agent", id: scout.ag…
+       |                   ^
+    102|     expect(Object.values(event!.after!)).toContain(benId);
+    103|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > shows a person their ready tasks, due and overdue first then undated, and nobody else's
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:25:218
+
+ ❯ set convex/queue.test.ts:25:186
+ ❯ convex/queue.test.ts:110:52
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > shows an agent only the tasks assigned to it
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:25:218
+
+ ❯ set convex/queue.test.ts:25:186
+ ❯ convex/queue.test.ts:121:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > holds back a task until everything it is blocked by is done, down a chain
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:22:107
+     20|   const task = await objectFields(client, orgId, "task");
+     21|   const add = async (title: string, values: Record<string, unknown> = …
+     22|     const byKey = Object.fromEntries(Object.entries({ title, ...values…
+       |                                                                                                           ^
+     23|     return (await client.mutation(api.records.create, { orgId, objectI…
+     24|   };
+ ❯ add convex/queue.test.ts:22:75
+ ❯ convex/queue.test.ts:129:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > stays blocked until every blocker is done, and names only the ones still open
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:22:107
+     20|   const task = await objectFields(client, orgId, "task");
+     21|   const add = async (title: string, values: Record<string, unknown> = …
+     22|     const byKey = Object.fromEntries(Object.entries({ title, ...values…
+       |                                                                                                           ^
+     23|     return (await client.mutation(api.records.create, { orgId, objectI…
+     24|   };
+ ❯ add convex/queue.test.ts:22:75
+ ❯ convex/queue.test.ts:141:61
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > leaves finished tasks out of both lists
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:22:107
+     20|   const task = await objectFields(client, orgId, "task");
+     21|   const add = async (title: string, values: Record<string, unknown> = …
+     22|     const byKey = Object.fromEntries(Object.entries({ title, ...values…
+       |                                                                                                           ^
+     23|     return (await client.mutation(api.records.create, { orgId, objectI…
+     24|   };
+ ❯ add convex/queue.test.ts:22:75
+ ❯ convex/queue.test.ts:154:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > shows an agent its blocked task with the task that blocks it
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:22:107
+     20|   const task = await objectFields(client, orgId, "task");
+     21|   const add = async (title: string, values: Record<string, unknown> = …
+     22|     const byKey = Object.fromEntries(Object.entries({ title, ...values…
+       |                                                                                                           ^
+     23|     return (await client.mutation(api.records.create, { orgId, objectI…
+     24|   };
+ ❯ add convex/queue.test.ts:22:75
+ ❯ convex/queue.test.ts:163:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  convex/queue.test.ts > Mine and Waiting on others > pages an agent's own ready tasks over REST
+TypeError: Cannot read properties of undefined (reading '_id')
+ ❯ convex/queue.test.ts:25:218
+
+ ❯ set convex/queue.test.ts:25:186
+ ❯ convex/queue.test.ts:174:38
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  convex/queue.test.ts > Today in the workspace's time zone > counts a task due at 22:00 New York time as due on that local day even after UTC has rolled over
+Error: Validator error: Missing required field `today` in object
+ ❯ validateValidator node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:917:31
+ ❯ validateFunctionArgs node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2337:5
+ ❯ Object.queryFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2086:17
+ ❯ query node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2172:20
+ ❯ convex/queue.test.ts:189:21
+    187|     vi.setSystemTime(Date.UTC(2026, 9, 3, 3));
+    188|     await add("Late call", { dueDate: Date.UTC(2026, 9, 3, 2) + 0.0 });
+    189|     const utcView = await client.query(api.today.get, { orgId });
+       |                     ^
+    190|     expect(utcView.days[utcView.tasks[0]._id]).toBe(Date.UTC(2026, 9, …
+    191|     await client.mutation(api.orgs.setTimeZone, { orgId, timeZone: "Am…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  convex/queue.test.ts > Today in the workspace's time zone > starts the next day at local midnight across the spring-forward change
+Error: Validator error: Missing required field `today` in object
+ ❯ validateValidator node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:917:31
+ ❯ validateFunctionArgs node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2337:5
+ ❯ Object.queryFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2086:17
+ ❯ query node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2172:20
+ ❯ convex/queue.test.ts:204:18
+    202|     await add("First minute", { dueDate: Date.UTC(2026, 2, 9, 4, 0) });
+    203|     vi.setSystemTime(Date.UTC(2026, 2, 8, 16));
+    204|     const data = await client.query(api.today.get, { orgId });
+       |                  ^
+    205|     expect(data.day).toEqual({ zone: "America/New_York", today: Date.U…
+    206|     const dayOf = Object.fromEntries(data.tasks.map((r: any) => [r.tit…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  convex/queue.test.ts > Today in the workspace's time zone > gives an agent the same local day
+AssertionError: expected undefined to match object { zone: 'Pacific/Auckland', …(1) }
+
+- Expected:
+{
+  "date": "2026-10-04",
+  "zone": "Pacific/Auckland",
+}
+
++ Received:
+undefined
+
+ ❯ convex/queue.test.ts:214:64
+    212|     await client.mutation(api.orgs.setTimeZone, { orgId, timeZone: "Pa…
+    213|     vi.setSystemTime(Date.UTC(2026, 9, 3, 12));
+    214|     expect((await scoutCall("GET", "/api/v1/today")).json.day).toMatch…
+       |                                                                ^
+    215|   });
+    216| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed (17)
+   Start at  09:58:00
+   Duration  2.42s (tests 72%, transform 21%, import 6%)
+

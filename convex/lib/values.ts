@@ -3,6 +3,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { fail } from "../errors";
 import { findReadableByTitle } from "./find";
 import { isRef } from "./ref";
+import { assigneeOf, resolveAssignee } from "./assignee";
 import type { Principal } from "../identity";
 import { canReadField, canReadRecord, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle } from "../authority/reads";
 
@@ -70,13 +71,14 @@ function scalar(field: Doc<"fields">, value: unknown, fieldKey: string) {
   return value;
 }
 
-export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc<"objects">, fields: Doc<"fields">[], input: Record<string, unknown>, pending?: Pending) {
+export async function resolveValues(ctx: Ctx, principal: Principal, _object: Doc<"objects">, fields: Doc<"fields">[], input: Record<string, unknown>, pending?: Pending, mode: "write" | "filter" = "write") {
   const byKey = new Map(fields.map((field) => [field.key, field]));
   const values: Record<string, unknown> = {};
   for (const [fieldKey, inputValue] of Object.entries(input)) {
     const field = byKey.get(fieldKey);
     if (!field || field.retired || !canReadField(principal, _object, field)) fail("VALIDATION", `Unknown field \"${fieldKey}\"`, { fieldKey });
-    if (field.type === "lookup") values[field._id] = empty(inputValue) ? null : await related(ctx, principal, field, inputValue, fieldKey, pending);
+    if (_object.key === "task" && field.key === "assignee") values[field._id] = empty(inputValue) ? null : await resolveAssignee(ctx, principal, inputValue, fieldKey, mode);
+    else if (field.type === "lookup") values[field._id] = empty(inputValue) ? null : await related(ctx, principal, field, inputValue, fieldKey, pending);
     else if (field.type === "links") { if (empty(inputValue)) values[field._id] = null; else { if (!Array.isArray(inputValue)) fail("VALIDATION", "Expected record array", { fieldKey }); values[field._id] = await Promise.all(inputValue.map((value) => related(ctx, principal, field, value, fieldKey, pending))); } }
     else values[field._id] = scalar(field, inputValue, fieldKey);
   }
@@ -102,7 +104,7 @@ export async function readableValue(ctx: Ctx, principal: Principal, field: Doc<"
 export async function readable(ctx: Ctx, principal: Principal, record: Doc<"records">, object: Doc<"objects">, fields: Doc<"fields">[]): Promise<ApiRecord> {
   requireRecordRead(principal, object, record);
   const values: Record<string, unknown> = {};
-  for (const field of fields) if (!field.retired && canReadField(principal, object, field, record._id)) { const value = await readableValue(ctx, principal, field, record.values[field._id]); if (value !== undefined) values[field.key] = value; }
+  for (const field of fields) if (!field.retired && canReadField(principal, object, field, record._id)) { const raw = record.values[field._id], value = object.key === "task" && field.key === "assignee" ? (await assigneeOf(ctx, principal.org._id, raw)) ?? (empty(raw) ? undefined : { id: raw, name: null, kind: null }) : await readableValue(ctx, principal, field, raw); if (value !== undefined) values[field.key] = value; }
   return { id: record._id, ref: record.ref ?? null, object: object.key, title: await visibleTitle(ctx, principal, record), createdAt: record._creationTime, updatedAt: record.updatedAt, values };
 }
 
@@ -110,6 +112,6 @@ export async function readable(ctx: Ctx, principal: Principal, record: Doc<"reco
 export async function readableMap(ctx: Ctx, principal: Principal, fields: Doc<"fields">[], values: Record<string, unknown>) {
   const byId = new Map(fields.map((field) => [field._id as string, field]));
   const out: Record<string, unknown> = {};
-  for (const [id, value] of Object.entries(values)) { const field = byId.get(id); if (!field) continue; const object = await ctx.db.get(field.objectId); if (!object || !canReadField(principal, object, field)) continue; out[field.key] = (await readableValue(ctx, principal, field, value)) ?? null; }
+  for (const [id, value] of Object.entries(values)) { const field = byId.get(id); if (!field) continue; const object = await ctx.db.get(field.objectId); if (!object || !canReadField(principal, object, field)) continue; out[field.key] = (object.key === "task" && field.key === "assignee" ? (await assigneeOf(ctx, principal.org._id, value)) ?? (empty(value) ? undefined : { id: value, name: null, kind: null }) : await readableValue(ctx, principal, field, value)) ?? null; }
   return out;
 }

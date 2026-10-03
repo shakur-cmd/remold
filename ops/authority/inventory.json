@@ -20,6 +20,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "agentApi:map",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
     "id": "agentApi:listRecords",
     "kind": "query",
     "visibility": "internal",
@@ -2077,6 +2087,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "HTTP GET /api/v1/map",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
     "id": "HTTP GET /api/v1/records",
     "kind": "route",
     "visibility": "http",
@@ -2961,6 +2981,195 @@
     "reason": "automation runner; in a read-only workspace a run is refused and the automation paused"
   },
   {
+    "id": "agentApi:myTasks",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/my-tasks",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "queue:assignees",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "orgs:setTimeZone",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "queue:status",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "agentApi:blueprints",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "each validates and applies, with its starter records, to a fresh workspace, and agents can list them",
+    "reason": "the built-in blueprints; no workspace data"
+  },
+  {
+    "id": "agentApi:currentBlueprint",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "export leaves out objects and fields the caller cannot read",
+    "reason": "shape only, limited to the objects and fields the agent can read; no records"
+  },
+  {
+    "id": "agentApi:trialBlueprint",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "blueprint validation names the problem and stores nothing",
+    "reason": "applies a proposed blueprint and always throws, so nothing it wrote is kept"
+  },
+  {
+    "id": "blueprints:templates",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "a person picks a built-in template, checks it and applies it, records only when asked",
+    "reason": "the built-in blueprints; no workspace data"
+  },
+  {
+    "id": "blueprints:preview",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "member-role agents and people are refused",
+    "reason": "labels only, for an admin with full object scope"
+  },
+  {
+    "id": "blueprints:current",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "export leaves out objects and fields the caller cannot read",
+    "reason": "shape only, limited to the objects and fields the person can read; no records"
+  },
+  {
+    "id": "blueprints:apply",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "blueprints:check",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write",
+    "reason": "runs blueprints:trial, which always rolls back"
+  },
+  {
+    "id": "blueprints:trial",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "a person's direct apply of an invalid blueprint changes nothing",
+    "reason": "applies a blueprint and always throws, so nothing it wrote is kept"
+  },
+  {
+    "id": "shapeSuggestions:applyBlueprint",
+    "kind": "action",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "shapeSuggestions:markFailed",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "a blueprint made stale before apply fails plainly and leaves nothing half applied",
+    "reason": "marks a pending proposal failed after its apply was refused and rolled back"
+  },
+  {
+    "id": "HTTP GET /api/v1/blueprints",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "each validates and applies, with its starter records, to a fresh workspace, and agents can list them"
+  },
+  {
+    "id": "HTTP GET /api/v1/blueprints/current",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "export leaves out objects and fields the caller cannot read"
+  },
+  {
     "id": "agentApi:bookings",
     "kind": "query",
     "visibility": "internal",
@@ -3131,6 +3340,16 @@
     "reason": "only ends a hold whose payment failed"
   },
   {
+    "id": "bookings:resolve",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
     "id": "cron Expire booking holds",
     "kind": "cron",
     "visibility": "cron",
@@ -3140,15 +3359,5 @@
     "masks": "no-record-data",
     "proof": "a payment hold frees its time after 30 minutes, and the cron marks it expired",
     "reason": "only ends holds that ran out"
-  },
-  {
-    "id": "bookings:resolve",
-    "kind": "mutation",
-    "visibility": "public",
-    "writes": true,
-    "principal": "human",
-    "readonly": "refused",
-    "masks": "n/a",
-    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   }
 ]

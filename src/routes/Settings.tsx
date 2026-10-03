@@ -14,6 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
 import { PaymentsCard } from "@/components/Bookings";
+import { BlueprintReview, useBlueprintCheck } from "@/components/BlueprintReview";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { attempt, errorMessage } from "@/lib/errors";
 import { toKey } from "@/lib/fields";
 import { capacity, slotsLeft, type SlotKind } from "../../convex/lib/slots";
@@ -31,6 +34,7 @@ export function Settings() {
       {admin && <PaymentsCard orgId={org._id} />}
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} owner={role === "owner"} />
+      <BlueprintsCard orgId={org._id} orgName={org.name} objects={objects} admin={admin} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
     </div>
   );
@@ -38,6 +42,7 @@ export function Settings() {
 
 function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
   const rename = useMutation(api.orgs.rename);
+  const queue = useQuery(api.queue.status, { orgId: org._id });
   const [name, setName] = useState(org.name);
   return (
     <Card>
@@ -57,8 +62,35 @@ function OrgCard({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
             Rename
           </Button>
         </form>
+        <TimeZone org={org} admin={admin} />
+        {queue?.assigneeNeedsSlot && <p className="mt-4 text-sm text-destructive">Task assignee needs a free text slot: retire or unindex a Task text field.</p>}
       </CardContent>
     </Card>
+  );
+}
+
+// The zone the workspace's days run in: Today, the daily reminder and due dates.
+function TimeZone({ org, admin }: { org: Doc<"orgs">; admin: boolean }) {
+  const set = useMutation(api.orgs.setTimeZone);
+  const saved = org.timeZone ?? "UTC", [zone, setZone] = useState(saved);
+  return (
+    <form
+      className="mt-4 grid gap-1.5"
+      onSubmit={(e: FormEvent) => {
+        e.preventDefault();
+        void attempt(() => set({ orgId: org._id, timeZone: zone.trim() }), "Time zone saved");
+      }}
+    >
+      <label htmlFor="time-zone" className="text-sm font-medium">Time zone</label>
+      <div className="flex gap-2">
+        <Input id="time-zone" list="time-zones" value={zone} onChange={(e) => setZone(e.target.value)} disabled={!admin} />
+        <datalist id="time-zones">{Intl.supportedValuesOf("timeZone").map((name) => <option key={name} value={name} />)}</datalist>
+        <Button type="submit" variant="outline" disabled={!admin || !zone.trim() || zone.trim() === saved}>
+          Save
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Where a day starts and ends for Today and the daily reminder. Use a name such as America/New_York.</p>
+    </form>
   );
 }
 
@@ -69,7 +101,7 @@ function RemindersCard({ orgId }: { orgId: Id<"orgs"> }) {
     <Card>
       <CardHeader>
         <CardTitle>Daily reminder</CardTitle>
-        <CardDescription>An email at 11:00 UTC with your overdue tasks, tasks due today and deals gone quiet in this organisation. Nothing is sent on days with nothing to list.</CardDescription>
+        <CardDescription>An email at 11:00 UTC with your overdue tasks, tasks due today and deals gone quiet in this organisation. Today follows the organisation's time zone. Nothing is sent on days with nothing to list.</CardDescription>
       </CardHeader>
       <CardContent>
         <label className="flex items-center gap-2 text-sm">
@@ -549,5 +581,99 @@ function OptionOrder({ orgId, field }: { orgId: Id<"orgs">; field: Doc<"fields">
         </li>
       ))}
     </ol>
+  );
+}
+
+type Blueprint = FunctionReturnType<typeof api.blueprints.templates>[number]["blueprint"];
+type Picked = { blueprint: Blueprint; diff: FunctionReturnType<typeof api.blueprints.preview> };
+
+// Start from a template, paste a blueprint from another workspace, or export this one's shape.
+function BlueprintsCard({ orgId, orgName, objects, admin }: { orgId: Id<"orgs">; orgName: string; objects: Doc<"objects">[]; admin: boolean }) {
+  const templates = useQuery(api.blueprints.templates, {});
+  const convex = useConvex();
+  const [picked, setPicked] = useState<Picked | null>(null);
+  const [pasting, setPasting] = useState(false);
+  const [pasted, setPasted] = useState("");
+  async function review(blueprint: Blueprint) {
+    try {
+      setPicked({ blueprint, diff: await convex.query(api.blueprints.preview, { orgId, blueprint }) });
+      setPasting(false);
+    } catch (error) {
+      toast.error(errorMessage(error));
+    }
+  }
+  function reviewPasted() {
+    let parsed: Blueprint;
+    try { parsed = JSON.parse(pasted) as Blueprint; } catch { toast.error("That is not valid JSON"); return; }
+    void review(parsed);
+  }
+  async function exportShape() {
+    const blueprint = await convex.query(api.blueprints.current, { orgId });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(blueprint, null, 2)], { type: "application/json" }));
+    link.download = `${toKey(orgName) || "workspace"}-blueprint.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Start from a template</CardTitle>
+        <CardDescription>Add a ready-made set of objects and fields for your kind of business. You see every change before anything is applied, and it is applied all at once.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {admin && (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(templates ?? []).map(({ id, blueprint }) => (
+              <button key={id} type="button" className="grid gap-0.5 rounded-md border px-3 py-2 text-left text-sm transition-colors hover:border-primary/40 hover:bg-accent/60" onClick={() => void review(blueprint)}>
+                <span className="font-medium">{blueprint.name}</span>
+                <span className="text-[13px] text-muted-foreground">{blueprint.description}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {admin && pasting && (
+          <div className="grid gap-2">
+            <Textarea value={pasted} onChange={(e) => setPasted(e.target.value)} rows={6} placeholder='{ "version": 1, "name": "...", "changes": [...] }' aria-label="Blueprint JSON" className="font-mono text-xs" />
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" disabled={!pasted.trim()} onClick={reviewPasted}>Review</Button>
+              <Button size="sm" variant="ghost" onClick={() => setPasting(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {admin && !pasting && <Button size="sm" variant="ghost" onClick={() => setPasting(true)}>Paste a blueprint</Button>}
+          <Button size="sm" variant="ghost" onClick={() => void attempt(exportShape)}>Export this workspace's shape</Button>
+        </div>
+      </CardContent>
+      {picked && <BlueprintDialog key={picked.blueprint.name} orgId={orgId} picked={picked} objects={objects} onClose={() => setPicked(null)} />}
+    </Card>
+  );
+}
+
+function BlueprintDialog({ orgId, picked, objects, onClose }: { orgId: Id<"orgs">; picked: Picked; objects: Doc<"objects">[]; onClose: () => void }) {
+  const apply = useMutation(api.blueprints.apply);
+  const [withRecords, setWithRecords] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const checked = useBlueprintCheck({ orgId, blueprint: picked.blueprint, withRecords }, objects);
+  async function run() {
+    setBusy(true);
+    if (await attempt(() => apply({ orgId, blueprint: picked.blueprint, withRecords }), `${picked.blueprint.name} applied`)) onClose();
+    setBusy(false);
+  }
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>{picked.blueprint.name}</DialogTitle>
+          <p className="text-sm text-muted-foreground">Review every change. Applying adds all of it, or nothing if any part no longer fits.</p>
+        </DialogHeader>
+        <BlueprintReview orgId={orgId} diff={picked.diff} checked={checked} withRecords={withRecords} onWithRecords={setWithRecords} />
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button disabled={busy || !checked?.ok} onClick={() => void run()}>Apply all</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
