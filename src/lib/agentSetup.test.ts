@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { agentSetup } from "./agentSetup";
 
 const url = "https://x-y-123.convex.site", key = "rm_abc123secret";
+// A hosted MCP form can be added as one more member of the object agentSetup returns.
 const setup = agentSetup(url, key);
 
 describe("agent setup snippets", () => {
@@ -17,6 +18,14 @@ describe("agent setup snippets", () => {
     expect(setup.claudeCommand).toMatch(/^claude mcp add remold /);
     expect(JSON.parse(setup.claudeJson).mcpServers.remold.env).toEqual({ REMOLD_URL: url, REMOLD_KEY: key });
     expect(JSON.parse(setup.generic).mcpServers.remold.command).toBe("node");
+  });
+  it("names the same environment variables the MCP server reads, in every client's config", () => {
+    const names = ["REMOLD_URL", "REMOLD_KEY"], server = readFileSync("packages/mcp/src/index.ts", "utf8"), readme = readFileSync("packages/mcp/README.md", "utf8");
+    for (const name of names) for (const text of [server, readme, setup.claudeCommand, setup.claudeJson, setup.codex, setup.generic]) expect(text).toContain(name);
+    const envNames = (text: string) => [...text.matchAll(/\b(REMOLD_\w+)\b/g)].map((m) => m[1]);
+    expect(new Set(envNames(setup.codex))).toEqual(new Set(names));
+    expect(new Set(envNames(setup.generic))).toEqual(new Set(names));
+    expect(new Set(envNames(setup.claudeCommand))).toEqual(new Set(names));
   });
   it("tells the person how to test it", () => expect(setup.test).toBe("Ask your agent: what is in my Remold workspace?"));
   it("uses the same invocation as the MCP README", () => {
