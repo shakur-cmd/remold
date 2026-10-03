@@ -170,7 +170,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
                   </tr>
                 </thead>
                 <tbody>
-                  {[{ key: "*", label: "All current objects" }, ...objects.map((o) => ({ key: o.key, label: o.labelPlural }))].map((o) => (
+                  {[{ key: "*", label: "All current objects" }, ...objects.filter((o) => !o.archived).map((o) => ({ key: o.key, label: o.labelPlural }))].map((o) => (
                     <tr key={o.key} className="border-t">
                       <td className="py-1.5">{o.label}</td>
                       {ACTIONS.map((action) => (
@@ -236,7 +236,8 @@ function ReadAccess({ orgId, agent, objects, admin, open }: { orgId: Id<"orgs">;
               <td className="py-1.5">All objects, including new ones</td>
               <td className="text-center"><Checkbox checked={all} onCheckedChange={() => save(!all, objects.map((o) => o._id), all ? "New objects now stay hidden" : "It reads all objects")} aria-label={`${agent.name} reads all objects`} /></td>
             </tr>
-            {objects.map((o) => (
+            {/* Archived objects are not offered; access an agent already has to one is kept. */}
+            {objects.filter((o) => !o.archived).map((o) => (
               <tr key={o._id} className="border-t">
                 <td className="py-1.5">{o.labelPlural}</td>
                 <td className="text-center"><Checkbox checked={reads(o)} disabled={all} onCheckedChange={() => save(false, reads(o) ? readable.filter((id) => id !== o._id) : [...readable, o._id], reads(o) ? `It no longer reads ${o.labelPlural}` : `It can read ${o.labelPlural}`)} aria-label={`${agent.name} reads ${o.labelPlural}`} /></td>

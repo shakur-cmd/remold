@@ -154,7 +154,7 @@ describe("posts", () => {
       const slot = `${w.post.fields.planned.slot.kind}${w.post.fields.planned.slot.index}`;
       await w.t.run(async (ctx: any) => {
         const { _id, _creationTime, ...doc } = await ctx.db.get(recordId);
-        for (let i = 1; i < n; i++) await ctx.db.insert("records", { ...doc, ref: `${doc.ref}-${i}`, title: `${doc.title} ${i}`, values: { ...doc.values }, [slot]: doc[slot] });
+        for (let i = 1; i < n; i++) await ctx.db.insert("records", { ...doc, ref: `${doc.ref}-${i}`, title: `${doc.title} ${i}`, values: { ...doc.values, [w.post.fields.title._id]: `${doc.title} ${i}` }, [slot]: doc[slot] });
       });
     }
     const oct5 = nyDay(2026, 9, 5);

@@ -1,0 +1,57 @@
+     × new and older workspaces get the Automation object, and a second seed changes nothing 34ms
+     × a new automation is a draft, an agent can draft and pause but never turn one on, and a person can 8ms
+     × editing what an on automation does pauses it; renaming it does not 7ms
+     × only a complete automation can be turned on 6ms
+     × refuses actions that delete, send, publish or change an approval status, and more than 10 actions 6ms
+     × when a deal is won, creates the delivery project and its three tasks once, as the automation for the person who turned it on 6ms
+     × recordCreated fires once per created record, not on updates 5ms
+     × dateReached fires once on the day the offset lands on, however often the clock ticks 6ms
+     × a schedule fires once a day at its time, or once a week on its day, and not for times before it was turned on 7ms
+     × a run happens once even when its job is retried or ticks overlap 5ms
+     × a run's own writes never trigger it again, and chains stop at depth 3 5ms
+     × nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation 5ms
+     × acts with the permissions of the person who turned it on, and pauses when they lose them or the workspace is read only 5ms
+     × a run that fails writes nothing, and three failures in a row pause the automation with an inbox item 5ms
+     × a success between failures resets the count 6ms
+     × the dry run shows what the actions would write for a record and writes nothing 5ms
+     × run history is readable by agents over REST and MCP, attributed to the trigger, the person and what was created 6ms
+     × runs from a cron every minute 2ms
+ FAIL  convex/automations.test.ts > automations > new and older workspaces get the Automation object, and a second seed changes nothing
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > a new automation is a draft, an agent can draft and pause but never turn one on, and a person can
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > editing what an on automation does pauses it; renaming it does not
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > only a complete automation can be turned on
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > refuses actions that delete, send, publish or change an approval status, and more than 10 actions
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > when a deal is won, creates the delivery project and its three tasks once, as the automation for the person who turned it on
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > recordCreated fires once per created record, not on updates
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > dateReached fires once on the day the offset lands on, however often the clock ticks
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > a schedule fires once a day at its time, or once a week on its day, and not for times before it was turned on
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > a run happens once even when its job is retried or ticks overlap
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > a run's own writes never trigger it again, and chains stop at depth 3
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > acts with the permissions of the person who turned it on, and pauses when they lose them or the workspace is read only
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > a run that fails writes nothing, and three failures in a row pause the automation with an inbox item
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > a success between failures resets the count
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > the dry run shows what the actions would write for a record and writes nothing
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > run history is readable by agents over REST and MCP, attributed to the trigger, the person and what was created
+TypeError: Cannot read properties of undefined (reading '_id')
+ FAIL  convex/automations.test.ts > automations > runs from a cron every minute
+AssertionError: expected [ …(5) ] to deep equally contain ObjectContaining{…}
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed (1)
+      Tests  18 failed (18)

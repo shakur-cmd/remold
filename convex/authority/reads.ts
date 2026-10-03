@@ -93,7 +93,10 @@ export async function visibleTitle(ctx: Ctx, principal: Principal, record: Doc<'
     const target = id ? await ctx.db.get(id) : null;
     return target ? visibleTitle(ctx, principal, target, depth + 1) : '';
   }
-  return record.title;
+  // From the title field the caller was just checked against, not the stored copy: after the
+  // title field changes, stored titles still hold the old field's values until retitled.
+  const value = record.values[field._id];
+  return value == null ? '' : String(value);
 }
 export async function projectRecord(ctx: Ctx, principal: Principal, record: Doc<'records'>): Promise<Doc<'records'> | null> {
   const object = await ctx.db.get(record.objectId);
