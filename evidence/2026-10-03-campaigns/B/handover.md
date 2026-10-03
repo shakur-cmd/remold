@@ -143,7 +143,7 @@ The previous release (`c5e2e6b`) does not declare `bookings` or `paymentSecrets`
 
 Verifier: Claude Fable 5.1 (`~/work/briefs-1003/iv-B-verdict.md`). Builder: Claude Opus 5.5. Not re-verified yet. Levels: SIM (convex-test) and SERVICE (local backend, 18/18 checks). Nothing LIVE.
 
-Commits: `118e729` merges `origin/integ/campaigns` (ab5d59b), then one commit with the round 2 fixes and this section. Final: `git log -1 campaigns/booking`.
+Commits: `118e729` merges `origin/integ/campaigns` (ab5d59b), then `f7c56c9` (round 2 fixes and this section), then one commit recording these hashes. Final: `git log -1 campaigns/booking`.
 
 ### Merge with integ/campaigns (ab5d59b)
 
