@@ -43,6 +43,7 @@ export function PaymentsCard({ orgId }: { orgId: Id<"orgs"> }) {
         <p className="flex items-center gap-2">
           {data.secretSet ? <><Check className="size-4 text-emerald-600" aria-hidden /> Signing secret saved. Paid bookings confirm when Stripe reports the payment.</> : <span className="text-muted-foreground">No signing secret yet. Paid bookings stay on hold until one is saved.</span>}
         </p>
+        <p className="text-xs text-muted-foreground">A payment below the page's price, or in another currency, waits for you on the booking page. That includes promotion codes you allow on the Payment Link: confirm those with Confirm anyway.</p>
         {data.secretSet && <Button size="sm" variant="ghost" className="justify-self-start text-muted-foreground" onClick={() => attempt(() => save({ orgId, secret: "" }), "Signing secret removed")}>Remove secret</Button>}
       </CardContent>
     </Card>
@@ -54,6 +55,7 @@ export function PageBookings({ orgId, recordId }: { orgId: Id<"orgs">; recordId:
   const rows = useQuery(api.bookings.forPage, { orgId, pageId: recordId });
   const page = useQuery(api.bookings.page, { pageId: recordId });
   const cancel = useMutation(api.bookings.cancel);
+  const resolve = useMutation(api.bookings.resolve);
   const link = `${window.location.origin}/book/${recordId}`;
   const now = Date.now();
   return (
@@ -76,11 +78,17 @@ export function PageBookings({ orgId, recordId }: { orgId: Id<"orgs">; recordId:
               <span className="tabular-nums">{time(b.start)}</span>
               {b.personId ? <Link to={`/o/${orgId}/person/${b.personId}`} className="font-medium hover:underline">{b.name}</Link> : <span>Hidden</span>}
               {b.email && <span className="text-xs text-muted-foreground">{b.email}</span>}
-              {b.status !== "confirmed" && <Badge variant={b.status === "cancelled" ? "destructive" : "outline"}>{b.held ? "Waiting for payment" : b.status === "held" ? "Hold ran out" : "Cancelled"}</Badge>}
+              {b.status !== "confirmed" && <Badge variant={b.status === "cancelled" ? "destructive" : "outline"}>{b.attention && b.status === "held" ? "Needs your decision" : b.held ? "Waiting for payment" : b.status === "held" ? "Hold ran out" : "Cancelled"}</Badge>}
               {b.paid && <Badge variant="secondary">Paid {b.paid}{b.test ? " (test)" : ""}</Badge>}
-              {b.attention && <span className="text-xs text-destructive">{b.attention}. Rebook or refund.</span>}
+              {b.attention && <span className="text-xs text-destructive">{b.attention}.</span>}
+              {b.decide && (
+                <span className="flex gap-1">
+                  <Button size="xs" variant="outline" onClick={() => attempt(() => resolve({ orgId, bookingId: b.id, action: "confirm" }), "Booking confirmed")}>Confirm anyway</Button>
+                  <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => window.confirm("Release this time? Refund the payment in Stripe yourself.") && attempt(() => resolve({ orgId, bookingId: b.id, action: "release" }), "Released. Refund it in Stripe.")}>Release</Button>
+                </span>
+              )}
               {b.note && <span className="basis-full text-xs text-muted-foreground">{b.note}</span>}
-              {b.status !== "cancelled" && b.end >= now && (
+              {b.status !== "cancelled" && !b.attention && b.end >= now && (
                 <Button size="xs" variant="ghost" className="ml-auto text-muted-foreground hover:text-destructive" onClick={() => {
                   if (!window.confirm("Cancel this booking? The time opens up again.")) return;
                   void attempt(() => cancel({ orgId, bookingId: b.id, notify: !!b.email && window.confirm("Email them that it is cancelled?") }), "Booking cancelled");

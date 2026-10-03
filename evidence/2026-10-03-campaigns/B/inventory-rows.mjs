@@ -26,6 +26,7 @@ const rows = [
   row("bookings:notify", "action", "internal", true, "human", "refused", "no-record-data", MAIL, "sends through campaign email's one-off sender, which refuses a read-only workspace"),
   row("bookings:hookToken", "mutation", "internal", true, "human", "reduction-only", "no-record-data", "the Stripe webhook is rate limited per workspace", "rate limit bookkeeping only"),
   row("bookings:failed", "mutation", "internal", true, "human", "reduction-only", "no-record-data", "a delayed payment confirms when it succeeds and frees the time when it fails", "only ends a hold whose payment failed"),
+  row("bookings:resolve", "mutation", "public", true, "human", "refused", "n/a", READONLY),
   row("cron Expire booking holds", "cron", "cron", true, "scheduler", "reduction-only", "no-record-data", HOLD, "only ends holds that ran out"),
 ];
 const known = new Set(inventory.map((entry) => entry.id));

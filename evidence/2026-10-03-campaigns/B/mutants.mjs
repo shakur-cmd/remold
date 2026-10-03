@@ -9,10 +9,10 @@ const mutants = [
   ["busy ignored", "convex/lib/bookingTime.ts", "if (!busy.some((b) => b.start < start + length && start < b.end)) out.add(start);", "out.add(start);"],
   ["expired holds still block", "convex/lib/booking.ts", "(b.holdUntil ?? 0) > now", "true"],
   ["meetings ignored", "convex/lib/booking.ts", "value(r, activity.f.type) === \"meeting\"", "false"],
-  ["slot not re-checked on book", "convex/bookings.ts", "if (!(await isOpen(ctx, page, a.start, now))) return { status: \"taken\" as const };", ""],
+  ["slot not re-checked on book", "convex/bookings.ts", "if (!(await isOpen(ctx, page, a.start, now, own?._id))) return { status: \"taken\" as const };", ""],
   ["live not required", "convex/lib/booking.ts", "|| value(record, item.f.live) !== true", ""],
   ["missing cap allowed", "convex/lib/booking.ts", "if (!record || dailyCap() === 0) return null;", "if (!record) return null;"],
-  ["readonly allowed", "convex/lib/booking.ts", "org.flags?.readonly || ", ""],
+  ["readonly allowed", "convex/lib/booking.ts", "org.flags?.readonly || !item ||", "!item ||"],
   ["existing person updated", "convex/lib/booking.ts", "if (hit) return hit._id as Id<\"records\">;", "if (hit) { await ctx.db.patch(hit._id, { title: name }); return hit._id as Id<\"records\">; }"],
   ["signature not checked", "convex/bookings.ts", "if (!(await verifyStripe(found.secret, request.headers.get(\"stripe-signature\"), body, Date.now())))", "if (false)"],
   ["stale timestamp allowed", "convex/lib/bookingTime.ts", "|| Math.abs(now / 1000 - Number(t)) > 300", ""],
@@ -27,26 +27,41 @@ const mutants = [
   ["cross-org send token attributes", "convex/bookings.ts", "from = send?.orgId === orgId ? send : null", "from = send"],
   ["name keeps line breaks", "convex/bookings.ts", "text?.replace(/\\s+/g, \" \").trim()", "text?.trim()"],
   ["visitor zone not validated", "convex/bookings.ts", "...(a.zone && validZone(a.zone) ? { zone: a.zone } : {})", "...(a.zone ? { zone: a.zone } : {})"],
-  ["paid confirms an owner-cancelled booking", "convex/bookings.ts", ": booking.cancelReason === \"cancelled\" ? \"Paid, but the booking was cancelled\"", ": false ? \"\""],
-  ["underpayment confirms", "convex/bookings.ts", "a.amountMinor < (booking.expectedMinor ?? 0)", "false"],
-  ["other currency confirms", "convex/bookings.ts", "a.currency !== booking.expectedCurrency || ", ""],
+  ["paid confirms an owner-cancelled booking", "convex/bookings.ts", ": owned ? \"Paid, but the booking was cancelled\"", ": false ? \"\""],
+  ["underpayment confirms", "convex/bookings.ts", "|| a.amountMinor < min,", "|| false,"],
+  ["other currency confirms", "convex/bookings.ts", "short = a.currency !== asked || ", "short = "],
   ["zero-decimal currencies divided by 100", "convex/lib/bookingTime.ts", "ZERO_DECIMAL.has(currency.toLowerCase()) ? 1 : 100", "100"],
   ["async success ignored", "convex/bookings.ts", " || type === \"checkout.session.async_payment_succeeded\"", ""],
   ["async failure ignored", "convex/bookings.ts", "if (type === \"checkout.session.async_payment_failed\") await ctx.runMutation(internal.bookings.failed, ids);", ""],
   ["livemode not recorded", "convex/bookings.ts", ", livemode: a.livemode });", " });"],
   ["probing not metered", "convex/bookings.ts", "if (!perPage.ok) return limited(perPage.retryAfter ?? 0);", ""],
   ["holds count against the daily cap", "convex/bookings.ts", "await limiter.check(ctx, \"bookingDaily\"", "await limiter.limit(ctx, \"bookingDaily\""],
-  ["no limit on holds per page", "convex/bookings.ts", ">= HOLDS_PER_PAGE ? holds", ">= 99 ? holds"],
-  ["no limit on holds per address", "convex/bookings.ts", ": holds.filter((h) => h.email === email)", ": []"],
-  ["webhook not rate limited", "convex/bookings.ts", "if (!(await ctx.runMutation(internal.bookings.hookToken, { orgId }))) return", "if (false) return"],
+  ["no limit on holds per page", "convex/bookings.ts", "if (holds.length >= HOLDS_PER_PAGE) return", "if (false) return"],
+  ["webhook not rate limited", "convex/bookings.ts", "if (!allowed) return new Response(\"Too many requests\"", "if (false) return new Response(\"Too many requests\""],
   ["stale booking link sends", "convex/lib/campaign.ts", "if (links.problem) problems.push(links.problem);", ""],
   ["linked pages not in the content version", "convex/lib/campaign.ts", "...(pages.length ? { pages } : {})", ""],
   ["repeated local time gets the later instant", "convex/lib/bookingTime.ts", "Math.min(...found)", "Math.max(...found)"],
   ["slot dedupe is quadratic", "convex/lib/bookingTime.ts", "out.has(start)", "[...out].includes(start)"],
   ["no steady-day fast path", "convex/lib/bookingTime.ts", "steady ? midnight + m * MINUTE :", "false ? 0 :"],
+  // Round 3.
+  ["paid page without currency allowed", "convex/lib/booking.ts", "if (link !== null && set(\"currency\") === null && (changed(\"paymentLink\") || changed(\"currency\"))) fail(", "if (false) fail("],
+  ["legacy page assumes usd", "convex/bookings.ts", "asked = booking.expectedCurrency ?? a.currency", "asked = booking.expectedCurrency ?? \"usd\""],
+  ["legacy price always in cents", "convex/bookings.ts", "Math.round((booking.expectedPrice ?? 0) * minorPer(a.currency))", "Math.round((booking.expectedPrice ?? 0) * 100)"],
+  ["automation may set live", "convex/lib/automation.ts", "if (item.object.key === \"bookingPage\" && key === \"live\") bad(", "if (false) bad("],
+  ["another time adds a second hold", "convex/bookings.ts", "  if (own) {\n", "  if (own && false) {\n"],
+  ["attention frees the time", "convex/bookings.ts", "if (short && !owned && free) await ctx.db.patch(", "if (false) await ctx.db.patch("],
+  ["attention hold runs out", "convex/bookings.ts", "holdUntil: Number.MAX_SAFE_INTEGER,", "holdUntil: now,"],
+  ["any member resolves", "convex/bookings.ts", "requireWriter(ctx, args.orgId, \"admin\"), b = await ctx.db.get(args.bookingId)", "requireWriter(ctx, args.orgId), b = await ctx.db.get(args.bookingId)"],
+  ["confirm anyway over a taken time", "convex/bookings.ts", ".some((x) => x.start < b.end && b.start < x.end)) fail(\"CONFLICT\", \"That time", ".some((x) => false)) fail(\"CONFLICT\", \"That time"],
+  ["confirm anyway not on the timeline", "convex/bookings.ts", "await logActivity(ctx, b.orgId, b.personRecordId, `Confirmed anyway by", "if (false) await logActivity(ctx, b.orgId, b.personRecordId, `Confirmed anyway by"],
+  ["release not on the timeline", "convex/bookings.ts", "`Released by ${who}, refund in Stripe: ${b.attention}`", "`Released`"],
+  ["resolve without a decision pending", "convex/bookings.ts", "if (!b.attention) fail(\"CONFLICT\", \"This booking needs no decision\");", ""],
+  ["members see the decision buttons", "convex/bookings.ts", "!!b.attention && principal.member.role !== \"member\"", "!!b.attention"],
+  ["webhook limits unknown ids", "convex/bookings.ts", "  if (!id || !(await ctx.db.get(id))) return null;\n  return (await limiter.limit(ctx, \"stripeHook\", { key: id })).ok;", "  return (await limiter.limit(ctx, \"stripeHook\", { key: orgId.slice(0, 64) })).ok;"],
 ];
 const lines = [];
-for (const [name, file, from, to] of mutants) {
+const [lo = 0, hi = mutants.length] = process.argv.slice(2).map(Number);
+for (const [name, file, from, to] of mutants.slice(lo, hi)) {
   const original = readFileSync(file, "utf8");
   if (!original.includes(from)) { lines.push(`MISSING ${name}`); continue; }
   writeFileSync(file, original.replace(from, to));
@@ -57,4 +72,4 @@ for (const [name, file, from, to] of mutants) {
   } finally { writeFileSync(file, original); }
   console.log(lines.at(-1));
 }
-writeFileSync("evidence/2026-10-03-campaigns/B/mutants.txt", lines.join("\n") + "\n");
+writeFileSync(`evidence/2026-10-03-campaigns/B/mutants-${lo}-${hi}.txt`, lines.join("\n") + "\n");

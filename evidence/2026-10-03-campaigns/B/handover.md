@@ -199,3 +199,59 @@ Still additive: optional booking fields (`livemode`, `expectedMinor`, `expectedC
 - `busy.some` is still linear per slot. A page with thousands of bookings and meetings in its horizon would be slow; I did not measure that.
 - An underpaid booking cannot be "topped up". The owner refunds or rebooks by hand.
 - Booking does not match a person stored with a differently cased email (see the departure above).
+
+## Round 3 (after independent verification round 2, REVISE on 7d90bbd)
+
+Verifier: Claude Fable 5.1 (`~/work/briefs-1003/iv-B2-verdict.md`). Builder: Claude Opus 5.5. Not re-verified yet. Levels: SIM (convex-test) and SERVICE (local backend, 21/21 checks). Nothing LIVE.
+
+Commits: `c40182f` merges `origin/integ/campaigns` (f94e828: views, automations, shape lifecycle), then the round 3 fixes with this section, then one commit recording hashes. Final: `git log -1 campaigns/booking`.
+
+### Merge with integ/campaigns (f94e828)
+
+- 14 conflicted files, all resolved by keeping both sides. Standard objects now end `email, automation, bookingPage`.
+- Re-checked after the merge: both agent guards sit side by side in `agentGuards.ts` (`live` true refused for agents; their automation `on` refused). `pageRules` runs after the event insert and before their `automationAfter`, so a bad page write is refused before any automation fires. The booking guard tests and mutants pass.
+- Campaign report: their `visibleTitle` shape, with `bookings` and per-recipient `booked`/`paid` added on top.
+- `ops/authority/inventory.json`: their file plus my rows. A check against both parents finds no lost id (275 ours, 290 theirs, 307 merged), and 308 after adding `bookings:resolve`.
+- **Pre-existing defect on their side, fixed here:** `packages/mcp/src/index.ts` at f94e828 does not compile. The automation recipe puts unescaped `"` inside the double-quoted instructions string; `tsc` fails at column ~2009 in a clean base worktree. The MCP server could not start. I made that one string a template literal, with no wording change. `pnpm --dir packages/mcp build` now exits 0. Their MCP tests passed before because vitest does not type-check `index.ts`.
+
+### Fixes (coordinator decisions)
+
+1. **Currency (blocker).** A `paymentLink` without a `currency` is refused when a page is created and whenever either field changes: 400 "Choose the currency your Stripe Payment Link charges in". This holds in the app and for agents, since both go through `pageRules` in `applyChange`. Pages saved earlier with no currency keep working. Their holds store `expectedPrice` (major units), and payment is checked in the event's currency and minor units (€5.00 confirms; ¥499 on a ¥500 page needs a decision). Pages with a currency store `expectedMinor` and `expectedCurrency` as in round 2. The MCP recipe now says the currency is required with a link.
+2. **Automations.** The automation definition check refuses any write of `bookingPage.live` (true or false, by `updateTrigger` or `createRecord`) with "automations cannot publish or take down a booking page; a person does that". Booking statuses live in the `bookings` table, which automations cannot address: an `updateTrigger` on `status` is "unknown field" and a `createRecord` on `bookings` is refused. Both are tested.
+3. **Rebooking.** An address with an unexpired hold (one not waiting on a decision) gets that hold back. Choosing a time moves the hold there: same token and payment link, page and price updated, 30 minutes renewed, the old time freed. Choosing the same time just renews it. They are never locked out by their own hold, and an address still never holds two times. The round 2 test "1 per address" now expects the move instead of `limited`, by decision.
+4. **Attention keeps the time.** A short or wrong-currency payment, including a promotion code, keeps the booking `held` with no expiry (`holdUntil` max) and `attention`, so nobody books over it. A payment whose time was lost or whose booking the owner cancelled stays `cancelled` with `attention`. Admins see **Confirm anyway** and **Release** on the booking page; members see neither, and the server refuses them.
+   - Confirm anyway needs the time free ("That time is taken now. Release it and rebook them.") and counts toward the daily cap.
+   - Release frees the time and says to refund in Stripe.
+   - Each decision writes a timeline Activity in the admin's name: "Confirmed anyway by …: <reason>" or "Released by …, refund in Stripe: <reason>".
+   - The inbox text now reads "On the booking page, confirm it anyway, or release it and rebook or refund them."
+5. **Promotion codes.** The Payments card says that discounted payments wait on the booking page and the owner confirms them with Confirm anyway. Agent spec Round 3 note too. Tested end to end.
+6. **Webhook.** `hookToken` normalizes the id and checks the org exists before touching the limiter. Unknown, malformed or other-table ids answer 503 and write nothing; 130 such requests never reach 429.
+
+Also: the verifier's machine-dependent mutant ("no steady-day fast path") is now caught by a check that counts time zone lookups (under 5000 for the largest legal page), alongside the 1 s bound. The early return for "same time again" turned out redundant (its mutant survived because the move path gives the same answer), so I deleted it.
+
+### Fail before, pass after
+
+- `round3-fail-before.txt`: 9 new tests, 9 failing on `c40182f`.
+- `round3-pass-after.txt`: 54/54.
+- `mutants.txt`: 53/53 caught (run in three foreground slices at low load). My earlier background run was cut off by a session limit and left `bookingTime.ts` mutated (`[...out].includes`). I found it by checking every mutant's text against the sources, restored it (the file is identical to the committed version), and re-ran everything. Seven round 2 mutant targets were updated to the round 3 code. "No limit on holds per address" was dropped, because a second hold per address no longer exists; "another time adds a second hold" covers it.
+
+### Suites (`round3-after.txt`)
+
+- `pnpm test` (default workers, load 4 at start): 616/620. `--maxWorkers=3`: 617/620. Every failure is a timeout in files this job does not touch (gmailSync, automations, posts paging, Calendar drag), and which tests fail changes from run to run. Those files alone with one worker: base f94e828 and this branch both pass (54/54 and 31/31). At load 11 to 15, base failed the same automations and gmailSync tests. My branch was somewhat slower on the automations caps test then (7.2 vs 6.6 s, 7.9 vs 5.3 s), probably because every new workspace now also seeds the Booking page object and its 12 fields.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: exit 0. `pnpm --dir packages/mcp build`: exit 0. `pnpm --dir packages/mcp test`: 10/10.
+
+### SERVICE (`service-run.json`, 21/21)
+
+New checks: an underpaid booking keeps its time; the same address picking its own time again gets its payment link back; an admin sees Confirm anyway and Release. `booking-page-record.png` shows "Needs your decision" with both buttons and the Currency field. The six 403 resource loads are still untraced.
+
+### Rollback
+
+Still additive: optional `expectedPrice` on bookings, nothing else in the schema. Same caveat as before about the previous release's schema and the new tables.
+
+### Left undone or uncertain (round 3)
+
+- No real Stripe delivery.
+- An attention hold never expires on its own. If nobody decides, the time stays blocked; the inbox item is the only nudge.
+- Rebooking moves a hold even across pages and renews its 30 minutes. Each move costs a per-page token and a per-address token (3 an hour), which bounds how long one address can keep a time.
+- Underpaid bookings still count as "booked" in the campaign report (money arrived).
+- The full suite on a busy machine times out in older tests; run it on a quiet machine or per file.

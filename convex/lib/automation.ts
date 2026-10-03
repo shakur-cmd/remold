@@ -109,6 +109,7 @@ export async function check(ctx: Ctx, orgId: Id<"orgs">, d: Definition, complete
     if (item.object.key === "automation") bad(`${at}automations cannot create or change automations`);
     for (const [key, value] of Object.entries(values as object)) {
       if (!fieldOf(item, key)) bad(`${at}unknown field "${key}" on ${item.object.label}`);
+      if (item.object.key === "bookingPage" && key === "live") bad(`${at}automations cannot publish or take down a booking page; a person does that`);
       if (GATED.includes(item.object.key) && key === "status") bad(`${at}automations cannot set an email, post, campaign or booking status; a person does that`);
       tags(value, at);
     }

@@ -33,11 +33,13 @@ export function pageRules(object: Doc<"objects">, fields: Doc<"fields">[], befor
   const hours = set("hours"), zone = set("timezone"), link = set("paymentLink");
   if (changed("hours") && hours !== null && !parseHours(String(hours))) fail("VALIDATION", HOURS_HELP, { fieldId: f.hours!._id });
   if (changed("timezone") && zone !== null && !validZone(String(zone))) fail("VALIDATION", 'Timezone must be an IANA zone like "America/New_York"', { fieldId: f.timezone!._id });
+  // Which currency a link charges in is the owner's to say; guessing turned correct euro payments into "underpaid".
+  if (link !== null && set("currency") === null && (changed("paymentLink") || changed("currency"))) fail("VALIDATION", "Choose the currency your Stripe Payment Link charges in", { fieldId: (f.currency ?? f.paymentLink)!._id });
   if (changed("paymentLink") && link !== null && !paymentLinkOk(String(link))) fail("VALIDATION", "Payment link must be a Stripe link starting https://buy.stripe.com/ or https://checkout.stripe.com/", { fieldId: f.paymentLink!._id });
   if (set("live") === true && (changed("live") || changed("hours") || changed("timezone")) && (!hours || !zone)) fail("VALIDATION", "A live page needs hours and a timezone", { fieldId: f.live!._id });
 }
 
-export type Page = { org: Doc<"orgs">; record: Doc<"records">; item: Item; rules: Rules; description: string; price: number | null; currency: string; paymentLink: string | null; campaignId: Id<"records"> | null };
+export type Page = { org: Doc<"orgs">; record: Doc<"records">; item: Item; rules: Rules; description: string; price: number | null; currency: string | null; paymentLink: string | null; campaignId: Id<"records"> | null };
 // The page behind a public link, or null when it is not taking bookings.
 export async function bookable(ctx: Ctx, pageId: string): Promise<Page | null> {
   const id = ctx.db.normalizeId("records", pageId), record = id ? await ctx.db.get(id) : null;
@@ -48,7 +50,7 @@ export async function bookable(ctx: Ctx, pageId: string): Promise<Page | null> {
   if (!hours || !validZone(zone)) return null;
   const rules = { hours, timezone: zone, minutes: num(value(record, item.f.minutes), 30), noticeHours: num(value(record, item.f.noticeHours), 12), daysAhead: Math.min(num(value(record, item.f.daysAhead), 30), 365) };
   const price = value(record, item.f.price), link = value(record, item.f.paymentLink), campaign = value(record, item.f.campaign), currency = value(record, item.f.currency);
-  return { org, record, item, rules, description: String(value(record, item.f.description) ?? ""), price: typeof price === "number" ? price : null, currency: typeof currency === "string" ? currency : "usd", paymentLink: typeof link === "string" && paymentLinkOk(link) ? link : null, campaignId: (campaign as Id<"records">) ?? null };
+  return { org, record, item, rules, description: String(value(record, item.f.description) ?? ""), price: typeof price === "number" ? price : null, currency: typeof currency === "string" ? currency : null, paymentLink: typeof link === "string" && paymentLinkOk(link) ? link : null, campaignId: (campaign as Id<"records">) ?? null };
 }
 
 // What blocks time anywhere in the workspace between `from` and `to`: confirmed
@@ -69,12 +71,12 @@ export async function busy(ctx: Ctx, orgId: Id<"orgs">, from: number, to: number
   return out;
 }
 export const slotsFor = async (ctx: Ctx, page: Page, now: number) => openSlots(page.rules, now, await busy(ctx, page.org._id, now, now + (page.rules.daysAhead + 1) * DAY, page.rules.minutes, now));
-export async function isOpen(ctx: Ctx, page: Page, start: number, now: number) {
+export async function isOpen(ctx: Ctx, page: Page, start: number, now: number, except?: Id<"bookings">) {
   const length = page.rules.minutes * MINUTE;
-  return openSlots(page.rules, now, await busy(ctx, page.org._id, start, start + length, page.rules.minutes, now), { from: start, to: start }).includes(start);
+  return openSlots(page.rules, now, await busy(ctx, page.org._id, start, start + length, page.rules.minutes, now, except), { from: start, to: start }).includes(start);
 }
 
-export const priceMinor = (page: Page) => Math.round((page.price ?? 0) * minorPer(page.currency));
+export const priceMinor = (page: Page, currency = page.currency ?? "usd") => Math.round((page.price ?? 0) * minorPer(currency));
 
 // Email decides who someone is, and a match is linked, never changed. A public page
 // looks the address up through the Email field's index, as typed and lowercased, so a
@@ -94,11 +96,11 @@ export async function personFor(ctx: MutationCtx, orgId: Id<"orgs">, name: strin
 }
 
 // A timeline entry about the person, written as the owner by the booking page.
-export async function logActivity(ctx: MutationCtx, orgId: Id<"orgs">, personId: Id<"records">, title: string, type: "meeting" | "payment" | "other", at: number) {
+export async function logActivity(ctx: MutationCtx, orgId: Id<"orgs">, personId: Id<"records">, title: string, type: "meeting" | "payment" | "other", at: number, actor: Actor = BOOKING) {
   const org = await ctx.db.get(orgId), activity = await standardItem(ctx, orgId, "activity");
   if (!org || org.flags?.readonly || !activity?.f.title || !(await ctx.db.get(personId))) return;
   const values = Object.fromEntries(([["title", title], ["type", type], ["when", fromInstant(at)], ["about", personId], ["source", "booking"]] as const).filter(([key]) => activity.f[key]).map(([key, v]) => [activity.f[key]!._id, v]));
-  await applyChange(ctx, await ownerOf(ctx, orgId), { action: "create", orgId, objectId: activity.object._id, values, reason: "Booking page" }, { actor: BOOKING });
+  await applyChange(ctx, await ownerOf(ctx, orgId), { action: "create", orgId, objectId: activity.object._id, values, reason: "Booking page" }, { actor });
 }
 export const pageName = async (ctx: Ctx, booking: Doc<"bookings">) => (await ctx.db.get(booking.pageRecordId))?.title || "Booking";
 

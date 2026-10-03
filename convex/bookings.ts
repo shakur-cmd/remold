@@ -9,8 +9,8 @@ import { fail } from "./errors";
 import { canReadRecord } from "./authority/reads";
 import { normalAddress, settingsProblems, siteUrl, validAddress } from "./lib/campaignText";
 import { standardItem } from "./lib/campaign";
-import { HOLD, bookable, busy, confirm, dailyCap, isOpen, logActivity, pageName, personFor, priceMinor, slotsFor } from "./lib/booking";
-import { MINUTE, calendarLink, money, payUrl, validZone, verifyStripe, when } from "./lib/bookingTime";
+import { HOLD, type Page, bookable, busy, confirm, dailyCap, isOpen, logActivity, pageName, personFor, priceMinor, slotsFor } from "./lib/booking";
+import { MINUTE, calendarLink, minorPer, money, payUrl, validZone, verifyStripe, when } from "./lib/bookingTime";
 import { sendTransactional } from "./campaignSend";
 
 // Public booking pages (/book/<pageId> in the app). Visitors read a page and book a
@@ -32,6 +32,9 @@ export const page = query({ args: { pageId: v.string() }, handler: async (ctx, {
 
 const HOLDS_PER_PAGE = 3;
 const limited = (retryAfterMs: number) => ({ status: "limited" as const, retryAfter: Math.max(1, Math.ceil(retryAfterMs / 1000)) });
+// What a paid hold expects from Stripe. A page saved before currency was required takes
+// the payment's currency and checks the price in that currency's units.
+const expected = (page: Page) => (!page.paymentLink ? {} : page.currency ? { expectedMinor: priceMinor(page), expectedCurrency: page.currency } : { expectedPrice: page.price ?? 0 });
 const daily = () => ({ key: "", config: { kind: "fixed window" as const, rate: dailyCap(), period: LIMIT_DAY, start: 0 } });
 
 export const book = mutation({ args: { pageId: v.string(), start: v.number(), name: v.string(), email: v.string(), note: v.optional(v.string()), zone: v.optional(v.string()), s: v.optional(v.string()), hp: v.optional(v.string()) }, handler: async (ctx, a) => {
@@ -45,15 +48,22 @@ export const book = mutation({ args: { pageId: v.string(), start: v.number(), na
   // Every attempt costs a token before any open time is computed, so probing is metered too.
   const perPage = await limiter.limit(ctx, "bookingPage", { key: page.record._id });
   if (!perPage.ok) return limited(perPage.retryAfter ?? 0);
+  // Someone back from Stripe (a declined card, a closed tab) is never locked out by their own
+  // hold: choosing a time moves the hold there (the same time just renews it) with the same payment link.
+  // A hold waiting on the owner's decision about a payment stays where it is.
+  const own = page.paymentLink ? await ctx.db.query("bookings").withIndex("by_email_hold", (q) => q.eq("orgId", orgId).eq("email", email).eq("status", "held").gt("holdUntil", now)).filter((q) => q.eq(q.field("attention"), undefined)).first() : null;
   // Checked inside this transaction, so of two people racing for one time exactly one wins.
-  if (!(await isOpen(ctx, page, a.start, now))) return { status: "taken" as const };
+  if (!(await isOpen(ctx, page, a.start, now, own?._id))) return { status: "taken" as const };
   const perEmail = await limiter.limit(ctx, "bookingEmail", { key: `${orgId}:${email}` });
   if (!perEmail.ok) return limited(perEmail.retryAfter ?? 0);
+  if (own) {
+    await ctx.db.patch(own._id, { pageRecordId: page.record._id, start: a.start, end: a.start + page.rules.minutes * MINUTE, holdUntil: now + HOLD, name, ...(note ? { note } : {}), expectedMinor: undefined, expectedCurrency: undefined, expectedPrice: undefined, ...expected(page) });
+    return { status: "held" as const, pay: payUrl(page.paymentLink!, own.token, email) };
+  }
   // Unpaid holds block times for others, so few may wait at once: 3 a page, 1 an address.
   if (page.paymentLink) {
-    const holds = [...await ctx.db.query("bookings").withIndex("by_page_hold", (q) => q.eq("pageRecordId", page.record._id).eq("status", "held").gt("holdUntil", now)).take(HOLDS_PER_PAGE), ...await ctx.db.query("bookings").withIndex("by_email_hold", (q) => q.eq("orgId", orgId).eq("email", email).eq("status", "held").gt("holdUntil", now)).take(1)];
-    const full = holds.filter((h) => h.pageRecordId === page.record._id).length >= HOLDS_PER_PAGE ? holds : holds.filter((h) => h.email === email);
-    if (full.length) return limited(Math.min(...full.map((h) => h.holdUntil!)) - now);
+    const holds = (await ctx.db.query("bookings").withIndex("by_page_hold", (q) => q.eq("pageRecordId", page.record._id).eq("status", "held").gt("holdUntil", now)).take(50)).filter((h) => !h.attention);
+    if (holds.length >= HOLDS_PER_PAGE) return limited(Math.min(...holds.map((h) => h.holdUntil!)) - now);
   }
   // The daily cap counts confirmed bookings: a free one takes from it now, a paid one when Stripe confirms it.
   const day = page.paymentLink ? await limiter.check(ctx, "bookingDaily", { ...daily(), key: orgId }) : await limiter.limit(ctx, "bookingDaily", { ...daily(), key: orgId });
@@ -61,7 +71,7 @@ export const book = mutation({ args: { pageId: v.string(), start: v.number(), na
   const personRecordId = await personFor(ctx, orgId, name, email, a.email);
   const send = a.s ? await ctx.db.query("emailSends").withIndex("by_token", (q) => q.eq("token", a.s!)).unique() : null, from = send?.orgId === orgId ? send : null;
   const campaignRecordId = from?.campaignRecordId ?? page.campaignId ?? undefined, token = newToken();
-  const id = await ctx.db.insert("bookings", { orgId, pageRecordId: page.record._id, personRecordId, start: a.start, end: a.start + page.rules.minutes * MINUTE, name, email, ...(note ? { note } : {}), ...(a.zone && validZone(a.zone) ? { zone: a.zone } : {}), status: "held", holdUntil: now + HOLD, token, ...(from ? { sendId: from._id } : {}), ...(campaignRecordId ? { campaignRecordId } : {}), ...(page.paymentLink ? { expectedMinor: priceMinor(page), expectedCurrency: page.currency } : {}) });
+  const id = await ctx.db.insert("bookings", { orgId, pageRecordId: page.record._id, personRecordId, start: a.start, end: a.start + page.rules.minutes * MINUTE, name, email, ...(note ? { note } : {}), ...(a.zone && validZone(a.zone) ? { zone: a.zone } : {}), status: "held", holdUntil: now + HOLD, token, ...(from ? { sendId: from._id } : {}), ...(campaignRecordId ? { campaignRecordId } : {}), ...expected(page) });
   if (page.paymentLink) return { status: "held" as const, pay: payUrl(page.paymentLink, token, email) };
   await confirm(ctx, (await ctx.db.get(id))!);
   return { status: "confirmed" as const };
@@ -77,11 +87,18 @@ export const secretFor = internalQuery({ args: { orgId: v.string() }, handler: a
   const id = ctx.db.normalizeId("orgs", orgId), row = id ? await ctx.db.query("paymentSecrets").withIndex("by_org", (q) => q.eq("orgId", id)).unique() : null;
   return row ? { orgId: row.orgId, secret: row.stripeWebhookSecret } : null;
 } });
-export const hookToken = internalMutation({ args: { orgId: v.string() }, handler: async (ctx, { orgId }) => (await limiter.limit(ctx, "stripeHook", { key: orgId.slice(0, 64) })).ok });
+// Unknown or malformed ids answer before the limiter, so they write nothing.
+export const hookToken = internalMutation({ args: { orgId: v.string() }, handler: async (ctx, { orgId }) => {
+  const id = ctx.db.normalizeId("orgs", orgId);
+  if (!id || !(await ctx.db.get(id))) return null;
+  return (await limiter.limit(ctx, "stripeHook", { key: id })).ok;
+} });
 
 export const stripeWebhook = httpAction(async (ctx, request) => {
   const orgId = new URL(request.url).pathname.split("/")[3] ?? "";
-  if (!(await ctx.runMutation(internal.bookings.hookToken, { orgId }))) return new Response("Too many requests", { status: 429 });
+  const allowed: boolean | null = await ctx.runMutation(internal.bookings.hookToken, { orgId });
+  if (allowed === null) return new Response("Payments are not set up", { status: 503 });
+  if (!allowed) return new Response("Too many requests", { status: 429 });
   const found = await ctx.runQuery(internal.bookings.secretFor, { orgId });
   if (!found) return new Response("Payments are not set up", { status: 503 });
   const body = await request.text();
@@ -116,17 +133,22 @@ export const paid = internalMutation({ args: { orgId: v.id("orgs"), eventId: v.s
   await ctx.db.patch(booking._id, { paidAt: now, amountMinor: a.amountMinor, currency: a.currency, stripeSessionId: a.sessionId, livemode: a.livemode });
   await logActivity(ctx, booking.orgId, booking.personRecordId, `Paid ${amount} for ${title}`, "payment", now);
   if (booking.status === "confirmed") return;
-  // Any Payment Link on the same Stripe account can carry this token, so the amount must cover the page's price.
-  const short = booking.expectedCurrency !== undefined && (a.currency !== booking.expectedCurrency || a.amountMinor < (booking.expectedMinor ?? 0));
+  // Any Payment Link on the same Stripe account can carry this token, so the amount must
+  // cover the page's price (a promotion code lands here too; the owner confirms it anyway).
+  const asked = booking.expectedCurrency ?? a.currency, min = booking.expectedCurrency !== undefined ? booking.expectedMinor ?? 0 : Math.round((booking.expectedPrice ?? 0) * minorPer(a.currency));
+  const short = a.currency !== asked || a.amountMinor < min, owned = booking.cancelReason === "cancelled";
   const free = !(await busy(ctx, booking.orgId, booking.start, booking.end, (booking.end - booking.start) / MINUTE, now, booking._id)).some((b) => b.start < booking.end && booking.start < b.end);
-  const attention = short ? `Paid ${amount}, but the page asks for ${money(booking.expectedMinor ?? 0, booking.expectedCurrency!)}` : booking.cancelReason === "cancelled" ? "Paid, but the booking was cancelled" : !free ? "Paid, but the hold ran out and the time was taken" : null;
+  const attention = short ? `Paid ${amount}, but the page asks for ${money(min, asked)}` : owned ? "Paid, but the booking was cancelled" : !free ? "Paid, but the hold ran out and the time was taken" : null;
   if (!attention) {
     if (dailyCap() > 0) await limiter.limit(ctx, "bookingDaily", { ...daily(), key: booking.orgId });
     return confirm(ctx, (await ctx.db.get(booking._id))!);
   }
-  await ctx.db.patch(booking._id, { status: "cancelled", cancelReason: booking.cancelReason === "cancelled" ? "cancelled" : short ? "underpaid" : "expired", attention });
+  // A payment the owner must look at keeps its time while the time is still its own:
+  // the hold no longer runs out, so nobody else books over it before they decide.
+  if (short && !owned && free) await ctx.db.patch(booking._id, { status: "held", holdUntil: Number.MAX_SAFE_INTEGER, cancelReason: undefined, attention });
+  else await ctx.db.patch(booking._id, { status: "cancelled", cancelReason: owned ? "cancelled" : short ? "underpaid" : "expired", attention });
   const owner = await ownerOf(ctx, booking.orgId);
-  await ctx.db.insert("agentInbox", { orgId: booking.orgId, text: `${booking.name} (${booking.email}) paid ${amount} for ${title} at ${new Date(booking.start).toISOString().slice(0, 16).replace("T", " ")} UTC. ${attention}. Rebook or refund them.`, source: "booking", from: { kind: "user", id: owner.user._id }, status: "pending", audience: "org", recordId: booking.personRecordId });
+  await ctx.db.insert("agentInbox", { orgId: booking.orgId, text: `${booking.name} (${booking.email}) paid ${amount} for ${title} at ${new Date(booking.start).toISOString().slice(0, 16).replace("T", " ")} UTC. ${attention}. On the booking page, confirm it anyway, or release it and rebook or refund them.`, source: "booking", from: { kind: "user", id: owner.user._id }, status: "pending", audience: "org", recordId: booking.personRecordId });
 } });
 
 // A delayed payment that failed: the hold ends and the time opens up.
@@ -168,7 +190,7 @@ export const forPage = query({ args: { orgId: v.id("orgs"), pageId: v.id("record
   const ordered = [...rows.filter((b) => b.end >= now), ...rows.filter((b) => b.end < now).reverse()];
   return Promise.all(ordered.map(async (b) => {
     const record = await ctx.db.get(b.personRecordId), shown = !!record && !!person && canReadRecord(principal, person.object, record);
-    return { id: b._id, start: b.start, end: b.end, status: b.status, name: shown ? b.name : null, email: shown ? b.email : null, note: shown ? b.note ?? null : null, personId: shown ? b.personRecordId : null, paid: b.paidAt && b.currency ? money(b.amountMinor ?? 0, b.currency) : null, attention: b.attention ?? null, test: b.livemode === false, held: b.status === "held" && (b.holdUntil ?? 0) > now };
+    return { id: b._id, start: b.start, end: b.end, status: b.status, name: shown ? b.name : null, email: shown ? b.email : null, note: shown ? b.note ?? null : null, personId: shown ? b.personRecordId : null, paid: b.paidAt && b.currency ? money(b.amountMinor ?? 0, b.currency) : null, attention: b.attention ?? null, decide: !!b.attention && principal.member.role !== "member", test: b.livemode === false, held: b.status === "held" && !b.attention && (b.holdUntil ?? 0) > now };
   }));
 } });
 
@@ -180,6 +202,25 @@ export const cancel = mutation({ args: { orgId: v.id("orgs"), bookingId: v.id("b
   await ctx.db.patch(b._id, { status: "cancelled", cancelReason: "cancelled" });
   await logActivity(ctx, b.orgId, b.personRecordId, `Cancelled: ${await pageName(ctx, b)} with ${b.name}`, "other", Date.now());
   if (args.notify) await ctx.scheduler.runAfter(0, internal.bookings.notify, { bookingId: b._id, kind: "cancelled" });
+} });
+
+// An admin's decision on a booking that needs one (a payment short, in another currency,
+// or after its time was lost). Each decision lands on the person's timeline in their name.
+export const resolve = mutation({ args: { orgId: v.id("orgs"), bookingId: v.id("bookings"), action: v.union(v.literal("confirm"), v.literal("release")) }, handler: async (ctx, args) => {
+  const member = await requireWriter(ctx, args.orgId, "admin"), b = await ctx.db.get(args.bookingId);
+  if (!b || b.orgId !== args.orgId) fail("NOT_FOUND", "Booking not found");
+  await readablePage(ctx, member, b.pageRecordId);
+  if (!b.attention) fail("CONFLICT", "This booking needs no decision");
+  const now = Date.now(), who = member.user.name;
+  if (args.action === "release") {
+    await ctx.db.patch(b._id, { status: "cancelled", cancelReason: "released", attention: undefined, holdUntil: undefined });
+    return logActivity(ctx, b.orgId, b.personRecordId, `Released by ${who}, refund in Stripe: ${b.attention}`, "other", now, member.actor);
+  }
+  if ((await busy(ctx, b.orgId, b.start, b.end, (b.end - b.start) / MINUTE, now, b._id)).some((x) => x.start < b.end && b.start < x.end)) fail("CONFLICT", "That time is taken now. Release it and rebook them.");
+  await ctx.db.patch(b._id, { attention: undefined, holdUntil: undefined });
+  await logActivity(ctx, b.orgId, b.personRecordId, `Confirmed anyway by ${who}: ${b.attention}`, "other", now, member.actor);
+  if (dailyCap() > 0) await limiter.limit(ctx, "bookingDaily", { ...daily(), key: b.orgId });
+  await confirm(ctx, (await ctx.db.get(b._id))!);
 } });
 
 export const paymentSettings = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {

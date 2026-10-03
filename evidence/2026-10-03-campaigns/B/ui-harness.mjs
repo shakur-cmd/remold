@@ -55,7 +55,7 @@ try {
   const ava = await create(person, { name: "Ava Stone", email: "ava@example.com" });
   const campaignId = await create(campaign, { name: "Five-minute calls", status: "active", channel: "email", goal: "Book ten $5 calls", people: [ava] });
   const free = await create(pageObject, { name: "Intro call", description: "A short call about your website and what you want it to do for you.", minutes: 30, hours: "mon-fri 09:00-12:00, 13:00-17:00", timezone: "America/New_York", noticeHours: 12, daysAhead: 30, campaign: campaignId, live: true });
-  const paid = await create(pageObject, { name: "Five dollar call", description: "Five focused minutes on one question. Paid up front through Stripe.", minutes: 15, hours: "mon-thu 10:00-12:00", timezone: "America/New_York", noticeHours: 2, daysAhead: 14, price: 5, paymentLink: "https://buy.stripe.com/test_harness", campaign: campaignId, live: true });
+  const paid = await create(pageObject, { name: "Five dollar call", description: "Five focused minutes on one question. Paid up front through Stripe.", minutes: 15, hours: "mon-thu 10:00-12:00", timezone: "America/New_York", noticeHours: 2, daysAhead: 14, price: 5, currency: "usd", paymentLink: "https://buy.stripe.com/test_harness", campaign: campaignId, live: true });
 
   // Real runtime: every open time is inside the hours in New York, and the first is after the notice.
   const shown = await visitor.query(anyApi.bookings.page, { pageId: free });
@@ -87,6 +87,9 @@ try {
   const cheap = JSON.stringify({ id: "evt_harness_cheap", type: "checkout.session.completed", livemode: false, data: { object: { id: "cs_test_cheap", client_reference_id: new URL(nia.pay).searchParams.get("client_reference_id"), payment_status: "paid", amount_total: 100, currency: "usd" } } });
   check("underpaid event: 200", (await hook(cheap)) === 200);
   check("Finn's hold still waiting", finn.status === "held");
+  check("the underpaid booking keeps its time until the owner decides", !(await visitor.query(anyApi.bookings.page, { pageId: paid })).slots.includes(paidSlots[7]));
+  const finnAgain = await visitor.mutation(anyApi.bookings.book, { pageId: paid, start: paidSlots[5], name: "Finn Hale", email: "finn@example.com" });
+  check("the same address picking its own time again gets its payment link back", finnAgain.pay === finn.pay, finnAgain);
   const listed = await owner.query(anyApi.bookings.forPage, { orgId, pageId: paid });
   check("underpaid booking kept as paid, not confirmed, needs attention", listed.some((b) => b.name === "Nia Short" && b.status !== "confirmed" && b.paid === "$1.00" && /asks for \$5\.00/.test(b.attention ?? "")), listed.find((b) => b.name === "Nia Short"));
   check("paid booking confirmed with the event's amount", listed.some((b) => b.name === "Ava Stone" && b.status === "confirmed" && b.paid === "$5.00"), listed);
@@ -138,6 +141,7 @@ try {
   await app.goto(`http://localhost:5390/o/${orgId}/bookingPage/${paid}`);
   await app.getByRole("heading", { name: "Bookings" }).waitFor({ timeout: 30000 });
   await app.getByText("Finn Hale").waitFor({ timeout: 30000 });
+  check("an admin sees Confirm anyway and Release on the underpaid booking", (await app.getByRole("button", { name: "Confirm anyway" }).count()) === 1 && (await app.getByRole("button", { name: "Release" }).count()) === 1);
   await app.screenshot({ path: join(out, "booking-page-record.png"), fullPage: true });
   await app.goto(`http://localhost:5390/book/${free}`);
   await app.getByText("Only your team sees this").waitFor({ timeout: 30000 });

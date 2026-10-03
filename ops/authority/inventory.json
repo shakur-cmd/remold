@@ -3140,5 +3140,15 @@
     "masks": "no-record-data",
     "proof": "a payment hold frees its time after 30 minutes, and the cron marks it expired",
     "reason": "only ends holds that ran out"
+  },
+  {
+    "id": "bookings:resolve",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   }
 ]

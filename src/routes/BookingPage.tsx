@@ -69,7 +69,7 @@ export function BookingPage() {
         <h1 className="text-xl font-semibold tracking-tight">{page.name}</h1>
         <p className="flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground">
           <span className="flex items-center gap-1"><Clock className="size-3.5" aria-hidden /> {page.minutes} minutes</span>
-          {page.price != null && page.price > 0 && <span>{new Intl.NumberFormat(undefined, { style: "currency", currency: page.currency.toUpperCase(), minimumFractionDigits: page.price % 1 ? 2 : 0 }).format(page.price)}{page.paid ? ", paid when you book" : ""}</span>}
+          {page.price != null && page.price > 0 && <span>{page.currency ? new Intl.NumberFormat(undefined, { style: "currency", currency: page.currency.toUpperCase(), minimumFractionDigits: page.price % 1 ? 2 : 0 }).format(page.price) : page.price}{page.paid ? ", paid when you book" : ""}</span>}
         </p>
         {page.description && <p className="mt-1 whitespace-pre-line text-sm">{page.description}</p>}
       </header>
