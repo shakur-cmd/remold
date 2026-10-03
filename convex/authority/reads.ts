@@ -107,6 +107,19 @@ export async function projectRecord(ctx: Ctx, principal: Principal, record: Doc<
   const { _id, _creationTime, orgId, objectId, createdBy, updatedAt, ref } = record;
   return { _id, _creationTime, orgId, objectId, createdBy, updatedAt, ...(ref ? { ref } : {}), values, title: await visibleTitle(ctx, principal, record) };
 }
+// A field readable on every record of its object.
+export const readableEverywhere = (principal: Principal, object: Doc<'objects'>, field: Doc<'fields'>) => canReadField(principal, object, field) && scopes(principal, object).some(s => s.records === 'all' && (s.fields === 'all' || s.fields.includes(field._id)));
+// A batch's free text can describe any object it touches, so like a single suggestion's reason
+// it is shown only to a reader of every field of every such object, on every record; others get "".
+export async function batchReason(ctx: Ctx, principal: Principal, batch: Doc<'batches'>) {
+  for (const id of batch.objectIds) {
+    const object = await ctx.db.get(id);
+    if (!object || (await ctx.db.query('fields').withIndex('by_object', q => q.eq('orgId', batch.orgId).eq('objectId', id)).collect()).some(field => !readableEverywhere(principal, object, field))) return '';
+  }
+  return batch.reason;
+}
+// Every history path (events.forRecord, timeline, forOrg, REST and MCP record events) projects here,
+// so an event a batch wrote carries the batch's reason only under the batch-wide rule.
 export async function projectEvent(ctx: Ctx, principal: Principal, event: Doc<'events'>) {
   const object = await ctx.db.get(event.objectId), record = await ctx.db.get(event.recordId);
   if (!object || !canReadObject(principal, object) || (record ? !canReadRecord(principal, object, record) : !scopes(principal, object).some(s => s.records === 'all' || s.records.includes(event.recordId)))) return null;
@@ -114,7 +127,9 @@ export async function projectEvent(ctx: Ctx, principal: Principal, event: Doc<'e
   const visible = new Set(fields.filter(f => canReadField(principal, object, f, event.recordId)).map(f => String(f._id)));
   const mask = (values: Record<string, unknown> | null) => values && Object.fromEntries(Object.entries(values).filter(([id]) => visible.has(id)));
   const restricted = fields.some(f => !visible.has(f._id));
-  return { ...event, before: mask(event.before), after: mask(event.after), reason: restricted ? undefined : event.reason };
+  const item = await ctx.db.query('batchItems').withIndex('by_event', q => q.eq('eventId', event._id)).unique(), batch = item && await ctx.db.get(item.batchId);
+  const reason = restricted ? undefined : batch ? (await batchReason(ctx, principal, batch)) || undefined : event.reason;
+  return { ...event, before: mask(event.before), after: mask(event.after), reason };
 }
 
 export function canPropose(principal: Principal, object: Doc<'objects'>, recordId?: Id<'records'>, fieldIds: string[] = []) {

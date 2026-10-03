@@ -227,3 +227,44 @@ The screenshots and the rollback run were not repeated this round.
 **Left for the next verification:**
 - Sol noted that booking is not a standard object on this branch, so booking status rules cannot be exercised here.
 - Rollback against df22614 or e19eeef was not rerun. The schema changes this round are optional fields and an index on the new tables only.
+
+## Round 4 (independent verification round 2: REVISE on 8ebb40b)
+
+Sol's verdict is in `~/work/briefs-1003/ivH2/iv-H2-verdict.md`. Sol's three probes are adopted in `convex/batches.iv2.test.ts`. The history probe now reads every path, and the MCP check runs over stdio and hosted /mcp instead of the removed `RemoldClient`. Before: `round4-fail-before.txt` (2 failed: history leak, item impact `[1, 0]`). After: `round4-pass-after.txt`, `round4-after.txt`.
+
+**Merge gate first:** `origin/integ/campaigns` at 3b9f8a8 was merged as **99663c7**.
+- **Conflicts:**
+  - `inventory.json`: integ's file plus my rows script, giving 327 unique rows with every row from both sides.
+  - `api.d.ts`: both `batches` and `blueprints`.
+  - `agentApi.ts` imports: union of both sides.
+  - `Suggestions.tsx`: batch cards plus integ's blueprint cards.
+  - MCP `client.ts`, `index.ts`: integ's versions; `RemoldClient` is gone.
+- **Batch tools in the shared registry** (`packages/mcp/src/tools.ts`, served by both stdio and hosted /mcp):
+  - `remold_propose_batch` posts `/batches`; `remold_apply_batch` posts `/batches` with `direct: true`; `remold_batch_status` gets `/batches/<id>` with `cursor` and `limit`. The batch shapes take `idempotencyKey`, which `callTool` turns into the header.
+  - `links` is on the single-change schema, so `remold_propose_change` and `remold_apply_change` accept link deltas.
+  - The instructions and both batch tool descriptions tell agents to list referrers first when deleting.
+  - Blueprint tools are untouched.
+- **Tests on the shared helpers:**
+  - `packages/mcp/src/client.test.ts` (`httpSend` + `callTool`): exact routes, bodies, the Idempotency-Key header and `direct: true`; link deltas on single changes; malformed batches refused before any request; the tools are listed with the referrer-first text.
+  - `convex/batches.test.ts` "MCP batches": one end-to-end test runs over stdio (`mcpTool`) and hosted `/mcp` (JSON-RPC `tools/call`). It proposes, applies directly, replays the key, pages status and checks per-item validation.
+
+1. **Batch reasons in history (blocker).** The batch-wide rule now lives in `convex/authority/reads.ts`: `readableEverywhere` and `batchReason` (`batches.reasonFor` is the same function). `projectEvent` finds an event's batch through `batchItems.by_event` and shows its reason only under that rule; otherwise the reason is withheld (`undefined`), as for restricted single events. Every history path projects there: `events.forRecord`, `timeline`, `forOrg`, REST `/records/<id>` and `/records/<id>/events`, and MCP `remold_record_events` over both transports. All are asserted in the adopted repro. The owner still sees the reason, and the batch id stays on the events.
+2. **Scan-phase impact.** Entering an item in the items phase no longer resets its count to 0; it sets 0 only if nothing was counted yet. Retry clears every item's count first, so Retry twice still gives batch 1, item 1, with no double counting (tested).
+
+**Correction to round 3.** "At most 400 units per step" was too broad. `BUDGET` bounds the index reads of the items phase; every query costs at least one unit, and moving to the next item costs one. A scan-phase step reads up to 501 source rows plus one batch-item lookup per row. Object and field metadata is read outside the budget. All paths are bounded, but not by 400.
+
+**Mutants:** 3 new, 3 caught (history raw reason, items phase erasing scan counts, Retry keeping old item counts). The runner now includes both `batches.iv*.test.ts` files.
+
+**Suites (final code, `round4-after.txt`):**
+
+| Suite | Result |
+|---|---|
+| `pnpm test` | **733/733** with `--testTimeout=60000 --maxWorkers=2`. At default parallelism, 731/733: gmailSync (5s limit) and the Calendar paging test (15s limit) timed out, as in earlier rounds. |
+| `pnpm typecheck` | clean |
+| `pnpm test:authority` | 101/101 |
+| `pnpm verify:release` | 37/37 |
+| `pnpm build` | ok |
+| `pnpm --dir packages/mcp test` | 17/17 |
+| `pnpm --dir packages/mcp build` | ok (tsc clean) |
+
+**Not redone this round:** SERVICE runs (scale, rollback, screenshots). This round's changes are a read-side projection, a count bookkeeping fix and MCP registration, with no schema change.

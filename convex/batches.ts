@@ -9,7 +9,7 @@ import { applyChange } from "./lib/applyChange";
 import { joined } from "./lib/values";
 import { staleFields } from "./lib/conflicts";
 import { validGrants } from "./authority/grants";
-import { canReadField, canReadRecord, listedRecordIds, paginateIndex, scopes, visibleTitle } from "./authority/reads";
+import { batchReason, canReadRecord, listedRecordIds, paginateIndex, readableEverywhere, visibleTitle } from "./authority/reads";
 import { unrestrictedHuman } from "./authority/inbox";
 
 // Items per transaction. A chunk that throws is retried one item per transaction, so
@@ -24,21 +24,13 @@ const fieldsOf = (ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">) => 
 // A person sees a batch only with every record of every object it touches and, on all
 // those records, every field it writes, so its summary, reason and preview hide nothing
 // from them. The same test gates apply: a member who cannot write all of it cannot apply any of it.
-const everywhere = (principal: Principal, object: Doc<"objects">, field: Doc<"fields">) => canReadField(principal, object, field) && scopes(principal, object).some((s) => s.records === "all" && (s.fields === "all" || s.fields.includes(field._id)));
+const everywhere = readableEverywhere;
 async function visible(ctx: QueryCtx, principal: Principal, batch: Doc<"batches">) {
   for (const id of batch.objectIds) { const object = await ctx.db.get(id); if (!object || listedRecordIds(principal, object) !== null) return false; }
   for (const id of batch.fieldIds) { const field = await ctx.db.get(id), object = field && await ctx.db.get(field.objectId); if (field && (!object || !everywhere(principal, object, field))) return false; }
   return true;
 }
-// Free text can say anything, so like a single suggestion's reason it is shown only to a
-// reader who sees every field of every object the batch touches, on every record; others get "".
-export async function reasonFor(ctx: QueryCtx, principal: Principal, batch: Doc<"batches">) {
-  for (const id of batch.objectIds) {
-    const object = await ctx.db.get(id);
-    if (!object || (await fieldsOf(ctx, batch.orgId, id)).some((field) => !everywhere(principal, object, field))) return "";
-  }
-  return batch.reason;
-}
+export const reasonFor = batchReason;
 // The summary names a record as {record}; each reader gets the title they may see.
 export async function summaryOf(ctx: QueryCtx, principal: Principal, batch: Doc<"batches">) {
   if (!batch.subjectId) return batch.summary;
@@ -198,7 +190,8 @@ export const count = internalMutation({ args: { batchId: v.id("batches"), run: v
   let item = c.after === null && c.source === 0 ? await nextDelete(c.index) : (await ctx.db.query("batchItems").withIndex("by_batch", (q) => q.eq("batchId", batch._id).eq("index", c.index)).unique());
   while (budget > 0) {
     if (!item) { await ctx.db.patch(batch._id, { impact: batch.impact + total, counting: false }); return { done: true }; }
-    if (c.index !== item.index) { c = { ...c, index: item.index, source: 0, after: null }; await ctx.db.patch(item._id, { impact: 0 }); }
+    // Entering an item keeps what the scan phase added; Retry clears every item first, so nothing counts twice.
+    if (c.index !== item.index) { c = { ...c, index: item.index, source: 0, after: null }; if (item.impact === undefined) await ctx.db.patch(item._id, { impact: 0 }); }
     const record = item.recordId ? await ctx.db.get(item.recordId) : null;
     const sources = record ? [null, ...lookups.filter((f) => f.slot && (!f.targetObjectId || f.targetObjectId === record.objectId))] : [];
     if (c.source >= sources.length) { item = await nextDelete(item.index); c = { ...c, source: 0, after: null }; budget--; continue; }

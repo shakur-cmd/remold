@@ -35,6 +35,9 @@ const mutants = [
   ['round 3: unindexed lookup scanned whole', 'convex/batches.ts', '.take(SCAN_CAP + 1);', '.collect();'],
   ['round 3: count pages lose their cursor', 'convex/batches.ts', ': { ...c, after: rows.at(-1)!._creationTime };', ': { ...c, source: c.source + 1, after: null };'],
   ['round 3: apply ignores a failed count', 'convex/batches.ts', '  if (batch.countError) fail(', '  if (false) fail('],
+  ['round 4: history shows the raw batch reason', 'convex/authority/reads.ts', 'batch ? (await batchReason(ctx, principal, batch)) || undefined : event.reason', 'event.reason'],
+  ['round 4: items phase erases scan counts', 'convex/batches.ts', 'if (item.impact === undefined) await ctx.db.patch(item._id, { impact: 0 });', 'await ctx.db.patch(item._id, { impact: 0 });'],
+  ['round 4: Retry keeps old item counts', 'convex/batches.ts', 'if (item.impact !== undefined) await ctx.db.patch(item._id, { impact: undefined });', ''],
   ['no size limit', 'convex/agentApi.ts', 'export const MAX_BATCH = 1000;', 'export const MAX_BATCH = 100000;'],
   // Each reverts one fix from the independent review (Astra findings 1-7).
   ['review 1: person writes alone, cascades skip agent limits', 'convex/batches.ts', 'applyChange(ctx, actors.agent, change, actors.approver ? { approvedBy: actors.approver, actor: actors.approver.actor } : {})', 'applyChange(ctx, actors.approver ?? actors.agent, change, {})'],
@@ -56,7 +59,7 @@ for (const [name, file, before, after] of mutants.slice(from, to)) {
   if (original.split(before).length !== 2) { results.push(`AMBIGUOUS ${name}`); console.log(results.at(-1)); continue; }
   writeFileSync(file, original.replace(before, after)); restore = () => writeFileSync(file, original);
   try {
-    const run = spawnSync('pnpm', ['vitest', 'run', 'convex/batches.test.ts', 'convex/batches.iv.test.ts', '--testTimeout=30000', '--bail=1', '-t', '^(?!.*takes 1000 changes)'], { encoding: 'utf8', timeout: 420000 });
+    const run = spawnSync('pnpm', ['vitest', 'run', 'convex/batches.test.ts', 'convex/batches.iv.test.ts', 'convex/batches.iv2.test.ts', '--testTimeout=30000', '--bail=1', '-t', '^(?!.*takes 1000 changes)'], { encoding: 'utf8', timeout: 420000 });
     const line = (run.stdout + run.stderr).split('\n').find((l) => /Tests\s/.test(l))?.trim() ?? (run.error ? 'run timed out' : 'no summary');
     results.push(`${run.status === 0 ? 'SURVIVED' : 'caught  '} ${name}: ${line}`);
   } finally { restore(); restore = null; }

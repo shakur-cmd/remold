@@ -1,0 +1,27 @@
+Round 4 (after merge with 3b9f8a8 and fixes)
+== pnpm test (default)
+     × is the newest past activity about each person, and skips activities the reader cannot see 7094ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 15745ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 68 passed (70)
+      Tests  2 failed | 731 passed (733)
+   (the two failures are timeouts: gmailSync 5s limit, Calendar paging 15s limit)
+== pnpm test --testTimeout=60000 --maxWorkers=2
+ Test Files  70 passed (70)
+      Tests  733 passed (733)
+== pnpm typecheck
+clean
+== pnpm test:authority
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+== pnpm verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+== pnpm build
+✓ built in 1.26s
+== pnpm --dir packages/mcp test
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+== pnpm --dir packages/mcp build
+ok (tsc clean)

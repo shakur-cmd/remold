@@ -41,3 +41,7 @@ SURVIVED round 3: unindexed lookup scanned whole: Tests  50 passed | 1 skipped (
 caught   round 3: count pages lose their cursor: Tests  1 failed | 46 passed | 1 skipped (51)
 caught   round 3: apply ignores a failed count: Tests  1 failed | 48 passed | 1 skipped (51)
 Round 3: 7 new mutants, 6 caught, 1 survivor (unindexed scan cost, not observable in convex-test)
+caught   round 4: history shows the raw batch reason: Tests  1 failed | 4 passed | 48 skipped (55)
+caught   round 4: items phase erases scan counts: Tests  1 failed | 8 passed | 45 skipped (55)
+caught   round 4: Retry keeps old item counts: Tests  3 failed | 1 skipped (55)
+Round 4: 3 new mutants, 3 caught
