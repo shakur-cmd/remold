@@ -1,0 +1,45 @@
+     × runs the sender every minute 5ms
+     × new workspaces get Email steps, and the migration adds them to an older workspace once 33ms
+       × sends an approved email once to each person on an active campaign, with footer, unsubscribe headers and a timeline entry 9ms
+       × sends nothing unless the Resend API key is set 7ms
+       × sends nothing unless sender domains are allowed 7ms
+       × sends nothing unless the from address is on an allowed domain 7ms
+       × sends nothing unless the org has a postal address 6ms
+       × sends nothing unless the org has a daily limit 7ms
+       × sends nothing unless the deployment has a daily cap 6ms
+       × sends nothing unless the deployment cap is a whole number 6ms
+       × sends nothing unless the campaign is active 6ms
+       × sends nothing unless the email is approved 6ms
+       × sends nothing unless a person approved it on the campaign page 6ms
+       × sends nothing unless its send time has come 6ms
+       × skips people without a usable or allowed address and sends to a shared address once 7ms
+       × never goes past the org's daily limit, even with ticks running at once, and goes on the next UTC day 7ms
+       × never goes past the deployment's daily cap across workspaces 6ms
+       × stops the rest of a batch when the campaign is paused mid-batch, and finishes after it restarts 6ms
+       × an email stopped mid-batch sends nothing more 6ms
+       × a claim whose sender crashed is retried with the same idempotency key after its lease, so nobody gets it twice 5ms
+       × retries rate limits and server errors up to three attempts, and fails at once on a refusal 6ms
+       × a follow-up for people who did not open goes after its wait, never to anyone who replied, unsubscribed or wrote back 5ms
+       × a follow-up waits for the email before it, and is not sent while that one is still going out 5ms
+       × refuses a missing secret, a bad or foreign signature and a stale timestamp, writing nothing, and counts a replayed event once 6ms
+       × records delivery and clicks, with a timeline entry on the first click only 6ms
+       × a permanent bounce and a complaint suppress the address; a temporary bounce does not 5ms
+       × the unsubscribe link asks first; only the button unsubscribes, once, and an unknown link looks the same 5ms
+       × a reply to the inbound address marks the send replied, keeps the reply as a note and forwards it to the org 5ms
+       × without an inbound domain, replies go to the org's reply-to address 6ms
+       × checks subject, body, merge tags, campaign and the email it follows on every approval path 5ms
+       × an agent drafts emails and may stop one, but cannot approve, start a campaign or touch an approved email 6ms
+       × the report shows each email's numbers and gate problems, and recipients only as far as the key may read 5ms
+       × previews an email for one person with who would get it and who is left out 5ms
+       × an agent that can read the campaign marks a recipient replied, which keeps follow-ups from them 5ms
+       × only admins read and change them, and the checklist names what is missing without showing secrets 5ms
+       × sends one email through the same gates and daily limits 5ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 36 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  36 failed (36)
+     × the fields the sender needs cannot be retired 69ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 37 skipped (38)
+     × reads a campaign report, previews an email for one person and marks a reply 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/client.test.ts > RemoldClient > reads a campaign report, previews an email for one person and marks a reply
+      Tests  1 failed | 2 passed (3)

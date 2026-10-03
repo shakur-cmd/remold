@@ -24,6 +24,9 @@ export class RemoldClient {
   inbox(args: Record<string, unknown> = {}) { return this.request("GET", `/inbox?${params(args)}`); }
   inboxAdd(args: Record<string, unknown>) { return this.request("POST", "/inbox", args); }
   inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
+  campaignReport(idOrRef: string) { return this.request("GET", `/campaigns/${encodeURIComponent(idOrRef)}/report`); }
+  emailPreview(args: { idOrRef: string; person?: string }) { const query = params({ person: args.person }); return this.request("GET", `/emails/${encodeURIComponent(args.idOrRef)}/preview${query ? `?${query}` : ""}`); }
+  markReplied(sendId: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, {}); }
 }
 
 function params(args: Record<string, unknown>) { const query = new URLSearchParams(); for (const [key, value] of Object.entries(args)) if (value !== undefined) { if (key === "sort" && typeof value === "object" && value) { const sort = value as Record<string, string>; query.set("sort", sort.field); query.set("direction", sort.direction); } else if (key === "filter" && typeof value === "object" && value) { const filter = value as Record<string, string>; query.set("filter", filter.field); query.set("value", filter.value); } else query.set(key, String(value)); } return query.toString(); }

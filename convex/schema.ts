@@ -5,6 +5,8 @@ import { actor, capability, capabilityScope, recordScope } from "../packages/con
 
 const slot = v.object({ kind: v.union(v.literal("n"), v.literal("s"), v.literal("d"), v.literal("b")), index: v.number() });
 const values = v.record(v.string(), v.any());
+const emailSettings = v.object({ fromName: v.optional(v.string()), fromAddress: v.optional(v.string()), replyTo: v.optional(v.string()), postalAddress: v.optional(v.string()), dailyLimit: v.optional(v.number()) });
+const sendStatus = v.union(v.literal("queued"), v.literal("sending"), v.literal("sent"), v.literal("failed"), v.literal("skipped"));
 const alertKind = v.union(v.literal("background-error"), v.literal("rest-500"), v.literal("stalled"), v.literal("coverage"), v.literal("intake-limit"));
 
 export default defineSchema({
@@ -19,9 +21,17 @@ export default defineSchema({
   opsProbes: defineTable({minute:v.number(),result:v.union(v.literal("sent"),v.literal("failed"),v.literal("unconfigured"))}).index("by_minute",["minute"]),
   authorityAudit: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.union(v.literal("user"), v.literal("agent"), v.literal("operator")), id: v.string() }), action: v.string(), targetId: v.string(), objectIds: v.optional(v.array(v.id("objects"))), epoch: v.optional(v.number()) }).index("by_org", ["orgId"]),
   capabilityGrants: defineTable({ orgId: v.id("orgs"), agentId: v.id("agents"), grantor: actor, grantorEpoch: v.number(), grantorMembershipId: v.optional(v.id('members')), parent: v.optional(v.id("capabilityGrants")), capability, scope: capabilityScope, mode: v.union(v.literal("propose"), v.literal("direct")), delegate: v.boolean(), expiresAt: v.number(), revokedAt: v.optional(v.number()) }).index("by_agent", ["orgId", "agentId"]).index("by_agent_capability", ["orgId", "agentId", "capability"]),
+  // Campaign email. A run exists while a person's approval of an Email record stands; the sender reads live runs.
+  emailRuns: defineTable({ orgId: v.id("orgs"), emailRecordId: v.id("records"), approvedBy: v.id("users"), approvedAt: v.number(), confirmed: v.boolean(), live: v.boolean() }).index("by_email", ["emailRecordId"]).index("by_live", ["live"]),
+  // One row per email and person. The token names the row in unsubscribe links and reply addresses.
+  emailSends: defineTable({ orgId: v.id("orgs"), emailRecordId: v.id("records"), campaignRecordId: v.id("records"), personRecordId: v.id("records"), to: v.string(), subject: v.optional(v.string()), token: v.string(), status: sendStatus, skipReason: v.optional(v.string()), failReason: v.optional(v.string()), providerId: v.optional(v.string()), attempts: v.number(), lease: v.optional(v.number()), reservedDay: v.optional(v.number()), sentAt: v.optional(v.number()), deliveredAt: v.optional(v.number()), openedAt: v.optional(v.number()), opens: v.optional(v.number()), clickedAt: v.optional(v.number()), clicks: v.optional(v.number()), lastLink: v.optional(v.string()), repliedAt: v.optional(v.number()), bouncedAt: v.optional(v.number()), complainedAt: v.optional(v.number()), unsubscribedAt: v.optional(v.number()) })
+    .index("by_email", ["emailRecordId", "personRecordId"]).index("by_email_status", ["emailRecordId", "status"]).index("by_token", ["token"]).index("by_provider", ["providerId"]).index("by_org_to", ["orgId", "to"]).index("by_status_lease", ["status", "lease"]),
+  // Sends per UTC day: key is "<day>:<orgId>" for a workspace and "<day>:all" for the deployment.
+  emailCaps: defineTable({ key: v.string(), used: v.number() }).index("by_key", ["key"]),
+  webhookEvents: defineTable({ provider: v.string(), eventId: v.string(), at: v.number() }).index("by_event", ["provider", "eventId"]),
 
   users: defineTable({ tokenIdentifier: v.string(), name: v.string(), email: v.optional(v.string()), imageUrl: v.optional(v.string()) }).index("by_token", ["tokenIdentifier"]),
-  orgs: defineTable({ authorityFrozenAt: v.optional(v.number()), authorityFrozenKeys: v.optional(v.record(v.id("objects"), v.string())), name: v.string(), createdBy: v.id("users"), flags: v.optional(v.record(v.string(), v.boolean())) }),
+  orgs: defineTable({ emailSettings: v.optional(emailSettings), authorityFrozenAt: v.optional(v.number()), authorityFrozenKeys: v.optional(v.record(v.id("objects"), v.string())), name: v.string(), createdBy: v.id("users"), flags: v.optional(v.record(v.string(), v.boolean())) }),
   opsEvents: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.literal("operator"), id: v.literal("internal-admin") }), action: v.literal("featureFlagChanged"), flag: v.string(), before: v.boolean(), after: v.boolean(), reason: v.string() }).index("by_org", ["orgId"]),
   members: defineTable({ dailyReminder: v.optional(v.boolean()), reminderSentOn: v.optional(v.number()), readScopes: v.optional(v.array(recordScope)), hiddenFieldIds: v.optional(v.array(v.id("fields"))), authorityEpoch: v.optional(v.number()), orgId: v.id("orgs"), userId: v.id("users"), role: v.union(v.literal("owner"), v.literal("admin"), v.literal("member")) }).index("by_org_user", ["orgId", "userId"]).index("by_user", ["userId"]).index("by_reminders", ["dailyReminder"]),
   invites: defineTable({ issuerMembershipId: v.optional(v.id("members")), issuerEpoch: v.optional(v.number()), orgId: v.id("orgs"), token: v.string(), role: v.union(v.literal("admin"), v.literal("member")), createdBy: v.id("users"), expiresAt: v.number(), acceptedBy: v.optional(v.id("users")), acceptedAt: v.optional(v.number()) }).index("by_token", ["token"]).index("by_org", ["orgId"]),

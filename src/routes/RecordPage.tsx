@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Board } from "@/components/Board";
+import { CampaignEmails } from "@/components/CampaignEmails";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
@@ -29,12 +30,12 @@ import type { OrgContext } from "@/routes/OrgLayout";
 type Reverse = { field: Field; object: Doc<"objects"> };
 
 export function RecordPage() {
-  const { org } = useOutletContext<OrgContext>();
+  const { org, role } = useOutletContext<OrgContext>();
   const recordId = useParams().recordId as Id<"records">;
-  return <Record key={recordId} orgId={org._id} recordId={recordId} />;
+  return <Record key={recordId} orgId={org._id} recordId={recordId} admin={role === "owner" || role === "admin"} />;
 }
 
-function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"> }) {
+function Record({ orgId, recordId, admin }: { orgId: Id<"orgs">; recordId: Id<"records">; admin: boolean }) {
   const detail = useQuery(api.records.get, { orgId, recordId });
   const reverse = useQuery(api.records.reverseFields, detail ? { orgId, objectId: detail.object._id } : "skip");
   const contact = useQuery(api.records.lastContact, detail?.object.key === "person" ? { orgId, recordIds: [recordId] } : "skip")?.[recordId];
@@ -66,6 +67,9 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
   const inTimeline = [about("note"), about("activity")];
   const steps = funnel ? about("task") : undefined;
   const deals = funnel ? reverse?.find((r) => r.object.key === "opportunity" && r.field.key === "campaign" && r.field.type === "lookup") : undefined;
+  // Its emails get their own section with numbers and the go switch.
+  const emails = funnel ? reverse?.find((r) => r.object.key === "email" && r.object.isStandard && r.field.key === "campaign") : undefined;
+  const statusField = headline.find((f) => f.key === "status" && f.type === "select");
   // Tasks pointing at this record through a single lookup feed the next step; "blocked by" lists are not next steps.
   const taskSources = steps ? [] : (reverse ?? []).filter((r) => r.object.key === "task" && r.field.type === "lookup").slice(0, 2);
 
@@ -131,6 +135,7 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
 
         <div className="grid gap-5 lg:hidden">{act}</div>
 
+        {emails && <CampaignEmails orgId={orgId} recordId={recordId} admin={admin} status={statusField && { field: statusField, value: record.values[statusField._id] }} />}
         {deals && <FunnelDeals orgId={orgId} recordId={recordId} entry={deals} />}
 
         <div className="grid gap-1">
@@ -153,7 +158,7 @@ function Record({ orgId, recordId }: { orgId: Id<"orgs">; recordId: Id<"records"
         </div>
 
         {/* Tasks that feed the next step are listed there, not twice. */}
-        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry) && entry !== steps && entry !== deals).map((entry) =>
+        {reverse?.filter((entry) => !taskSources.includes(entry) && !inTimeline.includes(entry) && entry !== steps && entry !== deals && entry !== emails).map((entry) =>
           entry.object.key === "invoice" && entry.field.key === "company" ? (
             <InvoicesPanel key={entry.field._id} orgId={orgId} recordId={recordId} entry={entry} />
           ) : (

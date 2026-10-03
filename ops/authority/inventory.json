@@ -2252,5 +2252,279 @@
     "readonly": "not-a-write",
     "masks": "no-record-data",
     "proof": "Callback, adapter, REST and ops logs reveal no secrets"
+  },
+  {
+    "id": "agentApi:campaignReport",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the report shows each email's numbers and gate problems, and recipients only as far as the key may read"
+  },
+  {
+    "id": "agentApi:emailPreview",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "previews an email for one person with who would get it and who is left out"
+  },
+  {
+    "id": "agentApi:markReplied",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "an agent that can read the campaign marks a recipient replied, which keeps follow-ups from them"
+  },
+  {
+    "id": "HTTP GET /api/v1/campaigns/:id/report",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the report shows each email's numbers and gate problems, and recipients only as far as the key may read"
+  },
+  {
+    "id": "HTTP GET /api/v1/emails/:id/preview",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "previews an email for one person with who would get it and who is left out"
+  },
+  {
+    "id": "HTTP POST /api/v1/sends/:id/replied",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "campaigns:settings",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "campaigns:report",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "campaigns:preview",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "campaigns:saveSettings",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "campaigns:approve",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "campaigns:markReplied",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "campaignSend:claim",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "a claim whose sender crashed is retried with the same idempotency key after its lease, so nobody gets it twice",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "campaignSend:begin",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "stops the rest of a batch when the campaign is paused mid-batch, and finishes after it restarts",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "campaignSend:finish",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "sends an approved email once to each person on an active campaign, with footer, unsubscribe headers and a timeline entry",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "campaignSend:tick",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "sends an approved email once to each person on an active campaign, with footer, unsubscribe headers and a timeline entry",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "campaignSend:seen",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "a reply to the inbound address marks the send replied, keeps the reply as a note and forwards it to the org",
+    "reason": "webhook bookkeeping only"
+  },
+  {
+    "id": "campaignSend:track",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "refuses a missing secret, a bad or foreign signature and a stale timestamp, writing nothing, and counts a replayed event once",
+    "reason": "opting out and bounce suppression always apply, even in a read-only workspace"
+  },
+  {
+    "id": "campaignSend:replied",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a reply to the inbound address marks the send replied, keeps the reply as a note and forwards it to the org",
+    "reason": "opting out and bounce suppression always apply, even in a read-only workspace"
+  },
+  {
+    "id": "campaignSend:unsubscribe",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "the unsubscribe link asks first; only the button unsubscribes, once, and an unknown link looks the same",
+    "reason": "opting out and bounce suppression always apply, even in a read-only workspace"
+  },
+  {
+    "id": "campaignSend:resendWebhook",
+    "kind": "httpaction",
+    "visibility": "http",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "refuses a missing secret, a bad or foreign signature and a stale timestamp, writing nothing, and counts a replayed event once",
+    "reason": "opting out and bounce suppression always apply, even in a read-only workspace"
+  },
+  {
+    "id": "campaignSend:unsubscribePage",
+    "kind": "httpaction",
+    "visibility": "http",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "the unsubscribe link asks first; only the button unsubscribes, once, and an unknown link looks the same",
+    "reason": "opting out and bounce suppression always apply, even in a read-only workspace"
+  },
+  {
+    "id": "campaignSend:reserveOne",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "sends one email through the same gates and daily limits",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "campaignSend:releaseOne",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "sends one email through the same gates and daily limits",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "campaignSend:transactional",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "sends one email through the same gates and daily limits",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "cron Campaign email",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "runs the sender every minute",
+    "reason": "campaign email sender; a read-only workspace sends nothing"
   }
 ]

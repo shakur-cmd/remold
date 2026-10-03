@@ -7,6 +7,7 @@ import { route as integrationRoute } from "./integrations/http";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { recordResponse, validProbe } from "./telemetryHttp";
+import { resendWebhook, unsubscribePage } from "./campaignSend";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
@@ -83,6 +84,9 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "GET" && path[0] === "inbox" && path.length === 1) return json(await query(internal.agentApi.inbox, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "inbox" && path.length === 1) return json(await mutation(internal.agentApi.inboxAdd, body), 201);
   if (request.method === "POST" && path[0] === "inbox" && path[2] === "resolve" && path.length === 3) return json(await mutation(internal.agentApi.inboxResolve, { id: path[1], ...body }));
+  if (request.method === "GET" && path[0] === "campaigns" && path[2] === "report" && path.length === 3) return json(await query(internal.agentApi.campaignReport, { idOrRef: path[1] }));
+  if (request.method === "GET" && path[0] === "emails" && path[2] === "preview" && path.length === 3) return json(await query(internal.agentApi.emailPreview, { idOrRef: path[1], ...(q.get("person") ? { person: q.get("person") } : {}) }));
+  if (request.method === "POST" && path[0] === "sends" && path[2] === "replied" && path.length === 3) return json(await mutation(internal.agentApi.markReplied, { id: path[1] }));
   if (path[0] === "intake" && request.method === "POST" && path.length === 2) {
     const commands: Record<string, string> = { lead: "intakeLead" };
     if (commands[path[1]]) return json(...intakeReply(await mutation(makeFunctionReference<'mutation'>("agentApi:" + commands[path[1]]), { ...body, idempotency: await idempotencyOf(request, url.pathname, body) })));
@@ -110,4 +114,7 @@ const route = httpAction(async (ctx,request) => {
 router.route({ pathPrefix: "/api/v1/", method: "GET", handler: route });
 router.route({ pathPrefix: "/api/v1/", method: "POST", handler: route });
 router.route({ pathPrefix: "/api/integrations/v1/", method: "POST", handler: integrationRoute });
+router.route({ path: "/webhooks/resend", method: "POST", handler: resendWebhook });
+router.route({ pathPrefix: "/u/", method: "GET", handler: unsubscribePage });
+router.route({ pathPrefix: "/u/", method: "POST", handler: unsubscribePage });
 export default router;

@@ -255,3 +255,15 @@ REST v1 POST requests have a first-party Convex token-bucket limit per authentic
 | 503 | `AUTHORITY_MIGRATING` |
 
 The daily cap is `REMOLD_INTAKE_DAILY_CAP` leads per workspace per UTC day. Missing, empty or anything but plain digits for a positive whole number (so not `1e3`, `0x10`, `+5` or `2.0`) means zero: intake answers 429 to every lead until the variable is set.
+
+## Campaign email amendment, 2026-10-03
+
+Email steps are records of the standard `email` object (subject, body, campaign, followsUp, waitDays, sendTo, sendAt, status), drafted with `POST /api/v1/changes` or `/suggestions`. Agents may create and edit draft emails and may set `stopped`; they cannot set `approved`, `sending` or `sent`, cannot change an approved email, and cannot set a campaign's status to `active` (403). A person approves on the campaign page.
+
+```
+GET  /api/v1/campaigns/{idOrRef}/report                 per email: status, problems, counts, rates, recipients (sendId, person, name, address, status, opened, clicked, replied, skipReason)
+GET  /api/v1/emails/{idOrRef}/preview?person={idOrRef}   rendered subject and text for one person, recipients now, excluded with reasons, problems
+POST /api/v1/sends/{sendId}/replied                     marks the send replied; any key that can read the campaign
+```
+
+Reads follow the usual scopes: an unreadable campaign is 404, emails the key cannot read are left out, recipients appear only for people the key can read, and the address only when it can read the person's Email field. MCP tools: `remold_campaign_report`, `remold_email_preview`, `remold_mark_replied`.

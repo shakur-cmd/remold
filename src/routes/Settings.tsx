@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useOutletContext } from "react-router";
 import { useMutation, useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
+import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
@@ -23,6 +25,7 @@ export function Settings() {
       <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
       <OrgCard org={org} admin={admin} />
       <RemindersCard orgId={org._id} />
+      {admin && <EmailSendingCard orgId={org._id} />}
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} owner={role === "owner"} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />
@@ -70,6 +73,57 @@ function RemindersCard({ orgId }: { orgId: Id<"orgs"> }) {
           <Checkbox checked={mine?.on === true} disabled={!mine?.email} onCheckedChange={(on) => attempt(() => set({ orgId, on: on === true }), on === true ? "Daily reminder on" : "Daily reminder off")} aria-label="Email me a daily reminder" />
           {mine?.email ? <>Email me at <span className="font-medium">{mine.email}</span></> : "Your account has no email address, so reminders cannot be sent."}
         </label>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Campaign email: who it comes from, the postal address every email carries, and the
+// daily limit. The checklist says what still blocks sending; secrets never reach the page.
+function EmailSendingCard({ orgId }: { orgId: Id<"orgs"> }) {
+  const data = useQuery(api.campaigns.settings, { orgId });
+  if (!data) return null;
+  return <EmailSendingForm key={JSON.stringify(data.settings)} orgId={orgId} data={data} />;
+}
+
+function EmailSendingForm({ orgId, data }: { orgId: Id<"orgs">; data: FunctionReturnType<typeof api.campaigns.settings> }) {
+  const save = useMutation(api.campaigns.saveSettings);
+  const saved = data.settings;
+  const [draft, setDraft] = useState({ fromName: saved.fromName ?? "", fromAddress: saved.fromAddress ?? "", replyTo: saved.replyTo ?? "", postalAddress: saved.postalAddress ?? "", dailyLimit: String(saved.dailyLimit ?? 0) });
+  const set = (key: keyof typeof draft) => (e: { target: { value: string } }) => setDraft((d) => ({ ...d, [key]: e.target.value }));
+  const ready = data.checklist.every((item) => item.ok || item.optional);
+  const inputs: [keyof typeof draft, string, string, string?][] = [["fromName", "From name", "Your business"], ["fromAddress", "From address", "hello@mail.yourdomain.com", "email"], ["replyTo", "Reply-to address", "Leave empty to use the approving admin's email", "email"], ["postalAddress", "Postal address", "Printed at the bottom of every email"], ["dailyLimit", "Daily limit", "0", "number"]];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Email sending</CardTitle>
+        <CardDescription>Campaign emails go out through Resend. {ready ? "Everything needed is in place." : "Nothing sends until every required item below is ready."}</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <form
+          className="grid gap-3 sm:grid-cols-2"
+          onSubmit={(e: FormEvent) => {
+            e.preventDefault();
+            void attempt(() => save({ orgId, ...draft, dailyLimit: Number(draft.dailyLimit) }), "Email settings saved");
+          }}
+        >
+          {inputs.map(([key, label, placeholder, type]) => (
+            <label key={key} className={key === "postalAddress" ? "grid gap-1.5 text-sm sm:col-span-2" : "grid gap-1.5 text-sm"}>
+              <span className="font-medium">{label}</span>
+              <Input type={type ?? "text"} min={type === "number" ? 0 : undefined} step={type === "number" ? 1 : undefined} value={draft[key]} onChange={set(key)} placeholder={placeholder} />
+            </label>
+          ))}
+          <Button type="submit" variant="outline" className="justify-self-start sm:col-span-2">Save</Button>
+        </form>
+        <ul className="grid gap-1 border-t pt-3 text-sm">
+          {data.checklist.map((item) => (
+            <li key={item.key} className="flex items-center gap-2">
+              {item.ok ? <Check className="size-4 text-emerald-600" aria-label="Ready" /> : <X className={item.optional ? "size-4 text-muted-foreground" : "size-4 text-destructive"} aria-label="Missing" />}
+              <span className={item.ok ? undefined : "text-muted-foreground"}>{item.label}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground">The API key, sender domains, deployment cap, webhook secret and inbound domain are set by whoever runs this Remold, as environment settings.</p>
       </CardContent>
     </Card>
   );

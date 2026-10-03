@@ -5,6 +5,7 @@ import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { agentGuard } from "../authority/agentGuards";
+import { emailRules } from "./emailRules";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 import { dateValue } from "./values";
@@ -126,6 +127,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
     for (const row of rows) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
     await clearReferencesTo(ctx, membership, change.orgId, record!, actor);
+    await emailRules(ctx, membership, actor, object, fields, record!.values, null, record!._id);
     const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
     return { recordId: record!._id, eventId };
   }
@@ -168,5 +170,6 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
   const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
+  await emailRules(ctx, membership, actor, object, fields, record?.values ?? null, values, recordId, options.clearingReference);
   return { recordId, eventId };
 }

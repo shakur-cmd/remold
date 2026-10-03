@@ -1,0 +1,153 @@
+$ node ops/authority/service.mjs
+PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+PASS Production dispatch records cancelled late acceptance exactly once
+PASS SERVICE transaction races reserve organization budget and concurrency once
+PASS SERVICE cross-tenant collision leaves the losing account and organization unchanged
+PASS Payload edits invalidate immutable approval; destination and schedule are enforced
+PASS One-use expiring permit and server scheduled crash recovery retain consumed uncertainty
+PASS Readonly between claim and permit stops sends but permits truthful receipt settlement
+PASS Missing usage pauses cheaper work until authoritative usage settles exactly once
+PASS Actual overrun records the full cost and blocks continuation and new spending
+PASS Final absence targets only the current unresolved logical step, then late truth is held as anomaly
+PASS Provisional absence permits only same-key retry and old-fence truthful settlement
+PASS Receipt collisions persist a durable anomaly instead of rolling it back with an exception
+PASS Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)
+PASS Human safety rejects expired JWT and same-transaction membership epoch changes (SIM provider)
+PASS Client recurring cancel is a distinct zero-amount command with no new collection authority (SIM provider)
+PASS Two exact refund receipts exhaust the paid amount; one receipt cannot settle two operations
+PASS Outside pending refunds hold headroom; an authoritative failed receipt releases only that receipt
+PASS Matched pending receipt replaces its local hold; late acknowledgement cannot overwrite fetched failure
+PASS Incomplete reconciliation blocks new safety consume and preserves unknown local holds
+PASS General refund and recurring-cancel dispatch refuse the safety-ledger bypass
+PASS Only capability-specific finality with a complete post-consume lookup releases an unknown refund
+PASS Propose-mode external authority still requires human approval; currency and binding scopes cannot widen
+PASS Every approval material field invalidates the reviewed version
+PASS Actual human approver role downgrade invalidates already-approved dispatch
+PASS Final permit rechecks missing usage discovered after a different operation was claimed
+PASS Human adoption creates a new attributed command while preserving the fired agent original
+PASS Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose
+PASS Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient
+PASS Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal
+PASS Same external ID under different provider instances stays isolated per connection
+PASS Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks
+PASS External scoped agent uses actual HTTP authority; firing stops new permits and preserves one issued tail
+PASS Delegation revocation changes actual REST read projection while independent human grants survive
+PASS H0#5 firing a manager removes delegated reads and queued model work while the child keeps its independent human grant
+MEASURE subscription mask propagation ms 16.17
+PASS Existing human subscription loses masked field within the 2-second target on real backend
+PASS Concurrent duplicate logical proposals and claims yield one operation and reservation
+PASS Global spend, concurrency and per-run ceilings serialize across distinct tenants
+PASS Continuation reduces per-call exposure and old fence cannot consume the next step
+PASS Final permit refuses expired approval without relying on asynchronous sweeps
+PASS Unresolved prior consumed attempt survives failure and releases only after final current-step absence
+PASS Unresolved prior consumed attempt survives expiry and releases only after final current-step absence
+PASS Unresolved prior consumed attempt survives sweep and releases only after final current-step absence
+PASS Durable cancellation survives rejection and absence false
+PASS Durable cancellation survives rejection and absence true
+PASS Unconsumed unknown does not manufacture provider uncertainty; expiry recovers false
+PASS Unconsumed unknown does not manufacture provider uncertainty; expiry recovers true
+PASS Single-step overrun remains confirmed and retained missing usage cannot be cancelled away false
+PASS Single-step overrun remains confirmed and retained missing usage cannot be cancelled away true
+PASS Invalid secret references and disabled account health fail closed without exposing opaque handles
+PASS Invalid provider and secret references fail closed
+node:internal/child_process:1143
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+
+<ref *1> Error: spawnSync unzip ENOBUFS
+    at Object.spawnSync (node:internal/child_process:1143:20)
+    at spawnSync (node:child_process:911:24)
+    at execFileSync (node:child_process:954:15)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ab677bd771bc33d3f/ops/authority/service-secrets.mjs:94:50
+    at Array.map (<anonymous>)
+    at file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ab677bd771bc33d3f/ops/authority/service-secrets.mjs:94:38
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async test (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ab677bd771bc33d3f/ops/authority/service.mjs:21:76)
+    at async Object.replaySecrets [as secrets] (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ab677bd771bc33d3f/ops/authority/service-secrets.mjs:53:3)
+    at async withAuthority.safetySim (file:///Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ab677bd771bc33d3f/ops/authority/service.mjs:56:84) {
+  errno: -55,
+  code: 'ENOBUFS',
+  syscall: 'spawnSync unzip',
+  path: 'unzip',
+  spawnargs: [
+    '-p',
+    '/Users/urkel/Documents/CodeMyVibe/Projects/remold/.claude/worktrees/agent-ab677bd771bc33d3f/ops/authority/evidence/fixture-remold-authority-DEsC74.zip',
+    'fields/documents.jsonl'
+  ],
+  error: [Circular *1],
+  status: 80,
+  signal: null,
+  output: [
+    null,
+    '{"_creationTime":1791031124578.8682,"_id":"k97000hadnsjt4j0jjhy38j92x8fknp3","encoding":1.0,"key":"paidOn","label":"Paid On","objectId":"nh721etgrjyttrqxe6hyqndxn58fjde3","order":5.0,"orgId":"qh77vntqmmqsj89twsbrezch6x8fkkxv","protectedFromAgents":true,"required":false,"retired":false,"slot":{"index":2.0,"kind":"d"},"type":"date"}\n' +
+      '{"_creationTime":1791031134193.473,"_id":"k97006f0tphegckmb4aya3qzed8fj0gf","encoding":1.0,"key":"subject","label":"Subject","objectId":"nh75kj9vzpscybfwpe55crc5b18fj647","order":0.0,"orgId":"qh7frwqmh4me6qpfvxyffpggt18fk0k6","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031162826.4463,"_id":"k97009djt7ypqyepfbn8f60zws8fk62t","encoding":1.0,"key":"about","label":"About","objectId":"nh7bqh1g8y6xe18f22cdq7950n8fkytp","order":5.0,"orgId":"qh73zc3ndv0670r344h6jy74yd8fkjf2","required":false,"retired":false,"slot":{"index":2.0,"kind":"s"},"type":"lookup"}\n' +
+      '{"_creationTime":1791031150408.2607,"_id":"k97009xhpn0rx217v74r3mykq98fkfvy","encoding":1.0,"key":"channel","label":"Channel","objectId":"nh77g0chsfyj6g7jjvgbt64nqh8fj1j8","options":[{"id":"email","label":"Email"},{"id":"phone","label":"Phone"},{"id":"inPerson","label":"In person"},{"id":"social","label":"Social"}],"order":2.0,"orgId":"qh7dxs2rs7cfwcj7ex03rc3qdh8fk2xd","required":false,"retired":false,"slot":{"index":2.0,"kind":"s"},"type":"select"}\n' +
+      '{"_creationTime":1791031152508.064,"_id":"k9700b363adstkx5w2g1bz2cws8fkk57","encoding":1.0,"key":"title","label":"Title","objectId":"nh742vgn544ydcyemy1591hr798fj58g","order":3.0,"orgId":"qh76gd40tv8sh4wk7haed0qzcx8fjcqh","required":false,"retired":false,"slot":{"index":3.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031166201.3252,"_id":"k9700d7100are0pvzkc3bwam898fjktp","encoding":1.0,"key":"mediaLink","label":"Media Link","objectId":"nh7b9t43t43195p8phkhtkynes8fjzf6","order":5.0,"orgId":"qh79mazcjxe72mz37eky66qb018fjt04","required":false,"retired":false,"type":"text"}\n' +
+      '{"_creationTime":1791031167342.6016,"_id":"k9700q33hycfw1p9kajape1w258fjmmc","encoding":1.0,"key":"body","label":"Body","objectId":"nh7117wzhjb2w42tt9y7cssd0d8fk9j2","order":0.0,"orgId":"qh7es6n20pgqtgmwhjf1w9ad698fjt66","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031158573.593,"_id":"k97019kcttb0byna1n4y30mgqx8fjr6c","encoding":1.0,"key":"number","label":"Number","objectId":"nh764pbcmbs2dnhb2ka11n1kwn8fj2cw","order":0.0,"orgId":"qh7ckm53h04djxkzgpq5ymah8d8fjs0x","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031182045.808,"_id":"k9701a3erye8g07j6gx46g7mdh8fjxar","encoding":1.0,"key":"company","label":"Company","objectId":"nh7566d0vx3qm0b0ae1ssqrq398fkmkf","order":4.0,"orgId":"qh7epqz0tx5z7bvm7s4w0jc9kn8fjts1","required":false,"retired":false,"slot":{"index":4.0,"kind":"s"},"targetObjectId":"nh70c9aqddfpwnyspnpdd777118fkbsg","type":"lookup"}\n' +
+      '{"_creationTime":1791031176045.66,"_id":"k9701gtf3zc6sf0hgmn5g1fxkx8fj6za","encoding":1.0,"key":"startDate","label":"Start Date","objectId":"nh71zk34srrbhgxcmvjxjw738d8fkcch","order":3.0,"orgId":"qh71kwapb9se1b7sfye280w4nd8fjxcs","required":false,"retired":false,"slot":{"index":0.0,"kind":"d"},"type":"date"}\n' +
+      '{"_creationTime":1791031122236.5383,"_id":"k9701mf6v0sq9tpmwtx46g56an8fjgrd","encoding":1.0,"key":"status","label":"Status","objectId":"nh73tjrrskq88qgshy0hhzy9ph8fjf7b","options":[{"id":"planned","label":"Planned"},{"id":"active","label":"Active"},{"id":"paused","label":"Paused"},{"id":"done","label":"Done"}],"order":1.0,"orgId":"qh7ckgtsf6785vdtvhbxg35wbh8fk5wt","required":false,"retired":false,"slot":{"index":1.0,"kind":"s"},"type":"select"}\n' +
+      '{"_creationTime":1791031141670.532,"_id":"k9701r8b5128vspknpmf6akbp18fjq2j","encoding":1.0,"key":"company","label":"Company","objectId":"nh75a36g777qmq2ap1p0fysg298fkz67","order":4.0,"orgId":"qh70prnjz3mfyff936v1r4han58fjhwg","required":false,"retired":false,"slot":{"index":4.0,"kind":"s"},"targetObjectId":"nh74fv4pqgcsdfkzs84ktwqt9x8fjzvg","type":"lookup"}\n' +
+      '{"_creationTime":1791031182888.3252,"_id":"k9701sgdp6141hagpw867s01y98fkbfa","encoding":1.0,"key":"name","label":"Name","objectId":"nh7dvhr734awn4wxqr3537jtfh8fk7yy","order":0.0,"orgId":"qh78qwesmyxs4gtrj3g6h685dd8fj629","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031161011.242,"_id":"k9701zrcw38h380ngeqs43nqv98fj5gn","encoding":1.0,"key":"startDate","label":"Start Date","objectId":"nh726kkqr975yj8xg51er8cy2d8fk0ad","order":3.0,"orgId":"qh7ex75v8mas3nzbvba84schkn8fj22t","required":false,"retired":false,"slot":{"index":0.0,"kind":"d"},"type":"date"}\n' +
+      '{"_creationTime":1791031152962.9207,"_id":"k97023zk48tx7k7ez75jzvbcp18fj523","encoding":1.0,"key":"name","label":"Name","objectId":"nh7c5d39ch00a7xjpcyh1mv5wd8fkdrb","order":0.0,"orgId":"qh75v85dbw46qeaqk6gra41wk18fk0gf","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031138996.1287,"_id":"k97024ahb39vxgr3rkhj86rt358fjq5y","encoding":1.0,"key":"sent","label":"Sent","objectId":"nh7evb89v0n79y4c108kg3fxxh8fj9yr","order":3.0,"orgId":"qh79etg10kzwy2fp3t3estr56h8fkph9","required":false,"retired":false,"slot":{"index":0.0,"kind":"d"},"type":"date"}\n' +
+      '{"_creationTime":1791031150983.0747,"_id":"k9702rwcxc85rey4z4mcvy2gnd8fjp5w","encoding":1.0,"key":"document","label":"Document","objectId":"nh746x2ne8hra8284p4p6psnwx8fjpfq","order":7.0,"orgId":"qh70ac3hfyv6qr5w6g2yx7896h8fjdk5","required":false,"retired":false,"type":"text"}\n' +
+      '{"_creationTime":1791031158573.5845,"_id":"k9702xtedgsczmdaq3ntjgfpwh8fjhnh","encoding":1.0,"key":"email","label":"Email","objectId":"nh71ef1y5t3mje8wqznwx9k3f98fj8nb","order":1.0,"orgId":"qh7ckm53h04djxkzgpq5ymah8d8fjs0x","required":false,"retired":false,"slot":{"index":1.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031176045.6648,"_id":"k9702ykfysz5b8tkk70r8q45fs8fj5xt","encoding":1.0,"key":"subject","label":"Subject","objectId":"nh7ftkhg59gp0gjge29ys7nye98fky44","order":0.0,"orgId":"qh71kwapb9se1b7sfye280w4nd8fjxcs","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031174645.1228,"_id":"k97030sy03syzfxq732t05teth8fj8am","encoding":1.0,"key":"text","label":"Text","objectId":"nh72f9y8xs3hp1zbjc6xgxx7118fke9e","order":4.0,"orgId":"qh7f1pzqzyxktchyxnqrg88g9h8fkq9r","required":false,"retired":false,"type":"text"}\n' +
+      '{"_creationTime":1791031137464.424,"_id":"k9703bp25q7gr75fk1q3mwq4e98fjzbq","encoding":1.0,"key":"blockedBy","label":"Blocked By","objectId":"nh739frrg3esn1spb6cpyt9b7h8fjct4","order":4.0,"orgId":"qh775wk9rea9f9nfz3bhk76qt18fk3gh","required":false,"retired":false,"targetObjectId":"nh739frrg3esn1spb6cpyt9b7h8fjct4","type":"links"}\n' +
+      '{"_creationTime":1791031126325.2385,"_id":"k9703g0r5966srdtfv55atzrzh8fk0t4","encoding":1.0,"key":"postalCode","label":"Postal Code","objectId":"nh71rnrsyaka311zchmhdp5fj98fkhwz","order":6.0,"orgId":"qh78ecwhk05xf3yne61rz2hb398fkkg9","required":false,"retired":false,"type":"text"}\n' +
+      '{"_creationTime":1791031182045.8174,"_id":"k9703j8mmahw0ymh6w5yjgg5hs8fj7r8","encoding":1.0,"key":"monthly","label":"Monthly","objectId":"nh71bkxhkpahgdpj687tkcsfz18fkvmb","order":6.0,"orgId":"qh7epqz0tx5z7bvm7s4w0jc9kn8fjts1","required":false,"retired":false,"slot":{"index":0.0,"kind":"b"},"type":"boolean"}\n' +
+      '{"_creationTime":1791031182045.812,"_id":"k9703jysfy70hggcqz8peq6xhh8fjxey","encoding":1.0,"key":"blockedBy","label":"Blocked By","objectId":"nh77pvv73tfhg2mn8ksd0w1v4s8fkqw1","order":4.0,"orgId":"qh7epqz0tx5z7bvm7s4w0jc9kn8fjts1","required":false,"retired":false,"targetObjectId":"nh77pvv73tfhg2mn8ksd0w1v4s8fkqw1","type":"links"}\n' +
+      '{"_creationTime":1791031186638.5696,"_id":"k9703m3et524djtv8eg4dx8gcx8fk1h9","encoding":1.0,"key":"campaign","label":"Campaign","objectId":"nh73h60vx32dhyswggcpkt2eyh8fj6ec","order":7.0,"orgId":"qh70p5qma01mhq4wzdfvvr1cms8fjh4j","required":false,"retired":false,"slot":{"index":3.0,"kind":"s"},"targetObjectId":"nh779j1sfd6kpm2v3rnpy2z7198fj6jm","type":"lookup"}\n' +
+      '{"_creationTime":1791031165406.5435,"_id":"k9703m8arvgzpnc767v43z4rkn8fj96n","encoding":1.0,"key":"linkedin","label":"LinkedIn","objectId":"nh7c0hmf1py2c7zgxas4zkpazs8fjnxw","order":5.0,"orgId":"qh71j6kw5be0vhfjr1576m70q18fjc82","required":false,"retired":false,"type":"text"}\n' +
+      '{"_creationTime":1791031122252.0442,"_id":"k9703mn29rrnrp8gs369dgt2418fjed4","encoding":1.0,"key":"name","label":"Name","objectId":"nh711wtj1w3b3r010f55bczrxx8fkyyf","order":0.0,"orgId":"qh70v7m78b0e0vp85ynt26frnx8fkp0p","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031155595.303,"_id":"k9703n6g1x7c4vqw5kq91knxg58fj58z","encoding":1.0,"key":"mediaLink","label":"Media Link","objectId":"nh794mrzktfvk6jc8gq3x70y1h8fk699","order":5.0,"orgId":"qh73d8321f5021y7gfnedmrra58fkfp6","required":false,"retired":false,"type":"text"}\n' +
+      '{"_creationTime":1791031186638.566,"_id":"k9703nsyetpjyph2tgx4806n0d8fjfx8","encoding":1.0,"key":"number","label":"Number","objectId":"nh7fmfmgsjt5sc531pdsew59gh8fj5qb","order":0.0,"orgId":"qh70p5qma01mhq4wzdfvvr1cms8fjh4j","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031125481.7253,"_id":"k9703nx94q7kebd68wyenf6dbs8fj12y","encoding":1.0,"key":"domain","label":"Domain","objectId":"nh752dbs3pj972pfta5rz6tjss8fk5hx","order":1.0,"orgId":"qh70g52dqj01x97znx2dkw3sqs8fkb2e","required":false,"retired":false,"slot":{"index":1.0,"kind":"s"},"type":"text"}\n' +
+      '{"_creationTime":1791031187108.9597,"_id":"k9703vncd777sb014vrhmn9zfd8fjv4g","encoding":1.0,"key":"companies","label":"Companies","objectId":"nh76at6g6x4wdk07g731wefr4s8fkd9c","order":6.0,"orgId":"qh7ca4jr9bs73d1gmfwmf7vth98fk68c","required":false,"retired":false,"targetObjectId":"nh74eqzfahss69z371nep0cbyx8fjk5a","type":"links"}\n' +
+      '{"_creationTime":1791031138996.1309,"_id":"k97041nvnaf136etmrzyxgqsyn8fjgy2","encoding":1.0,"key":"text","label":"Text","objectId":"nh7fsan568w28v3zj5grh1p7n'... 1104112 more characters,
+    ''
+  ],
+  pid: 38100,
+  stdout: '{"_creationTime":1791031124578.8682,"_id":"k97000hadnsjt4j0jjhy38j92x8fknp3","encoding":1.0,"key":"paidOn","label":"Paid On","objectId":"nh721etgrjyttrqxe6hyqndxn58fjde3","order":5.0,"orgId":"qh77vntqmmqsj89twsbrezch6x8fkkxv","protectedFromAgents":true,"required":false,"retired":false,"slot":{"index":2.0,"kind":"d"},"type":"date"}\n' +
+    '{"_creationTime":1791031134193.473,"_id":"k97006f0tphegckmb4aya3qzed8fj0gf","encoding":1.0,"key":"subject","label":"Subject","objectId":"nh75kj9vzpscybfwpe55crc5b18fj647","order":0.0,"orgId":"qh7frwqmh4me6qpfvxyffpggt18fk0k6","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031162826.4463,"_id":"k97009djt7ypqyepfbn8f60zws8fk62t","encoding":1.0,"key":"about","label":"About","objectId":"nh7bqh1g8y6xe18f22cdq7950n8fkytp","order":5.0,"orgId":"qh73zc3ndv0670r344h6jy74yd8fkjf2","required":false,"retired":false,"slot":{"index":2.0,"kind":"s"},"type":"lookup"}\n' +
+    '{"_creationTime":1791031150408.2607,"_id":"k97009xhpn0rx217v74r3mykq98fkfvy","encoding":1.0,"key":"channel","label":"Channel","objectId":"nh77g0chsfyj6g7jjvgbt64nqh8fj1j8","options":[{"id":"email","label":"Email"},{"id":"phone","label":"Phone"},{"id":"inPerson","label":"In person"},{"id":"social","label":"Social"}],"order":2.0,"orgId":"qh7dxs2rs7cfwcj7ex03rc3qdh8fk2xd","required":false,"retired":false,"slot":{"index":2.0,"kind":"s"},"type":"select"}\n' +
+    '{"_creationTime":1791031152508.064,"_id":"k9700b363adstkx5w2g1bz2cws8fkk57","encoding":1.0,"key":"title","label":"Title","objectId":"nh742vgn544ydcyemy1591hr798fj58g","order":3.0,"orgId":"qh76gd40tv8sh4wk7haed0qzcx8fjcqh","required":false,"retired":false,"slot":{"index":3.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031166201.3252,"_id":"k9700d7100are0pvzkc3bwam898fjktp","encoding":1.0,"key":"mediaLink","label":"Media Link","objectId":"nh7b9t43t43195p8phkhtkynes8fjzf6","order":5.0,"orgId":"qh79mazcjxe72mz37eky66qb018fjt04","required":false,"retired":false,"type":"text"}\n' +
+    '{"_creationTime":1791031167342.6016,"_id":"k9700q33hycfw1p9kajape1w258fjmmc","encoding":1.0,"key":"body","label":"Body","objectId":"nh7117wzhjb2w42tt9y7cssd0d8fk9j2","order":0.0,"orgId":"qh7es6n20pgqtgmwhjf1w9ad698fjt66","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031158573.593,"_id":"k97019kcttb0byna1n4y30mgqx8fjr6c","encoding":1.0,"key":"number","label":"Number","objectId":"nh764pbcmbs2dnhb2ka11n1kwn8fj2cw","order":0.0,"orgId":"qh7ckm53h04djxkzgpq5ymah8d8fjs0x","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031182045.808,"_id":"k9701a3erye8g07j6gx46g7mdh8fjxar","encoding":1.0,"key":"company","label":"Company","objectId":"nh7566d0vx3qm0b0ae1ssqrq398fkmkf","order":4.0,"orgId":"qh7epqz0tx5z7bvm7s4w0jc9kn8fjts1","required":false,"retired":false,"slot":{"index":4.0,"kind":"s"},"targetObjectId":"nh70c9aqddfpwnyspnpdd777118fkbsg","type":"lookup"}\n' +
+    '{"_creationTime":1791031176045.66,"_id":"k9701gtf3zc6sf0hgmn5g1fxkx8fj6za","encoding":1.0,"key":"startDate","label":"Start Date","objectId":"nh71zk34srrbhgxcmvjxjw738d8fkcch","order":3.0,"orgId":"qh71kwapb9se1b7sfye280w4nd8fjxcs","required":false,"retired":false,"slot":{"index":0.0,"kind":"d"},"type":"date"}\n' +
+    '{"_creationTime":1791031122236.5383,"_id":"k9701mf6v0sq9tpmwtx46g56an8fjgrd","encoding":1.0,"key":"status","label":"Status","objectId":"nh73tjrrskq88qgshy0hhzy9ph8fjf7b","options":[{"id":"planned","label":"Planned"},{"id":"active","label":"Active"},{"id":"paused","label":"Paused"},{"id":"done","label":"Done"}],"order":1.0,"orgId":"qh7ckgtsf6785vdtvhbxg35wbh8fk5wt","required":false,"retired":false,"slot":{"index":1.0,"kind":"s"},"type":"select"}\n' +
+    '{"_creationTime":1791031141670.532,"_id":"k9701r8b5128vspknpmf6akbp18fjq2j","encoding":1.0,"key":"company","label":"Company","objectId":"nh75a36g777qmq2ap1p0fysg298fkz67","order":4.0,"orgId":"qh70prnjz3mfyff936v1r4han58fjhwg","required":false,"retired":false,"slot":{"index":4.0,"kind":"s"},"targetObjectId":"nh74fv4pqgcsdfkzs84ktwqt9x8fjzvg","type":"lookup"}\n' +
+    '{"_creationTime":1791031182888.3252,"_id":"k9701sgdp6141hagpw867s01y98fkbfa","encoding":1.0,"key":"name","label":"Name","objectId":"nh7dvhr734awn4wxqr3537jtfh8fk7yy","order":0.0,"orgId":"qh78qwesmyxs4gtrj3g6h685dd8fj629","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031161011.242,"_id":"k9701zrcw38h380ngeqs43nqv98fj5gn","encoding":1.0,"key":"startDate","label":"Start Date","objectId":"nh726kkqr975yj8xg51er8cy2d8fk0ad","order":3.0,"orgId":"qh7ex75v8mas3nzbvba84schkn8fj22t","required":false,"retired":false,"slot":{"index":0.0,"kind":"d"},"type":"date"}\n' +
+    '{"_creationTime":1791031152962.9207,"_id":"k97023zk48tx7k7ez75jzvbcp18fj523","encoding":1.0,"key":"name","label":"Name","objectId":"nh7c5d39ch00a7xjpcyh1mv5wd8fkdrb","order":0.0,"orgId":"qh75v85dbw46qeaqk6gra41wk18fk0gf","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031138996.1287,"_id":"k97024ahb39vxgr3rkhj86rt358fjq5y","encoding":1.0,"key":"sent","label":"Sent","objectId":"nh7evb89v0n79y4c108kg3fxxh8fj9yr","order":3.0,"orgId":"qh79etg10kzwy2fp3t3estr56h8fkph9","required":false,"retired":false,"slot":{"index":0.0,"kind":"d"},"type":"date"}\n' +
+    '{"_creationTime":1791031150983.0747,"_id":"k9702rwcxc85rey4z4mcvy2gnd8fjp5w","encoding":1.0,"key":"document","label":"Document","objectId":"nh746x2ne8hra8284p4p6psnwx8fjpfq","order":7.0,"orgId":"qh70ac3hfyv6qr5w6g2yx7896h8fjdk5","required":false,"retired":false,"type":"text"}\n' +
+    '{"_creationTime":1791031158573.5845,"_id":"k9702xtedgsczmdaq3ntjgfpwh8fjhnh","encoding":1.0,"key":"email","label":"Email","objectId":"nh71ef1y5t3mje8wqznwx9k3f98fj8nb","order":1.0,"orgId":"qh7ckm53h04djxkzgpq5ymah8d8fjs0x","required":false,"retired":false,"slot":{"index":1.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031176045.6648,"_id":"k9702ykfysz5b8tkk70r8q45fs8fj5xt","encoding":1.0,"key":"subject","label":"Subject","objectId":"nh7ftkhg59gp0gjge29ys7nye98fky44","order":0.0,"orgId":"qh71kwapb9se1b7sfye280w4nd8fjxcs","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031174645.1228,"_id":"k97030sy03syzfxq732t05teth8fj8am","encoding":1.0,"key":"text","label":"Text","objectId":"nh72f9y8xs3hp1zbjc6xgxx7118fke9e","order":4.0,"orgId":"qh7f1pzqzyxktchyxnqrg88g9h8fkq9r","required":false,"retired":false,"type":"text"}\n' +
+    '{"_creationTime":1791031137464.424,"_id":"k9703bp25q7gr75fk1q3mwq4e98fjzbq","encoding":1.0,"key":"blockedBy","label":"Blocked By","objectId":"nh739frrg3esn1spb6cpyt9b7h8fjct4","order":4.0,"orgId":"qh775wk9rea9f9nfz3bhk76qt18fk3gh","required":false,"retired":false,"targetObjectId":"nh739frrg3esn1spb6cpyt9b7h8fjct4","type":"links"}\n' +
+    '{"_creationTime":1791031126325.2385,"_id":"k9703g0r5966srdtfv55atzrzh8fk0t4","encoding":1.0,"key":"postalCode","label":"Postal Code","objectId":"nh71rnrsyaka311zchmhdp5fj98fkhwz","order":6.0,"orgId":"qh78ecwhk05xf3yne61rz2hb398fkkg9","required":false,"retired":false,"type":"text"}\n' +
+    '{"_creationTime":1791031182045.8174,"_id":"k9703j8mmahw0ymh6w5yjgg5hs8fj7r8","encoding":1.0,"key":"monthly","label":"Monthly","objectId":"nh71bkxhkpahgdpj687tkcsfz18fkvmb","order":6.0,"orgId":"qh7epqz0tx5z7bvm7s4w0jc9kn8fjts1","required":false,"retired":false,"slot":{"index":0.0,"kind":"b"},"type":"boolean"}\n' +
+    '{"_creationTime":1791031182045.812,"_id":"k9703jysfy70hggcqz8peq6xhh8fjxey","encoding":1.0,"key":"blockedBy","label":"Blocked By","objectId":"nh77pvv73tfhg2mn8ksd0w1v4s8fkqw1","order":4.0,"orgId":"qh7epqz0tx5z7bvm7s4w0jc9kn8fjts1","required":false,"retired":false,"targetObjectId":"nh77pvv73tfhg2mn8ksd0w1v4s8fkqw1","type":"links"}\n' +
+    '{"_creationTime":1791031186638.5696,"_id":"k9703m3et524djtv8eg4dx8gcx8fk1h9","encoding":1.0,"key":"campaign","label":"Campaign","objectId":"nh73h60vx32dhyswggcpkt2eyh8fj6ec","order":7.0,"orgId":"qh70p5qma01mhq4wzdfvvr1cms8fjh4j","required":false,"retired":false,"slot":{"index":3.0,"kind":"s"},"targetObjectId":"nh779j1sfd6kpm2v3rnpy2z7198fj6jm","type":"lookup"}\n' +
+    '{"_creationTime":1791031165406.5435,"_id":"k9703m8arvgzpnc767v43z4rkn8fj96n","encoding":1.0,"key":"linkedin","label":"LinkedIn","objectId":"nh7c0hmf1py2c7zgxas4zkpazs8fjnxw","order":5.0,"orgId":"qh71j6kw5be0vhfjr1576m70q18fjc82","required":false,"retired":false,"type":"text"}\n' +
+    '{"_creationTime":1791031122252.0442,"_id":"k9703mn29rrnrp8gs369dgt2418fjed4","encoding":1.0,"key":"name","label":"Name","objectId":"nh711wtj1w3b3r010f55bczrxx8fkyyf","order":0.0,"orgId":"qh70v7m78b0e0vp85ynt26frnx8fkp0p","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031155595.303,"_id":"k9703n6g1x7c4vqw5kq91knxg58fj58z","encoding":1.0,"key":"mediaLink","label":"Media Link","objectId":"nh794mrzktfvk6jc8gq3x70y1h8fk699","order":5.0,"orgId":"qh73d8321f5021y7gfnedmrra58fkfp6","required":false,"retired":false,"type":"text"}\n' +
+    '{"_creationTime":1791031186638.566,"_id":"k9703nsyetpjyph2tgx4806n0d8fjfx8","encoding":1.0,"key":"number","label":"Number","objectId":"nh7fmfmgsjt5sc531pdsew59gh8fj5qb","order":0.0,"orgId":"qh70p5qma01mhq4wzdfvvr1cms8fjh4j","required":true,"retired":false,"slot":{"index":0.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031125481.7253,"_id":"k9703nx94q7kebd68wyenf6dbs8fj12y","encoding":1.0,"key":"domain","label":"Domain","objectId":"nh752dbs3pj972pfta5rz6tjss8fk5hx","order":1.0,"orgId":"qh70g52dqj01x97znx2dkw3sqs8fkb2e","required":false,"retired":false,"slot":{"index":1.0,"kind":"s"},"type":"text"}\n' +
+    '{"_creationTime":1791031187108.9597,"_id":"k9703vncd777sb014vrhmn9zfd8fjv4g","encoding":1.0,"key":"companies","label":"Companies","objectId":"nh76at6g6x4wdk07g731wefr4s8fkd9c","order":6.0,"orgId":"qh7ca4jr9bs73d1gmfwmf7vth98fk68c","required":false,"retired":false,"targetObjectId":"nh74eqzfahss69z371nep0cbyx8fjk5a","type":"links"}\n' +
+    '{"_creationTime":1791031138996.1309,"_id":"k97041nvnaf136etmrzyxgqsyn8fjgy2","encoding":1.0,"key":"text","label":"Text","objectId":"nh7fsan568w28v3zj5grh1p7n'... 1104112 more characters,
+  stderr: ''
+}
+
+Node.js v24.18.0
+[ELIFECYCLE] Command failed with exit code 1.

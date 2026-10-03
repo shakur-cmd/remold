@@ -6,6 +6,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stri
 const isStage = (object: Doc<'objects'>, field: Doc<'fields'>) => object.isStandard && object.key === 'opportunity' && field.key === 'stage' && field.type === 'select';
 const final = (value: unknown) => value === 'won' || value === 'lost';
 const settled = (value: unknown) => value === 'approved' || value === 'published';
+const approved = (value: unknown) => value === 'approved' || value === 'sending' || value === 'sent';
 
 // Limits that hold even when an agent has a grant; people are never affected.
 // An agent moves an opportunity's stage only forward in option order and leaves
@@ -14,9 +15,13 @@ const settled = (value: unknown) => value === 'approved' || value === 'published
 // published post is left to people entirely, so its approved text cannot change.
 // Values equal to what is stored are not writes. A delete clears every value, but
 // only a won or lost deal or a protected value stored on the record blocks it.
+// Emails follow the same rule, except that an agent may always stop one. Only a
+// person starts a campaign (sets its status to active); pausing is always allowed.
 export function agentGuard(principal: Principal, object: Doc<'objects'>, fields: Doc<'fields'>[], record: Doc<'records'> | null, values: Record<string, unknown> | 'delete') {
   if (!('agent' in principal)) return;
   const status = object.isStandard && object.key === 'post' ? fields.find(f => f.key === 'status' && f.type === 'select') : undefined;
+  const email = object.isStandard && object.key === 'email' ? fields.find(f => f.key === 'status' && f.type === 'select') : undefined;
+  const start = object.isStandard && object.key === 'campaign' ? fields.find(f => f.key === 'status' && f.type === 'select') : undefined;
   const changes = values === 'delete' ? Object.fromEntries(Object.keys(record!.values).map(id => [id, null])) : values;
   for (const [id, to] of Object.entries(changes)) {
     const field = fields.find(f => f._id === id), from = record?.values[id];
@@ -24,6 +29,11 @@ export function agentGuard(principal: Principal, object: Doc<'objects'>, fields:
     if (field.protectedFromAgents) fail('FORBIDDEN', `${field.label} is protected from agents; a person must change it`, { fieldId: field._id });
     if (status && settled(record?.values[status._id])) fail('FORBIDDEN', 'Agents cannot change an approved or published post; a person must', { fieldId: field._id });
     if (field === status && settled(to)) fail('FORBIDDEN', 'Only a person can approve or publish a post', { fieldId: field._id });
+    if (email && !(field === email && to === 'stopped')) {
+      if (approved(record?.values[email._id])) fail('FORBIDDEN', 'Agents cannot change an approved email; a person must', { fieldId: field._id });
+      if (field === email && approved(to)) fail('FORBIDDEN', 'Only a person can approve an email', { fieldId: field._id });
+    }
+    if (field === start && to === 'active') fail('FORBIDDEN', 'Only a person can start a campaign', { fieldId: field._id });
     if (!isStage(object, field) || from == null) continue;
     if (final(from)) fail('FORBIDDEN', `Agents cannot change the stage of a won or lost ${object.label.toLowerCase()}`, { fieldId: field._id });
     const order = (field.options ?? []).map(o => o.id);

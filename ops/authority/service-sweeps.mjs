@@ -54,6 +54,9 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'authority/grants:revoke': () => t.human.mutation(fn('authority/grants:revoke'), { orgId, id: w.grantId }),
       'authority/policies:setMember': () => t.human.mutation(fn('authority/policies:setMember'), { orgId, memberId: w.ownerMember._id, hiddenFieldIds: [] }),
       'authority/policies:setAgentMasks': () => t.human.mutation(fn('authority/policies:setAgentMasks'), { orgId, agentId: w.agent.agentId, hiddenFieldIds: [] }),
+      'campaigns:saveSettings': () => t.human.mutation(fn('campaigns:saveSettings'), { orgId, dailyLimit: 1 }),
+      'campaigns:approve': () => t.human.mutation(fn('campaigns:approve'), { orgId, emailId: w.record, confirmed: true }),
+      'campaigns:markReplied': () => t.human.mutation(fn('campaigns:markReplied'), { orgId, sendId: 'none' }),
       'capture:save': () => t.human.mutation(fn('capture:save'), { orgId, kind: 'company', name: 'Denied capture' }),
       'csv:importRows': () => t.human.mutation(fn('csv:importRows'), { orgId, objectId: w.company._id, columns: [w.name._id], rows: [['Denied import']], firstRow: 1, skipDuplicates: false, createMissing: false }),
       'fields:create': () => t.human.mutation(fn('fields:create'), { orgId, objectId: w.company._id, key: 'denied', label: 'Denied', type: 'text' }),
@@ -83,6 +86,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'records:create': () => t.human.mutation(fn('records:create'), { orgId, objectId: w.company._id, values: { [w.name._id]: 'Denied record' } }),
       'records:update': () => t.human.mutation(fn('records:update'), { orgId, recordId: w.record, values: { [w.name._id]: 'Denied update' } }),
       'records:remove': () => t.human.mutation(fn('records:remove'), { orgId, recordId: w.spare }),
+      'reminders:set': () => t.human.mutation(fn('reminders:set'), { orgId, on: false }),
       'seed:demo': () => t.human.mutation(fn('seed:demo'), { orgId }),
       'suggestions:apply': () => t.human.mutation(fn('suggestions:apply'), { orgId, suggestionId: w.suggestions.apply }),
       'suggestions:dismiss': () => t.human.mutation(fn('suggestions:dismiss'), { orgId, suggestionId: w.suggestions.dismiss }),
@@ -93,6 +97,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'HTTP POST /api/v1/intake/lead': ['/api/v1/intake/lead', { name: 'Denied', email: 'denied@example.com' }],
       'HTTP POST /api/v1/suggestions': ['/api/v1/suggestions', { action: 'create', object: 'company', values: { name: 'Denied proposal' }, reason: 'readonly sweep' }],
       'HTTP POST /api/v1/inbox': ['/api/v1/inbox', { text: 'Denied inbox' }],
+      'HTTP POST /api/v1/sends/:id/replied': ['/api/v1/sends/none/replied', {}],
       'HTTP POST /api/v1/inbox/:id/resolve': ['/api/v1/inbox/' + w.inboxId + '/resolve', { note: 'Denied resolve' }],
       'HTTP POST /api/v1/operations': ['/api/v1/operations', { key: 'claimer', logical: 'readonly-' + randomUUID(), bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 1 }],
       'HTTP POST /api/v1/operations/:id/edit': ['/api/v1/operations/' + w.claimerOp + '/edit', { key: 'claimer', payload: { ...t.payload, content: 'denied edit' } }],
@@ -140,13 +145,17 @@ export async function replaySweeps({ runtime, tenant, test }) {
     const record = await t.human.query(anyApi.records.get, { orgId, recordId: w.record }), page = { cursor: null, numItems: 50 };
     const person = (await t.human.query(anyApi.objects.list, { orgId })).find(object => object.key === 'person'), personFields = await t.human.query(anyApi.fields.list, { orgId, objectId: person._id });
     const reverse = personFields.find(field => field.key === 'company');
+    const standard = async key => { const object = (await t.human.query(anyApi.objects.list, { orgId })).find(o => o.key === key), detail = await t.human.query(anyApi.objects.get, { orgId, objectId: object._id }); return { object, f: Object.fromEntries(detail.fields.map(field => [field.key, field._id])) }; };
+    const campaign = await standard('campaign'), email = await standard('email');
+    const campaignId = (await t.human.mutation(anyApi.records.create, { orgId, objectId: campaign.object._id, values: { [campaign.f.name]: 'Sweep campaign' } })).recordId;
+    const emailId = (await t.human.mutation(anyApi.records.create, { orgId, objectId: email.object._id, values: { [email.f.subject]: 'Sweep email', [email.f.body]: 'Hello', [email.f.campaign]: campaignId, [email.f.status]: 'draft' } })).recordId;
     const queries = {
       'agents:list': { orgId }, 'csv:exportPage': { orgId, objectId: w.company._id, cursor: null }, 'events:forRecord': { orgId, recordId: w.record }, 'events:forOrg': { orgId, paginationOpts: page },
       'fields:list': { orgId, objectId: w.company._id }, 'inbox:audience': { orgId }, 'inbox:list': { orgId }, 'integrations/commands:getHuman': { orgId, id: w.queued }, 'integrations/connections:list': { orgId },
       'invites:get': { token: w.pendingInvite.token }, 'objects:list': { orgId }, 'objects:get': { orgId, objectId: w.company._id }, 'orgs:mine': {}, 'orgs:get': { orgId }, 'orgs:members': { orgId },
       'records:list': { orgId, objectId: w.company._id, paginationOpts: page }, 'records:get': { orgId, recordId: w.record }, 'records:related': { orgId, recordId: w.record, fieldId: reverse._id, paginationOpts: page },
       'records:reverseFields': { orgId, objectId: w.company._id }, 'records:byRef': { orgId, ref: record.ref ?? 'none' }, 'records:search': { orgId, text: canary }, 'suggestions:list': { orgId }, 'suggestions:forRecord': { orgId, recordId: w.record },
-      'today:get': { orgId, today: Date.now() }, 'users:me': {},
+      'today:get': { orgId, today: Date.now() }, 'users:me': {}, 'campaigns:settings': { orgId }, 'campaigns:report': { orgId, campaignId }, 'campaigns:preview': { orgId, emailId },
     };
     for (const entry of inventory.filter(entry => entry.visibility === 'public' && entry.kind === 'query')) {
       assert.ok(queries[entry.id], 'No mask sweep call for ' + entry.id);
@@ -162,7 +171,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
       assert.equal(response.status, 404, 'agent ' + path + ' must refuse a hidden field: ' + text); assert.ok(!text.includes(canary));
     }
-    const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'inbox'];
+    const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'inbox', 'campaigns/' + campaignId + '/report', 'emails/' + emailId + '/preview'];
     for (const path of gets) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
       assert.ok(response.status < 500, path + ' failed: ' + text); assert.ok(!text.includes(canary), path + ' leaked a hidden field value');
