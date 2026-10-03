@@ -130,7 +130,7 @@ describe("campaign email", () => {
       const mail = delivered.find((call) => to(call) === "ava@people.test")!;
       expect(mail.url).toBe("https://api.resend.com/emails");
       expect(mail.headers.authorization).toBe("Bearer re_test_key");
-      expect(mail.headers["idempotency-key"]).toBe(ava._id);
+      expect(mail.headers["idempotency-key"]).toMatch(new RegExp(`^${ava._id}:`));
       expect(mail.body).toMatchObject({ from: "Owner Co <hi@mail.example.com>", subject: "Quick call, Ava?", reply_to: "owner@example.com", tags: [{ name: "send", value: ava._id }] });
       expect(mail.body.text).toContain("Hi Ava,\n\nFive minutes for $5 at Acme Plumbing? https://example.com/book");
       expect(mail.body.text).toContain("1 Main St, Springfield");
@@ -138,7 +138,7 @@ describe("campaign email", () => {
       expect(mail.body.html).toContain('<a href="https://example.com/book">https://example.com/book</a>');
       expect(mail.body.html).toContain("<br>");
       expect(mail.body.headers).toEqual({ "List-Unsubscribe": `<https://site.example.com/u/${ava.token}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
-      expect(ava).toMatchObject({ status: "sent", providerId: mail.body && byKey.get(ava._id), sentAt: start, attempts: 1 });
+      expect(ava).toMatchObject({ status: "sent", providerId: mail.body && byKey.get(mail.headers["idempotency-key"]), sentAt: start, attempts: 1 });
       expect(ava.token).toMatch(/^[a-z0-9]{32,}$/);
       expect((await w.read(w.first)).values[w.email.fields.status._id]).toBe("sent");
       expect(await w.titlesAbout(w.activity, w.people.Ava)).toEqual(["Sent: Quick call, Ava?"]);
@@ -233,7 +233,7 @@ describe("campaign email", () => {
       const claimed = await w.t.mutation(internal.campaignSend.claim, {});
       expect(claimed).toHaveLength(2);
       // The crashed run reached Resend for the first person before it died.
-      await fetch("https://api.resend.com/emails", { method: "POST", headers: { "idempotency-key": claimed[0].sendId }, body: claimed[0].payload });
+      await fetch("https://api.resend.com/emails", { method: "POST", headers: { "idempotency-key": claimed[0].key }, body: claimed[0].payload });
       await tick(w.t);
       expect(delivered).toHaveLength(1);
       expect((await w.sends()).map((s: any) => s.status)).toEqual(["sending", "sending"]);
@@ -769,7 +769,7 @@ describe("campaign email", () => {
       expect(await w.sendTo("Ava")).toMatchObject({ status: "sent", providerId: "re_1", deliveredAt: start });
     });
 
-    it("a retry sends exactly the bytes of the first try, even if the person was renamed in between", async () => {
+    it("a retry after a definite refusal is composed again, so it says what is true now, under a new key", async () => {
       const w = await world({ people: ["Ava Stone"] });
       failWith = () => (calls.filter((c) => c.method === "POST").length === 1 ? new Response("{}", { status: 503 }) : undefined);
       await tick(w.t);
@@ -778,8 +778,8 @@ describe("campaign email", () => {
       await tick(w.t);
       const posts = calls.filter((c) => c.method === "POST");
       expect(posts).toHaveLength(2);
-      expect(posts[1]!.raw).toBe(posts[0]!.raw);
-      expect(posts[1]!.body.subject).toBe("Quick call, Ava?");
+      expect(posts[1]!.headers["idempotency-key"]).not.toBe(posts[0]!.headers["idempotency-key"]);
+      expect([posts[0]!.body.subject, posts[1]!.body.subject]).toEqual(["Quick call, Ava?", "Quick call, Avery?"]);
     });
 
     it("blocked emails cannot starve an eligible one behind them", async () => {
@@ -890,6 +890,80 @@ describe("campaign email", () => {
       const masked = await look();
       for (const word of words) expect(masked).not.toContain(word);
       if (label !== "company name") expect(JSON.parse(masked).version).toBeNull();
+    });
+  });
+
+  // Round 3: the verifier's probes N1, N2, N3 and N6.
+  describe("round 3", () => {
+    const report = (w: any) => w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId });
+    const firstFails = () => { failWith = () => (calls.filter((x) => x.method === "POST").length === 1 ? new Response("{}", { status: 503 }) : undefined); };
+
+    it("a row requeued after a refusal is composed again from what was last approved, under a new key", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      firstFails();
+      await tick(w.t);
+      expect(await w.sendTo("Ava")).toMatchObject({ status: "queued", attempts: 1 });
+      await w.save({ postalAddress: "9 New Road" });
+      later(MINUTE); await tick(w.t);
+      expect(delivered).toEqual([]);
+      expect((await report(w)).emails[0].problems).toContain("The email or the sending settings changed since approval");
+      await w.approve(w.first);
+      later(MINUTE); await tick(w.t);
+      expect(delivered).toHaveLength(1);
+      expect(delivered[0]!.body.text).toContain("9 New Road");
+      const keys = calls.filter((c) => c.method === "POST").map((c) => c.headers["idempotency-key"]);
+      expect(new Set(keys).size).toBe(2);
+    });
+
+    it("stop, edit, approve again: a row tried before the stop goes out with the new words", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      firstFails();
+      await tick(w.t);
+      await w.update(w.email, w.first, { status: "stopped" });
+      await w.update(w.email, w.first, { body: "Brand new words" });
+      await w.approve(w.first);
+      later(MINUTE); await tick(w.t);
+      expect(delivered).toHaveLength(1);
+      expect(delivered[0]!.body.text).toContain("Brand new words");
+    });
+
+    it("an uncertain retry keeps both its bytes and its key", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      dropAnswer = () => true;
+      await tick(w.t);
+      dropAnswer = undefined;
+      await w.update(w.person, w.people.Ava, { name: "Avery Stone" });
+      later(MINUTE); await tick(w.t);
+      const posts = calls.filter((c) => c.method === "POST");
+      expect(posts).toHaveLength(2);
+      expect(posts[1]!.raw).toBe(posts[0]!.raw);
+      expect(posts[1]!.headers["idempotency-key"]).toBe(posts[0]!.headers["idempotency-key"]);
+    });
+
+    it("a sent email never shows as changed since approval", async () => {
+      const w = await world({ people: ["Ava Stone"] });
+      await tick(w.t);
+      expect((await w.read(w.first)).values[w.email.fields.status._id]).toBe("sent");
+      await w.save({ postalAddress: "9 New Road" });
+      expect((await report(w)).emails[0].problems).not.toContain("The email or the sending settings changed since approval");
+    });
+
+    it("a forward whose action died is uncertain: a later definite failure keeps its count", async () => {
+      process.env.REMOLD_INBOUND_DOMAIN = "reply.example.com";
+      const w = await world({ people: ["Ava Stone"], limit: 5 });
+      await tick(w.t);
+      inbound = "hi";
+      await hook(w.t, { type: "email.received", data: { email_id: "in_1", from: "ava@people.test", to: [`r-${(await w.sendTo("Ava")).token}@reply.example.com`] } });
+      const claimed = await w.t.mutation(internal.campaignSend.claimForwards, {});
+      expect(claimed).toHaveLength(1);
+      later(10 * MINUTE);
+      const again = await w.t.mutation(internal.campaignSend.claimForwards, {});
+      expect(again).toHaveLength(1);
+      expect((await w.t.run((ctx: any) => ctx.db.get(claimed[0].forwardId))).uncertain).toBe(true);
+      const used = async () => (await w.t.run((ctx: any) => ctx.db.query("emailCaps").collect())).map((c: any) => c.used);
+      const before = await used();
+      await w.t.mutation(internal.campaignSend.forwarded, { forwardId: again[0].forwardId, attempt: again[0].attempt, outcome: { ok: false, retry: false, reason: "Resend 422" } });
+      expect(await used()).toEqual(before);
     });
   });
 });

@@ -123,6 +123,7 @@ Before any campaign data exists, a plain rollback to cc9ed1c is fine.
 3. In Remold Settings: from name, from address, postal address, daily limit; reply-to if not the approving admin.
 4. Deploy only with `pnpm deploy:prod`; existing orgs get the Email object via `seed:ensureStandard`.
 5. Send a first campaign to yourself only (one person linked) and check the footer, unsubscribe, reply and webhook numbers.
+6. Before the first list larger than a few hundred people: one SERVICE check on a local Convex backend (as `ui-harness.mjs` does). Link about 4,000 people to a campaign, approve one email from its preview, and record that the approval commits and that one tick then claims a batch. This is the read and write limit that convex-test cannot measure (round 2, "What I disagree with").
 
 ## Left undone or uncertain
 
@@ -195,3 +196,28 @@ All fields are new tables or optional, so the expand commit accepts today's data
 - **F15's 20-run scan is a policy choice.** With many blocked runs, an eligible one can wait up to (runs / 20) minutes.
 - **Read-only workspaces.** A read-only workspace still records replies (Note writes are skipped there) and suppressions, and holds forwards until the hold lifts.
 - **Mid-flight drafts.** Rows already leased when an email goes back to draft are skipped as "approval withdrawn" at their final check, not deleted.
+
+---
+
+# Round 3 (after Fable round 2: REVISE for B3, plus S7 and S8)
+
+Builder: Opus 5.5. Not yet re-verified. The schema is unchanged since round 2, so `expand-schema.diff` still holds.
+
+| Finding | Fix | Test (fails on 3f65b3d, passes now) |
+|---|---|---|
+| B3: stored payload outlived its approval | `claimFor` reuses the stored bytes only when the row is `uncertain` (outcome unknown). A row requeued after a definite 429/5xx, a pause, a stop and re-approval, or a settings Confirm is composed again from what is approved now. The Idempotency-Key is `<sendId>:<fingerprint of the bytes>`: an uncertain retry repeats both bytes and key, and a recomposed message gets a new key, so it can never collide with a key Resend saw with other bytes. | "a row requeued after a refusal is composed again from what was last approved, under a new key" (verifier N1), "stop, edit, approve again: a row tried before the stop goes out with the new words" (N2). Guard that already held: "an uncertain retry keeps both its bytes and its key". |
+| S7 | "Changed since approval" is checked only for approved/sending emails. The Confirm button shows only for those states; Approve again covers sent emails with people added later. | "a sent email never shows as changed since approval" (N3) |
+| S8 | A forward whose lease ran out (its action died) is marked `uncertain` before it is claimed again. A later definite failure then keeps its daily count. | "a forward whose action died is uncertain: a later definite failure keeps its count" (N6) |
+
+Changed expectation: round 2's "a retry sends exactly the bytes of the first try, even if the person was renamed" was about a definite 503. B3 makes that case recompose, so the test is now "a retry after a definite refusal is composed again, so it says what is true now, under a new key". The exact-bytes guarantee now applies only to uncertain retries (tested above, and in "when Resend's answer is lost ...").
+
+Go-live step 6 was added: one SERVICE check of a ~4,000-person approval before the first large send.
+
+Note from the verifier, accepted: `fingerprint` is cyrb53 (53-bit, not cryptographic). It only detects that what is approved or sent differs from what was shown. An admin approves, and nobody can realistically craft a collision against a version an admin previewed.
+
+## Evidence
+
+- `round3-fail-before.txt`: the 5 new tests on 3f65b3d: 4 fail (N1, N2, N3, N6), 1 passes (the uncertain-retry guard).
+- `pass-after.txt`: 69/69.
+- `mutants.txt`: 56/56 caught. Round 3 adds 5 mutants: always reuse the stored payload, never reuse it, the key without the bytes, "changed since approval" on sent emails, and no uncertain mark on an expired forward lease. The round-2 "exact bytes" mutant now targets the uncertain retry.
+- Suites (`after.txt`): `pnpm test` 50 files, 398 passed; `pnpm typecheck` exit 0; `pnpm test:authority` 17 files, 101 passed; `pnpm verify:release` 37/37; `pnpm build` built; MCP 3/3.

@@ -75,7 +75,7 @@ export function CampaignEmails({ orgId, recordId, status, admin }: { orgId: Id<"
                 <Badge variant={state === "sent" ? "secondary" : state === "stopped" ? "destructive" : "outline"}>{statusOf(state)}</Badge>
                 <div className="ml-auto flex gap-1">
                   {admin && (state === "draft" || state === "stopped") && <Button size="xs" variant="outline" onClick={() => setApproving(item)}>Approve</Button>}
-                  {admin && state !== "draft" && state !== "stopped" && item.problems.some((p) => APPROVAL.test(p)) && <Button size="xs" variant="outline" onClick={() => setApproving(item)}>Confirm</Button>}
+                  {admin && (state === "approved" || state === "sending") && item.problems.some((p) => APPROVAL.test(p)) && <Button size="xs" variant="outline" onClick={() => setApproving(item)}>Confirm</Button>}
                   {(state === "approved" || state === "sending") && <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => email && attempt(() => update({ orgId, recordId: item.id, values: { [email.fields.find((f) => f.key === "status")!._id]: "stopped" } }), "Email stopped")}>Stop</Button>}
                   {item.recipients.length > 0 && <Button size="xs" variant="ghost" className="text-muted-foreground" onClick={() => setOpen(open === item.id ? null : item.id)}>{open === item.id ? "Hide people" : "People"}</Button>}
                 </div>

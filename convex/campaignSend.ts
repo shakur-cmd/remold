@@ -4,7 +4,7 @@ import { httpAction, internalAction, internalMutation, internalQuery, type Actio
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { MAX_ATTEMPTS, addNote, decide, exclusion, followUpsOf, logActivity, recipientOf, release, reserve, setStatus, standardItem, stateOf, suppress, value } from "./lib/campaign";
-import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart, resendPost, settingsProblems, validAddress, verifySvix, type Outcome } from "./lib/campaignText";
+import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart, fingerprint, resendPost, settingsProblems, validAddress, verifySvix, type Outcome } from "./lib/campaignText";
 
 // The campaign sender. An approval fixed each email's recipients as queued rows (see
 // snapshot in lib/campaign.ts). Every minute a tick claims a bounded batch of due rows
@@ -20,7 +20,7 @@ const MINUTE = 60_000, HOUR = 60 * MINUTE, LEASE = 5 * MINUTE, BATCH = 25, RUNS_
 const MAX_FORWARD_ATTEMPTS = 5, FORWARDS_PER_SEND = 3;
 const UNKNOWN = "Outcome unknown: the send was interrupted and Resend no longer remembers it";
 
-type Claimed = { sendId: Id<"emailSends">; attempt: number; payload: string };
+type Claimed = { sendId: Id<"emailSends">; attempt: number; payload: string; key: string };
 
 // An email is sent once every row has an outcome; a follow-up also waits for the email
 // before it, whose remaining sends would still add rows here.
@@ -55,14 +55,16 @@ async function claimFor(ctx: MutationCtx, run: Doc<"emailRuns">, now: number, ro
     // A row whose last try is unknown still holds its count from then.
     const day = send.reservedDay ?? await reserve(ctx, org._id, settings.dailyLimit ?? 0, now);
     if (day === null) break;
-    let payload = send.payload;
+    // Only a try whose outcome is unknown repeats its stored bytes; anything else is composed from what is approved now.
+    let payload = send.uncertain ? send.payload : undefined;
     if (!payload) {
       const record = await ctx.db.get(send.personRecordId), recipient = record ? await recipientOf(ctx, person, record) : { name: "" };
       const message = compose(template, { ...recipient, token: send.token }, settings.postalAddress!, send.token);
       payload = JSON.stringify({ from: fromHeader(settings.fromName, settings.fromAddress!), to: [send.to], subject: message.subject, text: message.text, html: message.html, headers: message.headers, reply_to: inbound ? `r-${send.token}@${inbound}` : state.replyTo!, tags: [{ name: "send", value: send._id }] });
     }
     await ctx.db.patch(send._id, { status: "sending", lease: now + LEASE, attempts: send.attempts + 1, reservedDay: day, payload, subject: send.subject ?? JSON.parse(payload).subject, firstAttemptAt: send.firstAttemptAt ?? now });
-    out.push({ sendId: send._id, attempt: send.attempts + 1, payload });
+    // The key follows the bytes, so a recomposed message never reuses a key Resend saw with other bytes.
+    out.push({ sendId: send._id, attempt: send.attempts + 1, payload, key: `${send._id}:${fingerprint(payload)}` });
   }
   if (out.length && value(email, item.f.status) === "approved") await setStatus(ctx, email, item, "sending");
   await settle(ctx, email._id);
@@ -127,6 +129,8 @@ export const claimForwards = internalMutation({ args: {}, handler: async (ctx): 
   const now = Date.now(), out: Forward[] = [];
   for (const forward of await ctx.db.query("emailForwards").withIndex("by_status", (q) => q.eq("status", "pending")).take(20)) {
     if ((forward.lease ?? 0) > now) continue;
+    // A lease that ran out means the action died mid-send: whether it went is unknown.
+    if (forward.lease && !forward.uncertain) await ctx.db.patch(forward._id, { uncertain: true });
     const org = await ctx.db.get(forward.orgId);
     if (!org || org.flags?.readonly || settingsProblems(org.emailSettings).length) continue;
     const day = forward.reservedDay ?? await reserve(ctx, org._id, org.emailSettings?.dailyLimit ?? 0, now);
@@ -150,7 +154,7 @@ export const tick = internalAction({ args: {}, handler: async (ctx) => {
   let sent = 0;
   for (const item of claimed) {
     if (!(await ctx.runMutation(internal.campaignSend.begin, { sendId: item.sendId, attempt: item.attempt }))) continue;
-    const result: Outcome = await resendPost(item.payload, item.sendId);
+    const result: Outcome = await resendPost(item.payload, item.key);
     await ctx.runMutation(internal.campaignSend.finish, { sendId: item.sendId, attempt: item.attempt, outcome: result });
     if (result.ok) sent++;
   }

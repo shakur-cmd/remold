@@ -158,7 +158,7 @@ export async function stateOf(ctx: Ctx, email: Doc<"records">, now: number): Pro
   if (status === "stopped") problems.push("Stopped");
   else if (status !== "approved" && status !== "sending" && status !== "sent") problems.push("Not approved yet");
   else if (!run?.confirmed) problems.push(NOT_CONFIRMED);
-  else if (run.contentVersion !== contentVersion(email, item, org.emailSettings)) problems.push(CHANGED);
+  else if (status !== "sent" && run.contentVersion !== contentVersion(email, item, org.emailSettings)) problems.push(CHANGED);
   if (!value(email, item.f.followsUp) && sendAt && sendAt > now) problems.push(`Waits until ${new Date(sendAt).toISOString().slice(0, 16).replace("T", " ")} UTC`);
   // Before approval the approving admin is not known yet; their email becomes the default.
   if (run && !inboundDomain() && !replyTo) problems.push("No reply-to address");
