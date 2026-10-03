@@ -5,7 +5,7 @@ import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { agentGuard } from "../authority/agentGuards";
-import { emailRules } from "./emailRules";
+import { emailCheck, emailRules } from "./emailRules";
 import { pageRules } from "./booking";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
@@ -128,7 +128,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
     for (const row of rows) await ctx.db.delete(row._id);
     await ctx.db.delete(record!._id);
     await clearReferencesTo(ctx, membership, change.orgId, record!, actor);
-    await emailRules(ctx, membership, actor, object, fields, record!.values, null, record!._id);
+    await emailRules(ctx, membership, object, fields, record!.values, null, record!._id);
     const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
     return { recordId: record!._id, eventId };
   }
@@ -151,6 +151,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const status = object.isStandard && object.key === "post" ? fields.find((f) => f.key === "status") : undefined, link = status && fields.find((f) => f.key === "publishedLink");
   const linked = !!link && !link.retired && typeof values[link._id] === "string" && !!(values[link._id] as string).trim();
   if (status && values[status._id] === "published" && !linked && (change.action === "create" || status._id in validated || (!!link && link._id in validated))) fail("VALIDATION", "A published post needs its published link", { fieldId: link?._id ?? status._id });
+  await emailCheck(ctx, membership, actor, object, fields, record?.values ?? null, values, record?._id);
   const titleValue = object.titleFieldId ? values[object.titleFieldId] : undefined;
   let title = titleValue == null ? "" : String(titleValue);
   const titleField = object.titleFieldId ? byId.get(object.titleFieldId) : undefined;
@@ -171,7 +172,11 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const before = Object.fromEntries(changedIds.map((fieldId) => [fieldId, record?.values[fieldId] ?? null]));
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
   const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
-  await emailRules(ctx, membership, actor, object, fields, record?.values ?? null, values, recordId, options.clearingReference);
+  // An approved email changed after approval goes back to draft, with its own event saying why.
+  if (await emailRules(ctx, membership, object, fields, record?.values ?? null, values, recordId) === "withdraw") {
+    const status = fields.find((f) => f.key === "status")!;
+    await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId, values: { [status._id]: "draft" }, reason: "Changed after approval, so it needs approving again" }, { clearingReference: true, actor: { kind: "automation", id: "Campaign email" } });
+  }
   pageRules(object, fields, record?.values ?? null, values);
   return { recordId, eventId };
 }

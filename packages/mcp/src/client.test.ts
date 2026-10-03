@@ -34,6 +34,15 @@ describe("RemoldClient", () => {
     await client.listRecords({ object: "task", range: { field: "dueDate", from: "2026-02-01" } });
     expect(url?.searchParams.get("range[dueDate]")).toBe("2026-02-01..");
   });
+  it("still accepts the single filter and sends it as REST's filter[field]", async () => {
+    let url: URL | undefined;
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { url = new URL(String(input)); return Response.json({ records: [] }); } });
+    await client.listRecords({ object: "person", filter: { field: "company", value: "Atlas" }, sort: { field: "name", direction: "asc" } });
+    expect([...url!.searchParams]).toEqual([["object", "person"], ["filter[company]", "Atlas"], ["sort", "name"], ["direction", "asc"]]);
+    await client.listRecords({ object: "person", filter: { field: "company", value: "Atlas" }, filters: [{ field: "city", value: "Boston" }] });
+    expect(url?.searchParams.getAll("filter[company]")).toEqual(["Atlas"]);
+    expect(url?.searchParams.getAll("filter[city]")).toEqual(["Boston"]);
+  });
   it("proposes shape changes and lists the agent's own proposals", async () => {
     const requests: Request[] = [];
     const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } });
@@ -43,6 +52,22 @@ describe("RemoldClient", () => {
     expect(await requests[0]?.json()).toEqual({ kind: "addField", object: "opportunity", key: "budget", label: "Budget", type: "number", reason: "tracked" });
     expect([requests[1]?.method, requests[1]?.url]).toEqual(["GET", "https://remold.convex.site/api/v1/shape/proposals?status=applied"]);
   });
+  it("sends stable write keys as headers, excluding them from JSON", async () => {
+   const requests: Request[] = [];
+   const client = new RemoldClient({ url: "http://local", key: "test", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({ id: "original" }); } });
+   for (const write of [client.change.bind(client), client.propose.bind(client), client.inboxAdd.bind(client), client.proposeShape.bind(client)]) {
+     expect(await write({ reason: "test", idempotencyKey: "stable" })).toEqual({ id: "original" });
+     expect(await write({ reason: "test", idempotencyKey: "stable" })).toEqual({ id: "original" });
+   }
+   for (const request of requests) { expect(request.headers.get("Idempotency-Key")).toBe("stable"); expect(await request.json()).toEqual({ reason: "test" }); }
+ });
+ it("pages record events with encoded ids and cursors", async () => {
+   let request: Request | undefined;
+   const client = new RemoldClient({ url: "http://local", key: "test", fetch: async (input, init) => { request = new Request(input, init); return Response.json({ events: [], nextCursor: "next" }); } });
+   expect(await client.recordEvents({ idOrRef: "record/one", cursor: "range:1:2", limit: 3 })).toEqual({ events: [], nextCursor: "next" });
+   expect(request?.url).toBe("http://local/api/v1/records/record%2Fone/events?cursor=range%3A1%3A2&limit=3");
+ });
+
   it("lists bookings by page and time", async () => {
     let url: URL | undefined;
     const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { url = new URL(String(input)); return Response.json({ bookings: [] }); } });

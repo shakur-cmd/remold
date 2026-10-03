@@ -6,7 +6,7 @@ import { ownerOf, type Actor } from "../identity";
 import { fail } from "../errors";
 import { applyChange } from "./applyChange";
 import { standardItem, type Item } from "./campaign";
-import { tagsIn } from "./campaignText";
+import { pickPage, tagsIn } from "./campaignText";
 import { matches } from "./intake";
 import { allDay, fromInstant } from "./values";
 import { DAY, HOURS_HELP, MINUTE, openSlots, parseHours, paymentLinkOk, validZone, type Busy, type Rules } from "./bookingTime";
@@ -104,14 +104,17 @@ export async function campaignPages(ctx: Ctx, orgId: Id<"orgs">, campaignId: Id<
   if (!item || !field?.slot) return [];
   const slot = `${field.slot.kind}${field.slot.index}`;
   const rows: Doc<"records">[] = await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", orgId).eq("objectId", item.object._id).eq(slot, campaignId)).collect();
-  return rows.sort((a, b) => a._creationTime - b._creationTime).map((r) => ({ id: r._id as string, ref: r.ref ?? null }));
+  return rows.sort((a, b) => a._creationTime - b._creationTime).map((r) => ({ id: r._id as string, ref: r.ref ?? null, live: value(r, item.f.live) === true }));
 }
-export async function bookingLinkProblem(ctx: Ctx, campaignId: Id<"records">, texts: string[]) {
-  const wanted = texts.flatMap(tagsIn).filter((tag) => tag.name === "bookingLink"), campaign = wanted.length ? await ctx.db.get(campaignId) : null;
-  if (!campaign) return null;
-  const pages = await campaignPages(ctx, campaign.orgId, campaignId);
-  const missing = wanted.find((tag) => (tag.arg ? !pages.some((p) => p.id === tag.arg || p.ref === tag.arg!.toLowerCase()) : !pages.length));
-  return missing ? (missing.arg ? `This campaign has no booking page ${missing.arg}` : "{{bookingLink}} needs a booking page on this campaign") : null;
+// The pages an email's {{bookingLink}} tags name, and the first tag that names none
+// (or names a page that is not live). Approval needs every tag to name a page; sending
+// also needs each to be live, so a page deleted or switched off later holds the email.
+export async function linkedPages(ctx: Ctx, campaignId: Id<"records"> | null | undefined, texts: string[]) {
+  const tags = texts.flatMap(tagsIn).filter((tag) => tag.name === "bookingLink"), campaign = tags.length && campaignId ? await ctx.db.get(campaignId) : null;
+  const pages = campaign ? await campaignPages(ctx, campaign.orgId, campaign._id) : [], named = tags.map((tag) => ({ tag, page: pickPage(pages, tag.arg) }));
+  const say = (tag: { arg?: string }) => (tag.arg ? `{{bookingLink:${tag.arg}}}` : "{{bookingLink}}");
+  const missing = named.find((n) => !n.page)?.tag, off = named.find((n) => n.page && !n.page.live);
+  return { pages, versions: named.map((n) => n.page?.id ?? null), missing: missing ? `${say(missing)} names no booking page on this campaign` : null, problem: missing ? `${say(missing)} names no booking page on this campaign` : off ? `The booking page for ${say(off.tag)} is not live` : null };
 }
 
 // A campaign's bookings: kept times (confirmed, or paid even if they need a new time).

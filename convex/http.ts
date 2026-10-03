@@ -12,7 +12,7 @@ import { stripeWebhook } from "./bookings";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
-const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, IDEMPOTENCY_MISMATCH: 422, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400 };
+const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, IDEMPOTENCY_MISMATCH: 422, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400, SLOTS_EXHAUSTED: 409 };
 const hash = async (key: string) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 const bad = (code: string, message: string, status = statusFor[code] ?? 400) => json({ error: { code, message } }, status);
 const number = (value: string | null) => { const n = value === null ? NaN : Number(value); return Number.isFinite(n) ? n : undefined; };
@@ -60,7 +60,7 @@ async function dispatch(ctx: any, request: Request) {
     return args;
   };
   const query = async (reference: any, args: any) => ctx.runQuery(reference, await checked(reference, { ...args, keyHash }));
-  const mutation = async (reference: any, args: any) => ctx.runMutation(reference, await checked(reference, { ...args, keyHash }));
+  const mutation = async (reference: any, args: any) => ctx.runMutation(reference, await checked(reference, { ...args, ...(["propose", "proposeShape", "inboxAdd", "inboxResolve", "markReplied"].some(n => getFunctionName(reference) === `agentApi:${n}`) ? { idempotency: await idempotencyOf(request, url.pathname, body) } : {}), keyHash }));
   if (path[0] === "operations") {
     if (request.method === "GET" && path.length === 2) return json(await query(makeFunctionReference<'query'>("integrations/commands:getAgent"), { id: path[1] }));
     if (request.method === "POST" && path.length === 1) return json(await mutation(makeFunctionReference<'mutation'>("integrations/commands:proposeAgent"), body), 201);

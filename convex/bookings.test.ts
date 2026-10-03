@@ -405,6 +405,7 @@ describe("owner and agents", () => {
   });
 });
 
+const approve = async (w: any, emailId: any) => { const { version } = await w.client.query(api.campaigns.preview, { orgId: w.orgId, emailId }); return w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId, confirmed: true, version: version ?? "" }); };
 describe("attribution", () => {
   async function campaignWorld(body = "Grab a time: {{bookingLink}}") {
     Object.assign(process.env, mailEnv);
@@ -418,7 +419,7 @@ describe("attribution", () => {
 
   it("{{bookingLink}} carries the send, and the booking and payment show up in the campaign report", async () => {
     const w = await campaignWorld();
-    await w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: w.emailId, confirmed: true });
+    await approve(w, w.emailId);
     await w.t.action(internal.campaignSend.tick, {});
     const send = (await w.t.run((ctx: any) => ctx.db.query("emailSends").collect()))[0];
     const mailed = sent.find((c) => c.url === "https://api.resend.com/emails").body;
@@ -441,14 +442,14 @@ describe("attribution", () => {
     const w = await campaignWorld();
     const second = await w.newPage({ name: "Free chat", campaign: w.campaignId }), ref = (await w.t.run((ctx: any) => ctx.db.get(second))).ref;
     await w.update(w.email, w.emailId, { body: `Paid: {{bookingLink}} Free: {{bookingLink:${ref}}}` });
-    await w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: w.emailId, confirmed: true });
+    await approve(w, w.emailId);
     await w.t.action(internal.campaignSend.tick, {});
     const token = (await w.t.run((ctx: any) => ctx.db.query("emailSends").collect()))[0].token;
     expect(sent.find((c) => c.url === "https://api.resend.com/emails").body.text).toContain(`Paid: https://app.example.com/book/${w.paid}?s=${token} Free: https://app.example.com/book/${second}?s=${token}`);
     const lonely = await w.create(w.campaign, { name: "No pages", status: "active" });
     const draft = await w.create(w.email, { subject: "Hi", body: "Book: {{bookingLink}}", campaign: lonely, status: "draft" });
-    await expect(w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: draft, confirmed: true })).rejects.toThrow(/booking page/i);
+    await expect(approve(w, draft)).rejects.toThrow(/booking page/i);
     const wrongRef = await w.create(w.email, { subject: "Hi", body: "Book: {{bookingLink:no-such-page}}", campaign: w.campaignId, status: "draft" });
-    await expect(w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: wrongRef, confirmed: true })).rejects.toThrow(/booking page/i);
+    await expect(approve(w, wrongRef)).rejects.toThrow(/booking page/i);
   });
 });
