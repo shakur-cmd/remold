@@ -18,6 +18,7 @@ import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
 import { option } from "./lib/metadata";
 import { agentRow, proposalFor } from "./shapeSuggestions";
+import { dryRun, history } from "./automations";
 
 const keyHash = v.string();
 const action = v.union(v.literal("create"), v.literal("update"), v.literal("delete"));
@@ -144,6 +145,9 @@ export const inboxResolve = internalMutation({ args: { keyHash, id: v.id("agentI
 export const campaignReport = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return reportOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
 export const emailPreview = internalQuery({ args: { keyHash, idOrRef: v.string(), person: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const person = args.person ? await recordFor(ctx, principal.org._id, args.person) : undefined; return previewOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), person?._id); } });
 export const markReplied = internalMutation({ args: { keyHash, id: v.string() }, handler: async (ctx, args) => markSendReplied(ctx, await requireAgent(ctx, args.keyHash), args.id) });
+// Automations for agents: what one did (run history) and what it would do for a record, writing nothing.
+export const automationRuns = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return history(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
+export const automationTest = internalQuery({ args: { keyHash, idOrRef: v.string(), record: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return dryRun(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), args.record ? await recordFor(ctx, principal.org._id, args.record) : null); } });
 const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()) };
 const shapeArgs = { kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))) };
 export const proposeShape = internalMutation({ args: { keyHash, ...shapeArgs }, handler: async (ctx, { keyHash, ...input }) => { const principal = await requireAgent(ctx, keyHash); await writable(ctx, principal.org._id); const change = await proposalFor(ctx, principal, input); const id = await ctx.db.insert("shapeSuggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, change, reason: input.reason, status: "pending" }); return { proposal: await agentRow(ctx, (await ctx.db.get(id))!) }; } });

@@ -6,6 +6,7 @@ import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { agentGuard } from "../authority/agentGuards";
 import { emailRules } from "./emailRules";
+import { automationAfter, automationRules, type Chain } from "./automation";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 import { dateValue } from "./values";
@@ -84,7 +85,7 @@ export function requireFilled(fields: Doc<"fields">[], values: Record<string, un
 }
 
 // Returns eventId null only when an update changed nothing, so no event is written.
-export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor; writeOnly?: boolean } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
+export async function applyChange(ctx: MutationCtx, membership: Principal, change: Change, options: { clearingReference?: boolean; suggestionId?: Id<"suggestions">; approvedBy?: Membership; actor?: Actor; writeOnly?: boolean; automation?: Chain } = {}): Promise<{ recordId: Id<"records">; eventId: Id<"events"> | null }> {
   membership = await currentPrincipal(ctx, membership);
   // Operator tools write as the owner but name themselves in history.
   const actor = options.actor ?? membership.actor;
@@ -129,6 +130,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
     await clearReferencesTo(ctx, membership, change.orgId, record!, actor);
     await emailRules(ctx, membership, actor, object, fields, record!.values, null, record!._id);
     const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: "delete", objectId: object._id, recordId: record!._id, before: record!.values, after: null, reason: change.reason, suggestionId: options.suggestionId });
+    await automationAfter(ctx, membership, object, fields, "delete", record!.values, null, record!._id, eventId);
     return { recordId: record!._id, eventId };
   }
   const byId = new Map(fields.map((field) => [field._id, field]));
@@ -145,6 +147,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   // later does not lock every older record. Clearing references on delete may
   // empty a required lookup; a dangling id would be worse.
   requireFilled(fields, values, (field) => change.action === "create" || (field._id in validated && !options.clearingReference));
+  if (object.isStandard && object.key === "automation") await automationRules(ctx, membership, { object, fields: fields.filter((f) => !f.retired) }, record?.values ?? null, values, validated);
   // Remold never publishes a post; a person posts it and pastes the link back first.
   // Without a usable link field (retired before retiring it was refused) nothing can be published.
   const status = object.isStandard && object.key === "post" ? fields.find((f) => f.key === "status") : undefined, link = status && fields.find((f) => f.key === "publishedLink");
@@ -171,5 +174,6 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
   const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
   await emailRules(ctx, membership, actor, object, fields, record?.values ?? null, values, recordId, options.clearingReference);
+  await automationAfter(ctx, membership, object, fields, change.action, record?.values ?? null, values, recordId, eventId, options.automation);
   return { recordId, eventId };
 }

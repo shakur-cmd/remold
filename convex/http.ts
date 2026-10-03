@@ -88,6 +88,8 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "POST" && path[0] === "inbox" && path[2] === "resolve" && path.length === 3) return json(await mutation(internal.agentApi.inboxResolve, { id: path[1], ...body }));
   if (request.method === "GET" && path[0] === "campaigns" && path[2] === "report" && path.length === 3) return json(await query(internal.agentApi.campaignReport, { idOrRef: path[1] }));
   if (request.method === "GET" && path[0] === "emails" && path[2] === "preview" && path.length === 3) return json(await query(internal.agentApi.emailPreview, { idOrRef: path[1], ...(q.get("person") ? { person: q.get("person") } : {}) }));
+  if (request.method === "GET" && path[0] === "automations" && path[2] === "runs" && path.length === 3) return json(await query(internal.agentApi.automationRuns, { idOrRef: path[1] }));
+  if (request.method === "POST" && path[0] === "automations" && path[2] === "test" && path.length === 3) return json(await query(internal.agentApi.automationTest, { idOrRef: path[1], ...(body?.record !== undefined ? { record: body.record } : {}) }));
   if (request.method === "POST" && path[0] === "sends" && path[2] === "replied" && path.length === 3) return json(await mutation(internal.agentApi.markReplied, { id: path[1] }));
   if (path[0] === "intake" && request.method === "POST" && path.length === 2) {
     const commands: Record<string, string> = { lead: "intakeLead" };

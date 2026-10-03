@@ -26,7 +26,8 @@ async function sendable(ctx: MutationCtx, f: Record<string, Doc<"fields">>, valu
 }
 
 // Runs inside applyChange after an Email record is written (the transaction undoes the
-// write if this refuses). Only an admin approves; Sending and Sent are Remold's to set.
+// write if this refuses). Only an admin approves; Sending and Sent are the sender's to set
+// (actor "Campaign email"), never an automation's.
 // The emailRuns row is what the sender reads: it follows the record's status.
 // Clearing a deleted campaign or email out of a live step skips the content check:
 // the sender then finds no campaign and sends nothing.
@@ -36,7 +37,7 @@ export async function emailRules(ctx: MutationCtx, principal: Principal, actor: 
   const run = await ctx.db.query("emailRuns").withIndex("by_email", (q) => q.eq("emailRecordId", recordId)).unique();
   if (!after) { if (run) await ctx.db.delete(run._id); return; }
   if (!f.status) return;
-  const was = before?.[f.status._id], now = after[f.status._id], engine = actor.kind === "automation";
+  const was = before?.[f.status._id], now = after[f.status._id], engine = actor.kind === "automation" && actor.id === "Campaign email";
   if ((now === "sending" || now === "sent") && was !== now && !engine) fail("VALIDATION", "Remold sets Sending and Sent itself", { fieldId: f.status._id });
   const entering = now === "approved" && was !== "approved", live = now === "approved" || now === "sending";
   if (entering && !engine && (!("member" in principal) || principal.member.role === "member")) fail("FORBIDDEN", "Only an admin can approve an email");
