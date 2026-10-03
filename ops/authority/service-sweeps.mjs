@@ -20,6 +20,9 @@ async function workspace(runtime, tenant, label) {
   const grantId = await t.human.mutation(anyApi['authority/grants'].grant, { orgId: t.orgId, target: target.agentId, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 1, maxSteps: 1 }, mode: 'direct', delegate: false, expiresAt: Date.now() + 600000 });
   const suggest = async value => (await (await request(runtime, agent.key, 'POST', '/api/v1/suggestions', { action: 'update', record, values: { name: value }, reason: 'sweep' })).json()).suggestion.id;
   const suggestions = { apply: await suggest('Suggested A'), dismiss: await suggest('Suggested B'), adopt: await suggest('Suggested C') };
+  const shaper = await t.human.action(anyApi.agents.create, { orgId: t.orgId, name: 'sweep shaper', role: 'admin', grants: [] });
+  const proposeShape = async key => (await (await request(runtime, shaper.key, 'POST', '/api/v1/shape/proposals', { kind: 'addField', object: 'company', key, label: key, type: 'number', reason: 'sweep' })).json()).proposal.id;
+  const shapes = { apply: await proposeShape('sweepApply'), dismiss: await proposeShape('sweepDismiss') };
   const inboxId = await t.human.mutation(anyApi.inbox.add, { orgId: t.orgId, text: 'Sweep note' });
   const memberClient = runtime.client('sweep-member-' + randomUUID()), memberUserId = await memberClient.mutation(anyApi.users.store, {});
   const invite = await t.human.mutation(anyApi.invites.create, { orgId: t.orgId, role: 'member' }); await memberClient.mutation(anyApi.invites.accept, { token: invite.token });
@@ -36,7 +39,7 @@ async function workspace(runtime, tenant, label) {
   const claimerOp = await (await request(runtime, claimer.key, 'POST', '/api/v1/operations', { logical: 'claimer-op', bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 1 })).json();
   const secondSecret = runtime.run('integrations/connections:registerSecret', { orgId: t.orgId, provider: 'fake', environment: 'test', account: 'sweep-second-' + randomUUID(), handle: 'vault:' + randomUUID() });
   const money = await financial(t);
-  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, inboxId, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
+  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, shaper, shapes, inboxId, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
 }
 
 export async function replaySweeps({ runtime, tenant, test }) {
@@ -87,12 +90,15 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'suggestions:apply': () => t.human.mutation(fn('suggestions:apply'), { orgId, suggestionId: w.suggestions.apply }),
       'suggestions:dismiss': () => t.human.mutation(fn('suggestions:dismiss'), { orgId, suggestionId: w.suggestions.dismiss }),
       'suggestions:adopt': () => t.human.mutation(fn('suggestions:adopt'), { orgId, suggestionId: w.suggestions.adopt }),
+      'shapeSuggestions:apply': () => t.human.mutation(fn('shapeSuggestions:apply'), { orgId, id: w.shapes.apply }),
+      'shapeSuggestions:dismiss': () => t.human.mutation(fn('shapeSuggestions:dismiss'), { orgId, id: w.shapes.dismiss }),
     };
     const rest = {
       'HTTP POST /api/v1/changes': ['/api/v1/changes', { action: 'create', object: 'company', values: { name: 'Denied' }, reason: 'readonly sweep' }],
       'HTTP POST /api/v1/intake/lead': ['/api/v1/intake/lead', { name: 'Denied', email: 'denied@example.com' }],
       'HTTP POST /api/v1/suggestions': ['/api/v1/suggestions', { action: 'create', object: 'company', values: { name: 'Denied proposal' }, reason: 'readonly sweep' }],
       'HTTP POST /api/v1/inbox': ['/api/v1/inbox', { text: 'Denied inbox' }],
+      'HTTP POST /api/v1/shape/proposals': ['/api/v1/shape/proposals', { key: 'shaper', kind: 'relabel', object: 'company', label: 'Denied', reason: 'readonly sweep' }],
       'HTTP POST /api/v1/inbox/:id/resolve': ['/api/v1/inbox/' + w.inboxId + '/resolve', { note: 'Denied resolve' }],
       'HTTP POST /api/v1/operations': ['/api/v1/operations', { key: 'claimer', logical: 'readonly-' + randomUUID(), bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 1 }],
       'HTTP POST /api/v1/operations/:id/edit': ['/api/v1/operations/' + w.claimerOp + '/edit', { key: 'claimer', payload: { ...t.payload, content: 'denied edit' } }],
@@ -113,7 +119,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       assert.deepEqual(runtime.run('authorityFixtureSweeps:everything', { orgId }), before, entry.id + ' changed data while readonly');
     }
     for (const [id, [path, { key, ...value }]] of Object.entries(rest)) {
-      const before = runtime.run('authorityFixtureSweeps:everything', { orgId }), response = await request(runtime, key === 'claimer' ? w.claimer.key : w.agent.key, 'POST', path, value), text = await response.text();
+      const before = runtime.run('authorityFixtureSweeps:everything', { orgId }), response = await request(runtime, key === 'claimer' ? w.claimer.key : key === 'shaper' ? w.shaper.key : w.agent.key, 'POST', path, value), text = await response.text();
       observed[id] = response.status + ' ' + text.slice(0, 160);
       assert.equal(response.status, 403, id + ' must refuse readonly writes: ' + text); assert.match(text, /read only/, id);
       assert.deepEqual(runtime.run('authorityFixtureSweeps:everything', { orgId }), before, id + ' changed data while readonly');
@@ -145,7 +151,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'fields:list': { orgId, objectId: w.company._id }, 'inbox:audience': { orgId }, 'inbox:list': { orgId }, 'integrations/commands:getHuman': { orgId, id: w.queued }, 'integrations/connections:list': { orgId },
       'invites:get': { token: w.pendingInvite.token }, 'objects:list': { orgId }, 'objects:get': { orgId, objectId: w.company._id }, 'orgs:mine': {}, 'orgs:get': { orgId }, 'orgs:members': { orgId },
       'records:list': { orgId, objectId: w.company._id, paginationOpts: page }, 'records:get': { orgId, recordId: w.record }, 'records:related': { orgId, recordId: w.record, fieldId: reverse._id, paginationOpts: page },
-      'records:reverseFields': { orgId, objectId: w.company._id }, 'records:byRef': { orgId, ref: record.ref ?? 'none' }, 'records:search': { orgId, text: canary }, 'suggestions:list': { orgId }, 'suggestions:forRecord': { orgId, recordId: w.record },
+      'records:reverseFields': { orgId, objectId: w.company._id }, 'records:byRef': { orgId, ref: record.ref ?? 'none' }, 'records:search': { orgId, text: canary }, 'suggestions:list': { orgId }, 'shapeSuggestions:list': { orgId }, 'suggestions:forRecord': { orgId, recordId: w.record },
       'today:get': { orgId, today: Date.now() }, 'users:me': {},
     };
     for (const entry of inventory.filter(entry => entry.visibility === 'public' && entry.kind === 'query')) {
@@ -162,7 +168,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
       assert.equal(response.status, 404, 'agent ' + path + ' must refuse a hidden field: ' + text); assert.ok(!text.includes(canary));
     }
-    const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'inbox'];
+    const gets = ['me', 'objects', 'records?object=company', 'records/' + w.record, 'records/' + w.record + '/events', 'records/' + w.record + '/related?field=person.company', 'search?q=' + canary, 'search?q=Sweep', 'today', 'suggestions', 'shape/proposals', 'inbox'];
     for (const path of gets) {
       const response = await request(runtime, w.agent.key, 'GET', '/api/v1/' + path), text = await response.text();
       assert.ok(response.status < 500, path + ' failed: ' + text); assert.ok(!text.includes(canary), path + ' leaked a hidden field value');

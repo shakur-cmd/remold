@@ -8,6 +8,6 @@ const clean = (row: any) => {
   return value;
 };
 export const everything = internalQuery({ args: { orgId: v.id('orgs') }, handler: async (ctx, { orgId }) => {
-  const tables = ['agents', 'objects', 'fields', 'records', 'events', 'suggestions', 'agentInbox', 'members', 'capabilityGrants', 'authorityAudit', 'integrationConnections', 'integrationIntents', 'integrationBindings', 'integrationOps', 'integrationEvents', 'consent', 'safetyTargets', 'integrationReceipts'];
+  const tables = ['agents', 'objects', 'fields', 'records', 'events', 'suggestions', 'shapeSuggestions', 'agentInbox', 'members', 'capabilityGrants', 'authorityAudit', 'integrationConnections', 'integrationIntents', 'integrationBindings', 'integrationOps', 'integrationEvents', 'consent', 'safetyTargets', 'integrationReceipts'];
   return Object.fromEntries(await Promise.all(tables.map(async table => [table, (await ctx.db.query(table as any).collect()).filter((row: any) => row.orgId === orgId).map(clean)])));
 } });

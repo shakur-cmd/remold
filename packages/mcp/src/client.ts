@@ -23,7 +23,21 @@ export class RemoldClient {
   listSuggestions(args: Record<string, unknown> = {}) { return this.request("GET", `/suggestions?${params(args)}`); }
   inbox(args: Record<string, unknown> = {}) { return this.request("GET", `/inbox?${params(args)}`); }
   inboxAdd(args: Record<string, unknown>) { return this.request("POST", "/inbox", args); }
+  proposeShape(args: Record<string, unknown>) { return this.request("POST", "/shape/proposals", args); }
+  shapeProposals(args: Record<string, unknown> = {}) { return this.request("GET", `/shape/proposals?${params(args)}`); }
   inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
 }
 
-function params(args: Record<string, unknown>) { const query = new URLSearchParams(); for (const [key, value] of Object.entries(args)) if (value !== undefined) { if (key === "sort" && typeof value === "object" && value) { const sort = value as Record<string, string>; query.set("sort", sort.field); query.set("direction", sort.direction); } else if (key === "filter" && typeof value === "object" && value) { const filter = value as Record<string, string>; query.set("filter", filter.field); query.set("value", filter.value); } else query.set(key, String(value)); } return query.toString(); }
+// filters and range become REST's filter[field]=value and range[field]=from..to.
+function params(args: Record<string, unknown>) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(args)) {
+    if (value === undefined) continue;
+    if (key === "sort" && typeof value === "object" && value) { const sort = value as Record<string, string>; query.set("sort", sort.field); query.set("direction", sort.direction); }
+    else if (key === "filter" && typeof value === "object" && value) { const filter = value as Record<string, string>; query.set("filter", filter.field); query.set("value", filter.value); }
+    else if (key === "filters" && Array.isArray(value)) for (const filter of value as { field: string; value: string }[]) query.append(`filter[${filter.field}]`, String(filter.value));
+    else if (key === "range" && typeof value === "object" && value) { const range = value as { field: string; from?: string; to?: string }; query.set(`range[${range.field}]`, `${range.from ?? ""}..${range.to ?? ""}`); }
+    else query.set(key, String(value));
+  }
+  return query.toString();
+}

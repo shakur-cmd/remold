@@ -14,13 +14,14 @@ import { localSpan } from "@/lib/calendar";
 import { useAllPages } from "@/lib/pages";
 import { formatMoney, localDay, localToday, optionLabel, quietFor, relativeDay, timeOfDay } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
+import { useWaiting } from "@/routes/Suggestions";
 
 export function Today() {
   const { org, objects } = useOutletContext<OrgContext>();
   const today = localToday();
   const { start, end } = localSpan(today, today);
   const data = useQuery(api.today.get, { orgId: org._id, today, start, end });
-  const waiting = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
+  const waiting = useWaiting(org._id);
   const update = useMutation(api.records.update);
   if (!data) return <Loading />;
   const { task } = data;
