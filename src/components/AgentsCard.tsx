@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { attempt } from "@/lib/errors";
+import { agentSetup } from "@/lib/agentSetup";
 
 type Grant = { action: "create" | "update" | "delete"; objectKey: string };
 const ACTIONS = ["create", "update", "delete"] as const;
@@ -46,6 +47,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
   const has = (g: Grant) => grants.some((x) => x.action === g.action && x.objectKey === g.objectKey);
   const toggle = (g: Grant) => setGrantsDraft((all) => (has(g) ? all.filter((x) => !(x.action === g.action && x.objectKey === g.objectKey)) : [...all, g]));
 
+  const setup = agentSetup(siteUrl, issued?.key ?? "");
   return (
     <Card>
       <CardHeader>
@@ -105,10 +107,15 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
               </>
             ) : (
               <>
-                <p className="text-muted-foreground">Connect Claude Code:</p>
-                <CopyBlock text={`claude mcp add remold -e REMOLD_URL=${siteUrl} -e REMOLD_KEY=${issued.key} -- node <path to remold>/packages/mcp/dist/index.js`} label="Claude Code command" />
-                <p className="text-muted-foreground">Or call REST directly:</p>
-                <CopyBlock text={`curl -H "Authorization: Bearer ${issued.key}" ${siteUrl}/api/v1/me`} label="REST example" />
+                <p className="text-muted-foreground">Build the connector once with pnpm --filter @remold/mcp build, then paste into your agent and replace /absolute/path/to/remold with your checkout. Claude Code:</p>
+                <CopyBlock text={setup.claudeCommand} label="Claude Code command" />
+                <p className="text-muted-foreground">Or in the project's .mcp.json:</p>
+                <CopyBlock text={setup.claudeJson} label="Claude Code .mcp.json" />
+                <p className="text-muted-foreground">Codex, in ~/.codex/config.toml:</p>
+                <CopyBlock text={setup.codex} label="Codex config" />
+                <p className="text-muted-foreground">Any other MCP client:</p>
+                <CopyBlock text={setup.generic} label="MCP JSON" />
+                <p className="text-muted-foreground">{setup.test}</p>
               </>
             )}
             <Button size="sm" variant="outline" className="justify-self-start" onClick={() => setIssued(null)}>

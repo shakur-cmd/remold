@@ -10,6 +10,11 @@ describe("RemoldClient", () => {
     expect(request?.headers.get("authorization")).toBe("Bearer rm_key");
     expect(await request?.json()).toEqual({ action: "update", record: "brisk-ember-oyster", values: { stage: "Won" }, reason: "qualified" });
   });
+  it("reads the workspace map with one GET", async () => {
+    const requests: Request[] = [];
+    await new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } }).map();
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/map"]]);
+  });
   it("reads a campaign report, previews an email for one person and marks a reply", async () => {
     const requests: Request[] = [];
     const client = new RemoldClient({ url: "https://remold.convex.site/", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } });

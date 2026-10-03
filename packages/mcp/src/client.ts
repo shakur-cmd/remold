@@ -13,6 +13,7 @@ export class RemoldClient {
     return json;
   }
   me() { return this.request("GET", "/me"); }
+  map() { return this.request("GET", "/map"); }
   objects() { return this.request("GET", "/objects"); }
   listRecords(args: Record<string, unknown>) { return this.request("GET", `/records?${params(args)}`); }
   getRecord(idOrRef: string) { return this.request("GET", `/records/${encodeURIComponent(idOrRef)}`); }
