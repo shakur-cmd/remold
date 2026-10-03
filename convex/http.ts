@@ -71,7 +71,7 @@ async function dispatch(ctx: any, request: Request) {
     if (commands[path[1]]) return json(await mutation(makeFunctionReference<'mutation'>("authority/grants:" + commands[path[1]]), body));
   }
   if (request.method === "GET" && path[0] === "me" && path.length === 1) return json(await query(internal.agentApi.me, {}));
-  if (request.method === "GET" && path[0] === "objects" && path.length === 1) return json(await query(internal.agentApi.objects, {}));
+  if (request.method === "GET" && path[0] === "objects" && path.length === 1) return json(await query(internal.agentApi.objects, q.get("include") === "archived" ? { includeArchived: true } : {}));
   if (request.method === "GET" && path[0] === "records" && path.length === 1) return json(await query(internal.agentApi.listRecords, { object: q.get("object") ?? "", cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), ...(q.get("sort") ? { sort: { field: q.get("sort"), direction: q.get("direction") ?? "asc" } } : {}), ...(q.get("filter") ? { filter: { field: q.get("filter"), value: q.get("value") } } : {}), ...listQuery(q) }));
   if (request.method === "GET" && path[0] === "records" && path.length === 2) return json(await query(internal.agentApi.getRecord, { idOrRef: path[1] }));
   if (request.method === "GET" && path[0] === "records" && path[2] === "events" && path.length === 3) return json(await query(internal.agentApi.getRecord, { idOrRef: path[1], cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")) }).then(({ events, nextCursor }) => ({ events, nextCursor })));

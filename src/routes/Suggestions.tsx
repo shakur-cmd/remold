@@ -109,6 +109,7 @@ function ShapeCard({ orgId, row }: { orgId: Id<"orgs">; row: ShapeRow }) {
   const dismiss = useMutation(api.shapeSuggestions.dismiss);
   const [busy, setBusy] = useState(false);
   const pending = row.status === "pending";
+  const impact = useQuery(api.objects.impact, row.preview ? { orgId, ...row.preview } : "skip");
   async function act(action: () => Promise<{ status: string; error?: string }>, success: string) {
     setBusy(true);
     try {
@@ -135,6 +136,14 @@ function ShapeCard({ orgId, row }: { orgId: Id<"orgs">; row: ShapeRow }) {
           </ul>
         )}
       </div>
+      {impact && impact.length > 0 && (
+        <div className="grid gap-0.5 rounded-md border bg-card px-2.5 py-2 text-[13px]">
+          <span className="text-xs font-medium">What this touches</span>
+          {impact.map((line) => (
+            <span key={line} className="text-muted-foreground">{line}</span>
+          ))}
+        </div>
+      )}
       <p className="text-muted-foreground">“{row.reason}”</p>
       {row.error && <p className="text-xs text-destructive">{row.error}</p>}
       {row.paused && <p className="text-xs text-muted-foreground">This agent's access changed since it asked. Dismiss it, or make the change yourself in Settings.</p>}

@@ -1,0 +1,26 @@
+     × retireField: title, protected standard fields, already retired 822ms
+     × restoreField: a field that is not retired 75ms
+     × reorderFields: a list that leaves out or repeats a field 60ms
+     × reorderObjects: a list that leaves out an object 58ms
+     × reorderOptions: a missing option, and a field without options 66ms
+     × archiveObject and unarchiveObject: standard objects, and an object not archived 56ms
+     × setTitleField: only a text field, and not the current one 49ms
+     × addField unindexed: only a text field can skip the index 44ms
+     × a member-role person is refused every lifecycle change 70ms
+     × a read-only workspace refuses every lifecycle change 46ms
+     × a member-role agent cannot propose any lifecycle kind 55ms
+     × a person retires and restores a field; values were kept and come back 85ms
+     × an agent proposes retiring, the person sees the impact, applies, and an agent proposal restores it 46ms
+     × impact counting stops at the first 1,000 records and says so 81ms
+     × a relation field's retire impact names the links that stop showing 39ms
+     × restore is refused when another field now holds its slot, and an unindexed restore keeps values 49ms
+     × a person and an agent reorder fields; REST lists the new order 43ms
+     × retired fields stay out of the list and keep their place after it 40ms
+     × a person and an agent reorder objects; REST lists the new order 39ms
+     × a person and an agent reorder select options; REST shows them in order 36ms
+     × archived objects leave agents' lists and search, records and links stay, unarchive brings them back 52ms
+     × an archived object keeps its place out of the object order list until it comes back 35ms
+     × a person and an agent change the title field; record titles follow 74ms
+     × an unindexed text field takes no slot; REST reports slots left per kind 132ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 24 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  24 failed (24)

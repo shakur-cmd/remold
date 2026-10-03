@@ -9,7 +9,14 @@ export const kindFor = (type: Doc<"fields">["type"]): SlotKind | undefined => {
   if (type === "boolean") return "b";
   return undefined;
 };
-const capacity: Record<SlotKind, number> = { n: 8, s: 8, d: 4, b: 4 };
+export const capacity: Record<SlotKind, number> = { n: 8, s: 8, d: 4, b: 4 };
+
+// Slots a new field could still take, per kind. Retired fields keep theirs, so they can come back.
+export function slotsLeft(fields: Pick<Doc<"fields">, "slot">[]) {
+  const left = { ...capacity };
+  for (const field of fields) if (field.slot) left[field.slot.kind] -= 1;
+  return left;
+}
 
 export async function allocateSlot(ctx: MutationCtx, orgId: Id<"orgs">, objectId: Id<"objects">, kind: SlotKind) {
   const fields = await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();

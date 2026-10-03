@@ -101,7 +101,7 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
         </NavLink>
       )}
       <div className="mt-4 mb-1 px-3 text-xs text-muted-foreground">Records</div>
-      {objects.map((object) => (
+      {objects.filter((object) => !object.archived).map((object) => (
         <NavLink key={object._id} to={`/o/${org._id}/${object.key}`} className={({ isActive }) => link({ isActive: isActive && !(object === posts && onCalendar) })} onClick={onNavigate}>
           {object.labelPlural}
         </NavLink>
