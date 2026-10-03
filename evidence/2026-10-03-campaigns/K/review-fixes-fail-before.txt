@@ -1,0 +1,11 @@
+     × exporting a reshaped workspace and applying it to a new one reproduces the shape 446ms
+     × a blueprint can change several titles at once, as an export of such a workspace does 110ms
+     × an admin agent limited to some records of an object cannot propose one, so a trial cannot probe hidden records 98ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/blueprints.test.ts > blueprint export > exporting a reshaped workspace and applying it to a new one reproduces the shape
+AssertionError: expected [ { archived: false, …(6) }, …(13) ] to deeply equal [ { archived: false, …(6) }, …(13) ]
+ FAIL  convex/blueprints.test.ts > blueprint export > a blueprint can change several titles at once, as an export of such a workspace does
+Error: Only a single paginated query (`.paginate()`) is allowed per function execution. Calling `.paginate()` more than once in a single Convex function fails at runtime in a deployed backend. This is a Convex limit: https://docs.convex.dev/database/pagination
+ FAIL  convex/blueprints.test.ts > blueprints need sight of every record > an admin agent limited to some records of an object cannot propose one, so a trial cannot probe hidden records
+TypeError: Cannot read properties of undefined (reading 'code')
+      Tests  3 failed | 15 passed (18)

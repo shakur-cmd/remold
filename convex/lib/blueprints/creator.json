@@ -1,0 +1,271 @@
+{
+  "version": 1,
+  "name": "Creator or coach",
+  "description": "Offers, sessions and sponsors, for coaches, course makers and creators.",
+  "changes": [
+    {
+      "kind": "addObject",
+      "key": "offer",
+      "label": "Offer",
+      "labelPlural": "Offers",
+      "fields": [
+        {
+          "key": "price",
+          "label": "Price",
+          "type": "number"
+        },
+        {
+          "key": "format",
+          "label": "Format",
+          "type": "select",
+          "options": [
+            {
+              "id": "oneToOne",
+              "label": "1:1 coaching"
+            },
+            {
+              "id": "group",
+              "label": "Group program"
+            },
+            {
+              "id": "course",
+              "label": "Course"
+            },
+            {
+              "id": "community",
+              "label": "Community"
+            }
+          ]
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "draft",
+              "label": "Draft"
+            },
+            {
+              "id": "live",
+              "label": "Live"
+            },
+            {
+              "id": "retired",
+              "label": "Retired"
+            }
+          ]
+        },
+        {
+          "key": "link",
+          "label": "Link",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "session",
+      "label": "Session",
+      "labelPlural": "Sessions",
+      "fields": [
+        {
+          "key": "client",
+          "label": "Client",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "offer",
+          "label": "Offer",
+          "type": "lookup",
+          "target": "offer"
+        },
+        {
+          "key": "when",
+          "label": "When",
+          "type": "date",
+          "withTime": true
+        },
+        {
+          "key": "minutes",
+          "label": "Minutes",
+          "type": "number"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "booked",
+              "label": "Booked"
+            },
+            {
+              "id": "done",
+              "label": "Done"
+            },
+            {
+              "id": "noShow",
+              "label": "No-show"
+            },
+            {
+              "id": "cancelled",
+              "label": "Cancelled"
+            }
+          ]
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "sponsor",
+      "label": "Sponsor",
+      "labelPlural": "Sponsors",
+      "fields": [
+        {
+          "key": "brand",
+          "label": "Brand",
+          "type": "lookup",
+          "target": "company"
+        },
+        {
+          "key": "contact",
+          "label": "Contact",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "fee",
+          "label": "Fee",
+          "type": "number"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "pitched",
+              "label": "Pitched"
+            },
+            {
+              "id": "negotiating",
+              "label": "Negotiating"
+            },
+            {
+              "id": "signed",
+              "label": "Signed"
+            },
+            {
+              "id": "delivered",
+              "label": "Delivered"
+            },
+            {
+              "id": "paid",
+              "label": "Paid"
+            }
+          ]
+        },
+        {
+          "key": "airDate",
+          "label": "Air date",
+          "type": "date"
+        },
+        {
+          "key": "brief",
+          "label": "Brief",
+          "type": "text",
+          "indexed": false
+        }
+      ]
+    },
+    {
+      "kind": "addField",
+      "object": "post",
+      "key": "sponsor",
+      "label": "Sponsor",
+      "type": "lookup",
+      "target": "sponsor"
+    },
+    {
+      "kind": "addOptions",
+      "object": "opportunity",
+      "field": "stage",
+      "options": [
+        {
+          "id": "callBooked",
+          "label": "Call booked"
+        }
+      ]
+    },
+    {
+      "kind": "addView",
+      "object": "session",
+      "name": "Session calendar",
+      "layout": "calendar",
+      "dateField": "when",
+      "columns": [
+        "name",
+        "client",
+        "offer"
+      ],
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "sponsor",
+      "name": "Sponsor pipeline",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "brand",
+        "fee",
+        "airDate"
+      ]
+    }
+  ],
+  "records": [
+    {
+      "object": "offer",
+      "values": {
+        "name": "Six-week coaching",
+        "price": 900,
+        "format": "oneToOne",
+        "status": "live"
+      }
+    },
+    {
+      "object": "person",
+      "values": {
+        "name": "Alex Rivera"
+      }
+    },
+    {
+      "object": "session",
+      "values": {
+        "name": "Kickoff call",
+        "client": "Alex Rivera",
+        "offer": "Six-week coaching",
+        "minutes": 45,
+        "status": "booked"
+      }
+    },
+    {
+      "object": "sponsor",
+      "values": {
+        "name": "Spring video sponsor",
+        "fee": 1200,
+        "status": "pitched"
+      }
+    }
+  ]
+}

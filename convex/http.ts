@@ -1,5 +1,6 @@
 import { getFunctionName, httpRouter, makeFunctionReference } from "convex/server";
 import { argumentsConform } from "./lib/shape";
+import { trialOf } from "./lib/blueprint";
 import * as agentApi from "./agentApi";
 import * as commands from "./integrations/commands";
 import * as grants from "./authority/grants";
@@ -8,6 +9,7 @@ import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { recordResponse, validProbe } from "./telemetryHttp";
 import { resendWebhook, unsubscribePage } from "./campaignSend";
+import { mcp } from "./mcp";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
@@ -42,6 +44,12 @@ async function idempotencyOf(request: Request, path: string, body: unknown) {
   return { key, hash: await hash(`${path}\n${canonical(body)}`) };
 }
 const intakeReply = (result: any): [unknown, number, Record<string, string>?] => result.limited ? [{ error: { code: "RATE_LIMITED", message: "Lead intake limit reached. Retry after the indicated delay.", retryAfter: result.limited.retryAfter } }, 429, { "retry-after": String(result.limited.retryAfter) }] : [result, 201];
+
+// A blueprint is first applied in a transaction that always rolls back, so it is refused now if it would be refused later.
+async function tried(mutation: (reference: any, args: any) => Promise<unknown>, body: any) {
+  if (body?.kind === "blueprint") await trialOf(() => mutation(internal.agentApi.trialBlueprint, { blueprint: body.blueprint }));
+  return body;
+}
 
 async function dispatch(ctx: any, request: Request) {
   if(request.method === "GET" && new URL(request.url).pathname === "/api/v1/_probe") return await validProbe(request) ? json({ok:true}) : bad("UNAUTHENTICATED", "Invalid probe", 401);
@@ -86,7 +94,9 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "POST" && path[0] === "batches" && path.length === 1) return json(await mutation(internal.agentApi.proposeBatch, { ...body, idempotency: await idempotencyOf(request, url.pathname, body) }), 201);
   if (request.method === "GET" && path[0] === "batches" && path.length === 2) return json(await query(internal.agentApi.batchStatus, { id: path[1], cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")) }));
   if (request.method === "GET" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await query(internal.agentApi.shapeProposals, { status: q.get("status") ?? undefined }));
-  if (request.method === "POST" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await mutation(internal.agentApi.proposeShape, body), 201);
+  if (request.method === "POST" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await mutation(internal.agentApi.proposeShape, await tried(mutation, body)), 201);
+  if (request.method === "GET" && path[0] === "blueprints" && path.length === 1) return json(await query(internal.agentApi.blueprints, {}));
+  if (request.method === "GET" && path[0] === "blueprints" && path[1] === "current" && path.length === 2) return json(await query(internal.agentApi.currentBlueprint, {}));
   if (request.method === "GET" && path[0] === "views" && path.length === 1) return json(await query(internal.agentApi.views, { object: q.get("object") ?? undefined }));
   if (request.method === "GET" && path[0] === "views" && path[2] === "records" && path.length === 3) return json(await query(internal.agentApi.viewRecords, { id: path[1], cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), tz: q.get("tz") ?? undefined }));
   if (request.method === "GET" && path[0] === "inbox" && path.length === 1) return json(await query(internal.agentApi.inbox, { status: q.get("status") ?? undefined }));
@@ -115,14 +125,17 @@ async function responseFor(ctx: any, request: Request) {
     return bad("INTERNAL", "Something went wrong", 500);
   }
 }
-const route = httpAction(async (ctx,request) => {
+const measured = (handle: (ctx: any, request: Request) => Promise<Response>) => httpAction(async (ctx,request) => {
   const startedAt=Date.now();
-  const response=await responseFor(ctx,request);
+  const response=await handle(ctx,request);
   await recordResponse(ctx,request,response,startedAt);
   return response;
 });
+const route = measured(responseFor);
 router.route({ pathPrefix: "/api/v1/", method: "GET", handler: route });
 router.route({ pathPrefix: "/api/v1/", method: "POST", handler: route });
+const mcpRoute = measured((ctx, request) => mcp(ctx, request, { keyHash: () => auth(request), run: (inner) => responseFor(ctx, inner) }));
+for (const method of ["GET", "POST", "DELETE"] as const) router.route({ path: "/mcp", method, handler: mcpRoute });
 router.route({ pathPrefix: "/api/integrations/v1/", method: "POST", handler: integrationRoute });
 router.route({ path: "/webhooks/resend", method: "POST", handler: resendWebhook });
 router.route({ pathPrefix: "/u/", method: "GET", handler: unsubscribePage });

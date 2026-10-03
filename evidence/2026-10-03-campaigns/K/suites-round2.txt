@@ -1,0 +1,8 @@
+Round 2 (merge of origin/integ/campaigns f94e828), 2026-10-03T14:52:06Z
+pnpm test (default): Tests 1 failed | 586 passed (587)  failing: gmailSync 'last contact' timeout 5310ms (5s default)
+pnpm vitest run --testTimeout=60000 --maxWorkers=2:  Tests 587 passed (587)
+pnpm typecheck: exit 0
+pnpm test:authority: Tests 101 passed (101)
+pnpm verify:release: tests 37, pass 37, fail 0
+pnpm build: built, exit 0
+packages/mcp build exit 0 (after fixing the pre-existing unescaped quotes in integ's instructions string; integ f94e828 alone fails: TS1005 at src/index.ts:11)

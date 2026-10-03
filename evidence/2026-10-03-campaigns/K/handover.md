@@ -1,0 +1,263 @@
+# Job K handover: business blueprints, applied as one reviewable proposal
+
+- Branch: `remold/blueprints` (based on `origin/remold/shape-lifecycle`, 050abad). Not pushed.
+- Code commit: `36827ee`. This handover is committed on top of it.
+- Evidence level: unit and integration tests are **convex-test (SIM)**. Screenshots, the rollback check and the agent REST calls in `screenshot.log` ran on an **isolated local Convex backend (SERVICE, synthetic data)**. Nothing touched production or any hosted service; the browser refused every non-localhost request ("non-local requests blocked: none").
+
+## What it does
+
+An agent (or a person picking a starter) proposes a whole reshaping as one blueprint: `{ version: 1, name, description, changes: [...], records?: [...] }`. Each change is one of the existing agent proposal bodies (named by key, no `reason`): addObject, addField, addOptions, relabel, reorderFields, reorderObjects, reorderOptions, archiveObject, setTitleField, retireField. A field may target an object that the same blueprint adds, in any order (cycles too). `records` are up to 50 starter records by field key; lookups name a record by title, including another starter record.
+
+- Agents: `POST /api/v1/shape/proposals` with `{ kind: "blueprint", reason, blueprint }`, MCP `remold_propose_blueprint`. List built-ins: `GET /api/v1/blueprints`, MCP `remold_blueprints`. Export: `GET /api/v1/blueprints/current`, MCP `remold_export_blueprint`.
+- People: Suggestions shows one card per blueprint (grouped diff, retire/archive impact, slots after applying, starter-record checkbox, Apply all). Settings has "Start from a template" (4 built-ins), "Paste a blueprint" and "Export this workspace's shape" (downloads JSON).
+
+## What changed
+
+Backend
+- `convex/lib/blueprint.ts` (new): `parseBlueprint` (format and size limits), `requireWholeWorkspace`, `runBlueprint` (objects first, then every step through the shared helpers, then the whole-blueprint slot check, then optional starter records), `trialOf`/`rollBack` (the rolled-back trial), `refusal`, `diffOf` (the grouped card), `summaryOf`, `exportBlueprint`.
+- `convex/lib/proposals.ts` (new, moved from `shapeSuggestions.ts` without behaviour change): key-to-id resolution `changeFor` (was the body of `proposalFor`) and `perform`, so blueprints and single proposals share one path. Both now take any `Principal`.
+- `convex/blueprints.ts` (new): `templates`, `preview`, `apply`, `current` (people), `trial` (internal), `check` (action).
+- `convex/lib/templates.ts` + `convex/lib/blueprints/{service,agency,creator,retail}.json` (new): the 4 built-in blueprints.
+- `convex/shapeSuggestions.ts`: `proposalFor` accepts kind `blueprint`; `authorize` needs unrestricted access for blueprints; `describe` and the person row carry the blueprint diff; `apply` runs a blueprint all-or-nothing (and extends the proposing agent's reads by every new object); new `applyBlueprint` action and internal `markFailed`.
+- `convex/agentApi.ts`: shape args come from `lib/metadata.ts`; new `blueprints`, `currentBlueprint`, `trialBlueprint`.
+- `convex/http.ts`: blueprint proposals go through the trial first; `GET /blueprints`, `GET /blueprints/current`.
+- `convex/lib/metadata.ts`: `fieldInput`, `changeInput` and `blueprint` validators; new `shapeChange` variant `{ kind: "blueprint", blueprint }`; `validKey` exported.
+- `convex/lib/lifecycle.ts`: `applyLifecycle` takes any `Principal`; the first retitle page inside a title change uses `take` instead of `paginate` (Convex allows one paginate per function; a blueprint can retitle several objects). Later pages still page in their own transactions.
+- `convex/_generated/api.d.ts`: registers the 4 new modules (hand edit in codegen's form; `convex codegen` needs a deployment here).
+- `convex/tsconfig.json`, `tsconfig.app.json`: `resolveJsonModule` for the template JSON files.
+
+Frontend
+- `src/components/BlueprintReview.tsx` (new): the shared review (diff groups, impacts via `objects.impact`, slot use, records checkbox) and `useBlueprintCheck`.
+- `src/routes/Suggestions.tsx`: `BlueprintCard` for blueprint proposals.
+- `src/routes/Settings.tsx`: `BlueprintsCard` (template picker, paste, export) and `BlueprintDialog`.
+
+Agents and ops
+- `packages/mcp/src/client.ts`, `packages/mcp/src/index.ts`: `blueprints`, `currentBlueprint`, `proposeBlueprint`; tools `remold_blueprints`, `remold_export_blueprint`, `remold_propose_blueprint`.
+- `ops/authority/inventory.json`: rows for the 11 new functions and 2 routes. `ops/authority/service-sweeps.mjs`: read-only sweep calls for the 3 new public writes.
+
+Tests and evidence
+- `convex/blueprints.test.ts` (new, 18 tests). `evidence/2026-10-03-campaigns/K/`: this file, fail-before/pass-after, mutants, suites, screenshots and their script and log, rollback script and log, Astra's review.
+
+## Decisions
+
+1. **Apply is atomic, never chunked.** A blueprint applies in one Convex mutation; any refusal throws and Convex discards every earlier step. No partial state can exist, so no "partially applied" status or resume action is needed. This is safe because of hard size limits (100 changes, 20 new objects, 12 fields per addObject, 50 starter records): a person's apply then stays far inside Convex's per-transaction read and write limits (rough worst case: a few thousand document reads, well under 1,000 writes). I judged a resumable chunked plan to be more machinery and more failure states for no gain at these sizes.
+2. **Validation is a trial run of the real apply.** To check a blueprint "against the current shape using the shared helpers", the proposal path (and the person's check) applies it for real in a mutation that always throws a `BLUEPRINT_TRIAL` ConvexError; the caller (http action or `blueprints.check` action) reads the result from the error. Every rule (key collisions, references, options, lifecycle rules, slots, starter-record values) is therefore exactly the apply code, with no second simulator to drift. Confirmed on the real local backend, not only convex-test (`screenshot.log`: a dangling reference refused with 404, nothing stored).
+3. **Failure recording.** Because a failed apply rolls back, `shapeSuggestions.applyBlueprint` (an action) calls `apply`, and on a refusal it records `failed` with the message in a second transaction. Suggestions uses the action. Calling the `apply` mutation directly on a blueprint row still refuses atomically; it just leaves the row pending.
+4. **Objects first.** All new objects are created (with their Name field) before any other step, so any step can point a relation at any new object, in either direction.
+5. **Slot exhaustion is a blueprint error.** A single new text, number, date or yes/no field without a free index slot is quietly kept unindexed today; a blueprint refuses instead, naming the object and counts ("Not enough index slots on Wide: it needs 10 text slots and has 8. Set indexed: false on ..."), because a template that silently produces unsortable fields is worse. `indexed: false` remains the explicit opt-out. Lookups were already refused per field.
+6. **addOptions in a blueprint lists only the options to add** (an agent's single addOptions proposal lists them all). Templates must apply to workspaces that already customised a select. Changing an existing option is still refused.
+7. **Who may propose, review and apply.** Admin role only (member-role agents and people refused), and only principals that see every object, field and record (`requireWholeWorkspace`). A blueprint can touch anything and resolves links by title, so a restricted principal could learn about hidden things through its check results.
+8. **Agent trials and starter records.** Agents need record grants to create records, but the real write is the person's. In the agent's trial the starter records are written as the workspace owner (`ownerOf`, the existing operator stand-in), inside the transaction that is rolled back. Because of decision 7, the agent can already read every record, so this reveals nothing it could not read. The trial also adds each new object to the agent's read list (rolled back too), as `apply` will.
+9. **Person path.** A person picking a template (or pasting a blueprint) reviews it in a dialog and applies it directly (`blueprints.apply`, audited as `blueprintApplied`). There is no proposal row, because `shapeSuggestions.agentId` is required and changing that would make rollback harder.
+10. **Records are opt-in at apply time.** The checkbox is off by default; without it `runBlueprint` gets no writer and creates none. Records are created through `applyChange` with the reason "Starter record from blueprint ..." and attributed to the person.
+11. **Export** emits what differs from a new workspace: every custom object (fields, options, retired fields as add-then-retire, title, name relabel, archive) and, for standard objects, relabels, added fields and options, retired fields, title, and field, option and object order where they differ. Anything the caller cannot read is left out, as are relations to it; orders are left out when part of the list is hidden, since an order must name every item. No records, ids or settings. `version`, `name` ("<workspace> shape") and a description are set.
+12. **Templates are JSON** under `convex/lib/blueprints/` and listed by `blueprints.templates`, so the app and agents read one source. The Agency template relabels Company to Client and extends the standard Project instead of adding a second one.
+
+## Env vars
+
+None.
+
+## Fail before, pass after
+
+All in `convex/blueprints.test.ts`. Before the implementation the 16 original tests all failed (`fail-before.txt`, e.g. `expected 400 to be 201`, `Could not find module for: "blueprints"`, `client.blueprints is not a function`). After: 18/18 pass (`pass-after.txt`).
+
+| Behaviour | Test | Before | After |
+|---|---|---|---|
+| Cross-referencing new objects apply correctly; one grouped card | applies a blueprint whose new objects refer to each other, shown as one grouped card | × expected 400 to be 201 | ✓ |
+| Starter records only with the checkbox, linked and attributed | creates starter records only when the person ticks the box ... | × | ✓ |
+| Template picked, checked, applied by a person | a person picks a built-in template, checks it and applies it ... | × module not found | ✓ |
+| Slot exhaustion across the whole blueprint | slot exhaustion summed across every change in the blueprint | × | ✓ |
+| Collisions (workspace and within blueprint) | key collisions, with the workspace and within the blueprint | × | ✓ |
+| Dangling references (objects, fields, records) | dangling references, to objects, fields and records | × | ✓ |
+| Format and limits | format: version, kinds, size limits | × | ✓ |
+| Atomic, failure recorded, no half state | a blueprint made stale before apply fails plainly and leaves nothing half applied | × | ✓ |
+| Direct invalid apply changes nothing | a person's direct apply of an invalid blueprint changes nothing | × | ✓ |
+| Export re-applied to a new workspace reproduces the shape | exporting a reshaped workspace and applying it to a new one reproduces the shape | × | ✓ |
+| Export of an untouched workspace is empty | an untouched workspace exports an empty blueprint | × | ✓ |
+| Export hides unreadable objects and fields (agent and person) | export leaves out objects and fields the caller cannot read | × | ✓ |
+| Each built-in validates and applies to a fresh workspace | each validates and applies, with its starter records, to a fresh workspace, and agents can list them | × | ✓ |
+| Member-role agents and people refused | member-role agents and people are refused | × expected 400 to be 403 | ✓ |
+| Restricted admin agent refused | an admin agent that cannot read every object cannot propose a blueprint | × | ✓ |
+| MCP client routes | lists, exports and proposes blueprints over REST | × | ✓ |
+| Review fix: several title changes in one blueprint | a blueprint can change several titles at once, as an export of such a workspace does | × `Only a single paginated query (.paginate()) is allowed per function execution` | ✓ |
+| Review fix: record-scoped admin agent cannot probe records through a trial | an admin agent limited to some records of an object cannot propose one ... | × (proposal accepted) | ✓ |
+| Review fix: retired custom fields survive export | exporting a reshaped workspace ... (now retires company.legacy and job.address) | × shapes differ | ✓ |
+
+The review-fix "before" lines are in `review-fixes-fail-before.txt`.
+
+**Mutants** (`mutants.txt`): 12 hand mutations of the new code, each killed by the suite: no whole-blueprint slot check, no reference check, starter records without the box, export ignoring object reads, export ignoring field reads, export dropping field order, export dropping option order, no objects-first pass, failure not recorded, blueprint review not limited to unrestricted people, preview open to members, no trial at proposal time.
+
+## Full suites (`suites.txt`)
+
+- `pnpm test`: 443 tests; 440 to 442 pass on this shared, loaded machine. The only failures are timeouts in `gmailSync` "last contact" and two `Calendar.drag` paging tests, which pass when run alone (9/9) and fail the same way on base 050abad run at the same time (423/425). `convex/blueprints.test.ts`: 18/18. Details in `suites.txt`.
+- `pnpm typecheck`: clean.
+- `pnpm test:authority`: 101/101 passed.
+- `pnpm verify:release`: 37/37 passed.
+- `pnpm build`: built; MCP package `tsc` build also clean.
+- `pnpm proof:authority` (SERVICE, not required): 50 PASS, then the harness stops at `service-secrets.mjs:94` with `spawnSync unzip ENOBUFS` (export bigger than Node's 1 MB buffer). Base 050abad stops at the same place with the same error, so this is pre-existing. The read-only sweep, which now covers the 3 new public writes, comes after that point and did not run on either.
+
+## Screenshots (SERVICE, `screenshot.mjs`, `screenshot.log`)
+
+- `suggestions-blueprint-card.png`: an agent's "Repair shop" blueprint: two new objects referring to each other, Stage gains options, a retire and an archive with their impact, slot use after applying, the starter-record box ticked. Clicking Apply all applied it: objects `repairJob`, `quote` added, Workshop archived, proposal `applied`, starter record "Cracked screen" created.
+- `settings-template-picker.png`: Settings, "Start from a template".
+- `settings-template-review.png`: the Creator or coach template under review, checked OK, records box off.
+- `settings-template-refused.png`: the Service template in the same workspace: "Cannot apply: Step 2, add object quote: Object key already exists", Apply all disabled.
+
+## Rollback compatibility (`rollback.mjs`, `rollback.log`, SERVICE)
+
+- Templates and blueprints applied by a person write only ordinary objects, fields, options, records, events and audit rows. The previous release runs on that data unchanged.
+- **A plain rollback to 050abad is refused once a blueprint proposal row exists** (new `shapeSuggestions.change` variant): `Schema validation failed. Document ... in table "shapeSuggestions" does not match the schema`. `pnpm deploy:prod --ref` already refuses a ref whose schema rejects the backup.
+- **A schema-only rollback build works**: 050abad's code plus this branch's `convex/schema.ts`, `convex/lib/metadata.ts` and `convex/lib/slots.ts` started (`functions ready`), kept all objects, listed the template's fields, created a record, hid blueprint proposals from the Suggestions list (old code cannot read them), and refused to apply the pending blueprint ("Server Error"), changing nothing. Rolling forward again kept everything, and the pending blueprint then applied.
+- No new standard objects or fields, so `seed:ensureStandard` is unchanged.
+
+## Owner setup to go live
+
+None. No env vars, no external services, no schedules. After deploying, Settings shows the template card to admins and the export button to everyone; admin agents can use the new routes at once (MCP clients get the new tools after `pnpm --filter @remold/mcp build`).
+
+## Independent review (Astra, gpt-6-astra via Codex, read-only, `astra-review.txt`)
+
+Six findings; I checked each.
+1. Record-scoped admin agent could probe hidden records through the owner-backed trial. **Confirmed by a failing test; fixed** (`requireWholeWorkspace`).
+2. No committed compatible rollback target for the new schema variant. **True, not changed**: same situation and same schema-only rollback recipe as Job G (above). Worth a release-process decision by the coordinator.
+3. Two `setTitleField` in one blueprint fail (one `paginate` per function). **Confirmed by a failing test; fixed** in `lib/lifecycle.ts`. This also affected exports of workspaces with more than one changed title.
+4. Export drops edits to existing standard options (renamed or recoloured stages). **True, documented below**; the blueprint format has no change kind for editing an existing option, by design of the agent proposal rules.
+5. Export dropped retired custom fields. **Confirmed; fixed** (added then retired, keeping key and slot).
+6. Export can exceed the import limits (over 20 custom objects or 100 changes). **True, documented below.**
+
+## Left undone or uncertain
+
+- Export cannot carry renamed or recoloured options of standard select fields (only added and reordered ones), field `required` changes on standard fields, or `protectedFromAgents`. Applying such an export gives the standard labels.
+- A workspace with more than 20 custom objects or more than 100 differences exports a blueprint that the import limits refuse with a clear message; it must be split by hand. The limits are there to keep apply in one transaction.
+- When a restricted principal exports, field and object orders that include hidden items are left out, so that export may not reproduce order exactly (by design).
+- The diff labels a relation by the target's current label, so in the Agency template a relation to Company reads "lookup to Company" even though the same blueprint renames it Client.
+- The read-only service sweep for the new public writes is written but never ran, because the service proof stops earlier on a pre-existing harness buffer limit (see the suites section). The convex-test suite does cover refusal for member-role and restricted principals.
+- Transaction headroom for the largest allowed blueprint was reasoned, not measured on a real backend with a maximal blueprint.
+- `convex/_generated/api.d.ts` was edited by hand.
+
+## Round 2 (merge)
+
+Merged `origin/integ/campaigns` at f94e828 into `remold/blueprints` (merge commit: see `git log`). Integ had gained shape lifecycle round 2 (retitling flag and resume cron, bounded impact previews, opportunity.stage protected, archived objects refuse new records, visibleTitle), saved views (`addView` proposal kind, `views` table), automations, agent object access, campaign email fixes and defect fixes.
+
+### Conflicts and how they were resolved
+- `convex/shapeSuggestions.ts`: kept this branch's split (key resolution and `perform` live in `convex/lib/proposals.ts`). Ported integ's `addView` into it: `changeFor` builds and checks the view (`checkView`, as integ wrote it), `perform` saves it with `insertView` as the person applying, credited to the proposing agent. `authorize` keeps both the blueprint rule and integ's addView rule. `apply` keeps integ's `viewId` in `result` and this branch's blueprint path.
+- `convex/lib/metadata.ts`: `Lifecycle` excludes both `addView` and `blueprint`. Integ's agent view input validators moved here as `viewInput`, so `changeInput` (one blueprint step) can carry a view.
+- `convex/agentApi.ts`: kept integ's idempotent `proposeShape`, views, view records, automations and `markReplied`. Shape args now come from `changeInput` plus `blueprint`. Kept the three blueprint functions.
+- `convex/lib/lifecycle.ts`: kept integ's `retitling` flag, cursor, resume cron and search protections. Integ's title change paginated its first page inline again, which would bring back the Round 1 review bug (two title changes in one transaction break Convex's one-paginate rule). So the first page inside the change is now a `take`. If everything fits, the flag clears at once; otherwise the flag stays and the scheduled pass pages from the top (rewrites are idempotent). Integ's lifecycle tests ("the first page of titles is rewritten with the change ...", P1 search hiding, the resume sweeper) pass unchanged.
+- `convex/http.ts`, `packages/mcp/src/*`, `src/routes/Settings.tsx`, `src/routes/Suggestions.tsx`, `convex/_generated/api.d.ts`, `ops/authority/service-sweeps.mjs`: kept both sides.
+- `ops/authority/inventory.json`: merged by id. All 290 integ rows plus this branch's 13 new rows, 303 in total. No row was dropped and none was changed by both sides.
+
+### Blueprints and the new kinds and rules
+- **addView in blueprints.** A step may be `{ kind: "addView", object, name, layout, columns, filters, range, sort, groupBy, dateField, pinned }`, the same body as integ's agent proposal, with the object named by key, so a view can sit on an object the blueprint creates. Views run after every other step, so a view may use fields added anywhere in the blueprint. Each view goes through integ's `checkView` (board needs a select, calendar needs a date, filters coerced, indexed fields only) and `insertView` as a shared view. It is saved by the person applying and credited to the proposing agent (or to the person, for a template they picked). In an agent's trial the workspace owner stands in to save it, as for starter records, since only a person may share a view; the trial is rolled back. The review card describes it in plain words ("New shared board view "Open jobs by stage", grouped by Status, pinned in the menu").
+- **Archived objects.** A starter record on an object the blueprint archives (or that is already archived) is refused by integ's `requireLive` in `applyChange`. The message is "Starter record 1 (Workshop Pottery): Unarchive Workshops to add records". The whole blueprint is refused at proposal time, and a person's apply with the box ticked changes nothing. Without the box it applies.
+- **Retitling.** `setTitleField` in a blueprint goes through `applyLifecycle`, so integ's `retitling` flag is set and restricted readers cannot find records by the old title values until the pass finishes. Several title changes in one blueprint work.
+- **Export** now includes shared views (by key), and the round-trip test compares them. A view that filters on a lookup or links field is left out, because its value names a record in this workspace.
+- **Templates:** each gained two views. Service: "Open jobs by stage" (board, pinned) and "Visit calendar". Agency: "Deliverables by status" (board, pinned) and "Active retainers" (filtered on Active, by renewal). Creator: "Session calendar" (pinned) and "Sponsor pipeline" (board). Retail: "Orders by status" (board, pinned) and "Low stock" (for sale, by stock).
+
+### New tests, fail before and pass after (`round2-fail-before.txt`, `pass-after-round2.txt`)
+The behaviours depend on merged code, so "before" is each test run against the targeted reversion that represents the pre-merge or unfixed state:
+
+| Test | Reversion | Before | After |
+|---|---|---|---|
+| a blueprint adds a shared view to an object it creates, credited to the proposing agent | blueprint kinds without addView (pre-merge) | × "Step 2: kind must be one of ..." | ✓ |
+| same | views not run last | × "Step 2, add view job "Open jobs by stage": Field not found" | ✓ |
+| a blueprint that archives an object refuses starter records on it | archived objects accept records (pre-merge rule) | × proposal accepted | ✓ |
+| setTitleField inside a blueprint marks the object retitling, hides old titles from restricted readers, then finishes | integ's inline paginate kept | × 500 (second paginate in one transaction) | ✓ |
+
+The built-in template test now also checks each template's views exist, are shared and usable, and are credited to the agent. The export round-trip test compares views. `convex/blueprints.test.ts`: 21/21.
+
+### Suites (`suites-round2.txt`)
+- `pnpm test`, default settings: 586/587. The one failure is `gmailSync` "last contact" timing out at 5.3 s against the 5 s default (the same pre-existing timing test as Round 1). With `--testTimeout=60000 --maxWorkers=2`: **587/587**. Load average was about 2.5 during the run.
+- `pnpm typecheck`: clean. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: built.
+- `packages/mcp` build: integ f94e828 alone fails (`TS1005` at `src/index.ts:11`: unescaped double quotes inside the `instructions` string, from the automations change). I made that string a template literal, with no text change, and the build is clean. This is outside the job's scope; flagging it so the coordinator knows integ's MCP build was broken.
+
+### Rollback (Round 2)
+No schema change of this branch's own in the merge beyond Round 1's `blueprint` variant. A blueprint can now store view steps inside `shapeSuggestions.change.blueprint`. Those are optional fields of the `blueprint` validator, so the Round 1 statement stands: a plain rollback to a release without the `blueprint` variant is refused once a blueprint proposal exists; the schema-only rollback recipe applies. The rollback script was not rerun after the merge.
+
+### Not redone in Round 2
+Screenshots and the SERVICE rollback run were not repeated; the UI code is unchanged apart from the merge (the card renders the new view lines from the same diff).
+
+## Round 3 (verifier REVISE: B1, card values, S1, notes)
+
+First merged `origin/integ/campaigns` at df22614 (merge commit 9b4a416; clean). Integ's MCP template-literal fix matches the one from Round 2.
+
+### B1 (blocker): an agent's starter records now follow every agent rule
+Before, ticking "Also add the starter records" wrote an agent's records as the approving person, so `agentGuard` and the automation rules never ran. The verifier's probe turned on an automation, approved an email, started a campaign, published a post and wrote a protected field.
+
+Now an agent-proposed blueprint's starter records go through the same path as an agent's own record suggestion (`suggestions.apply`): `resolveValues` as the agent, then `applyChange` **as the proposing agent with `approvedBy` set to the person**. Everything agent-only in `applyChange` therefore runs, per record:
+- `agentGuard`: protected fields; post approve or publish; email approve; campaign start; opportunity stage rules.
+- The automation rule: an agent cannot turn an automation on; an automation it creates stays `draft`.
+- `requireLive`: no records on archived objects.
+- The approver's own read checks.
+
+This runs at proposal time (the rolled-back trial, with the agent as author and the workspace owner standing in as approver) and **again at apply** (with the real approver). A refusal reads "Starter record N (Object): <reason>", for example "Starter record 1 (Automation): Only a person can turn on an automation". At proposal the agent gets 403 for an agent rule and 400 for a validation. At apply the blueprint is marked failed with that message and nothing is applied: `refusal()` now also records FORBIDDEN errors that name a step or a starter record. Records are created by the agent (`createdBy`, event actor) and approved by the person, who is recorded in the proposal's `resolvedBy`. This matches applied suggestions.
+
+There are no booking or `bookingPage` objects on this branch. Whatever agent rules a later merge adds to `applyChange` or `agentGuard` apply to blueprint starter records automatically, because they run through the same call.
+
+People's own blueprints (built-in templates and pasted ones via `blueprints.apply`) still write as the person; a test pins this.
+
+The proposing agent's read list now gains each new object inside `runBlueprint`, both in the trial and at apply, so the agent can write its records there. `shapeSuggestions.apply` dedupes the list when it audits the extension.
+
+### Card shows starter-record values
+`diffOf` returns `starter: [{ object, values: [{ label, value }] }]` for every record. The Suggestions card and the template dialog list them under the checkbox, ten at a time with "Show N more". Blueprint reviewers must read everything (`authorize` and `preview` require unrestricted access), so every value shown is readable to them. A filter for unreadable fields was written, a mutant showed it was unreachable, and it was removed (see below).
+
+### S1
+Removed the duplicate, unreachable `case "addView"` in `describe` (`convex/shapeSuggestions.ts`).
+
+### Notes
+- N2: `check` now defaults `withRecords` to **false**. Direct callers get a records-off answer unless they ask; the UI always passes the checkbox state.
+- N3: **kept** the blueprint's own required-field check. It names the field ("Starter record 1 (Person): Name is required"), where `applyChange` says only "Required field is empty". A test now pins the message, so the check is no longer untested.
+- Message format changed from "Starter record N (Object Title)" to "Starter record N (Object)", as the coordinator specified; the existing tests were updated.
+- Removed after mutants survived (`round3-mutants.txt`): a `canPropose` check on starter records, and the unreadable-field filter on the card. Both are unreachable, because blueprint proposers must read every object, field and record (`requireWholeWorkspace`) and reviewers must be unrestricted. The real proposal-scope guarantee is that rule.
+- N1 (transaction headroom on a real backend) and N4 (export gaps) are unchanged and still open, as stated in earlier sections.
+
+### Tests, failing first
+- New `convex/blueprints.round3.test.ts` (15 tests): the verifier's probes adopted.
+  - The B1 probe is **inverted** into 5 refusal cases (automation on, campaign active, email approved, post published, protected field), plus refusal again at apply, agent authorship with the automation left a draft, archived object, the person path, card values, and `check` defaults with the required message.
+  - The trial-leaves-nothing, size-limit and lived-in-templates probes and the hidden-field probe are adopted as regression guards. They passed before the fix too, since they never showed a bug.
+  - The size-limit probe now passes `withRecords: true` (N2).
+- Before the fix: 10 failed, 5 passed (`round3-fail-before.txt`). After: `convex/blueprints.round3.test.ts` plus `convex/blueprints.test.ts` 36/36 (`round3-pass-after.txt`).
+- Mutants (`round3-mutants.txt`):
+  - Records written as the person again (the bug as found): 8 red.
+  - Agent trial without the agent: 15 red.
+  - Apply without the agent: 5 red.
+  - `check` defaulting records on: 1 red.
+  - Two survivors were the unreachable checks, which were removed.
+
+### Suites (`suites-round3.txt`, load average about 2.3 to 3)
+- `pnpm test`, default settings: 600/602. The two failures are the timing tests seen in every round (`gmailSync` "last contact" and `Calendar.drag` "keeps every post..."). With `--testTimeout=60000 --maxWorkers=2`: **602/602**.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: exit 0. `pnpm --dir packages/mcp build`: exit 0.
+
+### Not redone in Round 3
+Screenshots (the card now has a starter-record list) and the SERVICE rollback were not rerun. There is no schema change in this round.
+
+## Round 4 (verifier PASS with one should-fix)
+
+### Merge
+Merged `origin/integ/campaigns` at e19eeef (work queue, time zone, agent onboarding map; merge commit 163da0d).
+- `ops/authority/inventory.json`: merged by id. All 297 integ rows plus this branch's 13 rows, 310 in total. No row was changed by both sides.
+- `convex/_generated/api.d.ts`: kept both sides (`lib/assignee`, `lib/queue`, `lib/blueprint`, `lib/proposals`).
+- MCP: integ's instructions are a template literal starting with `remold_map`. I added one sentence pointing agents to `remold_blueprints`, `remold_export_blueprint` and `remold_propose_blueprint` for a whole reshaping, noting that starter records are theirs and follow the same rules as their own proposals. The three blueprint tools are unchanged.
+
+### S1: the starter-record proposal rule is now explicit
+The verifier showed that "blueprint proposers read everything, so `canPropose` is implied", my reason for removing the check in Round 3, was wrong. An agent can read an object with `records: "all"` through a read capability grant while having no propose scope there. In Round 3 such a blueprint was refused only by accident, because the hand-built writer principal had no capabilities ("Object not found").
+
+Now:
+- The starter-record writer is the real agent principal from `currentPrincipal`, with its grants, which is what a direct proposal by that agent sees.
+- `canPropose(writer, object, undefined, fieldIds)` runs per record before any value is resolved, the same order and message as `agentApi.propose`. An agent's direct proposal and its blueprint therefore answer alike: 403 "Proposal scope required" and 403 "Starter record 1 (Company): Proposal scope required".
+- A shape-only blueprint from that agent is still accepted (201), as a direct shape proposal is.
+
+### Tests, failing first (`round4-fail-before.txt`, `round4-pass-after.txt`, `round4-mutants.txt`)
+- New: "an agent that reads Company through a read grant but may not propose there is refused alike, directly and in a blueprint". Before: × `[404, "Starter record 1 (Company): Object not found"]`. After: ✓.
+- Adopted the verifier's probe `iv-K3-probe-assignee.test.ts` ("an agent blueprint cannot hand a starter task to another agent, but may give it to a person or itself"). It passes both before and after on the merged code. It is a regression guard, because integ's handoff rule already applies through `resolveValues` as the agent.
+- Mutants:
+  - Removing `canPropose`: the new test goes red, and the blueprint is accepted (201).
+  - Building the writer without capabilities again: the new test goes red (404).
+  - So both the check and the real principal are now load-bearing.
+- `convex/blueprints.test.ts` plus `convex/blueprints.round3.test.ts`: 38/38.
+
+### Suites (`suites-round4.txt`)
+- `pnpm test`, default settings: 658/660. The two failures are the timing tests seen every round (`gmailSync` "last contact", `Calendar.drag` "keeps every post..."). With `--testTimeout=60000 --maxWorkers=2`: **660/660**.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: exit 0. `pnpm --dir packages/mcp build`: exit 0. `pnpm --dir packages/mcp test`: 11/11.
+
+### Still open
+Transaction headroom on a real backend (N1) and the export gaps (N4) are as in earlier sections. Screenshots and the SERVICE rollback were not rerun; there is no schema change in this round. As the verifier notes, an agent may still seed a draft automation whose `createTask` action assigns to another agent. It runs only once a person turns it on, and then as that person.

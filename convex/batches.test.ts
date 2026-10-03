@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
+import { agentFor, api, mcpTool, objectFields, rest, userAndOrg } from "./test.helpers";
 import { internal } from "./_generated/api";
-import { RemoldClient } from "../packages/mcp/src/client";
 
 const run = (t: any) => t.finishAllScheduledFunctions(vi.runAllTimers);
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(1_800_000_000_000); });
@@ -440,22 +439,34 @@ describe("who may apply", () => {
   });
 });
 
+// The hosted /mcp endpoint as an agent's MCP client calls it: one JSON-RPC tools/call per POST.
+const hostedTool = (t: any, key: string) => async (name: string, args: Record<string, unknown> = {}): Promise<any> => {
+  const response = await t.fetch("/mcp", { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream", authorization: `Bearer ${key}` }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: args } }) });
+  const { result } = await response.json();
+  if (result.isError) throw new Error(result.content[0].text);
+  return JSON.parse(result.content[0].text);
+};
+
 describe("MCP batches", () => {
-  it("an agent proposes a batch, applies a granted one and reads both through the real REST client", async () => {
-    const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude", grants: [{ action: "update", objectKey: "campaign" }] });
-    const client = new RemoldClient({ url: "https://remold.test", key: agent.key, fetch: (async (input: RequestInfo | URL, init?: RequestInit) => { const url = new URL(String(input)); return w.t.fetch(url.pathname + url.search, init); }) as typeof fetch });
-    const ids = await deals(w, 3), ada = await w.create(w.person, { name: "Ada" }), spring = await w.create(w.campaign, { name: "Spring" });
-    const proposed = await client.proposeBatch({ reason: "qualify", changes: stageAll(ids, "qualified") });
-    expect(proposed.batch).toMatchObject({ status: "pending", summary: "Update Stage on 3 Opportunities" });
-    const applied = await client.applyBatch({ reason: "list", changes: [{ action: "update", record: spring, links: { people: { add: ["Ada"] } } }], idempotencyKey: "k1" });
-    expect(applied.batch).toMatchObject({ mode: "direct", summary: "Add 1 Person to Spring" });
-    await run(w.t);
-    expect((await client.batchStatus({ id: applied.batch.id })).batch.status).toBe("done");
-    expect((await w.get(spring)).values[w.campaign.fields.people._id]).toEqual([ada]);
-    const page = await client.batchStatus({ id: proposed.batch.id, limit: 2 });
-    expect(page.items.map((item: any) => item.index)).toEqual([0, 1]);
-    expect((await client.batchStatus({ id: proposed.batch.id, cursor: page.nextCursor })).items.map((item: any) => item.index)).toEqual([2]);
-  });
+  for (const [transport, tool] of [["stdio", mcpTool], ["hosted /mcp", hostedTool]] as const) {
+    it(`an agent proposes a batch, applies a granted one and pages both over ${transport}`, async () => {
+      const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude", grants: [{ action: "update", objectKey: "campaign" }] }), call = tool(w.t, agent.key);
+      const ids = await deals(w, 3), ada = await w.create(w.person, { name: "Ada" }), spring = await w.create(w.campaign, { name: "Spring" });
+      const proposed = await call("remold_propose_batch", { reason: "qualify", changes: stageAll(ids, "qualified") });
+      expect(proposed.batch).toMatchObject({ status: "pending", summary: "Update Stage on 3 Opportunities" });
+      const body = { reason: "list", changes: [{ action: "update", record: spring, links: { people: { add: ["Ada"] } } }], idempotencyKey: "k1" };
+      const applied = await call("remold_apply_batch", body);
+      expect(applied.batch).toMatchObject({ mode: "direct", summary: "Add 1 Person to Spring" });
+      await run(w.t);
+      expect((await call("remold_apply_batch", body)).batch).toMatchObject({ id: applied.batch.id, status: "done" });
+      expect((await call("remold_batch_status", { id: applied.batch.id })).batch.status).toBe("done");
+      expect((await w.get(spring)).values[w.campaign.fields.people._id]).toEqual([ada]);
+      const page = await call("remold_batch_status", { id: proposed.batch.id, limit: 2 });
+      expect(page.items.map((item: any) => item.index)).toEqual([0, 1]);
+      expect((await call("remold_batch_status", { id: proposed.batch.id, cursor: page.nextCursor })).items.map((item: any) => item.index)).toEqual([2]);
+      await expect(call("remold_propose_batch", { reason: "x", changes: [{ action: "update", record: ids[0], values: { stage: "nope" } }] })).rejects.toThrow("VALIDATION: Change 0: Invalid select option. Nothing was saved.");
+    });
+  }
 });
 
 describe("batches and the rest of the workspace", () => {

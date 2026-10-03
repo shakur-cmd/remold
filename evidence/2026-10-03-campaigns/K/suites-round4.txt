@@ -1,0 +1,10 @@
+Round 4 (after merging origin/integ/campaigns e19eeef), 2026-10-03T17:44:33Z, load average ~1.4 at start
+pnpm test (default): ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 2 failed | 658 passed (660)  failing: gmailSync 'last contact' and Calendar.drag 'keeps every post...' (timeouts, as every round)
+pnpm vitest run --testTimeout=60000 --maxWorkers=2:  Tests 660 passed (660)
+pnpm typecheck: exit 0
+pnpm test:authority:  Tests 101 passed (101)
+pnpm verify:release: ℹ tests 37 ℹ pass 37 ℹ fail 0 
+pnpm build: exit 0
+pnpm --dir packages/mcp build: exit 0
+pnpm --dir packages/mcp test:  Tests 11 passed (11)
