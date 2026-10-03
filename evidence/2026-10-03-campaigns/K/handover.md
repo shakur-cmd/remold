@@ -175,3 +175,57 @@ No schema change of this branch's own in the merge beyond Round 1's `blueprint` 
 
 ### Not redone in Round 2
 Screenshots and the SERVICE rollback run were not repeated; the UI code is unchanged apart from the merge (the card renders the new view lines from the same diff).
+
+## Round 3 (verifier REVISE: B1, card values, S1, notes)
+
+First merged `origin/integ/campaigns` at df22614 (merge commit 9b4a416; clean). Integ's MCP template-literal fix matches the one from Round 2.
+
+### B1 (blocker): an agent's starter records now follow every agent rule
+Before, ticking "Also add the starter records" wrote an agent's records as the approving person, so `agentGuard` and the automation rules never ran. The verifier's probe turned on an automation, approved an email, started a campaign, published a post and wrote a protected field.
+
+Now an agent-proposed blueprint's starter records go through the same path as an agent's own record suggestion (`suggestions.apply`): `resolveValues` as the agent, then `applyChange` **as the proposing agent with `approvedBy` set to the person**. Everything agent-only in `applyChange` therefore runs, per record:
+- `agentGuard`: protected fields; post approve or publish; email approve; campaign start; opportunity stage rules.
+- The automation rule: an agent cannot turn an automation on; an automation it creates stays `draft`.
+- `requireLive`: no records on archived objects.
+- The approver's own read checks.
+
+This runs at proposal time (the rolled-back trial, with the agent as author and the workspace owner standing in as approver) and **again at apply** (with the real approver). A refusal reads "Starter record N (Object): <reason>", for example "Starter record 1 (Automation): Only a person can turn on an automation". At proposal the agent gets 403 for an agent rule and 400 for a validation. At apply the blueprint is marked failed with that message and nothing is applied: `refusal()` now also records FORBIDDEN errors that name a step or a starter record. Records are created by the agent (`createdBy`, event actor) and approved by the person, who is recorded in the proposal's `resolvedBy`. This matches applied suggestions.
+
+There are no booking or `bookingPage` objects on this branch. Whatever agent rules a later merge adds to `applyChange` or `agentGuard` apply to blueprint starter records automatically, because they run through the same call.
+
+People's own blueprints (built-in templates and pasted ones via `blueprints.apply`) still write as the person; a test pins this.
+
+The proposing agent's read list now gains each new object inside `runBlueprint`, both in the trial and at apply, so the agent can write its records there. `shapeSuggestions.apply` dedupes the list when it audits the extension.
+
+### Card shows starter-record values
+`diffOf` returns `starter: [{ object, values: [{ label, value }] }]` for every record. The Suggestions card and the template dialog list them under the checkbox, ten at a time with "Show N more". Blueprint reviewers must read everything (`authorize` and `preview` require unrestricted access), so every value shown is readable to them. A filter for unreadable fields was written, a mutant showed it was unreachable, and it was removed (see below).
+
+### S1
+Removed the duplicate, unreachable `case "addView"` in `describe` (`convex/shapeSuggestions.ts`).
+
+### Notes
+- N2: `check` now defaults `withRecords` to **false**. Direct callers get a records-off answer unless they ask; the UI always passes the checkbox state.
+- N3: **kept** the blueprint's own required-field check. It names the field ("Starter record 1 (Person): Name is required"), where `applyChange` says only "Required field is empty". A test now pins the message, so the check is no longer untested.
+- Message format changed from "Starter record N (Object Title)" to "Starter record N (Object)", as the coordinator specified; the existing tests were updated.
+- Removed after mutants survived (`round3-mutants.txt`): a `canPropose` check on starter records, and the unreadable-field filter on the card. Both are unreachable, because blueprint proposers must read every object, field and record (`requireWholeWorkspace`) and reviewers must be unrestricted. The real proposal-scope guarantee is that rule.
+- N1 (transaction headroom on a real backend) and N4 (export gaps) are unchanged and still open, as stated in earlier sections.
+
+### Tests, failing first
+- New `convex/blueprints.round3.test.ts` (15 tests): the verifier's probes adopted.
+  - The B1 probe is **inverted** into 5 refusal cases (automation on, campaign active, email approved, post published, protected field), plus refusal again at apply, agent authorship with the automation left a draft, archived object, the person path, card values, and `check` defaults with the required message.
+  - The trial-leaves-nothing, size-limit and lived-in-templates probes and the hidden-field probe are adopted as regression guards. They passed before the fix too, since they never showed a bug.
+  - The size-limit probe now passes `withRecords: true` (N2).
+- Before the fix: 10 failed, 5 passed (`round3-fail-before.txt`). After: `convex/blueprints.round3.test.ts` plus `convex/blueprints.test.ts` 36/36 (`round3-pass-after.txt`).
+- Mutants (`round3-mutants.txt`):
+  - Records written as the person again (the bug as found): 8 red.
+  - Agent trial without the agent: 15 red.
+  - Apply without the agent: 5 red.
+  - `check` defaulting records on: 1 red.
+  - Two survivors were the unreachable checks, which were removed.
+
+### Suites (`suites-round3.txt`, load average about 2.3 to 3)
+- `pnpm test`, default settings: 600/602. The two failures are the timing tests seen in every round (`gmailSync` "last contact" and `Calendar.drag` "keeps every post..."). With `--testTimeout=60000 --maxWorkers=2`: **602/602**.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: exit 0. `pnpm --dir packages/mcp build`: exit 0.
+
+### Not redone in Round 3
+Screenshots (the card now has a starter-record list) and the SERVICE rollback were not rerun. There is no schema change in this round.

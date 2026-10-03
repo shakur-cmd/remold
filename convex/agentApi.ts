@@ -179,7 +179,7 @@ export const trialBlueprint = internalMutation({ args: { keyHash, blueprint }, h
   const principal = await requireAgent(ctx, args.keyHash);
   if (principal.agent.role !== "admin") fail("FORBIDDEN", "Only an admin agent can propose shape changes");
   await writable(ctx, principal.org._id);
-  rollBack(await runBlueprint(ctx, principal, args.blueprint, { person: await ownerOf(ctx, principal.org._id), records: true, createdBy: principal.actor }));
+  rollBack(await runBlueprint(ctx, principal, args.blueprint, { person: await ownerOf(ctx, principal.org._id), records: true, agent: principal.agent }));
 } });
 
 // Saved views for agents: the shared ones, by key, as far as the key may read. A view

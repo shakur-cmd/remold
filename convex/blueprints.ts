@@ -28,9 +28,10 @@ export const current = query({ args: { orgId: v.id("orgs") }, handler: async (ct
 export const trial = internalMutation({ args: { orgId: v.id("orgs"), blueprint: v.optional(blueprint), id: v.optional(v.id("shapeSuggestions")), withRecords: v.optional(v.boolean()) }, handler: async (ctx, args) => {
   const principal = await requireWriter(ctx, args.orgId, "admin"), row = args.id ? await ctx.db.get(args.id) : null;
   if (row) await authorize(ctx, principal, row);
+  const agent = row ? await ctx.db.get(row.agentId) : null;
   const plan = row?.change.kind === "blueprint" ? row.change.blueprint : args.blueprint;
   if (!plan) fail("NOT_FOUND", "Blueprint not found");
-  rollBack(await runBlueprint(ctx, principal, plan, { person: principal, records: args.withRecords !== false, ...(row ? { createdBy: { kind: "agent" as const, id: row.agentId } } : {}) }));
+  rollBack(await runBlueprint(ctx, principal, plan, { person: principal, records: args.withRecords === true, agent: agent ?? undefined }));
 } });
 export const check = action({ args: { orgId: v.id("orgs"), blueprint: v.optional(blueprint), id: v.optional(v.id("shapeSuggestions")), withRecords: v.optional(v.boolean()) }, handler: async (ctx, args): Promise<{ ok: true; slots: Applied["slots"]; records: number } | { ok: false; error: string }> => {
   try { const { slots, records } = await trialOf(() => ctx.runMutation(internal.blueprints.trial, args)); return { ok: true, slots, records }; }

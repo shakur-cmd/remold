@@ -59,12 +59,38 @@ export function BlueprintReview({ orgId, diff, checked, withRecords, onWithRecor
         </div>
       )}
       {diff.records && (
-        <label className="flex items-center gap-2">
-          <Checkbox checked={withRecords} onCheckedChange={(on) => onWithRecords(on === true)} aria-label="Also add the starter records" />
-          Also add {diff.records}
-        </label>
+        <div className="grid gap-1.5">
+          <label className="flex items-center gap-2">
+            <Checkbox checked={withRecords} onCheckedChange={(on) => onWithRecords(on === true)} aria-label="Also add the starter records" />
+            Also add {diff.records}
+          </label>
+          <StarterRecords records={diff.starter} />
+        </div>
       )}
     </div>
+  );
+}
+
+// Every value of every starter record, so the person sees exactly what they would add. Ten at a time.
+const PAGE = 10;
+function StarterRecords({ records }: { records: Diff["starter"] }) {
+  const [shown, setShown] = useState(PAGE);
+  return (
+    <ol className="grid gap-1 rounded-md border bg-card px-2.5 py-2">
+      {records.slice(0, shown).map((record, i) => (
+        <li key={i} className="text-muted-foreground">
+          <span className="font-medium text-foreground">{record.object}</span>
+          {record.values.map((v) => ` · ${v.label}: ${v.value}`).join("")}
+        </li>
+      ))}
+      {records.length > shown && (
+        <li>
+          <button type="button" className="text-xs text-primary hover:underline" onClick={() => setShown(shown + PAGE)}>
+            Show {Math.min(PAGE, records.length - shown)} more of {records.length - shown}
+          </button>
+        </li>
+      )}
+    </ol>
   );
 }
 

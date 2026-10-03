@@ -78,8 +78,8 @@ describe("blueprints apply as one reviewed proposal", () => {
     expect((await counts(f)).records).toBe(0);
   });
 
-  it("creates starter records only when the person ticks the box, linked and attributed to them", async () => {
-    const { f, call } = await adminAgent();
+  it("creates starter records only when the person ticks the box, linked, the agent's and approved by the person", async () => {
+    const { f, agent, call } = await adminAgent();
     await propose(call, repair);
     const [card] = await pending(f);
     await f.client.action(shape.applyBlueprint, { orgId: f.orgId, id: card._id, withRecords: true });
@@ -88,9 +88,11 @@ describe("blueprints apply as one reviewed proposal", () => {
     expect(rows.map((r) => r.title).sort()).toEqual(["Tap repair", "Tap repair quote"]);
     const job = await objectFields(f.client, f.orgId, "repairJob"), quoteRow = rows.find((r) => r.title === "Tap repair quote"), jobRow = rows.find((r) => r.title === "Tap repair");
     expect(jobRow.values[job.fields.quote._id]).toBe(quoteRow._id);
-    expect(rows.every((r) => r.createdBy === user!._id)).toBe(true);
+    // Round 3: like an agent's own record suggestion, written as the agent and approved by the person.
+    expect(rows.every((r) => r.createdBy === agent.agentId)).toBe(true);
     const events: any[] = await f.t.run((ctx: any) => ctx.db.query("events").collect());
-    expect(events.filter((e) => e.recordId === jobRow._id).map((e) => e.actor)).toEqual([{ kind: "user", id: user!._id }]);
+    expect(events.filter((e) => e.recordId === jobRow._id).map((e) => e.actor)).toEqual([{ kind: "agent", id: agent.agentId }]);
+    void user;
   });
 
   it("a person picks a built-in template, checks it and applies it, records only when asked", async () => {
@@ -140,7 +142,7 @@ describe("blueprint validation names the problem and stores nothing", () => {
     expect((await refused({ version: 1, name: "x", description: "", changes: [{ kind: "addObject", key: "van", label: "Van", labelPlural: "Vans", fields: [{ key: "depot", label: "Depot", type: "lookup", target: "depot" }] }] })).message).toBe('Step 1 refers to object "depot", which is not in this workspace or this blueprint');
     expect((await refused({ version: 1, name: "x", description: "", changes: [{ kind: "addOptions", object: "opportunity", field: "phase", options: [{ id: "a", label: "A" }] }] })).message).toBe("Step 1, add options opportunity.phase: Field not found");
     expect((await refused({ ...repair, records: [{ object: "lorry", values: { name: "x" } }] })).message).toBe('Starter record 1 refers to object "lorry", which is not in this workspace or this blueprint');
-    expect((await refused({ ...repair, records: [{ object: "repairJob", values: { name: "x", quote: "No such quote" } }] })).message).toMatch(/^Starter record 1 \(Repair Job x\): /);
+    expect((await refused({ ...repair, records: [{ object: "repairJob", values: { name: "x", quote: "No such quote" } }] })).message).toMatch(/^Starter record 1 \(Repair Job\): /);
   });
   it("format: version, kinds, size limits", async () => {
     expect((await refused({ ...repair, version: 2 })).message).toBe("Unsupported blueprint version; use 1");
@@ -344,7 +346,7 @@ describe("round 2: views, archived objects and retitling inside blueprints", () 
     const call = rest(f.t, (await agentFor(f.client, f.orgId, { name: "shaper", role: "admin" })).key);
     const plan = { version: 1, name: "Tidy", description: "", changes: [{ kind: "archiveObject", object: "workshop" }], records: [{ object: "workshop", values: { name: "Pottery" } }] };
     const refused = await propose(call, plan);
-    expect([refused.status, refused.json.error.message]).toEqual([400, "Starter record 1 (Workshop Pottery): Unarchive Workshops to add records"]);
+    expect([refused.status, refused.json.error.message]).toEqual([400, "Starter record 1 (Workshop): Unarchive Workshops to add records"]);
     const before = await shapeOf(f);
     await expect(f.client.mutation(blueprints.apply, { orgId: f.orgId, blueprint: plan, withRecords: true })).rejects.toThrow(/Unarchive Workshops to add records/);
     expect(await shapeOf(f)).toEqual(before);

@@ -3,7 +3,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { ConvexError } from "convex/values";
 import type { Actor, Membership, Principal } from "../identity";
 import { fail } from "../errors";
-import { canReadField, canReadObject, canReadRecordId } from "../authority/reads";
+import { canReadField, canReadObject, canReadRecordId, requireObjectRead } from "../authority/reads";
 import { createObject, fieldsOf, requireLabel, requireUnrestricted, validKey, type Blueprint, type FieldSpec } from "./metadata";
 import { changeFor, perform, type ChangeInput } from "./proposals";
 import { capacity, kindFor, type SlotKind } from "./slots";
@@ -70,11 +70,14 @@ function checkReferences(blueprint: Blueprint, known: (key: string) => boolean) 
 }
 
 export type Applied = { objectIds: Id<"objects">[]; slots: { object: string; text: string; number: string; date: string; boolean: string }[]; records: number };
-// person saves the shared views and, if records is set, the starter records: the person applying it.
-// An agent's trial uses the workspace owner in their place, since agents need grants to create
-// records and only a person may share a view. createdBy is credited with the views.
-type Run = { person: Membership; records: boolean; createdBy?: Actor };
-export async function runBlueprint(ctx: MutationCtx, proposer: Principal, blueprint: Blueprint, { person, records: withRecords, createdBy }: Run): Promise<Applied> {
+// person saves the shared views, credited to the proposing agent if there is one. Starter records
+// (only if records is set) are the agent's when it proposed the blueprint: written as the agent and
+// approved by person, exactly like an agent's own record suggestion, so every agent rule holds
+// (lib/applyChange: agentGuard, automation, archived objects). People's own blueprints write as them.
+// An agent's trial uses the workspace owner as the stand-in person; the trial is rolled back.
+type Run = { person: Membership; records: boolean; agent?: Doc<"agents"> };
+export async function runBlueprint(ctx: MutationCtx, proposer: Principal, blueprint: Blueprint, { person, records: withRecords, agent }: Run): Promise<Applied> {
+  const createdBy: Actor = agent ? { kind: "agent", id: agent._id } : person.actor;
   let principal = proposer;
   parseBlueprint(blueprint);
   await requireWholeWorkspace(ctx, principal);
@@ -87,8 +90,9 @@ export async function runBlueprint(ctx: MutationCtx, proposer: Principal, bluepr
     if ((change.fields?.length ?? 0) > 12) fail("VALIDATION", "A new object can start with at most 12 fields");
     const { objectId } = await createObject(ctx, principal, { key: change.key, label: change.label, labelPlural: change.labelPlural, ...(change.icon === undefined ? {} : { icon: change.icon }) });
     created.push(objectId);
-    // An agent's trial sees the objects it adds, as it will once a person applies them (shapeSuggestions.apply).
-    if ("agent" in principal && principal.agent.authorityVersion === 1) { const readObjectIds = [...(principal.agent.readObjectIds ?? []), objectId]; await ctx.db.patch(principal.agent._id, { readObjectIds }); principal = { ...principal, agent: { ...principal.agent, readObjectIds } }; }
+    // The proposing agent asked for these objects to work in them, so it reads each one it adds.
+    const current = agent && await ctx.db.get(agent._id);
+    if (current?.authorityVersion === 1) { const readObjectIds = [...(current.readObjectIds ?? []), objectId]; await ctx.db.patch(current._id, { readObjectIds }); if ("agent" in principal) principal = { ...principal, agent: { ...principal.agent, readObjectIds } }; }
   });
   const added: { objectId: Id<"objects">; fieldId: Id<"fields">; kind?: SlotKind }[] = [];
   const run = async (input: ChangeInput) => {
@@ -121,14 +125,15 @@ export async function runBlueprint(ctx: MutationCtx, proposer: Principal, bluepr
     slots.push({ object: object.label, text: `${used.s} of ${capacity.s}`, number: `${used.n} of ${capacity.n}`, date: `${used.d} of ${capacity.d}`, boolean: `${used.b} of ${capacity.b}` });
   }
   let records = 0;
-  const writer = withRecords ? person : null;
+  const author = agent && await ctx.db.get(agent._id), writer: Principal | null = !withRecords ? null : author ? { agent: author, org: person.org, actor: { kind: "agent", id: author._id } } : person;
   if (writer) for (const [i, record] of (blueprint.records ?? []).entries()) {
-    const object = (await readableKeys(ctx, writer)).get(record.object)!, fields = (await fieldsOf(ctx, object.orgId, object._id)).filter((f) => !f.retired && canReadField(writer, object, f));
-    const titleKey = fields.find((f) => f._id === object.titleFieldId)?.key;
-    await within(`Starter record ${i + 1} (${object.label} ${titleKey ? String(record.values[titleKey] ?? "") : ""})`.replace(" )", ")"), async () => {
-      const values = await resolveValues(ctx, writer, object, fields, record.values);
+    const object = (await ctx.db.query("objects").withIndex("by_org_key", (q) => q.eq("orgId", person.org._id).eq("key", record.object)).unique())!;
+    await within(`Starter record ${i + 1} (${object.label})`, async () => {
+      requireObjectRead(writer, object);
+      const fields = (await fieldsOf(ctx, object.orgId, object._id)).filter((f) => !f.retired && canReadField(writer, object, f)), values = await resolveValues(ctx, writer, object, fields, record.values);
+      // applyChange refuses an empty required field too; this names the field.
       for (const field of fields) if (field.required && (values[field._id] === null || values[field._id] === undefined)) fail("VALIDATION", `${field.label} is required`);
-      await applyChange(ctx, writer, { action: "create", orgId: object.orgId, objectId: object._id, values, reason: `Starter record from blueprint ${blueprint.name}` });
+      await applyChange(ctx, writer, { action: "create", orgId: object.orgId, objectId: object._id, values, reason: `Starter record from blueprint ${blueprint.name}` }, author ? { approvedBy: person } : {});
     });
     records += 1;
   }
@@ -146,11 +151,12 @@ export async function trialOf(run: () => Promise<unknown>): Promise<Applied> {
   throw new Error("A blueprint trial must roll back");
 }
 // Refusals a person can act on; anything else (a lost role, a frozen workspace) is thrown as it is.
-export const refusal = (error: unknown) => { const data = (error as { data?: { code?: string; message?: string } })?.data; return data?.code && ["VALIDATION", "NOT_FOUND", "SLOTS_EXHAUSTED"].includes(data.code) ? String(data.message) : null; };
+// A refusal by an agent rule names its step or starter record; a lost role or frozen workspace does not.
+export const refusal = (error: unknown) => { const data = (error as { data?: { code?: string; message?: string } })?.data; return data?.code && (["VALIDATION", "NOT_FOUND", "SLOTS_EXHAUSTED"].includes(data.code) || (data.code === "FORBIDDEN" && /^(Step|Starter record) \d+/.test(data.message ?? ""))) ? String(data.message) : null; };
 
 // One card: changes grouped by object, in plain words.
 type Group = { key: string; title: string; lines: string[] };
-export type Diff = { name: string; description: string; groups: Group[]; records: string | null; impacts: { objectId: Id<"objects">; fieldId?: Id<"fields">; label: string }[] };
+export type Diff = { name: string; description: string; groups: Group[]; records: string | null; starter: { object: string; values: { label: string; value: string }[] }[]; impacts: { objectId: Id<"objects">; fieldId?: Id<"fields">; label: string }[] };
 export async function diffOf(ctx: Ctx, principal: Principal, blueprint: Blueprint): Promise<Diff> {
   const existing = await readableKeys(ctx, principal), news = new Map(blueprint.changes.flatMap((c) => c.kind === "addObject" && c.key ? [[c.key, c] as const] : []));
   const fieldCache = new Map<string, Doc<"fields">[]>();
@@ -190,7 +196,18 @@ export async function diffOf(ctx: Ctx, principal: Principal, blueprint: Blueprin
   const counts = new Map<string, number>();
   for (const record of blueprint.records ?? []) counts.set(record.object, (counts.get(record.object) ?? 0) + 1);
   const records = counts.size ? `${plural(blueprint.records!.length, "starter record")}: ${[...counts].map(([key, n]) => `${n} ${objectLabel(key, n !== 1)}`).join(", ")}` : null;
-  return { name: blueprint.name, description: blueprint.description ?? "", groups, records, impacts };
+  // Every starter record, value by value. Reviewers of a blueprint read everything (authorize, preview).
+  const shown = (value: unknown): string => Array.isArray(value) ? value.map(shown).join(", ") : typeof value === "boolean" ? (value ? "yes" : "no") : value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+  const starter = [];
+  for (const record of blueprint.records ?? []) {
+    const fields = await fieldsByKey(record.object), values = [];
+    for (const [key, value] of Object.entries(record.values)) {
+      const field = fields.find((f) => f.key === key);
+      values.push({ label: field?.label ?? newField(record.object, key)?.label ?? (key === "name" ? "Name" : key), value: shown(value) });
+    }
+    starter.push({ object: objectLabel(record.object), values });
+  }
+  return { name: blueprint.name, description: blueprint.description ?? "", groups, records, starter, impacts };
 }
 export function summaryOf(blueprint: Blueprint) {
   const objects = blueprint.changes.filter((c) => c.kind === "addObject").length, other = blueprint.changes.length - objects;

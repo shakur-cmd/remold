@@ -51,7 +51,6 @@ export async function describe(ctx: Ctx, change: ShapeChange) {
     case "addField": return { summary: `Add field ${change.field.label} (${typeLabel(change.field, targets)}) to ${await label(change.objectId)}`, details: change.field.options || change.field.required || change.field.withTime || change.field.indexed === false ? [fieldDetail(change.field, targets)] : [] };
     case "addView": return { summary: `Add view ${change.view.name} to ${(await ctx.db.get(change.objectId))?.labelPlural ?? "a removed object"}`, details: await viewDetails(ctx, change.view, change.pinned) };
     case "addOptions": return { summary: `Add ${change.options.length === 1 ? "option" : "options"} ${change.options.map((o) => o.label).join(", ")} to ${await label(change.fieldId)} on ${await label(change.objectId)}`, details: [] };
-    case "addView": return { summary: `Add view ${change.view.name} to ${(await ctx.db.get(change.objectId))?.labelPlural ?? "a removed object"}`, details: await viewDetails(ctx, change.view, change.pinned) };
     case "relabel": return change.fieldId
       ? { summary: `Rename field ${await label(change.fieldId)} to ${change.label} on ${await label(change.objectId)}`, details: [] }
       : { summary: `Rename object ${await label(change.objectId)} to ${change.label}${change.labelPlural ? ` (plural ${change.labelPlural})` : ""}`, details: [] };
@@ -107,7 +106,7 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSugg
   let result: { objectId?: Id<"objects">; fieldIds: Id<"fields">[]; viewId?: Id<"views"> }, created: Id<"objects">[] = [];
   // A blueprint is all or nothing: a refusal at any step throws, so Convex discards the steps
   // before it. applyBlueprint then records the failure in a transaction of its own.
-  if (row.change.kind === "blueprint") { created = (await runBlueprint(ctx, principal, row.change.blueprint, { person: principal, records: !!args.withRecords, createdBy: { kind: "agent", id: row.agentId } })).objectIds; result = { fieldIds: [] }; }
+  if (row.change.kind === "blueprint") { created = (await runBlueprint(ctx, principal, row.change.blueprint, { person: principal, records: !!args.withRecords, agent: agent! })).objectIds; result = { fieldIds: [] }; }
   else try { result = await perform(ctx, principal, row.change, { kind: "agent", id: row.agentId }); if (row.change.kind === "addObject" && result.objectId) created = [result.objectId]; }
   catch (error) {
     if (!stale(error)) throw error;
@@ -119,7 +118,7 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), id: v.id("shapeSugg
   await ctx.db.patch(row._id, { status: "applied", ...(objectId ? { result: { objectId, fieldIds, ...(viewId ? { viewId } : {}) } } : {}), resolvedBy: principal.user._id, resolvedAt: Date.now() });
   // The agent asked for these objects to work in them; without read access it could never use them.
   if (created.length && agent!.authorityVersion === 1) {
-    await ctx.db.patch(agent!._id, { readObjectIds: [...(agent!.readObjectIds ?? []), ...created] });
+    await ctx.db.patch(agent!._id, { readObjectIds: [...new Set([...(agent!.readObjectIds ?? []), ...created])] });
     await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "agentReadExtended", targetId: agent!._id, objectIds: created });
   }
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "shapeProposalApplied", targetId: row._id, objectIds: objectId ? [objectId] : row.change.kind === "reorderObjects" ? row.change.objectIds : created });
