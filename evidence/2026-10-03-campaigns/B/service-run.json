@@ -1,0 +1,131 @@
+{
+ "ok": true,
+ "orgId": "qx72vn1esmhydqrf119nwm0z9n8fkfpd",
+ "checks": [
+  {
+   "name": "public page keys",
+   "ok": true,
+   "detail": [
+    "description",
+    "minutes",
+    "name",
+    "open",
+    "paid",
+    "price",
+    "slots"
+   ]
+  },
+  {
+   "name": "open times inside hours in America/New_York (real Convex runtime Intl)",
+   "ok": true,
+   "detail": {
+    "count": 280,
+    "first": "Mon 09:00",
+    "last": "Fri 16:30"
+   }
+  },
+  {
+   "name": "first open time after 12 hours notice",
+   "ok": true
+  },
+  {
+   "name": "three visitors race for one time: one confirmed",
+   "ok": true,
+   "detail": [
+    "confirmed",
+    "taken",
+    "taken"
+   ]
+  },
+  {
+   "name": "paid page holds and redirects to the Payment Link",
+   "ok": true,
+   "detail": {
+    "pay": "https://buy.stripe.com/test_harness?client_reference_id=bddde8d5daddda1ab4e14970c1233538&prefilled_email=ava%40example.com",
+    "status": "held"
+   }
+  },
+  {
+   "name": "webhook before a secret is saved: 503",
+   "ok": true
+  },
+  {
+   "name": "webhook with a wrong key: 400",
+   "ok": true
+  },
+  {
+   "name": "webhook with a stale time: 400",
+   "ok": true
+  },
+  {
+   "name": "signed paid event: 200",
+   "ok": true
+  },
+  {
+   "name": "same event again: 200",
+   "ok": true
+  },
+  {
+   "name": "paid booking confirmed with the event's amount",
+   "ok": true,
+   "detail": [
+    {
+     "attention": null,
+     "email": "ava@example.com",
+     "end": 1791213300000,
+     "held": false,
+     "id": "jh77tz6apfvhnj8zknhygagnjs8fjnzy",
+     "name": "Ava Stone",
+     "note": null,
+     "paid": "$5.00",
+     "personId": "ps7c8w1mbx0hyxf8y22jey2qzn8fjef1",
+     "start": 1791212400000,
+     "status": "confirmed"
+    },
+    {
+     "attention": null,
+     "email": "finn@example.com",
+     "end": 1791216000000,
+     "held": true,
+     "id": "jh7cbm2xs7qvkmmqmk8nddkv6d8fj9mj",
+     "name": "Finn Hale",
+     "note": null,
+     "paid": null,
+     "personId": "ps78a4jcgpv0549rh7jh0s2m798fk9qq",
+     "start": 1791215100000,
+     "status": "held"
+    }
+   ]
+  },
+  {
+   "name": "campaign report counts bookings and revenue",
+   "ok": true,
+   "detail": {
+    "booked": 3,
+    "paid": 1,
+    "revenue": [
+     {
+      "amountMinor": 500,
+      "currency": "usd"
+     }
+    ]
+   }
+  },
+  {
+   "name": "visitor sees no owner notice",
+   "ok": true
+  },
+  {
+   "name": "Payments card never shows the secret",
+   "ok": true
+  }
+ ],
+ "pageErrors": [
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+ ]
+}

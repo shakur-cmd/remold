@@ -267,3 +267,15 @@ POST /api/v1/sends/{sendId}/replied                     marks the send replied; 
 ```
 
 Reads follow the usual scopes: an unreadable campaign is 404, emails the key cannot read are left out, recipients appear only for people the key can read, and the address only when it can read the person's Email field. MCP tools: `remold_campaign_report`, `remold_email_preview`, `remold_mark_replied`.
+
+## Booking pages amendment, 2026-10-03
+
+Booking pages are records of the standard `bookingPage` object (name, description, minutes, hours, timezone, noticeHours, daysAhead, price, paymentLink, campaign, live), drafted with `POST /api/v1/changes` or `/suggestions`. `hours` is `days times` groups split by `;`: days are `mon`..`sun`, a range like `mon-fri` or a list like `mon,wed`; times are `HH:MM-HH:MM` split by `,`. Example: `mon-fri 09:00-12:00, 13:00-17:00; sat 10:00-14:00`. `timezone` is an IANA zone. `paymentLink` must start `https://buy.stripe.com/` or `https://checkout.stripe.com/`. Defaults when empty: 30 minutes, 12 hours notice, 30 days ahead. Agents may create and edit pages and may set `live` to false; only a person sets it to true (403).
+
+The public page is `{REMOLD_APP_URL}/book/{pageId}`. In a campaign email, `{{bookingLink}}` renders the campaign's first booking page and `{{bookingLink:<code or id>}}` a named one, each with `?s=<send token>`; a booking made from it records the send and campaign. Approving an email whose link has no matching page on its campaign fails with 400.
+
+```
+GET /api/v1/bookings?page={idOrRef}&from=&to=   bookings by start (from/to: YYYY-MM-DD or ISO time): id, page, person, name, email, start, end, status (held|confirmed|cancelled), paid, amountMinor, currency, campaign, sendId, attention
+```
+
+Bookings are listed only on pages the key can read; person, name and email are null unless the key can read the person (and that field). The campaign report gains `bookings: { booked, paid, revenue: [{ currency, amountMinor }] }` and `booked`, `paid` per recipient. MCP tool: `remold_bookings`.
