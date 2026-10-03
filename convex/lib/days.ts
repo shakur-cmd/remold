@@ -14,6 +14,7 @@ function wall(ms: number, timeZone: string) {
   const p = Object.fromEntries(format.formatToParts(ms).map((part) => [part.type, Number(part.value)]));
   return Date.UTC(p.year!, p.month! - 1, p.day!, p.hour!, p.minute!, p.second!);
 }
+export const knownZone = (timeZone: string) => { try { new Intl.DateTimeFormat("en-US", { timeZone }); return true; } catch { return false; } };
 // The UTC midnight of the date `ms` falls on in `timeZone`.
 const dayIn = (ms: number, timeZone: string) => Math.floor(wall(ms, timeZone) / DAY) * DAY;
 // The instant `day` starts in `timeZone`: its UTC midnight less the offset the zone had

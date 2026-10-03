@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { requireMember, requireWriter, type Membership } from "./identity";
 import { fail } from "./errors";
 import { canReadObject } from "./authority/reads";
-import { checkView, effective, forReader, viewRange, viewSort, viewSpec, layout, type ViewSpec } from "./lib/views";
+import { archived, checkView, effective, forReader, viewRange, viewSort, viewSpec, layout, type ViewSpec } from "./lib/views";
 import { filter } from "./lib/list";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -32,7 +32,7 @@ export const list = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, 
   for (const view of rows) {
     if (!objects.has(view.objectId)) objects.set(view.objectId, await ctx.db.get(view.objectId));
     const object = objects.get(view.objectId);
-    if (!object || !canReadObject(principal, object)) continue;
+    if (!object || archived(object) || !canReadObject(principal, object)) continue;
     const { spec, blocked, dropped, createdBy } = await forReader(ctx, principal, object, view);
     out.push({ _id: view._id, objectId: view.objectId, ...spec, shared: !view.ownerId, pinned: !!view.pinned, editable: !!view.ownerId || isAdmin(principal), createdBy, blocked, dropped });
   }
@@ -43,10 +43,10 @@ export const list = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, 
 export async function insertView(ctx: MutationCtx, principal: Membership, object: Doc<"objects">, spec: ViewSpec, options: { shared: boolean; pinned?: boolean; createdBy: Doc<"views">["createdBy"] }) {
   if (options.shared && !isAdmin(principal)) fail("FORBIDDEN", "Only an admin can share a view");
   if (options.pinned && !options.shared) fail("VALIDATION", "Only a shared view can be pinned");
-  await checkView(ctx, principal, object, spec);
+  const checked = await checkView(ctx, principal, object, spec);
   const ownerId = options.shared ? undefined : principal.user._id;
   const last = (await ctx.db.query("views").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).collect()).filter((view) => view.ownerId === ownerId).reduce((max, view) => Math.max(max, view.order), -1);
-  return ctx.db.insert("views", { orgId: object.orgId, objectId: object._id, ...spec, name: spec.name.trim(), ...(ownerId ? { ownerId } : {}), ...(options.pinned ? { pinned: true } : {}), order: last + 1, createdBy: options.createdBy, updatedAt: Date.now() });
+  return ctx.db.insert("views", { orgId: object.orgId, objectId: object._id, ...checked, name: checked.name.trim(), ...(ownerId ? { ownerId } : {}), ...(options.pinned ? { pinned: true } : {}), order: last + 1, createdBy: options.createdBy, updatedAt: Date.now() });
 }
 
 export const create = mutation({ args: { orgId: v.id("orgs"), objectId: v.id("objects"), ...viewSpec, shared: v.optional(v.boolean()), pinned: v.optional(v.boolean()) }, handler: async (ctx, { orgId, objectId, shared, pinned, ...spec }) => {
@@ -62,8 +62,8 @@ export const update = mutation({ args: { orgId: v.id("orgs"), viewId: v.id("view
   if (pinned && view.ownerId) fail("VALIDATION", "Only a shared view can be pinned");
   const next: Record<string, unknown> = { ...(await effective(ctx, view)).spec };
   for (const [key, value] of Object.entries(patch)) if (value !== undefined) next[key] = value ?? undefined;
-  await checkView(ctx, principal, object, next as ViewSpec);
-  await ctx.db.patch(view._id, { range: undefined, sort: undefined, groupFieldId: undefined, dateFieldId: undefined, ...next, name: (next.name as string).trim(), ...(pinned === undefined ? {} : { pinned }), updatedAt: Date.now() });
+  const checked = await checkView(ctx, principal, object, next as ViewSpec);
+  await ctx.db.patch(view._id, { range: undefined, sort: undefined, groupFieldId: undefined, dateFieldId: undefined, ...checked, name: checked.name.trim(), ...(pinned === undefined ? {} : { pinned }), updatedAt: Date.now() });
 } });
 
 // Shared views are ordered by admins and personal ones by their owner, one object at a time.

@@ -6,7 +6,7 @@ import { fail } from "../errors";
 import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "../authority/reads";
 import { unrestrictedHuman } from "../authority/inbox";
 import { allocateSlot, kindFor, type SlotKind } from "./slots";
-import { viewSpec } from "./views";
+import { viewSpec } from "./viewSpec";
 
 // The rules for changing a workspace's shape, shared by a person's own Settings
 // mutations and by applying an agent's proposal, so the two cannot drift apart.

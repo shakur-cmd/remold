@@ -18,7 +18,7 @@ import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
 import { option } from "./lib/metadata";
 import { agentRow, proposalFor } from "./shapeSuggestions";
-import { forReader, runView } from "./lib/views";
+import { archived, forReader, runView } from "./lib/views";
 
 const keyHash = v.string();
 const action = v.union(v.literal("create"), v.literal("update"), v.literal("delete"));
@@ -173,12 +173,12 @@ async function viewApi(ctx: any, principal: Principal, object: Doc<"objects">, v
 }
 async function sharedView(ctx: any, principal: Principal, id: string) {
   const viewId = ctx.db.normalizeId("views", id), view = viewId ? await ctx.db.get(viewId) as Doc<"views"> | null : null, object = view ? await ctx.db.get(view.objectId) as Doc<"objects"> | null : null;
-  if (!view || !object || view.orgId !== principal.org._id || view.ownerId || !canReadObject(principal, object)) fail("NOT_FOUND", "View not found");
+  if (!view || !object || view.orgId !== principal.org._id || view.ownerId || archived(object) || !canReadObject(principal, object)) fail("NOT_FOUND", "View not found");
   return { view, object };
 }
 export const views = internalQuery({ args: { keyHash, object: v.optional(v.string()) }, handler: async (ctx, args) => {
   const principal = await requireAgent(ctx, args.keyHash), only = args.object === undefined ? undefined : (await objectFor(ctx, principal.org._id, args.object)).object;
-  const objects = (await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect()).filter((o) => canReadObject(principal, o) && (!only || o._id === only._id)).sort((a, b) => a.order - b.order);
+  const objects = (await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect()).filter((o) => !archived(o) && canReadObject(principal, o) && (!only || o._id === only._id)).sort((a, b) => a.order - b.order);
   if (only && !objects.length) fail("NOT_FOUND", "Object not found");
   const out = [];
   for (const object of objects) for (const view of (await ctx.db.query("views").withIndex("by_object", (q) => q.eq("orgId", principal.org._id).eq("objectId", object._id)).collect()).filter((view) => !view.ownerId).sort((a, b) => a.order - b.order || a._creationTime - b._creationTime)) out.push(await viewApi(ctx, principal, object, view));

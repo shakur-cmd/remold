@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import { integrationTables } from "./integrations/tables";
 import { actor, capability, capabilityScope, recordScope } from "../packages/contracts/authority";
 import { shapeChange } from "./lib/metadata";
-import { viewSpec } from "./lib/views";
+import { viewSpec } from "./lib/viewSpec";
 
 const slot = v.object({ kind: v.union(v.literal("n"), v.literal("s"), v.literal("d"), v.literal("b")), index: v.number() });
 const values = v.record(v.string(), v.any());

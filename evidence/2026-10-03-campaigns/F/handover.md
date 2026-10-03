@@ -107,3 +107,61 @@ None beyond the normal deploy (`pnpm deploy:prod`, by the owner). No env vars, n
 - No group-by picker on the board in the app; a view's group field comes from the view or the first select field.
 - `Date.now()` in the agent run: Convex may serve a cached result for an identical request until data changes, so a relative range read just after midnight could briefly reflect the previous day for an identical repeated request. Not observed; not tested.
 - The app's per-day bounds for fixed dates use the browser zone (the existing `dayRange`). The agent's use `tz`. The same view can therefore show different instants to people in different zones, by design.
+
+## Round 2 (verifier REVISE, iv-F-verdict.md)
+
+Commits: merge of `origin/integ/campaigns` 4bce955 as `72e88c5`, then the round-2 work and this section on top (hash in the commit log). Builder-run SIM; not re-verified.
+
+### 1. Verifier mutants: 12/12 killed
+
+The verifier's script was gone, so I rebuilt its 12 mutants from the verdict's table in `r2-mutants.py`. Result: `r2-mutants.txt`, **12/12 killed**. New tests (these pin behaviour that was already right, so they pass on the old code and fail on the mutants):
+- *is blocked, not widened, for a reader who cannot see its sort, range, board or calendar field*. Covers an agent limited to `name` and a member with amount/stage/closeDate hidden. Views sorted, ranged, board and calendar are `usable: false` or `blocked`, with no field keys or dates in the listing, and a run returns 403. A table view with an unused group field stays usable. Kills M2, M4, M5, M6.
+- *are not listed or run on an object the reader cannot read*: a member with company-only scope and an agent granted only company. Covers `views.list`, update, `/views`, `?object=` (404) and running a view (404). Kills M3.
+- *keeps personal views to their owner…*: now also checks that a member's update and reorder of a shared view are refused. Kills M8.
+- *stays hidden from an admin who cannot read a field it names, and cannot be applied by them*. Kills M9.
+- *refuses columns the saver cannot read, and pins only shared views*, on create and on update. Kills M10 and M11.
+- Two new parity pairs: `2026-02-30` and `March 1` refused with the same message on both paths. Kills M12.
+
+### 2. People's filter values are checked like an agent's
+
+`checkView` now runs each filter value through `resolveValues`, the agent's coercion, and returns the coerced view. `views.create`, `views.update` and the `addView` proposal all store what it returns. The proposal no longer coerces separately, so there is one rule. People now get the same `VALIDATION` messages as agents. The test *checks filter values like the agent path does* covers a bad option, an object value, text in a number field, and an unknown company. An option label is stored as its id and "900" as 900. It failed before the fix (`r2-fail-before.txt`: `expected null to be truthy`).
+
+### 3. Unknown tz refused on every run
+
+`runView` checks the zone first (`knownZone` in `lib/days.ts`), before any day math. The test *refuses an unknown time zone on every run, with or without dates* covers a view with no range and one with a fixed plain-date range: 400 "Unknown time zone" for both, and 200 with `Asia/Tokyo`. It failed before (`[200, undefined]`).
+
+### 4. Merge and archived objects
+
+- Merged 4bce955. There were conflicts in `convex/agentApi.ts`, `ops/authority/inventory.json` and three `packages/mcp/src` files.
+  - `agentApi.ts`: took their `proposeShape` (idempotency replay) and added `...viewInput` to `shapeArgs`.
+  - Inventory: rebuilt as their full list plus my 9 rows. I checked that no base row is missing.
+  - MCP: kept their `idempotencyKey` and `recordEvents` changes and re-applied my tools, schema fields and instructions on top.
+  - After the merge, typecheck was clean and views + shape + authority + MCP tests passed (50, 101 and 9).
+- `remold/shape-lifecycle` was not merged. **The archived check is written defensively and is live.** `archived(object)` in `lib/views.ts` reads `(object as { archived?: boolean }).archived`, so it compiles without the field. `views.list`, `GET /api/v1/views` (and `?object=`) and every run skip or 404 views on an archived object. The pinned menu uses `views.list`, so it follows.
+- The test *leaves views of an archived object out of lists and runs* is `skipIf` the schema has no `objects.archived`, so it starts running by itself after lifecycle merges. I checked it now by temporarily adding `archived` to the schema: it passes, and fails when the `views.list` guard is removed. Then I reverted the schema.
+
+### 5. Schema lines for the release's expand commit
+
+I moved the view validators into **`convex/lib/viewSpec.ts`**, a new 14-line file that depends only on `convex/values`. The expand commit needs that file plus:
+- `convex/schema.ts`:
+  - `import { viewSpec } from "./lib/viewSpec";`
+  - the `views: defineTable({ orgId, objectId, ...viewSpec, ownerId?, pinned?, order, createdBy: { kind: user|agent, id }, updatedAt }).index("by_org", ["orgId"]).index("by_object", ["orgId", "objectId"])` line
+  - `viewId: v.optional(v.id("views"))` inside `shapeSuggestions.result`
+- `convex/lib/metadata.ts`:
+  - `import { viewSpec } from "./viewSpec";`
+  - the `addView` member of `shapeChange`: `v.object({ kind: v.literal("addView"), objectId: v.id("objects"), view: v.object(viewSpec), pinned: v.optional(v.boolean()) })`
+
+With those in the release's schema, the previous functions can run on data this branch writes. The one remaining caveat from round 1 still applies: the old Suggestions page cannot render `addView` rows, so dismiss pending ones before rolling back functions.
+
+### Suites (`r2-suites.txt`; load average 9 to 13 throughout, from other job worktrees)
+
+- `pnpm typecheck`: clean. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: built. MCP: 9/9.
+- `pnpm test` (default): `4 failed | 490 passed | 1 skipped (495)`. The 4 are the same timeout tests as round 1 (gmailSync last contact, posts read budget, two Calendar.drag).
+- `pnpm test --testTimeout=60000 --maxWorkers=2`: `2 failed | 492 passed | 1 skipped`. The 2 are both in Calendar.drag, which sets its own 15 s limit per test, so the flag doesn't raise it.
+- Calendar.drag alone: 3/4 on the first try (one timeout), **4/4** on the second. The verifier saw 417/417 on a quiet machine at round 1.
+- The skipped test is the archived one above.
+
+### Not done
+
+- I didn't put rollback steps in `ops/deploy/README.md`; per the coordinator, the schema-expand commit covers this.
+- Verifier notes N1 to N6 are unchanged: an admin with a hidden field can't rename a view that names it; no cap on views; the blocked view still runs its list query; load-in-render; the misleading "Membership required"; `Date.now()` caching. My round-1 `mutants.txt` was not rerun after the refactor (one anchor moved); round 2's 12/12 replaces it as the mutant record.

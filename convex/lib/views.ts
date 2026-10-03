@@ -1,32 +1,31 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { v, type Infer } from "convex/values";
 import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { canQueryField, canReadField, requireObjectRead, requireQueryField } from "../authority/reads";
-import { filter, pageRecords, type Where } from "./list";
-import { dayBounds, relativeDays, relativeLabels, type Relative } from "./days";
+import { pageRecords, type Where } from "./list";
+import type { ViewSpec } from "./viewSpec";
+export { layout, viewRange, viewSort, viewSpec, type ViewSpec } from "./viewSpec";
+import { dayBounds, knownZone, relativeDays, relativeLabels, type Relative } from "./days";
+import { resolveValues } from "./values";
 
 // A saved view: what a list shows (layout, columns) and which rows (filters, range,
 // sort). It only ever narrows: it runs through the same list path with the reader's
 // own permissions, so a shared view never shows anyone more than they could see.
 type Ctx = QueryCtx | MutationCtx;
-export const layout = v.union(v.literal("table"), v.literal("board"), v.literal("calendar"));
-export const relative = v.union(v.literal("today"), v.literal("next7"), v.literal("thisMonth"), v.literal("overdue"));
-// Fixed dates are calendar days, read in the reader's time zone like relative ones.
-export const viewRange = v.object({ fieldId: v.id("fields"), from: v.optional(v.string()), to: v.optional(v.string()), relative: v.optional(relative) });
-export const viewSort = v.object({ fieldId: v.id("fields"), direction: v.union(v.literal("asc"), v.literal("desc")) });
-export const viewSpec = { name: v.string(), layout, columns: v.array(v.id("fields")), filters: v.array(filter), range: v.optional(viewRange), sort: v.optional(viewSort), groupFieldId: v.optional(v.id("fields")), dateFieldId: v.optional(v.id("fields")) };
-const spec = v.object(viewSpec);
-export type ViewSpec = Infer<typeof spec>;
 export const MAX_VIEW_FILTERS = 3;
 const MAX_COLUMNS = 20;
 const isDay = (day: string | undefined) => day === undefined || (/^\d{4}-\d{2}-\d{2}$/.test(day) && new Date(`${day}T00:00:00Z`).toISOString().startsWith(day));
 
 const fieldsOf = async (ctx: Ctx, object: Doc<"objects">) => new Map((await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).collect()).map((f) => [f._id as string, f]));
 
-// The rules a view must meet when it is saved, by a person or by applying an agent's proposal.
-export async function checkView(ctx: Ctx, principal: Principal, object: Doc<"objects">, view: ViewSpec) {
+// Objects archived by the shape-lifecycle work drop out of view lists and runs. Read
+// defensively so this compiles before that branch adds `archived` to the schema.
+export const archived = (object: Doc<"objects">) => !!(object as { archived?: boolean }).archived;
+
+// The rules a view must meet when it is saved, by a person or by applying an agent's
+// proposal. Returns the view with filter values coerced the way agent input is.
+export async function checkView(ctx: Ctx, principal: Principal, object: Doc<"objects">, view: ViewSpec): Promise<ViewSpec> {
   if (!view.name.trim()) fail("VALIDATION", "Name is required");
   if (view.name.trim().length > 60) fail("VALIDATION", "Name is too long");
   const fields = await fieldsOf(ctx, object);
@@ -37,7 +36,12 @@ export async function checkView(ctx: Ctx, principal: Principal, object: Doc<"obj
   view.columns.forEach(readable);
   if (view.filters.length > MAX_VIEW_FILTERS) fail("VALIDATION", `At most ${MAX_VIEW_FILTERS} filters`);
   if (new Set(view.filters.map((f) => f.fieldId)).size !== view.filters.length) fail("VALIDATION", "One filter per field");
-  for (const f of view.filters) { queryable(f.fieldId); if (f.value === undefined) fail("VALIDATION", "A filter needs a value"); }
+  const filters = [];
+  for (const f of view.filters) {
+    const field = queryable(f.fieldId);
+    if (f.value === undefined) fail("VALIDATION", "A filter needs a value");
+    filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, object, [field], { [field.key]: f.value }))[field._id] ?? null });
+  }
   if (view.range) {
     const { from, to } = view.range;
     if (queryable(view.range.fieldId).type !== "date") fail("VALIDATION", "A range needs a date field");
@@ -49,6 +53,7 @@ export async function checkView(ctx: Ctx, principal: Principal, object: Doc<"obj
   if (view.sort) queryable(view.sort.fieldId);
   if ((view.layout === "board" || view.groupFieldId) && (!view.groupFieldId || queryable(view.groupFieldId).type !== "select")) fail("VALIDATION", "A board view needs a select field to group by");
   if ((view.layout === "calendar" || view.dateFieldId) && (!view.dateFieldId || queryable(view.dateFieldId).type !== "date")) fail("VALIDATION", "A calendar view needs a date field");
+  return { ...view, filters };
 }
 
 // The fields that choose, order or lay out a view's rows. A reader must be able to query every one.
@@ -85,16 +90,17 @@ export async function forReader(ctx: Ctx, principal: Principal, object: Doc<"obj
 
 // One page of a view's rows for this reader. Relative ranges resolve now, in `timeZone`.
 export async function runView(ctx: QueryCtx, principal: Principal, view: Doc<"views">, page: { cursor: string | null; numItems: number }, timeZone = "UTC") {
+  if (!knownZone(timeZone)) fail("VALIDATION", "Unknown time zone");
   const object = await ctx.db.get(view.objectId);
-  if (!object) fail("NOT_FOUND", "View not found");
+  if (!object || archived(object)) fail("NOT_FOUND", "View not found");
   requireObjectRead(principal, object);
   const { spec, fields } = await effective(ctx, view);
   if (!rowFields(spec).every((id) => canQueryField(principal, object, fields.get(id)!))) fail("FORBIDDEN", "This view uses a field you cannot read");
   let range: Where["range"];
   if (spec.range) {
     const r = spec.range;
-    try { const days = r.relative ? relativeDays(r.relative, Date.now(), timeZone) : r; range = { fieldId: r.fieldId, ...dayBounds(fields.get(r.fieldId)!, days.from, days.to, timeZone) }; }
-    catch (error) { if (error instanceof RangeError) fail("VALIDATION", "Unknown time zone"); throw error; }
+    const days = r.relative ? relativeDays(r.relative, Date.now(), timeZone) : r;
+    range = { fieldId: r.fieldId, ...dayBounds(fields.get(r.fieldId)!, days.from, days.to, timeZone) };
   }
   return { object, spec, page: await pageRecords(ctx, view.orgId, view.objectId, page, spec.sort, { filters: spec.filters, range }, principal) };
 }

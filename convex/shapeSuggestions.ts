@@ -6,7 +6,6 @@ import { fail } from "./errors";
 import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "./authority/reads";
 import { checkNewField, checkObject, checkOptions, createField, createObject, fieldFor, requireLabel, requireUnrestricted, type FieldSpec, type Option, type ShapeChange } from "./lib/metadata";
 import { checkView, viewDetails, type ViewSpec } from "./lib/views";
-import { resolveValues } from "./lib/values";
 import { insertView } from "./views";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -108,19 +107,18 @@ export async function proposalFor(ctx: Ctx, principal: AgentMembership, input: P
       return { kind: "addOptions", objectId: object._id, fieldId: field._id, options: added };
     }
     case "addView": {
-      // Fields by key and filter values as an agent writes them, then the same check as a person saving it.
+      // Fields by key, then the same check as a person saving it, which coerces filter values.
       const object = await readableObject(ctx, principal, input.object), field = async (key: string) => (await readableField(ctx, principal, object, key))._id;
       const layout = (["table", "board", "calendar"] as const).find((l) => l === (input.layout ?? "table")); if (!layout) fail("VALIDATION", "Unknown layout; use table, board or calendar");
       const relative = input.range?.relative === undefined ? undefined : (["today", "next7", "thisMonth", "overdue"] as const).find((r) => r === input.range!.relative);
       if (input.range?.relative !== undefined && !relative) fail("VALIDATION", "Unknown relative range; use today, next7, thisMonth or overdue");
       const filters = [];
-      for (const f of input.filters ?? []) { const fieldId = await field(f.field), fields = [(await ctx.db.get(fieldId))!]; filters.push({ fieldId, value: (await resolveValues(ctx, principal, object, fields, { [f.field]: f.value }))[fieldId] ?? null }); }
+      for (const f of input.filters ?? []) filters.push({ fieldId: await field(f.field), value: f.value });
       const view: ViewSpec = { name: input.name ?? "", layout, columns: await Promise.all((input.columns ?? []).map(field)), filters,
         ...(input.range ? { range: { fieldId: await field(input.range.field), ...(input.range.from === undefined ? {} : { from: input.range.from }), ...(input.range.to === undefined ? {} : { to: input.range.to }), ...(relative ? { relative } : {}) } } : {}),
         ...(input.sort ? { sort: { fieldId: await field(input.sort.field), direction: input.sort.direction } } : {}),
         ...(input.groupBy ? { groupFieldId: await field(input.groupBy) } : {}), ...(input.dateField ? { dateFieldId: await field(input.dateField) } : {}) };
-      await checkView(ctx, principal, object, view);
-      return { kind: "addView", objectId: object._id, view, ...(input.pinned ? { pinned: true } : {}) };
+      return { kind: "addView", objectId: object._id, view: await checkView(ctx, principal, object, view), ...(input.pinned ? { pinned: true } : {}) };
     }
     case "relabel": {
       const object = await readableObject(ctx, principal, input.object);

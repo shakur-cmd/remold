@@ -68,6 +68,7 @@ import type * as lib_shape from "../lib/shape.js";
 import type * as lib_slots from "../lib/slots.js";
 import type * as lib_standard from "../lib/standard.js";
 import type * as lib_values from "../lib/values.js";
+import type * as lib_viewSpec from "../lib/viewSpec.js";
 import type * as lib_views from "../lib/views.js";
 import type * as objects from "../objects.js";
 import type * as ops from "../ops.js";
@@ -152,6 +153,7 @@ declare const fullApi: ApiFromModules<{
   "lib/slots": typeof lib_slots;
   "lib/standard": typeof lib_standard;
   "lib/values": typeof lib_values;
+  "lib/viewSpec": typeof lib_viewSpec;
   "lib/views": typeof lib_views;
   objects: typeof objects;
   ops: typeof ops;

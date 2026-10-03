@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { anyApi } from "convex/server";
 import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
+import schema from "./schema";
 
 const views = anyApi.views;
 type F = Awaited<ReturnType<typeof userAndOrg>>;
@@ -109,6 +110,9 @@ describe("saved views", () => {
     const shared = await f.client.mutation(views.create, { ...base, name: "For all", shared: true });
     expect((await sam.client.query(views.list, { orgId: f.orgId })).map((v: any) => [v._id, v.editable])).toEqual([[shared, false]]);
     expect(await errorOf(sam.client.mutation(views.remove, { orgId: f.orgId, viewId: shared }))).toBe("Only an admin can change a shared view");
+    expect(await errorOf(sam.client.mutation(views.update, { orgId: f.orgId, viewId: shared, name: "Sam's now" }))).toBe("Only an admin can change a shared view");
+    expect(await errorOf(sam.client.mutation(views.reorder, { orgId: f.orgId, viewIds: [shared] }))).toBe("Only an admin can change a shared view");
+    expect((await sam.client.query(views.list, { orgId: f.orgId }))[0].name).toBe("For all");
   });
 
   it("can be renamed, reordered, pinned and deleted", async () => {
@@ -150,6 +154,90 @@ describe("saved views", () => {
     await f.client.mutation(views.update, { orgId: f.orgId, viewId, columns: [f.o.closeDate._id] });
     expect((await f.client.query(views.list, { orgId: f.orgId }))[0].dropped).toEqual([]);
   });
+
+  it("is blocked, not widened, for a reader who cannot see its sort, range, board or calendar field", async () => {
+    const f = await pipeline(), o = f.o, objectId = f.opp.object._id;
+    const make = (name: string, spec: Record<string, unknown>) => f.client.mutation(views.create, { orgId: f.orgId, objectId, name, layout: "table", columns: [o.amount._id], filters: [], shared: true, ...spec });
+    const made = {
+      sorted: await make("By amount", { sort: { fieldId: o.amount._id, direction: "desc" } }),
+      ranged: await make("March", { range: { fieldId: o.closeDate._id, from: "2026-03-01", to: "2026-03-31" } }),
+      board: await make("Board", { layout: "board", groupFieldId: o.stage._id }),
+      calendar: await make("Calendar", { layout: "calendar", dateFieldId: o.closeDate._id }),
+      // A table view's group field lays nothing out, so it does not block the view.
+      table: await make("Plain", { groupFieldId: o.stage._id }),
+    };
+    const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: "names only", origin: "external" });
+    await f.client.mutation(api.authority.grants.grant, { orgId: f.orgId, target: agent.agentId, capability: "read", scope: { kind: "records", objectId, records: "all", fields: [o.name._id] }, mode: "direct", delegate: false, expiresAt: Date.now() + 3600_000 });
+    const call = rest(f.t, agent.key), listed = (await call("GET", "/api/v1/views?object=opportunity")).json.views;
+    expect(listed.map((v: any) => [v.name, v.usable, v.columns, v.sort, v.range, v.groupBy, v.dateField])).toEqual([["By amount", false, [], null, null, null, null], ["March", false, [], null, null, null, null], ["Board", false, [], null, null, null, null], ["Calendar", false, [], null, null, null, null], ["Plain", true, [], null, null, null, null]]);
+    expect(JSON.stringify(listed.map(({ name, ...rest }: any) => rest))).not.toMatch(/amount|stage|closeDate|2026-/);
+    for (const id of [made.sorted, made.ranged, made.board, made.calendar]) expect((await call("GET", `/api/v1/views/${id}/records`)).status).toBe(403);
+    expect((await call("GET", `/api/v1/views/${made.table}/records`)).status).toBe(200);
+    const member = await joined(f, "Rae", "member");
+    await f.client.mutation(anyApi["authority/policies"].setMember, { orgId: f.orgId, memberId: member.memberId, hiddenFieldIds: [o.amount._id, o.stage._id, o.closeDate._id] });
+    const seen = await member.client.query(views.list, { orgId: f.orgId });
+    expect(seen.map((v: any) => [v.name, v.blocked, v.columns, "sort" in v || "range" in v || "groupFieldId" in v || "dateFieldId" in v])).toEqual([["By amount", true, [], false], ["March", true, [], false], ["Board", true, [], false], ["Calendar", true, [], false], ["Plain", false, [], false]]);
+  });
+
+  it("are not listed or run on an object the reader cannot read", async () => {
+    const f = await pipeline(), company = await objectFields(f.client, f.orgId, "company");
+    const viewId = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Pinned deals", layout: "table", columns: [], filters: [], shared: true, pinned: true });
+    const member = await joined(f, "Rae", "member");
+    await f.client.mutation(anyApi["authority/policies"].setMember, { orgId: f.orgId, memberId: member.memberId, scopes: [{ objectId: company.object._id, records: "all", fields: "all" }], hiddenFieldIds: [] });
+    expect(await member.client.query(views.list, { orgId: f.orgId })).toEqual([]);
+    expect(await errorOf(member.client.mutation(views.update, { orgId: f.orgId, viewId, name: "Mine" }))).toBe("View not found");
+    const agent = await f.client.action(api.agents.createScoped, { orgId: f.orgId, name: "companies only", origin: "external" });
+    await f.client.mutation(api.authority.grants.grant, { orgId: f.orgId, target: agent.agentId, capability: "read", scope: { kind: "records", objectId: company.object._id, records: "all", fields: [company.fields.name._id] }, mode: "direct", delegate: false, expiresAt: Date.now() + 3600_000 });
+    const call = rest(f.t, agent.key);
+    expect((await call("GET", "/api/v1/views")).json.views).toEqual([]);
+    expect((await call("GET", "/api/v1/views?object=opportunity")).status).toBe(404);
+    expect((await call("GET", `/api/v1/views/${viewId}/records`)).status).toBe(404);
+  });
+
+  it("refuses columns the saver cannot read, and pins only shared views", async () => {
+    const f = await pipeline(), rae = await joined(f, "Rae", "member");
+    await f.client.mutation(anyApi["authority/policies"].setMember, { orgId: f.orgId, memberId: rae.memberId, hiddenFieldIds: [f.o.amount._id] });
+    const base = { orgId: f.orgId, objectId: f.opp.object._id, name: "Mine", layout: "table", filters: [] };
+    expect(await errorOf(rae.client.mutation(views.create, { ...base, columns: [f.o.amount._id] }))).toBe("Field not found");
+    expect(await errorOf(f.client.mutation(views.create, { ...base, columns: [], pinned: true }))).toBe("Only a shared view can be pinned");
+    const personal = await f.client.mutation(views.create, { ...base, columns: [] });
+    expect(await errorOf(f.client.mutation(views.update, { orgId: f.orgId, viewId: personal, pinned: true }))).toBe("Only a shared view can be pinned");
+  });
+
+  it("checks filter values like the agent path does", async () => {
+    const f = await pipeline(), o = f.o;
+    const save = (fieldId: string, value: unknown) => errorOf(f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "V", layout: "table", columns: [], filters: [{ fieldId, value }], shared: true }));
+    const propose = async (field: string, value: unknown) => (await f.call("POST", "/api/v1/shape/proposals", { kind: "addView", object: "opportunity", name: "V", filters: [{ field, value }], reason: "r" })).json.error?.message ?? null;
+    for (const [key, value] of [["stage", "nonsense"], ["amount", { a: 1 }], ["amount", "lots"], ["company", "no such company"]] as const) {
+      const person = await save(o[key]._id, value);
+      expect(person).toBeTruthy();
+      expect(person).toBe(await propose(key, value));
+    }
+    // A person's values are stored the way the agent path stores them: an option label becomes its id.
+    await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Labels", layout: "table", columns: [], filters: [{ fieldId: o.stage._id, value: "Proposal" }, { fieldId: o.amount._id, value: "900" }], shared: true });
+    expect((await f.client.query(views.list, { orgId: f.orgId }))[0].filters).toEqual([{ fieldId: o.stage._id, value: "proposal" }, { fieldId: o.amount._id, value: 900 }]);
+  });
+
+  it("refuses an unknown time zone on every run, with or without dates", async () => {
+    const f = await pipeline();
+    const plain = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Plain", layout: "table", columns: [], filters: [], shared: true });
+    const fixed = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Fixed", layout: "table", columns: [], filters: [], range: { fieldId: f.o.closeDate._id, from: "2026-03-01" }, shared: true });
+    for (const id of [plain, fixed]) {
+      const r = await f.call("GET", `/api/v1/views/${id}/records?tz=Nowhere/Land`);
+      expect([r.status, r.json.error?.message]).toEqual([400, "Unknown time zone"]);
+      expect((await f.call("GET", `/api/v1/views/${id}/records?tz=Asia/Tokyo`)).status).toBe(200);
+    }
+  });
+
+  // Archiving objects arrives with the shape-lifecycle branch; this runs once objects can carry `archived`.
+  it.skipIf(!("archived" in (schema.tables.objects.validator as any).fields))("leaves views of an archived object out of lists and runs", async () => {
+    const f = await pipeline();
+    const viewId = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Deals", layout: "table", columns: [], filters: [], shared: true, pinned: true });
+    await f.t.run((ctx: any) => ctx.db.patch(f.opp.object._id, { archived: true }));
+    expect(await f.client.query(views.list, { orgId: f.orgId })).toEqual([]);
+    expect((await f.call("GET", "/api/v1/views")).json.views).toEqual([]);
+    expect((await f.call("GET", `/api/v1/views/${viewId}/records`)).status).toBe(404);
+  });
 });
 
 describe("agents propose views", () => {
@@ -168,11 +256,24 @@ describe("agents propose views", () => {
       [human({ layout: "calendar" }), agent({ layout: "calendar" }), "A calendar view needs a date field"],
       [human({ range: { fieldId: f.o.amount._id, from: "2026-01-01" } }), agent({ range: { field: "amount", from: "2026-01-01" } }), "A range needs a date field"],
       [human({ range: { fieldId: f.o.closeDate._id, from: "2026-02-01", to: "2026-01-01" } }), agent({ range: { field: "closeDate", from: "2026-02-01", to: "2026-01-01" } }), "A range must start before it ends"],
+      [human({ range: { fieldId: f.o.closeDate._id, from: "2026-02-30" } }), agent({ range: { field: "closeDate", from: "2026-02-30" } }), "Range dates must be YYYY-MM-DD"],
+      [human({ range: { fieldId: f.o.closeDate._id, to: "March 1" } }), agent({ range: { field: "closeDate", to: "March 1" } }), "Range dates must be YYYY-MM-DD"],
       [human({ sort: { fieldId: company.fields.notes._id, direction: "asc" } }, company.object._id), agent({ object: "company", sort: { field: "notes", direction: "asc" } }), "Field is not indexed"],
     ];
     for (const [person, proposal, message] of pairs) expect([await person, await proposal]).toEqual([message, message]);
     expect(await f.client.query(views.list, { orgId: f.orgId })).toEqual([]);
     expect(await f.client.query(anyApi.shapeSuggestions.list, { orgId: f.orgId })).toEqual([]);
+  });
+
+  it("stays hidden from an admin who cannot read a field it names, and cannot be applied by them", async () => {
+    const f = await pipeline(), ada = await joined(f, "Ada", "admin");
+    await f.client.mutation(anyApi["authority/policies"].setMember, { orgId: f.orgId, memberId: ada.memberId, hiddenFieldIds: [f.o.amount._id] });
+    const made = await propose(f.call, { name: "Big deals", columns: ["amount"] });
+    expect(made.status).toBe(201);
+    expect(await ada.client.query(anyApi.shapeSuggestions.list, { orgId: f.orgId })).toEqual([]);
+    expect(await errorOf(ada.client.mutation(anyApi.shapeSuggestions.apply, { orgId: f.orgId, id: made.json.proposal.id }))).toBe("Proposal not found");
+    expect((await f.client.query(anyApi.shapeSuggestions.list, { orgId: f.orgId })).map((r: any) => r.summary)).toEqual(["Add view Big deals to Opportunities"]);
+    expect(await f.client.query(views.list, { orgId: f.orgId })).toEqual([]);
   });
 
   it("is applied by an admin from Suggestions and creates the shared view", async () => {
