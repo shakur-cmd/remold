@@ -1,0 +1,60 @@
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > retireField: title, protected standard fields, already retired
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > restoreField: a field that is not retired
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > reorderFields: a list that leaves out or repeats a field
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > reorderObjects: a list that leaves out an object
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > reorderOptions: a missing option, and a field without options
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > archiveObject and unarchiveObject: standard objects, and an object not archived
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > setTitleField: only a text field, and not the current one
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > same rules and messages for a person and an agent > addField unindexed: only a text field can skip the index
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > who may change the shape > a member-role person is refused every lifecycle change
+AssertionError: expected Error: Expected a Convex function exporte… to match object { data: { code: 'FORBIDDEN' } }
+ FAIL  convex/lifecycle.test.ts > who may change the shape > a read-only workspace refuses every lifecycle change
+TypeError: Cannot read properties of undefined (reading 'id')
+ FAIL  convex/lifecycle.test.ts > who may change the shape > a member-role agent cannot propose any lifecycle kind
+AssertionError: expected 400 to be 403 // Object.is equality
+ FAIL  convex/lifecycle.test.ts > retire and restore > a person retires and restores a field; values were kept and come back
+AssertionError: expected undefined to deeply equal [ Array(1) ]
+ FAIL  convex/lifecycle.test.ts > retire and restore > an agent proposes retiring, the person sees the impact, applies, and an agent proposal restores it
+AssertionError: expected 400 to be 201 // Object.is equality
+ FAIL  convex/lifecycle.test.ts > retire and restore > impact counting stops at the first 1,000 records and says so
+Error: Expected a Convex function exported from module "objects" as `impact`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > retire and restore > a relation field's retire impact names the links that stop showing
+Error: Expected a Convex function exported from module "objects" as `impact`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > retire and restore > restore is refused when another field now holds its slot, and an unindexed restore keeps values
+AssertionError: expected { …(2) } to deeply equal { …(2) }
+ FAIL  convex/lifecycle.test.ts > reorder > a person and an agent reorder fields; REST lists the new order
+Error: Expected a Convex function exported from module "fields" as `reorder`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > reorder > retired fields stay out of the list and keep their place after it
+Error: Expected a Convex function exported from module "fields" as `reorder`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > reorder > a person and an agent reorder objects; REST lists the new order
+Error: Expected a Convex function exported from module "objects" as `reorder`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > reorder > a person and an agent reorder select options; REST shows them in order
+Error: Expected a Convex function exported from module "fields" as `reorderOptions`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > archive and unarchive > archived objects leave agents' lists and search, records and links stay, unarchive brings them back
+TypeError: Cannot read properties of undefined (reading 'summary')
+ FAIL  convex/lifecycle.test.ts > archive and unarchive > an archived object keeps its place out of the object order list until it comes back
+Error: Expected a Convex function exported from module "objects" as `setArchived`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > title field and unindexed text > a person and an agent change the title field; record titles follow
+Error: Expected a Convex function exported from module "objects" as `setTitleField`, but there is no such export.
+ FAIL  convex/lifecycle.test.ts > title field and unindexed text > an unindexed text field takes no slot; REST reports slots left per kind
+AssertionError: expected undefined to deeply equal { text: 5, number: 7, date: 4, …(1) }
+Error: Expected a Convex function exported from module "fields" as `reorder`, but there is no such export.
+Error: Expected a Convex function exported from module "fields" as `reorderOptions`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `reorder`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `setArchived`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `setTitleField`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `impact`, but there is no such export.
+Error: Expected a Convex function exported from module "fields" as `restore`, but there is no such export.
+Error: Expected a Convex function exported from module "fields" as `reorder`, but there is no such export.
+Error: Expected a Convex function exported from module "fields" as `reorderOptions`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `reorder`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `setArchived`, but there is no such export.
+Error: Expected a Convex function exported from module "objects" as `setTitleField`, but there is no such export.

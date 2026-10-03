@@ -1,39 +1,72 @@
  ✓ convex/campaigns.test.ts > campaign email > runs the sender every minute 2ms
- ✓ convex/campaigns.test.ts > campaign email > new workspaces get Email steps, and the migration adds them to an older workspace once 72ms
- ✓ convex/campaigns.test.ts > campaign email > the fields the sender needs cannot be retired 17ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends an approved email once to each person on an active campaign, with footer, unsubscribe headers and a timeline entry 26ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the Resend API key is set 12ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless sender domains are allowed 11ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the from address is on an allowed domain 10ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the webhook secret is set, so bounces and complaints come back 10ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the org has a postal address 10ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the org has a daily limit 9ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the deployment has a daily cap 9ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the deployment cap is a whole number 9ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the campaign is active 9ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the email is approved 8ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless a person approved it on the campaign page 9ms
- ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless its send time has come 10ms
- ✓ convex/campaigns.test.ts > campaign email > sending > skips people without a usable or allowed address and sends to a shared address once 13ms
- ✓ convex/campaigns.test.ts > campaign email > sending > never goes past the org's daily limit, even with ticks running at once, and goes on the next UTC day 23ms
- ✓ convex/campaigns.test.ts > campaign email > sending > never goes past the deployment's daily cap across workspaces 32ms
- ✓ convex/campaigns.test.ts > campaign email > sending > stops the rest of a batch when the campaign is paused mid-batch, and finishes after it restarts 18ms
- ✓ convex/campaigns.test.ts > campaign email > sending > an email stopped mid-batch sends nothing more 12ms
- ✓ convex/campaigns.test.ts > campaign email > sending > a claim whose sender crashed is retried with the same idempotency key after its lease, so nobody gets it twice 14ms
+ ✓ convex/campaigns.test.ts > campaign email > new workspaces get Email steps, and the migration adds them to an older workspace once 80ms
+ ✓ convex/campaigns.test.ts > campaign email > the fields the sender needs cannot be retired 18ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends an approved email once to each person on an active campaign, with footer, unsubscribe headers and a timeline entry 27ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the Resend API key is set 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless sender domains are allowed 12ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the from address is on an allowed domain 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the webhook secret is set, so bounces and complaints come back 11ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the org has a postal address 12ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the org has a daily limit 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the deployment has a daily cap 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the deployment cap is a whole number 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the campaign is active 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless the email is approved 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless a person approved it on the campaign page 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > sends nothing unless its send time has come 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > skips people without a usable or allowed address and sends to a shared address once 15ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > never goes past the org's daily limit, even with ticks running at once, and goes on the next UTC day 24ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > never goes past the deployment's daily cap across workspaces 34ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > stops the rest of a batch when the campaign is paused mid-batch, and finishes after it restarts 20ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > an email stopped mid-batch sends nothing more 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > a claim whose sender crashed is retried with the same idempotency key after its lease, so nobody gets it twice 15ms
  ✓ convex/campaigns.test.ts > campaign email > sending > retries rate limits and server errors up to three attempts, and fails at once on a refusal 15ms
- ✓ convex/campaigns.test.ts > campaign email > sending > a follow-up for people who did not open goes after its wait, never to anyone who replied, unsubscribed or wrote back 87ms
- ✓ convex/campaigns.test.ts > campaign email > sending > a follow-up waits for the email before it, and is not sent while that one is still going out 18ms
- ✓ convex/campaigns.test.ts > campaign email > tracking webhook > refuses a missing secret, a bad or foreign signature and a stale timestamp, writing nothing, and counts a replayed event once 12ms
- ✓ convex/campaigns.test.ts > campaign email > tracking webhook > records delivery and clicks, with a timeline entry on the first click only 11ms
- ✓ convex/campaigns.test.ts > campaign email > tracking webhook > a permanent bounce and a complaint suppress the address; a temporary bounce does not 16ms
- ✓ convex/campaigns.test.ts > campaign email > replies and unsubscribes > the unsubscribe link asks first; only the button unsubscribes, once, and an unknown link looks the same 11ms
- ✓ convex/campaigns.test.ts > campaign email > replies and unsubscribes > a reply to the inbound address marks the send replied, keeps the reply as a note and forwards it to the org 13ms
- ✓ convex/campaigns.test.ts > campaign email > replies and unsubscribes > without an inbound domain, replies go to the org's reply-to address 10ms
- ✓ convex/campaigns.test.ts > campaign email > approval > checks subject, body, merge tags, campaign and the email it follows on every approval path 17ms
- ✓ convex/campaigns.test.ts > campaign email > approval > an agent drafts emails and may stop one, but cannot approve, start a campaign or touch an approved email 44ms
- ✓ convex/campaigns.test.ts > campaign email > agents > the report shows each email's numbers and gate problems, and recipients only as far as the key may read 21ms
- ✓ convex/campaigns.test.ts > campaign email > agents > previews an email for one person with who would get it and who is left out 12ms
- ✓ convex/campaigns.test.ts > campaign email > agents > an agent that can read the campaign marks a recipient replied, which keeps follow-ups from them 18ms
- ✓ convex/campaigns.test.ts > campaign email > settings > only admins read and change them, and the checklist names what is missing without showing secrets 12ms
- ✓ convex/campaigns.test.ts > campaign email > one-off email for other features > sends one email through the same gates and daily limits 8ms
-      Tests  38 passed (38)
+ ✓ convex/campaigns.test.ts > campaign email > sending > a follow-up for people who did not open goes after its wait, never to anyone who replied, unsubscribed or wrote back 88ms
+ ✓ convex/campaigns.test.ts > campaign email > sending > a follow-up waits for the email before it, and is not sent while that one is still going out 21ms
+ ✓ convex/campaigns.test.ts > campaign email > tracking webhook > refuses a missing secret, a bad or foreign signature and a stale timestamp, writing nothing, and counts a replayed event once 14ms
+ ✓ convex/campaigns.test.ts > campaign email > tracking webhook > records delivery and clicks, with a timeline entry on the first click only 12ms
+ ✓ convex/campaigns.test.ts > campaign email > tracking webhook > a permanent bounce and a complaint suppress the address; a temporary bounce does not 18ms
+ ✓ convex/campaigns.test.ts > campaign email > replies and unsubscribes > the unsubscribe link asks first; only the button unsubscribes, once, and an unknown link looks the same 12ms
+ ✓ convex/campaigns.test.ts > campaign email > replies and unsubscribes > a reply to the inbound address marks the send replied, keeps the reply as a note and forwards it to the org 14ms
+ ✓ convex/campaigns.test.ts > campaign email > replies and unsubscribes > without an inbound domain, replies go to the org's reply-to address 14ms
+ ✓ convex/campaigns.test.ts > campaign email > approval > checks subject, body, merge tags, campaign and the email it follows on every approval path 26ms
+ ✓ convex/campaigns.test.ts > campaign email > approval > an agent drafts emails and may stop one, but cannot approve, start a campaign or touch an approved email 45ms
+ ✓ convex/campaigns.test.ts > campaign email > agents > the report shows each email's numbers and gate problems, and recipients only as far as the key may read 23ms
+ ✓ convex/campaigns.test.ts > campaign email > agents > previews an email for one person with who would get it and who is left out 13ms
+ ✓ convex/campaigns.test.ts > campaign email > agents > an agent that can read the campaign marks a recipient replied, which keeps follow-ups from them 19ms
+ ✓ convex/campaigns.test.ts > campaign email > settings > only admins read and change them, and the checklist names what is missing without showing secrets 14ms
+ ✓ convex/campaigns.test.ts > campaign email > one-off email for other features > sends one email through the same gates and daily limits 12ms
+ ✓ convex/campaigns.test.ts > campaign email > an approval covers exactly what the admin saw > people linked after approval get nothing until an admin approves again, whoever linked them 22ms
+ ✓ convex/campaigns.test.ts > campaign email > an approval covers exactly what the admin saw > approval is refused if the email, its settings or its people changed after the preview 18ms
+ ✓ convex/campaigns.test.ts > campaign email > an approval covers exactly what the admin saw > any change to what goes out after approval sends it back to draft with its queue cleared, and says why 23ms
+ ✓ convex/campaigns.test.ts > campaign email > an approval covers exactly what the admin saw > a plain member cannot approve through the status field, and the refused change leaves nothing behind 10ms
+ ✓ convex/campaigns.test.ts > campaign email > an approval covers exactly what the admin saw > a CSV row the email rules refuse writes no record, event or approval 15ms
+ ✓ convex/campaigns.test.ts > campaign email > an approval covers exactly what the admin saw > the campaign page shows an email approved through the status field as waiting for confirmation, and confirming sends it 20ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a read-only workspace sends nothing 9ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > an earlier unsubscribe, bounce or complaint on any send leaves the address out of every campaign, even without a consent row 38ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a reply leaves a person out of that campaign's later emails only, not other campaigns 16ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a late finish from a crashed attempt changes nothing 10ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a send still unknown after 23 hours is failed as outcome unknown and never retried 11ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > when Resend's answer is lost the send keeps its daily count, so the next person waits, and the retry sends nothing new 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a send whose answer was lost and then sat paused for 23 hours is failed as outcome unknown, not retried 12ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a confirmation withdrawn mid-batch stops the rest 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a webhook about a send whose answer was lost settles it as sent 12ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > a retry after a definite refusal is composed again, so it says what is true now, under a new key 13ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > blocked emails cannot starve an eligible one behind them 361ms
+ ✓ convex/campaigns.test.ts > campaign email > sending, round 2 > one tick stays small with 3,000 people on a campaign: it reads and claims one batch 2188ms
+ ✓ convex/campaigns.test.ts > campaign email > replies, round 2 > a reply is counted once per Resend email, at most three are forwarded per send, and forwards use the daily limit 22ms
+ ✓ convex/campaigns.test.ts > campaign email > replies, round 2 > a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it 14ms
+ ✓ convex/campaigns.test.ts > campaign email > replies, round 2 > a reply to a send that never went out is ignored 12ms
+ ✓ convex/campaigns.test.ts > campaign email > previews show only what the caller may read > hides the email subject and anything rendered from it 12ms
+ ✓ convex/campaigns.test.ts > campaign email > previews show only what the caller may read > hides the email body and anything rendered from it 11ms
+ ✓ convex/campaigns.test.ts > campaign email > previews show only what the caller may read > hides the person name and anything rendered from it 12ms
+ ✓ convex/campaigns.test.ts > campaign email > previews show only what the caller may read > hides the person company and anything rendered from it 11ms
+ ✓ convex/campaigns.test.ts > campaign email > previews show only what the caller may read > hides the company name and anything rendered from it 11ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > a row requeued after a refusal is composed again from what was last approved, under a new key 16ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > stop, edit, approve again: a row tried before the stop goes out with the new words 15ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > an uncertain retry keeps both its bytes and its key 13ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > a send whose answer was lost is not sent again after the email is edited and approved again 13ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > a send whose answer was lost is not sent again after the email is stopped then edited and approved again 13ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > a sent email never shows as changed since approval 12ms
+ ✓ convex/campaigns.test.ts > campaign email > round 3 > a forward whose action died is uncertain: a later definite failure keeps its count 12ms
+      Tests  71 passed (71)

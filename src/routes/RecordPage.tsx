@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Board } from "@/components/Board";
+import { AutomationPanel } from "@/components/AutomationPanel";
 import { CampaignEmails } from "@/components/CampaignEmails";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
@@ -135,6 +136,7 @@ function Record({ orgId, recordId, admin }: { orgId: Id<"orgs">; recordId: Id<"r
 
         <div className="grid gap-5 lg:hidden">{act}</div>
 
+        {object.key === "automation" && object.isStandard && <AutomationPanel orgId={orgId} recordId={recordId} />}
         {emails && <CampaignEmails orgId={orgId} recordId={recordId} admin={admin} status={statusField && { field: statusField, value: record.values[statusField._id] }} />}
         {deals && <FunnelDeals orgId={orgId} recordId={recordId} entry={deals} />}
 

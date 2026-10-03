@@ -1,0 +1,28 @@
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > today is the local date, which differs from the UTC date just after UTC midnight 37ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > next 7 days runs from today through six days later, across a month end 1ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > this month is its first through last day, leap February included 1ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > overdue is everything before today, with no start 1ms
+ ✓ convex/lib/days.test.ts > relative ranges name the caller's own calendar days > refuses a time zone it does not know 2ms
+ ✓ convex/lib/days.test.ts > day bounds > a plain date field compares whole dates 0ms
+ ✓ convex/lib/days.test.ts > day bounds > a with-time field gets a 23-hour day when clocks spring forward 1ms
+ ✓ convex/lib/days.test.ts > day bounds > a with-time field gets a 25-hour day when clocks fall back 1ms
+ ✓ convex/lib/days.test.ts > day bounds > a day whose midnight is skipped starts when the clocks jump, east or west of UTC 1ms
+ ✓ convex/lib/days.test.ts > day bounds > an open end stays open 1ms
+ ✓ convex/views.test.ts > saved views > returns exactly what the same ad-hoc filters, range and sort return 1039ms
+ ✓ convex/views.test.ts > saved views > resolves a relative range when it is read, in the caller's time zone, across UTC midnight and a DST change 94ms
+ ✓ convex/views.test.ts > saved views > run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields 89ms
+ ✓ convex/views.test.ts > saved views > keeps personal views to their owner; only admins share 74ms
+ ✓ convex/views.test.ts > saved views > can be renamed, reordered, pinned and deleted 59ms
+ ✓ convex/views.test.ts > saved views > cannot be saved or changed while the workspace is read only, but can be deleted 41ms
+ ✓ convex/views.test.ts > saved views > keeps working when a field it uses is retired, with that column, filter and sort dropped and flagged 69ms
+ ✓ convex/views.test.ts > saved views > is blocked, not widened, for a reader who cannot see its sort, range, board or calendar field 81ms
+ ✓ convex/views.test.ts > saved views > are not listed or run on an object the reader cannot read 56ms
+ ✓ convex/views.test.ts > saved views > refuses columns the saver cannot read, and pins only shared views 44ms
+ ✓ convex/views.test.ts > saved views > checks filter values like the agent path does 120ms
+ ✓ convex/views.test.ts > saved views > refuses an unknown time zone on every run, with or without dates 59ms
+ ↓ convex/views.test.ts > saved views > leaves views of an archived object out of lists and runs
+ ✓ convex/views.test.ts > agents propose views > are refused by the same rules as a person saving the view 100ms
+ ✓ convex/views.test.ts > agents propose views > stays hidden from an admin who cannot read a field it names, and cannot be applied by them 55ms
+ ✓ convex/views.test.ts > agents propose views > is applied by an admin from Suggestions and creates the shared view 75ms
+ Test Files  2 passed (2)
+      Tests  25 passed | 1 skipped (26)

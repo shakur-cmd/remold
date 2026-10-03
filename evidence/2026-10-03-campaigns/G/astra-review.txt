@@ -1,0 +1,18 @@
+Found five issues, including a restricted-data leak.
+
+1. **[P1] Changing the title field can expose the previous field’s value.** [convex/lib/lifecycle.ts:101](/home/old-mac-pro/work/jobs/G-lifecycle/convex/lib/lifecycle.ts:101)  
+   `titleFieldId` changes immediately, but cached record titles update asynchronously. If an agent cannot read the old title field but can read the new one, `visibleTitle()` authorizes against the new field and returns the old cached value. Search also trusts that stale title. **Fix:** derive displayed titles from the authorized current field, and version or suppress stale search projections until rebuilding finishes.
+
+2. **[P2] Impact previews disclose inaccessible objects and fields.** [convex/lib/lifecycle.ts:148](/home/old-mac-pro/work/jobs/G-lifecycle/convex/lib/lifecycle.ts:148)  
+   An admin restricted to Venue can request its archive impact and receive names of hidden objects and fields linking to Venue. Authorization checks only Venue; `impactOf()` scans the entire workspace without a principal. The retirement preview similarly exposes a relation target’s label. **Fix:** pass the principal into `impactOf()` and filter all related metadata through object/field read checks.
+
+3. **[P2] Changing Email’s title makes Subject retireable, breaking campaign sending.** [convex/lib/lifecycle.ts:19](/home/old-mac-pro/work/jobs/G-lifecycle/convex/lib/lifecycle.ts:19)  
+   Set Email’s title to Body or a custom text field, then retire Subject. Both operations succeed because `email.subject` is absent from `relied`. Email approval then fails, and `campaign.stateOf()` returns `null`, preventing sending. Previously, the title-field prohibition protected Subject. **Fix:** explicitly protect `email.subject` independently of the selected title field.
+
+4. **[P2] Impact calculations can make the entire Suggestions query fail.** [convex/shapeSuggestions.ts:179](/home/old-mac-pro/work/jobs/G-lifecycle/convex/shapeSuggestions.ts:179)  
+   The list processes up to 200 proposals, each potentially reading 1,001 records plus workspace metadata. For example, 33 archive proposals against distinct populated objects exceed Convex’s 32,000-document transaction limit. A single preview can also exceed the 16 MiB read limit with large text values. **Fix:** load impacts individually on demand and enforce a byte budget or use maintained aggregates. [Convex limits](https://docs.convex.dev/production/state/limits)
+
+5. **[P2] Retitling can fail permanently on valid large records.** [convex/lib/lifecycle.ts:121](/home/old-mac-pro/work/jobs/G-lifecycle/convex/lib/lifecycle.ts:121)  
+   Pagination limits record count to 200 but does not bound bytes. Two hundred records containing 100 KiB of notes exceed the 16 MiB read limit. The title-field change has already committed; the failed worker schedules no continuation, leaving stale titles indefinitely. **Fix:** use byte-bounded pagination with write headroom and persist resumable rebuild progress. [Convex limits](https://docs.convex.dev/production/state/limits)
+
+No files were edited. The lifecycle test suite failed before collecting tests because its temporary SSR directory could not be created; these findings are from code inspection.

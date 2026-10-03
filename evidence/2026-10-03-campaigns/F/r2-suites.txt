@@ -1,0 +1,40 @@
+## pnpm test (default)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/gmailSync.test.ts > last contact > is the newest past activity about each person, and skips activities the reader cannot see
+ FAIL  convex/posts.test.ts > posts > read budget > pages past a full day: 1,000 published posts before the one still to go out, and 1,001 posts in the calendar
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+ Test Files  3 failed | 53 passed (56)
+      Tests  4 failed | 490 passed | 1 skipped (495)
+## pnpm typecheck
+exit 0
+## pnpm test:authority
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+## pnpm verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+## pnpm build
+✓ built in 3.79s
+## packages/mcp
+      Tests  9 passed (9)
+ 10:23:48 up 1 day, 21:44,  8 users,  load average: 10.45, 12.74, 10.88
+## pnpm test --testTimeout=60000 --maxWorkers=2
+   × follows a page that is not done and shows the records of the next one, without resubscribing 16736ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 19100ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+ Test Files  1 failed | 55 passed (56)
+      Tests  2 failed | 492 passed | 1 skipped (495)
+ 10:26:14 up 1 day, 21:46,  8 users,  load average: 10.41, 12.12, 10.94
+## src/components/Calendar.drag.test.tsx alone (its tests set their own 15 s limit)
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 15158ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+## Calendar.drag alone, second try
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+ 10:27:33 up 1 day, 21:48,  8 users,  load average: 9.45, 11.60, 10.87

@@ -7,6 +7,7 @@ import { requireMember, requireWriter, type AgentMembership, type Membership, ty
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { joined } from "./lib/values";
+import { staleFields } from "./lib/conflicts";
 import { validGrants } from "./authority/grants";
 import { canReadField, canReadRecord, listedRecordIds, paginateIndex, scopes, visibleTitle } from "./authority/reads";
 import { unrestrictedHuman } from "./authority/inbox";
@@ -16,7 +17,6 @@ import { unrestrictedHuman } from "./authority/inbox";
 const CHUNK = 25;
 const status = v.union(v.literal("pending"), v.literal("applying"), v.literal("stopped"), v.literal("done"), v.literal("dismissed"));
 const itemStatus = v.union(v.literal("queued"), v.literal("applied"), v.literal("conflicted"), v.literal("failed"));
-const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const paused = (agent: Doc<"agents"> | null, batch: Doc<"batches">) => !agent || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active") || (agent.authorityEpoch ?? 0) !== batch.authorityEpoch;
 const progressOf = (batch: Doc<"batches">) => ({ done: batch.applied + batch.conflicted + batch.failed, applied: batch.applied, conflicted: batch.conflicted, failed: batch.failed });
 const fieldsOf = (ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">) => ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
@@ -110,24 +110,13 @@ async function actorsFor(ctx: MutationCtx, batch: Doc<"batches">): Promise<Actor
   return { agent, approver: { user, member, org, actor: { kind: "user", id: user._id } } };
 }
 
-// A lookup or links value that differs only by records since deleted was cleared by reference
-// cleanup (often by an earlier item of the same batch), not edited by someone.
-async function cleared(ctx: MutationCtx, field: Doc<"fields"> | undefined, before: unknown, now: unknown) {
-  if (field?.type === "lookup") return (now === undefined || now === null) && typeof before === "string" && !await ctx.db.get(before as Id<"records">);
-  if (field?.type !== "links" || !Array.isArray(before)) return false;
-  const kept = []; for (const id of before as Id<"records">[]) if (await ctx.db.get(id)) kept.push(id);
-  return same(kept.length ? kept : undefined, Array.isArray(now) && !now.length ? undefined : now);
-}
-
 // Skips an item whose record changed in any field it touches (any field, for a delete)
 // since review. Link deltas never conflict: they apply to the links as they are now.
 async function applyItem(ctx: MutationCtx, batch: Doc<"batches">, actors: Exclude<Actors, { stop: string }>, item: Doc<"batchItems">) {
   const record = item.recordId ? await ctx.db.get(item.recordId) : null;
   const conflicted = async (conflicts: { fieldId: string; expected: unknown; actual: unknown }[]) => { await ctx.db.patch(item._id, { status: "conflicted", conflicts }); return "conflicted" as const; };
   if (item.action !== "create" && (!record || record.orgId !== batch.orgId)) return conflicted([{ fieldId: "*", expected: item.before, actual: null }]);
-  const keys = item.action === "delete" ? [...new Set([...Object.keys(item.before), ...Object.keys(record!.values)])] : item.action === "update" ? Object.keys(item.values) : [];
-  const fields = keys.length ? await fieldsOf(ctx, batch.orgId, item.objectId) : [], conflicts = [];
-  for (const id of keys) if (!same(record!.values[id], item.before[id]) && !(item.action === "delete" && await cleared(ctx, fields.find((f) => f._id === id), item.before[id], record!.values[id]))) conflicts.push({ fieldId: id, expected: item.before[id] ?? null, actual: record!.values[id] ?? null });
+  const conflicts = item.action === "create" ? [] : await staleFields(ctx, item.action, record!, item.before, Object.keys(item.values));
   if (conflicts.length) return conflicted(conflicts);
   const values: Record<string, unknown> = { ...item.values };
   for (const [id, delta] of Object.entries(item.links ?? {})) values[id] = joined(record?.values[id], delta);

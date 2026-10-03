@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const mutants = [
-  ['no conflict check', 'convex/batches.ts', 'const keys = item.action === "delete"', 'const keys: string[] = []; const _keys = item.action === "delete"'],
+  ['no conflict check', 'convex/lib/conflicts.ts', '  for (const id of keys) if (', '  for (const id of [] as string[]) if ('],
   ['link delta replaces links', 'convex/batches.ts', 'values[id] = joined(record?.values[id], delta);', 'values[id] = delta.add;'],
   ['suggestion link delta replaces links', 'convex/suggestions.ts', 'values[id] = joined(record?.values[id], delta);', 'values[id] = delta.add;'],
   ['step re-reads applied items', 'convex/batches.ts', 'q.eq("batchId", batch._id).eq("status", "queued")).take(', 'q.eq("batchId", batch._id)).take('],
@@ -26,6 +26,8 @@ const mutants = [
   ['duplicate records allowed', 'convex/agentApi.ts', 'if (seen.has(recordId)) fail(', 'if (false) fail('],
   ['any agent reads a batch', 'convex/agentApi.ts', ' || batch.agentId !== principal.agent._id) fail("NOT_FOUND", "Batch not found");', ') fail("NOT_FOUND", "Batch not found");'],
   ['apply while counting', 'convex/batches.ts', '  if (batch.counting) fail("CONFLICT"', '  if (false) fail("CONFLICT"'],
+  ['round 2: archived create accepted at submit', 'convex/agentApi.ts', '      if (input.action === "create") requireLive(object);', ''],
+  ['round 2: suggestions keep their own stale rule', 'convex/suggestions.ts', 'const conflicts = await staleFields(ctx, suggestion.change.action, record!, suggestion.before, Object.keys(suggestion.change.values));', 'const conflicts = (Object.keys(suggestion.before).length ? [] : []) as any[];'],
   ['no size limit', 'convex/agentApi.ts', 'export const MAX_BATCH = 1000;', 'export const MAX_BATCH = 100000;'],
   // Each reverts one fix from the independent review (Astra findings 1-7).
   ['review 1: person writes alone, cascades skip agent limits', 'convex/batches.ts', 'applyChange(ctx, actors.agent, change, actors.approver ? { approvedBy: actors.approver, actor: actors.approver.actor } : {})', 'applyChange(ctx, actors.approver ?? actors.agent, change, {})'],
@@ -33,7 +35,7 @@ const mutants = [
   ['review 3: field seen on some records counts', 'convex/batches.ts', 'if (field && (!object || !everywhere(principal, object, field))) return false;', 'if (field && (!object || !canReadField(principal, object, field))) return false;'],
   ['review 4: conflicts unmasked', 'convex/batches.ts', 'byId.has(c.fieldId) && everywhere(principal, object, byId.get(c.fieldId)!) ? [c] : []', '[c]'],
   ['review 5: raw title in summary', 'convex/agentApi.ts', 'title = "{record}";', 'title = first.record?.title || "a record";'],
-  ['review 6: own cleanup counts as a conflict', 'convex/batches.ts', ' && !(item.action === "delete" && await cleared(ctx, fields.find((f) => f._id === id), item.before[id], record!.values[id]))', ''],
+  ['review 6: own cleanup counts as a conflict', 'convex/lib/conflicts.ts', ' && !(action === "delete" && await cleared(ctx, fields.find((f) => f._id === id), before[id], record.values[id]))', ''],
   ['review 7: agent told the impact', 'convex/agentApi.ts', 'reason: batch.reason, total: batch.total, counts: batch.counts, progress: progressOf(batch),', 'reason: batch.reason, total: batch.total, counts: batch.counts, impact: batch.impact, progress: progressOf(batch),'],
 ];
 const results = [];

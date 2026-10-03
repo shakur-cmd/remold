@@ -451,3 +451,79 @@ describe("MCP batches", () => {
     expect((await client.batchStatus({ id: proposed.batch.id, cursor: page.nextCursor })).items.map((item: any) => item.index)).toEqual([2]);
   });
 });
+
+describe("batches and the rest of the workspace", () => {
+  it("refuses a batch creating records on an archived object, naming the item", async () => {
+    const w = await workspace(), venueId = await w.client.mutation(api.objects.create, { orgId: w.orgId, key: "venue", label: "Venue", labelPlural: "Venues" });
+    const agent = await agentFor(w.client, w.orgId, { name: "Claude", grants: [{ action: "create", objectKey: "venue" }, { action: "create", objectKey: "person" }] });
+    await w.client.mutation(api.objects.setArchived, { orgId: w.orgId, objectId: venueId, archived: true });
+    for (const direct of [false, true]) {
+      const response = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "x", ...(direct ? { direct } : {}), changes: [{ action: "create", object: "person", values: { name: "Ok" } }, { action: "create", object: "venue", values: { name: "Nope" } }] });
+      expect(response.status).toBe(400);
+      expect(response.json.error.items).toEqual([{ index: 1, code: "VALIDATION", message: "Unarchive Venues to add records" }]);
+    }
+    expect(await w.tables()).toEqual({ batches: [], items: [] });
+  });
+
+  it("refuses a batch in which an agent approves an email, proposed or direct", async () => {
+    const w = await workspace(), email = await objectFields(w.client, w.orgId, "email");
+    const agent = await agentFor(w.client, w.orgId, { name: "Claude", grants: [{ action: "update", objectKey: "email" }] });
+    const spring = await w.create(w.campaign, { name: "Spring" }), draft = await w.create(email, { subject: "Hello", body: "Hi there", campaign: spring, status: "draft" });
+    for (const direct of [false, true]) {
+      const response = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "ship it", ...(direct ? { direct } : {}), changes: [{ action: "update", record: draft, values: { status: "approved" } }] });
+      expect(response.status).toBe(403);
+      expect(response.json.error.items).toEqual([{ index: 0, code: "FORBIDDEN", message: "Only a person can approve an email" }]);
+    }
+    expect((await w.get(draft)).values[email.fields.status._id]).toBe("draft");
+  });
+
+  it("adding people to an active campaign in a batch never adds them to an approved email's recipients", async () => {
+    Object.assign(process.env, { RESEND_API_KEY: "re_test_key", REMOLD_SENDER_DOMAINS: "mail.example.com", REMOLD_CAMPAIGN_DAILY_CAP: "100", CONVEX_SITE_URL: "https://site.example.com" });
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("no network in tests"); }));
+    try {
+      const w = await workspace(), email = await objectFields(w.client, w.orgId, "email"), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+      const [ava, ben, cy, dee] = await Promise.all(["Ava", "Ben", "Cy", "Dee"].map((name) => w.create(w.person, { name, email: `${name.toLowerCase()}@people.test` })));
+      const spring = await w.create(w.campaign, { name: "Spring", status: "active", channel: "email", people: [ava, ben] });
+      await w.client.mutation(api.campaigns.saveSettings, { orgId: w.orgId, fromName: "A Co", fromAddress: "hi@mail.example.com", postalAddress: "1 Main St, Springfield", dailyLimit: 50 });
+      const first = await w.create(email, { subject: "Hi {{firstName|there}}", body: "Five minutes?", campaign: spring, status: "draft" });
+      const { version } = await w.client.query(api.campaigns.preview, { orgId: w.orgId, emailId: first });
+      await w.client.mutation(api.campaigns.approve, { orgId: w.orgId, emailId: first, confirmed: true, version: version ?? "" });
+      const recipients = async () => ((await w.t.run((ctx: any) => ctx.db.query("emailSends").collect())) as any[]).filter((s: any) => s.emailRecordId === first).map((s: any) => s.personRecordId).sort();
+      const before = await recipients();
+      expect(before).toEqual([ava, ben].sort());
+      const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "webinar", changes: [{ action: "update", record: spring, links: { people: { add: [cy, dee] } } }] });
+      await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+      expect((await w.get(spring)).values[w.campaign.fields.people._id]).toEqual([ava, ben, cy, dee]);
+      expect(await recipients()).toEqual(before);
+      expect((await w.get(first)).values[email.fields.status._id]).toBe("approved");
+    } finally { vi.unstubAllGlobals(); for (const key of ["RESEND_API_KEY", "REMOLD_SENDER_DOMAINS", "REMOLD_CAMPAIGN_DAILY_CAP", "CONVEX_SITE_URL"]) delete process.env[key]; }
+  });
+
+  it("uses one stale-change rule for suggestions and batches: a cleared reference is not an edit, a real edit is", async () => {
+    const w = await workspace(), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+    const acme = await w.create(w.company, { name: "Acme" }), ada = await w.create(w.person, { name: "Ada", company: acme }), ben = await w.create(w.person, { name: "Ben" });
+    const propose = async (record: string) => (await rest(w.t, agent.key)("POST", "/api/v1/suggestions", { action: "delete", record, reason: "dupe" })).json.suggestion.id;
+    const [forAda, forBen] = [await propose(ada), await propose(ben)];
+    await w.client.mutation(api.records.remove, { orgId: w.orgId, recordId: acme });
+    await w.client.mutation(api.records.update, { orgId: w.orgId, recordId: ben, values: { [w.person.fields.title._id]: "CEO" } });
+    expect(await w.client.mutation(api.suggestions.apply, { orgId: w.orgId, suggestionId: forAda })).toMatchObject({ status: "applied" });
+    expect(await w.client.mutation(api.suggestions.apply, { orgId: w.orgId, suggestionId: forBen })).toMatchObject({ status: "conflicted" });
+  });
+
+  it("fires an automation once per batch item, each run at depth 1", async () => {
+    process.env.REMOLD_AUTOMATION_DAILY_CAP = "100";
+    try {
+      const w = await workspace(), automation = await objectFields(w.client, w.orgId, "automation"), agent = await agentFor(w.client, w.orgId, { name: "Claude" });
+      const rule = await w.create(automation, { name: "Qualified to inbox", when: "fieldChanged", object: "opportunity", field: "stage", equals: "qualified", actions: JSON.stringify([{ type: "inbox", text: "Call {{record.name}}" }]) });
+      await w.client.mutation(api.automations.setOn, { orgId: w.orgId, recordId: rule, on: true });
+      const ids = await deals(w, 3);
+      const posted = await rest(w.t, agent.key)("POST", "/api/v1/batches", { reason: "q", changes: stageAll(ids, "qualified") });
+      await w.client.mutation(api.batches.apply, { orgId: w.orgId, batchId: posted.json.batch.id }); await run(w.t);
+      const runs: any[] = await w.t.run((ctx: any) => ctx.db.query("automationRuns").collect());
+      expect(runs.map((r: any) => r.triggerRecordId).sort()).toEqual([...ids].sort());
+      expect(runs.every((r: any) => r.depth === 1 && r.status === "done")).toBe(true);
+      const inbox: any[] = await w.t.run((ctx: any) => ctx.db.query("agentInbox").collect());
+      expect(inbox.map((i: any) => i.text).sort()).toEqual(["Call Deal 0", "Call Deal 1", "Call Deal 2"]);
+    } finally { delete process.env.REMOLD_AUTOMATION_DAILY_CAP; }
+  });
+});

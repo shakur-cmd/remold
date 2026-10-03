@@ -65,4 +65,27 @@ describe("RemoldClient", () => {
     expect(await requests[1]?.json()).toEqual({ reason: "webinar", changes, direct: true });
     expect(requests[1]?.headers.get("idempotency-key")).toBe("run-7");
   });
+  it("lists saved views and runs one, passing the time zone", async () => {
+    const urls: string[] = [];
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { urls.push(String(input)); return Response.json({}); } });
+    await client.views({ object: "opportunity" });
+    await client.viewRecords({ id: "view/1", tz: "America/New_York", cursor: "c", limit: 10 });
+    expect(urls).toEqual(["https://remold.convex.site/api/v1/views?object=opportunity", "https://remold.convex.site/api/v1/views/view%2F1/records?tz=America%2FNew_York&cursor=c&limit=10"]);
+  });
+  it("sends stable write keys as headers, excluding them from JSON", async () => {
+   const requests: Request[] = [];
+   const client = new RemoldClient({ url: "http://local", key: "test", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({ id: "original" }); } });
+   for (const write of [client.change.bind(client), client.propose.bind(client), client.inboxAdd.bind(client), client.proposeShape.bind(client)]) {
+     expect(await write({ reason: "test", idempotencyKey: "stable" })).toEqual({ id: "original" });
+     expect(await write({ reason: "test", idempotencyKey: "stable" })).toEqual({ id: "original" });
+   }
+   for (const request of requests) { expect(request.headers.get("Idempotency-Key")).toBe("stable"); expect(await request.json()).toEqual({ reason: "test" }); }
+ });
+ it("pages record events with encoded ids and cursors", async () => {
+   let request: Request | undefined;
+   const client = new RemoldClient({ url: "http://local", key: "test", fetch: async (input, init) => { request = new Request(input, init); return Response.json({ events: [], nextCursor: "next" }); } });
+   expect(await client.recordEvents({ idOrRef: "record/one", cursor: "range:1:2", limit: 3 })).toEqual({ events: [], nextCursor: "next" });
+   expect(request?.url).toBe("http://local/api/v1/records/record%2Fone/events?cursor=range%3A1%3A2&limit=3");
+ });
+
 });

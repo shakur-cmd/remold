@@ -1,0 +1,17 @@
+     × is the newest past activity about each person, and skips activities the reader cannot see 9454ms
+   × limits writes per key without starving reads or other agents 5090ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 16311ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 19758ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  3 failed | 49 passed (52)
+      Tests  4 failed | 389 passed (393)
+$ tsc -b && tsc --noEmit -p convex
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.20s

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { Component, useState, type ReactNode } from "react";
 import { Link, useOutletContext } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -160,6 +160,11 @@ function ShapeCard({ orgId, row }: { orgId: Id<"orgs">; row: ShapeRow }) {
           </ul>
         )}
       </div>
+      {row.preview && (
+        <ImpactBoundary>
+          <Impact orgId={orgId} preview={row.preview} />
+        </ImpactBoundary>
+      )}
       <p className="text-muted-foreground">“{row.reason}”</p>
       {row.error && <p className="text-xs text-destructive">{row.error}</p>}
       {row.paused && <p className="text-xs text-muted-foreground">This agent's access changed since it asked. Dismiss it, or make the change yourself in Settings.</p>}
@@ -178,4 +183,29 @@ function ShapeCard({ orgId, row }: { orgId: Id<"orgs">; row: ShapeRow }) {
       )}
     </div>
   );
+}
+
+function Impact({ orgId, preview }: { orgId: Id<"orgs">; preview: NonNullable<ShapeRow["preview"]> }) {
+  const impact = useQuery(api.objects.impact, { orgId, ...preview });
+  if (!impact?.length) return null;
+  return (
+    <div className="grid gap-0.5 rounded-md border bg-card px-2.5 py-2 text-[13px]">
+      <span className="text-xs font-medium">What this touches</span>
+      {impact.map((line) => (
+        <span key={line} className="text-muted-foreground">{line}</span>
+      ))}
+    </div>
+  );
+}
+
+// A preview that fails stays inside its own card, so every other proposal still shows.
+class ImpactBoundary extends Component<{ children: ReactNode }, { error: unknown }> {
+  state = { error: null as unknown };
+  static getDerivedStateFromError(error: unknown) {
+    return { error };
+  }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return <p className="text-xs text-destructive">Could not count what this touches: {errorMessage(this.state.error)}</p>;
+  }
 }

@@ -5,16 +5,18 @@ export class RemoldError extends Error {
 type Fetch = typeof fetch;
 export class RemoldClient {
   constructor(private readonly options: { url: string; key: string; fetch?: Fetch }) {}
-  private async request(method: "GET" | "POST", path: string, body?: unknown, headers: Record<string, string> = {}) {
-    const response = await (this.options.fetch ?? fetch)(`${this.options.url.replace(/\/$/, "")}/api/v1${path}`, { method, headers: { authorization: `Bearer ${this.options.key}`, ...(body === undefined ? {} : { "content-type": "application/json" }), ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  private async request(method: "GET" | "POST", path: string, body?: unknown) {
+    const { idempotencyKey, ...payload } = (body ?? {}) as Record<string, unknown>;
+    const response = await (this.options.fetch ?? fetch)(`${this.options.url.replace(/\/$/, "")}/api/v1${path}`, { method, headers: { authorization: `Bearer ${this.options.key}`, ...(typeof idempotencyKey === "string" ? { "Idempotency-Key": idempotencyKey } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(payload) }) });
     const json = await response.json();
     if (!response.ok) throw new RemoldError(json.error?.message ?? "Remold request failed", json.error?.code ?? "INTERNAL");
     return json;
   }
   me() { return this.request("GET", "/me"); }
-  objects() { return this.request("GET", "/objects"); }
+  objects(args: { includeArchived?: boolean } = {}) { return this.request("GET", args.includeArchived ? "/objects?include=archived" : "/objects"); }
   listRecords(args: Record<string, unknown>) { return this.request("GET", `/records?${params(args)}`); }
   getRecord(idOrRef: string) { return this.request("GET", `/records/${encodeURIComponent(idOrRef)}`); }
+  recordEvents(args: { idOrRef: string; cursor?: string; limit?: number }) { const { idOrRef, ...query } = args; return this.request("GET", `/records/${encodeURIComponent(idOrRef)}/events?${params(query)}`); }
   search(args: Record<string, unknown>) { return this.request("GET", `/search?${params(args)}`); }
   related(args: { idOrRef: string; field: string }) { return this.request("GET", `/records/${encodeURIComponent(args.idOrRef)}/related?${params({ field: args.field })}`); }
   today() { return this.request("GET", "/today"); }
@@ -27,12 +29,16 @@ export class RemoldClient {
   shapeProposals(args: Record<string, unknown> = {}) { return this.request("GET", `/shape/proposals?${params(args)}`); }
   proposeBatch(args: Record<string, unknown>) { return this.request("POST", "/batches", args); }
   // A retry with the same key replays the first answer, and picks the batch up again if it stopped.
-  applyBatch(args: Record<string, unknown> & { idempotencyKey?: string }) { const { idempotencyKey, ...body } = args; return this.request("POST", "/batches", { ...body, direct: true }, idempotencyKey ? { "idempotency-key": idempotencyKey } : {}); }
+  applyBatch(args: Record<string, unknown> & { idempotencyKey?: string }) { return this.request("POST", "/batches", { ...args, direct: true }); }
   batchStatus(args: { id: string; cursor?: string; limit?: number }) { const query = params({ cursor: args.cursor, limit: args.limit }); return this.request("GET", `/batches/${encodeURIComponent(args.id)}${query ? `?${query}` : ""}`); }
-  inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
+  views(args: { object?: string } = {}) { const query = params(args); return this.request("GET", `/views${query ? `?${query}` : ""}`); }
+  viewRecords(args: { id: string; tz?: string; cursor?: string; limit?: number }) { const { id, ...rest } = args; const query = params(rest); return this.request("GET", `/views/${encodeURIComponent(id)}/records${query ? `?${query}` : ""}`); }
+  inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string; idempotencyKey?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
   campaignReport(idOrRef: string) { return this.request("GET", `/campaigns/${encodeURIComponent(idOrRef)}/report`); }
   emailPreview(args: { idOrRef: string; person?: string }) { const query = params({ person: args.person }); return this.request("GET", `/emails/${encodeURIComponent(args.idOrRef)}/preview${query ? `?${query}` : ""}`); }
-  markReplied(sendId: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, {}); }
+  automationRuns(idOrRef: string) { return this.request("GET", `/automations/${encodeURIComponent(idOrRef)}/runs`); }
+  automationTest(args: { idOrRef: string; record?: string }) { return this.request("POST", `/automations/${encodeURIComponent(args.idOrRef)}/test`, args.record === undefined ? {} : { record: args.record }); }
+  markReplied(sendId: string, idempotencyKey?: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, { idempotencyKey }); }
 }
 
 // filter (the original single form), filters and range become REST's filter[field]=value and range[field]=from..to.

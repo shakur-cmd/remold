@@ -122,3 +122,56 @@ None beyond a normal `pnpm deploy:prod`. Agents use their existing keys. Direct 
 - The readonly service sweep (`service-sweeps.mjs`) has the new entries but was not run (see above).
 - Screenshots use a local identity stub, not WorkOS sign-in.
 - Not independently verified by the coordinator's verifier.
+
+## Round 2 (merge)
+
+Merged `origin/integ/campaigns` at df22614 into `remold/bulk` (merge commit: `git log -1 remold/bulk`). Integ's new work since aa68030 includes: campaign email fix rounds, defect fixes (F3 stale deletes, row-atomic CSV, MCP idempotency keys), agent object access, saved views, automations and shape lifecycle.
+
+### Conflicts and how each was resolved
+
+- `ops/authority/inventory.json`: took integ's file and reran `inventory-rows.mjs`, which only adds missing rows. Result: 303 unique rows; every row from both sides is present (checked by id).
+- `convex/agentApi.ts`, imports: both sides' imports kept. `targetOf` keeps integ's `objectForId(..., retained)` for deletes and my per-batch cache, now keyed by object and action. `propose` takes integ's version (Idempotency-Key replay, `requireLive` on create) plus `links`; integ's `remember(...)` is kept, and the link delta goes to `suggestionLinks`. The end of the file keeps my batch functions and integ's saved-view functions.
+- `convex/events.ts`: integ's automation actor naming, plus `batchId` and `proposedByName`.
+- `convex/_generated/api.d.ts`: both `automations` and `batches`.
+- `ops/authority/service-sweeps.mjs`: both `batches` and integ's `view` in the sweep workspace.
+- MCP `client.ts`: integ's `request()` reads `idempotencyKey` from the body and sends it as the `Idempotency-Key` header. `proposeBatch` and `applyBatch` now use that same path; my separate headers argument is gone. `index.ts`: integ's template-literal instructions with my batch sentence; `changeShape` has integ's `idempotencyKey` and my `links`; `batchShape` takes `idempotencyKey` too. `client.test.ts`: both sides' tests.
+- `src/routes/Suggestions.test.tsx` (integ's) mocks `useQuery` and returned `undefined` for unknown queries, so the page waited on `batches:list` forever. The mock now returns `[]` for `batches:list`.
+
+### Making batches respect the new rules
+
+- **Archived objects.** The batch submit now calls `requireLive` on every create item, so the batch is refused with that item's index ("Unarchive Venues to add records"). This applies to both proposals and direct batches. Previously it was accepted at submit and only failed at apply. `applyChange` (integ) still refuses at apply as well.
+- **Status rules for email, post, booking and automation.** Each item goes through `agentGuard` at submit and through `applyChange` at apply. Since the merge, `applyChange` also runs `emailRules` before writing, plus `automationRules` and the gated statuses. Nothing batch-specific was needed: the rules apply per item, and an item refused at apply is recorded as failed.
+- **Stale deletes (F3), one rule.** `convex/lib/conflicts.ts` (new) has `staleFields`. An update conflicts on the fields it writes; a delete conflicts on any field, except a lookup or links value that only lost records deleted since. `suggestions.apply` and the batch engine both call it.
+  - Behavior change for single suggestions: a delete suggestion whose only difference is a reference cleared because the linked record was deleted now applies instead of conflicting. I judged that cleanup isn't an edit by a person. Integ's F3 tests still pass.
+- **Audience snapshot.** An approved email's recipients are fixed as `emailSends` rows at approval (integ). A batch that adds people to an active campaign only changes the campaign's People. The approved email's rows and status are unchanged, and later emails pick the new people up at their own approval.
+- **Automations.** Each batch item is one `applyChange` with one event, so integ's trigger queues one run per item (key `automationId:eventId`). Batch writes are not automation runs, so each run starts at depth 1 and the chain-depth limit applies as usual.
+
+### Tests added (round 2)
+
+In `convex/batches.test.ts`, under "batches and the rest of the workspace":
+
+- refuses a batch creating records on an archived object, naming the item (proposal and direct). Fail before: `expected 201 to be 400` (`round2-fail-before.txt`).
+- refuses a batch in which an agent approves an email, proposed or direct (403, item 0, "Only a person can approve an email").
+- adding people to an active campaign in a batch never adds them to an approved email's recipients (fetch stubbed to throw, nothing is sent).
+- fires an automation once per batch item, each run at depth 1 (3 items give 3 runs and 3 inbox items).
+- uses one stale-change rule for suggestions and batches. With integ's inline rule in `suggestions.apply` it fails (`applied` expected, `conflicted` got); it passes with the shared rule.
+
+The email, audience and automation tests passed as soon as they were written. They pin behavior the merge already provides through `applyChange`; they did not drive a change.
+
+Mutants: 2 new (archived create accepted at submit; suggestions keep their own stale rule), both caught. Two older mutants were repointed to `convex/lib/conflicts.ts` and rerun after the merge, both caught. Total 31/31 (`mutants.txt`).
+
+### Suites after the merge (`round2-after.txt`)
+
+| Suite | Result |
+|---|---|
+| `pnpm test` | **604/604** with `--testTimeout=60000 --maxWorkers=2`. At default parallelism, 602/604: `gmailSync` "newest past activity" (5s limit) and Calendar "keeps every post" (15s limit) time out. Both pass alone (9/9). These are integ's timing-bound tests on an 8-core machine shared with other jobs. |
+| `pnpm typecheck` | clean |
+| `pnpm test:authority` | 101/101 |
+| `pnpm verify:release` | 37/37 |
+| `pnpm build` | ok |
+| MCP tests | 10/10 |
+| `pnpm --dir packages/mcp build` | ok (tsc clean) |
+
+### Not redone in round 2
+
+The SERVICE runs (screenshots, rollback, scale) were not repeated after the merge. The rollback target is now df22614 rather than aa68030; the batch tables are still additive, and no existing table changed in this round. During the merge I briefly lost the merge parent: a temporary "wip" commit was reset. I restored `MERGE_HEAD` to df22614 before committing, so the final commit is a real two-parent merge.

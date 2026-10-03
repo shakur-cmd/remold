@@ -16,7 +16,10 @@ async function describe(ctx: QueryCtx, principal: Principal, event: Doc<"events"
   // A batch a person applied names them as actor; the agent that proposed it is credited here.
   const item = await ctx.db.query("batchItems").withIndex("by_event", (q) => q.eq("eventId", event._id)).unique(), batch = item && await ctx.db.get(item.batchId), proposer = batch?.mode === "proposal" ? await ctx.db.get(batch.agentId) : null;
   const masked = await projectEvent(ctx, principal, event);
-  return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? event.actor.id : null), appliedByName: appliedBy?.name ?? null, batchId: item?.batchId ?? null, proposedByName: proposer?.name ?? null } : null;
+  // An automation record acts under its own name when the viewer may read it; engines name themselves.
+  const ruleId = event.actor.kind === "automation" ? ctx.db.normalizeId("records", event.actor.id) : null, rule = ruleId ? await ctx.db.get(ruleId) : null, ruleObject = rule ? await ctx.db.get(rule.objectId) : null;
+  const automationName = ruleId ? (rule && ruleObject && canReadRecord(principal, ruleObject, rule) ? `Automation: ${rule.title}` : "Automation") : event.actor.id;
+  return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? automationName : null), appliedByName: appliedBy?.name ?? null, batchId: item?.batchId ?? null, proposedByName: proposer?.name ?? null } : null;
 }
 // An unreadable record gets the same answer as a deleted one.
 async function readableRecord(ctx: QueryCtx, principal: Principal, orgId: Id<"orgs">, recordId: Id<"records">) {

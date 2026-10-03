@@ -1,0 +1,20 @@
+Round 2: merge of origin/integ/campaigns df22614 into remold/bulk
+== pnpm test (default parallelism): 602/604; 2 timing tests time out (gmailSync 'newest past activity', Calendar 'keeps every post'); both pass alone (9/9)
+== pnpm test --testTimeout=60000 --maxWorkers=2
+ Test Files  60 passed (60)
+      Tests  604 passed (604)
+== pnpm typecheck: clean
+== pnpm test:authority
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+== pnpm verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+== pnpm build
+✓ built in 1.16s
+== MCP
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+== pnpm --dir packages/mcp build
+ok (tsc clean)
