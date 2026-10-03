@@ -252,3 +252,21 @@ Level: unit. Not independently re-verified.
 
 - Rollback: round 3 has no schema change, and the round 2 rollback stands.
 - Screenshots: the page is unchanged.
+
+## Round 4 (after Fable's round 3 PASS, small items before merge)
+
+- **S6:** the dry run now checks that the caller can read the named record before it checks the record's object. An unreadable record of any object, and a record that does not exist, all get `404 Record not found`. Only a caller who can read the record learns that it is of the wrong object (400). This is probe P9.
+- **S7:** `pause` re-reads the state row and does nothing if it is already off. A tick that meets several due records for a stale enabler now pauses once, with one inbox item and one event. This is probe P11.
+- **V5:** probe P10 was adopted as a test. Lookup titles and date arithmetic from fields or objects the caller cannot read stay masked in the dry run.
+- Fail before (`round4-fail-before.txt`): with the three new tests on the round 3 code, the result is `2 failed | 25 passed (27)`. The P9 and P11 tests fail. The P10 test passes there, because the masking it covers was already in place; mutant V5, which renders titles as the enabler, turns it red. After: `27 passed (27)`.
+- Mutants: **46/46 caught** (`mutants-round4.txt`). That includes R15 (S6 order), R16 (S7) and V5. D1 was retargeted at the new read check.
+- Suites (`after-round4.txt`):
+
+| Suite | Result |
+|---|---|
+| `pnpm test` | 55 files, **499/499** |
+| `pnpm typecheck` | **clean** |
+| `pnpm test:authority` | **101/101** |
+| `pnpm verify:release` | **37/37** |
+| `pnpm build` | **ok** |
+| `pnpm --dir packages/mcp test` | **8/8** |

@@ -273,8 +273,11 @@ export async function dryRun(ctx: Ctx, caller: Principal, record: Doc<"records">
     const watched = await itemByKey(ctx, record.orgId, d.object);
     if (!watched) fail("VALIDATION", "Choose the object it watches first");
     const which = `${/^[aeiou]/i.test(watched.object.label) ? "an" : "a"} ${watched.object.label}`;
-    if (!triggerRecord || triggerRecord.objectId !== watched.object._id) fail("VALIDATION", `Test it with ${which} record`);
-    requireRecordRead(caller, watched.object, triggerRecord);
+    if (!triggerRecord) fail("VALIDATION", `Test it with ${which} record`);
+    // Read first: a record the caller cannot read gets the same 404 whatever its object.
+    const object = await ctx.db.get(triggerRecord.objectId);
+    if (!object || !canReadRecord(caller, object, triggerRecord)) fail("NOT_FOUND", "Record not found");
+    if (triggerRecord.objectId !== watched.object._id) fail("VALIDATION", `Test it with ${which} record`);
     requireRecordRead(principal, watched.object, triggerRecord);
     trigger = { record: triggerRecord, item: watched };
   }

@@ -47,11 +47,15 @@ const mutants = [
   ['R9 any automation actor counts as the sender (S1)', 'convex/lib/emailRules.ts', 'engine = actor.kind === "automation" && actor.id === "Campaign email";', 'engine = actor.kind === "automation";', C],
   ['R10 withdrawal loses the automation chain (S2)', 'convex/lib/applyChange.ts', '{ clearingReference: true, actor: { kind: "automation", id: "Campaign email" }, automation: options.automation });', '{ clearingReference: true, actor: { kind: "automation", id: "Campaign email" } });', C],
   // Round 3
-  ['D1 dry run skips the caller read of the record (B2)', A, '    requireRecordRead(caller, watched.object, triggerRecord);\n', ''],
+  ['D1 dry run skips the caller read of the record (B2)', A, 'if (!object || !canReadRecord(caller, object, triggerRecord)) fail', 'if (!object) fail'],
   ['R11 dry run templates show the enabler view of a field hidden from the caller (B2)', A, '  if (field && env.viewer && !canReadField(env.viewer, item.object, field, record._id)) return { value: undefined, hidden: true };\n', ''],
   ['R12 dry run step values shown with the enabler reads (B2)', A, 'const looker = viewer ?? principal,', 'const looker = principal,'],
   ['R13 a stale enabler still queues runs (S5)', L, 'if (!member || (member.authorityEpoch ?? 0) !== state.epoch) {', 'if (false) {'],
   ['R14 a refused run keeps its trigger record (S5)', A, ' await ctx.db.patch(runId, { triggerRecordId: undefined, eventId: undefined });', ''],
+  // Round 4
+  ['R15 object mismatch answered before the caller read (S6)', A, 'if (!triggerRecord) fail("VALIDATION", `Test it with ${which} record`);', 'if (!triggerRecord || triggerRecord.objectId !== watched.object._id) fail("VALIDATION", `Test it with ${which} record`);'],
+  ['R16 a stale tick pauses once per record (S7)', L, '  if (!(await ctx.db.get(state._id))?.on) return;\n', ''],
+  ['V5 lookup titles rendered as the enabler', A, 'await refOf(ctx, env.viewer ?? env.principal, value)', 'await refOf(ctx, env.principal, value)'],
 ];
 let caught = 0;
 for (const [label, file, from, to, test = T] of mutants) {

@@ -484,6 +484,58 @@ describe("automations", () => {
     expect(JSON.stringify(await w.client.query(api.automations.view, { orgId: w.orgId, recordId: other }))).not.toContain(late);
   });
 
+  it("the dry run answers a record the caller cannot read the same way as one that does not exist, whatever its object", async () => {
+    const w = await world();
+    // The verifier's probe P9.
+    const id = await w.automation({ name: "New deal", when: "recordCreated", object: "opportunity", actions: [{ type: "inbox", text: "x" }] });
+    const company = await w.create("company", { name: "Acme Plumbing" });
+    const opp = await w.create("opportunity", { name: "Acme", stage: "proposal" });
+    const narrow = await agentFor(w.client, w.orgId, { name: "narrow" });
+    await w.client.mutation(api.agents.setReadAccess, { orgId: w.orgId, agentId: narrow.agentId, readAllObjects: false, objectIds: [w.o.automation.object._id] });
+    const call = rest(w.t, narrow.key), test = (record: string) => call("POST", `/api/v1/automations/${id}/test`, { record });
+    const answers = [await test(company), await test(opp), await test("nope-nope-nope")];
+    expect(answers.map((a) => [a.status, a.json.error.message])).toEqual([[404, "Record not found"], [404, "Record not found"], [404, "Record not found"]]);
+    // A caller who can read it still learns the record is of the wrong object.
+    const full = await agentFor(w.client, w.orgId, { name: "full" });
+    expect((await rest(w.t, full.key)("POST", `/api/v1/automations/${id}/test`, { record: company })).status).toBe(400);
+  });
+
+  it("the dry run masks lookup titles and date arithmetic from fields and objects the caller cannot read", async () => {
+    const w = await world();
+    // The verifier's probe P10.
+    const id = await w.automation({ name: "Won", when: "fieldChanged", object: "opportunity", field: "stage", equals: "won", actions: [
+      { type: "createRecord", object: "project", values: { name: "For {{record.company}} by {{record.closeDate+1}}", company: "{{record.company}}" } },
+      { type: "createTask", title: "Call {{record.company}}", dueInDays: 1, about: "trigger", values: { project: "{{created.project}}" } },
+    ] });
+    await w.turnOn(id);
+    const company = await w.create("company", { name: "Acme Plumbing" });
+    const opp = await w.create("opportunity", { name: "Acme", stage: "proposal", company, closeDate: Date.UTC(2026, 9, 5) });
+    const agent = await agentFor(w.client, w.orgId, { name: "reader" });
+    await w.client.mutation(api.agents.setReadAccess, { orgId: w.orgId, agentId: agent.agentId, readAllObjects: false, objectIds: [w.o.automation.object._id, w.o.opportunity.object._id, w.o.project.object._id] });
+    await w.client.mutation(api.authority.policies.setAgentMasks, { orgId: w.orgId, agentId: agent.agentId, hiddenFieldIds: [w.o.opportunity.fields.closeDate._id] });
+    const test = await rest(w.t, agent.key)("POST", `/api/v1/automations/${id}/test`, { record: opp });
+    expect(test.status).toBe(200);
+    expect(test.json.steps[0].values.name).toBe("For  by (hidden from you)");
+    expect(JSON.stringify(test.json)).not.toContain("Acme Plumbing");
+    expect(JSON.stringify(test.json)).not.toContain("2026-10-06");
+  });
+
+  it("a stale enabler's date automation pauses once with one inbox item, however many records are due", async () => {
+    const w = await world();
+    const ben = await join(w, "Ben");
+    // The verifier's probe P11.
+    const id = await w.automation({ name: "Due today", when: "dateReached", object: "opportunity", field: "closeDate", offsetDays: 0, actions: [{ type: "inbox", text: "Due {{record.name}}" }] });
+    await w.turnOn(id, ben.client);
+    for (const n of [1, 2, 3]) await w.create("opportunity", { name: `Deal ${n}`, stage: "proposal", closeDate: Date.UTC(2026, 9, 5) });
+    await w.client.mutation(api.orgs.setRole, { orgId: w.orgId, userId: ben.userId, role: "member" });
+    await w.tick();
+    expect(await w.runs(id)).toEqual([]);
+    expect(await w.value("automation", id, "status")).toBe("paused");
+    expect((await w.inbox()).filter((i: any) => /paused/.test(i.text))).toHaveLength(1);
+    const events: any[] = await w.t.run((ctx: any) => ctx.db.query("events").withIndex("by_record", (q: any) => q.eq("orgId", w.orgId).eq("recordId", id)).collect());
+    expect(events.filter((e: any) => /paused/.test(e.reason ?? ""))).toHaveLength(1);
+  });
+
   it("a run that fails writes nothing, and three failures in a row pause the automation with an inbox item", async () => {
     const w = await world();
     const id = await w.automation({ name: "Fragile", when: "recordCreated", object: "company", actions: failingActions });

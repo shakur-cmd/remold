@@ -247,6 +247,8 @@ export async function patchValues(ctx: MutationCtx, recordId: Id<"records">, cha
   return record;
 }
 export async function pause(ctx: MutationCtx, automation: Doc<"records">, item: Item, state: Doc<"automationState">, text: string) {
+  // Once per switch-off: a tick that meets several due records with the same stale state pauses once.
+  if (!(await ctx.db.get(state._id))?.on) return;
   const status = fieldOf(item, "status"), record = await ctx.db.get(automation._id);
   if (status && record?.values[status._id] === "on") {
     await patchValues(ctx, automation._id, { [status._id]: "paused" });
