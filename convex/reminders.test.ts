@@ -142,3 +142,28 @@ it("a failed send is retried by a later run the same day, then sends nothing mor
   await t.action(send, {});
   expect([attempts, mails.length]).toEqual([2, 1]);
 });
+
+it("reads 'today' in the workspace's time zone, and sends once per local day", async () => {
+  const t = makeTest(), a = await workspace(t, "A", "a@example.com");
+  await a.client.mutation(api.orgs.setTimeZone, { orgId: a.orgId, timeZone: "America/New_York" });
+  await a.client.mutation(api.reminders.set, { orgId: a.orgId, on: true });
+  // 02:00 UTC on Oct 1 is 22:00 on Sept 30 in New York.
+  vi.setSystemTime(Date.UTC(2026, 9, 1, 2));
+  await a.add("Due in New York today", Date.UTC(2026, 8, 30));
+  await a.add("Due late tonight", Date.UTC(2026, 9, 1, 3, 30));
+  await a.add("Due tomorrow in New York", Date.UTC(2026, 9, 1));
+  await t.action(send, {});
+  const [mail] = mailTo("a@example.com");
+  expect(mail!.text).toContain("Your Remold list for 2026-09-30");
+  expect(mail!.text).toMatch(/Due today\n- Due in New York today \(due 2026-09-30\)[\s\S]*- Due late tonight \(due 2026-09-30 23:30 America\/New_York\)/);
+  expect(mail!.text).not.toContain("Overdue");
+  expect(mail!.text).not.toContain("Due tomorrow in New York");
+  vi.setSystemTime(Date.UTC(2026, 9, 1, 3, 45));
+  await t.action(send, {});
+  expect(mailTo("a@example.com")).toHaveLength(1);
+  // Past local midnight it is a new day, so the next run mails again.
+  vi.setSystemTime(Date.UTC(2026, 9, 1, 11));
+  await t.action(send, {});
+  expect(mailTo("a@example.com")).toHaveLength(2);
+  expect(mailTo("a@example.com")[1]!.text).toContain("Your Remold list for 2026-10-01");
+});

@@ -13,7 +13,7 @@ it("P-F16: REST Today matches the app selection and order with real tasks and qu
   await t.run(ctx => ctx.db.patch(quietId, { updatedAt: now - 20 * DAY }));
   const app = await client.query(api.today.get, { orgId, today });
   const result = (await rest(t, a.key)("GET", "/api/v1/today")).json;
-  expect(Object.keys(result).sort()).toEqual(["quiet", "tasks"]);
+  expect(Object.keys(result).sort()).toEqual(["day", "mine", "quiet", "tasks", "waiting"]);
   expect(result.tasks.map((r: any) => r.title)).toEqual(["Overdue", "Today", "Soon"]);
   expect(result.tasks.map((r: any) => r.id)).toEqual(app.tasks.map((r: any) => r._id));
   expect(result.quiet.map((r: any) => r.id)).toEqual(app.quiet.map((r: any) => r._id));

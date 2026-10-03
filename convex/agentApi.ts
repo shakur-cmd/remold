@@ -8,8 +8,10 @@ import { pageRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
 import { visibleInboxItems, visibleSuggestions } from "./authority/pending";
 import { daily } from "./today";
+import { orgDay } from "./lib/zone";
+import { myQueue } from "./lib/queue";
 import { instantBound, readable, readableMap, resolveValues } from "./lib/values";
-import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex } from "./authority/reads";
+import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex, pageList } from "./authority/reads";
 import { writable } from "./authority/readonly";
 import { canSeeInbox, visibleInbox } from "./authority/inbox";
 import { agentGuard } from "./authority/agentGuards";
@@ -80,7 +82,7 @@ export const listRecords = internalQuery({ args: { keyHash, object: v.string(), 
   const sort = args.sort ? { fieldId: known(args.sort.field)._id, direction: args.sort.direction } : undefined;
   // Query strings arrive as text; the slot holds the field's real type, so each value is coerced like any agent input.
   const filters = [];
-  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }))[field._id] }); }
+  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }, undefined, "filter"))[field._id] }); }
   // A bare date as the end of a range means through the end of that day (UTC).
   const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instantBound(text); if (ms === undefined) fail("VALIDATION", "Range bounds must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
   // On a with-time field, all-day values match by the calendar date written in each bound, so offset bounds name local days.
@@ -94,10 +96,19 @@ export const getRecord = internalQuery({ args: { keyHash, idOrRef: v.string(), c
 export const search = internalQuery({ args: { keyHash, q: v.string(), object: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const item = args.object ? await objectFor(ctx, principal.org._id, args.object) : null, limit = Math.min(args.limit ?? 10, 100); const records = await searchRecords(ctx, principal, args.q.trim(), item?.object._id, limit); return Promise.all(records.map(async (record) => { const recordItem = item && record.objectId === item.object._id ? item : await objectForId(ctx, principal.org._id, record.objectId); return readable(ctx, principal, record, recordItem.object, recordItem.fields); })); } });
 export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, principal.org._id, args.idOrRef), [objectKey, fieldKey] = args.field.split("."); const targetObject = await ctx.db.get(target.objectId); if (!targetObject) fail("NOT_FOUND"); requireRecordRead(principal, targetObject, target); if (!objectKey || !fieldKey) fail("VALIDATION", "Field must be objectKey.fieldKey"); const item = await objectFor(ctx, principal.org._id, objectKey), field = item.fields.find((value) => value.key === fieldKey); requireObjectRead(principal, item.object); if (field) requireQueryField(principal, item.object, field); if (!field || (field.type !== "lookup" && field.type !== "links") || (field.targetObjectId && field.targetObjectId !== target.objectId)) fail("NOT_FOUND", "Field does not relate to record"); if (field.type === "lookup" && !field.slot) fail("UNINDEXED_FIELD", "Field is not indexed"); let rows = (await listedRelated(ctx, principal, item.object, field, target._id))?.slice(0, 100); if (!rows) { if (field.type === "links") { const links = await ctx.db.query("links").withIndex("by_to", (q) => q.eq("orgId", principal.org._id).eq("fieldId", field._id).eq("toRecordId", target._id)).take(100); rows = (await Promise.all(links.map(link => ctx.db.get(link.fromRecordId)))).filter((r): r is Doc<"records"> => r !== null && canReadRecord(principal, item.object, r)); } else { const name = `${field.slot!.kind}${field.slot!.index}`; rows = (await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", principal.org._id).eq("objectId", item.object._id).eq(name, target._id)).take(100) as Doc<"records">[]).filter(r => canReadRecord(principal, item.object, r)); } } return Promise.all(rows.map((record) => readable(ctx, principal, record, item.object, item.fields))); } });
 export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => {
-  const principal = await requireAgent(ctx, args.keyHash), midnight = Math.floor(Date.now() / 86400000) * 86400000;
-  const selected = await daily(ctx, principal, midnight + 8 * 86400000);
+  const principal = await requireAgent(ctx, args.keyHash), { zone, day, start, end } = await orgDay(ctx, principal.org._id, Date.now());
+  const selected = await daily(ctx, principal, zone, day, 8);
   const show = async (records: Doc<"records">[]) => Promise.all(records.map(async record => { const item = await objectForId(ctx, principal.org._id, record.objectId); return readable(ctx, principal, record, item.object, item.fields); }));
-  return { tasks: await show(selected.tasks), quiet: await show(selected.quiet) };
+  const [tasks, quiet, mine, blocked] = await Promise.all([show(selected.tasks), show(selected.quiet), show(selected.mine), show(selected.waiting.map(w => w.record))]);
+  return { day: { zone, date: new Date(day).toISOString().slice(0, 10), startsAt: new Date(start).toISOString(), endsAt: new Date(end + 1).toISOString() }, mine, waiting: blocked.map((task, i) => ({ task, waitingOn: selected.waiting[i]!.on.map(b => ({ id: b._id, title: b.title })) })), tasks, quiet };
+} });
+// The agent's own ready tasks, in working order, a page at a time.
+export const myTasks = internalQuery({ args: { keyHash, cursor: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), item = await objectFor(ctx, principal.org._id, "task").catch(() => null);
+  if (!item) return { records: [], cursor: null };
+  const { mine } = await myQueue(ctx, principal, { object: item.object, byKey: new Map(item.fields.map(f => [f.key, f])) }, principal.agent._id);
+  const page = pageList(mine, { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 25) || 25, 1), 100) });
+  return { records: await Promise.all(page.page.map(record => readable(ctx, principal, record, item.object, item.fields))), cursor: page.isDone ? null : page.continueCursor };
 } });
 
 const isEmpty = (value: unknown) => value === null || value === undefined;

@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
+import { AssigneeName, isAssignee } from "@/components/Assignee";
 import { type Field, contactHref, formatFieldDate, formatNumber, isEmpty, optionLabel } from "@/lib/fields";
 
 export function RecordLink({ orgId, recordId, plain = false }: { orgId: Id<"orgs">; recordId: Id<"records">; plain?: boolean }) {
@@ -28,6 +29,7 @@ export function FieldValue({ orgId, field, value, plain = false }: { orgId: Id<"
         {String(value)}
       </a>
     );
+  if (isAssignee(field)) return <AssigneeName orgId={orgId} field={field} value={String(value)} />;
   switch (field.type) {
     case "select":
       return <Badge variant="secondary">{optionLabel(field, value)}</Badge>;

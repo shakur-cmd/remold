@@ -5,12 +5,13 @@ import { internalAction, internalMutation, internalQuery, mutation, query } from
 import { internal } from "./_generated/api";
 import { requireMember, requireWriter } from "./identity";
 import { daily } from "./today";
+import { localDate, orgDay } from "./lib/zone";
+import { allDay } from "./lib/values";
 import { sendEmail, type Sent } from "./lib/email";
 
 // The daily reminder: each member who turned it on gets their own Today list by
 // email, read with their own permissions, so nothing from another workspace or
-// outside their read scope can appear. "Today" is the UTC date at send time.
-const DAY = 24 * 60 * 60 * 1000;
+// outside their read scope can appear. "Today" is the date at send time in the workspace's time zone.
 
 export const mine = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
   const member = await requireMember(ctx, args.orgId);
@@ -26,9 +27,8 @@ export const set = mutation({ args: { orgId: v.id("orgs"), on: v.boolean() }, ha
 export const recipients = internalQuery({ args: {}, handler: async (ctx) => (await ctx.db.query("members").withIndex("by_reminders", (q) => q.eq("dailyReminder", true)).take(1000)).map((m) => m._id) });
 
 const day = (at: number) => new Date(at).toISOString().slice(0, 10);
-const utcMidnight = (at: number) => at - (at % DAY);
 
-// One reminder per member per UTC day: a run claims the day before sending and
+// One reminder per member per workspace day: a run claims the day before sending and
 // releases it if the send fails, so a later run that day can retry.
 export const claim = internalMutation({ args: { memberId: v.id("members"), day: v.number() }, handler: async (ctx, args) => {
   const member = await ctx.db.get(args.memberId);
@@ -40,24 +40,25 @@ export const release = internalMutation({ args: { memberId: v.id("members"), day
   const member = await ctx.db.get(args.memberId);
   if (member?.reminderSentOn === args.day) await ctx.db.patch(member._id, { reminderSentOn: undefined });
 } });
-const when = (at: number) => at % DAY ? `${day(at)} ${new Date(at).toISOString().slice(11, 16)} UTC` : day(at);
+// All-day dates read as they are; an instant reads in the workspace's zone.
+const when = (at: number, zone: string) => allDay(at) ? day(at) : `${day(localDate(zone, at))} ${new Intl.DateTimeFormat("en-GB", { timeZone: zone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(Math.floor(at))} ${zone === "UTC" ? "UTC" : zone}`;
 
 export const compose = internalQuery({ args: { memberId: v.id("members") }, handler: async (ctx, { memberId }) => {
   const member = await ctx.db.get(memberId);
   const [user, org] = member?.dailyReminder ? await Promise.all([ctx.db.get(member.userId), ctx.db.get(member.orgId)]) : [null, null];
-  const today = utcMidnight(Date.now());
+  const { zone, day: today } = org ? await orgDay(ctx, org._id, Date.now()) : { zone: "UTC", day: 0 };
   if (!member || !user?.email || !org || member.reminderSentOn === today) return null;
-  const list = await daily(ctx, { user, member, org, actor: { kind: "user", id: user._id } }, today + DAY);
+  const list = await daily(ctx, { user, member, org, actor: { kind: "user", id: user._id } }, zone, today, 1);
   const dueOf = (r: Doc<"records">) => (list.task ? r.values[list.task.dueFieldId] : undefined) as number;
-  const overdue = list.tasks.filter((r) => dueOf(r) < today), dueToday = list.tasks.filter((r) => dueOf(r) >= today);
+  const overdue = list.tasks.filter((r) => list.days[r._id]! < today), dueToday = list.tasks.filter((r) => list.days[r._id]! >= today);
   if (!list.tasks.length && !list.quiet.length) return null;
   const base = process.env.REMOLD_APP_URL?.replace(/\/+$/, ""), link = (path: string) => (base ? ` ${base}/o/${org._id}/${path}` : "");
   const line = (r: Doc<"records">, detail: string, key: string) => `- ${r.title || "(untitled)"} (${detail})${link(`${key}/${r._id}`)}`;
   const section = (title: string, rows: string[]) => (rows.length ? [title, ...rows, ""] : []);
   const text = [
     `Your Remold list for ${day(today)} in ${org.name}.`, "",
-    ...section("Overdue", overdue.map((r) => line(r, `due ${when(dueOf(r))}`, list.task!.objectKey))),
-    ...section("Due today", dueToday.map((r) => line(r, `due ${when(dueOf(r))}`, list.task!.objectKey))),
+    ...section("Overdue", overdue.map((r) => line(r, `due ${when(dueOf(r), zone)}`, list.task!.objectKey))),
+    ...section("Due today", dueToday.map((r) => line(r, `due ${when(dueOf(r), zone)}`, list.task!.objectKey))),
     ...section("Gone quiet (no update in two weeks)", list.quiet.map((r) => line(r, `last update ${day(r.updatedAt)}`, list.dealKey!))),
     ...(base ? [`Open Today:${link("today")}`, `Turn these emails off in Settings:${link("settings")}`] : ["Turn these emails off in Settings."]),
   ].join("\n");

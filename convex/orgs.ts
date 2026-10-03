@@ -5,6 +5,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getPrincipal, requireMember, requireWriter } from "./identity";
 import { seedStandard } from "./lib/standard";
+import { validZone } from "./lib/zone";
 import { fail } from "./errors";
 import { writable } from "./authority/readonly";
 
@@ -37,6 +38,12 @@ export const mine = query({ args: {}, handler: async (ctx) => {
 } });
 export const get = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => (await requireMember(ctx, args.orgId)).org });
 export const rename = mutation({ args: { orgId: v.id("orgs"), name: v.string() }, handler: async (ctx, args) => { await requireWriter(ctx, args.orgId, "admin"); await ctx.db.patch(args.orgId, { name: args.name }); } });
+export const setTimeZone = mutation({ args: { orgId: v.id("orgs"), timeZone: v.string() }, handler: async (ctx, args) => {
+  await requireWriter(ctx, args.orgId, "admin");
+  const timeZone = validZone(args.timeZone.trim());
+  if (!timeZone) fail("VALIDATION", "Use a time zone name such as America/New_York");
+  await ctx.db.patch(args.orgId, { timeZone });
+} });
 export const members = query({ args: { orgId: v.id("orgs") }, handler: async (ctx, args) => {
   await requireMember(ctx, args.orgId);
   const members = await ctx.db.query("members").withIndex("by_org_user", (q) => q.eq("orgId", args.orgId)).collect();
