@@ -1,6 +1,8 @@
 # Remold MCP
 
-This package connects an AI agent to Remold's REST API. It reads CRM data, proposes changes for a person to apply, applies only granted changes, and drains the shared inbox.
+This package connects an AI agent to Remold's REST API. It reads CRM data, proposes changes for a person to apply, applies only granted changes, and drains the shared inbox. Start with `remold_map`: one call returns the objects, fields, counts, your access and what you can do here. Then `remold_inbox`.
+
+In Remold, Settings, Agents, creating a key shows these snippets with your URL and key filled in.
 
 Build it with `pnpm --filter @remold/mcp build`.
 

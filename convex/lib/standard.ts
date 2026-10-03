@@ -1,6 +1,7 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { allocateSlot, kindFor } from "./slots";
+import { assigneeNeedsSlot, NEEDS_SLOT } from "./assignee";
 
 type FieldDef = { key: string; label: string; type: "text" | "number" | "select" | "date" | "boolean" | "lookup" | "links"; required?: boolean; indexed?: false; target?: string; withTime?: true; protectedFromAgents?: true; options?: { id: string; label: string }[] };
 type ObjectDef = { key: string; label: string; plural: string; fields: FieldDef[] };
@@ -11,7 +12,7 @@ const standard: ObjectDef[] = [
   { key: "person", label: "Person", plural: "People", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "email", label: "Email", type: "text" }, { key: "phone", label: "Phone", type: "text" }, { key: "title", label: "Title", type: "text" }, { key: "company", label: "Company", type: "lookup", target: "company" }, { key: "linkedin", label: "LinkedIn", type: "text", indexed: false }] },
   { key: "opportunity", label: "Opportunity", plural: "Opportunities", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "amount", label: "Amount", type: "number" }, { key: "stage", label: "Stage", type: "select", options: ["new", "contacted", "qualified", "proposal", "won", "lost"].map((id) => ({ id, label: id[0].toUpperCase() + id.slice(1) })) }, { key: "closeDate", label: "Close Date", type: "date" }, { key: "company", label: "Company", type: "lookup", target: "company" }, { key: "person", label: "Person", type: "lookup", target: "person" }, { key: "campaign", label: "Campaign", type: "lookup", target: "campaign" }] },
   { key: "project", label: "Project", plural: "Projects", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "status", label: "Status", type: "select", options: ["active", "paused", "done"].map((id) => ({ id, label: id[0].toUpperCase() + id.slice(1) })) }, { key: "company", label: "Company", type: "lookup", target: "company" }] },
-  { key: "task", label: "Task", plural: "Tasks", fields: [{ key: "title", label: "Title", type: "text", required: true }, { key: "dueDate", label: "Due Date", type: "date", withTime: true }, { key: "done", label: "Done", type: "boolean" }, { key: "project", label: "Project", type: "lookup", target: "project" }, { key: "blockedBy", label: "Blocked By", type: "links", target: "task" }, { key: "about", label: "About", type: "lookup" }] },
+  { key: "task", label: "Task", plural: "Tasks", fields: [{ key: "title", label: "Title", type: "text", required: true }, { key: "dueDate", label: "Due Date", type: "date", withTime: true }, { key: "done", label: "Done", type: "boolean" }, { key: "project", label: "Project", type: "lookup", target: "project" }, { key: "blockedBy", label: "Blocked By", type: "links", target: "task" }, { key: "about", label: "About", type: "lookup" }, { key: "assignee", label: "Assignee", type: "text" }] },
   { key: "note", label: "Note", plural: "Notes", fields: [{ key: "body", label: "Body", type: "text", required: true }, { key: "about", label: "About", type: "lookup" }] },
   { key: "activity", label: "Activity", plural: "Activities", fields: [{ key: "title", label: "Title", type: "text", required: true }, { key: "type", label: "Type", type: "select", options: ["call", "email", "meeting", "payment", "message", "other"].map((id) => ({ id, label: id[0]!.toUpperCase() + id.slice(1) })) }, { key: "when", label: "When", type: "date", withTime: true }, { key: "about", label: "About", type: "lookup" }, { key: "source", label: "Source", type: "text" }] },
   { key: "campaign", label: "Campaign", plural: "Campaigns", fields: [{ key: "name", label: "Name", type: "text", required: true }, { key: "status", label: "Status", type: "select", options: ["planned", "active", "paused", "done"].map((id) => ({ id, label: id[0]!.toUpperCase() + id.slice(1) })) }, { key: "channel", label: "Channel", type: "select", options: [{ id: "email", label: "Email" }, { id: "phone", label: "Phone" }, { id: "inPerson", label: "In person" }, { id: "social", label: "Social" }] }, { key: "startDate", label: "Start Date", type: "date" }, { key: "goal", label: "Goal", type: "text" }, { key: "people", label: "People", type: "links", target: "person" }, { key: "companies", label: "Companies", type: "links", target: "company" }] },
@@ -43,6 +44,11 @@ export async function seedStandard(ctx: MutationCtx, orgId: Id<"orgs">) {
       const fieldId = await ctx.db.insert("fields", { orgId, objectId, key: field.key, label: field.label, type: field.type, options: field.options, targetObjectId: field.target ? ids[field.target] : undefined, required: field.required ?? false, ...(field.withTime ? { withTime: true } : {}), ...(field.protectedFromAgents ? { protectedFromAgents: true } : {}), slot: kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined, encoding: 1, retired: false, order });
       if (order === 0) await ctx.db.patch(objectId, { titleFieldId: fieldId });
     }
+  }
+  // A field that cannot get a slot is still added, so nothing is lost, but its queue is degraded: say so once.
+  if (await assigneeNeedsSlot(ctx, orgId)) {
+    const org = await ctx.db.get(orgId), pending = await ctx.db.query("agentInbox").withIndex("by_org_status", (q) => q.eq("orgId", orgId).eq("status", "pending")).collect();
+    if (org && !pending.some((n) => n.text === NEEDS_SLOT)) await ctx.db.insert("agentInbox", { orgId, text: NEEDS_SLOT, source: "ensureStandard", from: { kind: "user", id: org.createdBy }, status: "pending", audience: "org" });
   }
 }
 

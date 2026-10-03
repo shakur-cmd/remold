@@ -25,7 +25,7 @@ import { FieldInput, RecordForm } from "@/components/RecordForm";
 import { attempt } from "@/lib/errors";
 import { usePinnedPages } from "@/lib/pages";
 import { invoiceStatus } from "@/lib/invoices";
-import { contactHref, formatContact, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, isSlotted, localDay, relativeDay, timeOfDay, type Field } from "@/lib/fields";
+import { contactHref, formatContact, formatDate, formatFieldDate, formatMoney, formatTime, isEmpty, isSlotted, localDay, localToday, relativeDay, timeOfDay, type Field } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
 
 type Reverse = { field: Field; object: Doc<"objects"> };
@@ -433,8 +433,7 @@ function NextStep({ orgId, recordId, sources }: { orgId: Id<"orgs">; recordId: I
   const all = [...new Map([...a.results, ...b.results].map((r) => [r._id, r])).values()];
   const open = all.filter((r) => !done || r.values[done._id] !== true).sort((x, y) => dueOf(x) - dueOf(y));
   const dayOf = (r: Doc<"records">) => localDay(due, dueOf(r));
-  const now = new Date();
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const today = localToday();
   return (
     <Card className="min-w-0">
       <CardHeader>

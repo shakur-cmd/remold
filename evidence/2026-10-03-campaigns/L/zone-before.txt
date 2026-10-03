@@ -1,0 +1,25 @@
+
+ RUN  v5.0.1 /home/shakur/work/jobs/L-queue
+
+ ❯ convex/zone.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/zone.test.ts [ convex/zone.test.ts ]
+Error: Cannot find module './lib/zone' imported from /home/shakur/work/jobs/L-queue/convex/zone.test.ts
+ ❯ convex/zone.test.ts:3:1
+      1| import { afterEach, beforeEach, describe, expect, it, vi } from "vites…
+      2| import { api, userAndOrg } from "./test.helpers";
+      3| import { zoneDay } from "./lib/zone";
+       | ^
+      4|
+      5| const utc = (...parts: [number, number, number, number?, number?]) => …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  09:56:35
+   Duration  1.10s (worker 96%, environment 4%)
+

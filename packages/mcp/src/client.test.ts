@@ -10,6 +10,11 @@ describe("RemoldClient", () => {
     expect(request?.headers.get("authorization")).toBe("Bearer rm_key");
     expect(await request?.json()).toEqual({ action: "update", record: "brisk-ember-oyster", values: { stage: "Won" }, reason: "qualified" });
   });
+  it("reads the workspace map with one GET", async () => {
+    const requests: Request[] = [];
+    await new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } }).map();
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/map"]]);
+  });
   it("reads a campaign report, previews an email for one person and marks a reply", async () => {
     const requests: Request[] = [];
     const client = new RemoldClient({ url: "https://remold.convex.site/", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } });
@@ -17,6 +22,12 @@ describe("RemoldClient", () => {
     await client.emailPreview({ idOrRef: "bold-sun-owl", person: "ava ref" });
     await client.markReplied("send/1");
     expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/campaigns/calm-river-fox/report"], ["GET", "https://remold.convex.site/api/v1/emails/bold-sun-owl/preview?person=ava+ref"], ["POST", "https://remold.convex.site/api/v1/sends/send%2F1/replied"]]);
+  });
+  it("pages the agent's own tasks", async () => {
+    const requests: Request[] = [];
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({ records: [], cursor: null }); } });
+    await client.myTasks({ limit: 10, cursor: "list:10" });
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/my-tasks?limit=10&cursor=list%3A10"]]);
   });
   it("throws REST errors with their code", async () => {
     const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async () => Response.json({ error: { code: "FORBIDDEN", message: "No grant" } }, { status: 403 }) });

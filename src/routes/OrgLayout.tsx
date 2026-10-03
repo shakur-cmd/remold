@@ -1,3 +1,4 @@
+import { setWorkspaceZone } from "@/lib/zone";
 import { Navigate, Outlet, useParams } from "react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -14,6 +15,7 @@ export function OrgLayout() {
   if (orgs === undefined || objects === undefined) return <Loading page />;
   const mine = orgs.find(({ org }) => org._id === orgId);
   if (!mine) return <Navigate to="/" replace />;
+  setWorkspaceZone(mine.org.timeZone ?? "UTC");
   const context: OrgContext = { org: mine.org, role: mine.role, objects };
   return (
     <AppShell org={mine.org} orgs={orgs} objects={objects}>

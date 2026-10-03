@@ -97,6 +97,12 @@ export async function pageRecords(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id
   return found.rows ? pageList(found.rows, paginationOpts) : paginateIndex(found.query, paginationOpts);
 }
 
+// The first `limit` rows a principal can list, without paginating (a function may paginate only once).
+export async function takeRecords(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">, limit: number, principal: Principal): Promise<Doc<"records">[]> {
+  const found = await plan(ctx, orgId, await objectOf(ctx, orgId, objectId, principal), undefined, {}, principal);
+  return found.rows ? found.rows.slice(0, limit) : found.query.take(limit);
+}
+
 export async function listRecords(ctx: QueryCtx, orgId: Id<"orgs">, objectId: Id<"objects">, paginationOpts: PageOpts, sort?: Sort, where: Where = {}, principal?: Principal) {
   const page: any = await pageRecords(ctx, orgId, objectId, paginationOpts, sort, where, principal);
   return principal ? { ...page, page: (await Promise.all(page.page.map((record: Doc<"records">) => projectRecord(ctx, principal, record)))).filter(Boolean) } : page;
