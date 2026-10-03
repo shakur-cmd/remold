@@ -9,7 +9,7 @@ import { standardItem, type Item } from "./campaign";
 import { pickPage, tagsIn } from "./campaignText";
 import { matches } from "./intake";
 import { allDay, fromInstant } from "./values";
-import { DAY, HOURS_HELP, MINUTE, openSlots, parseHours, paymentLinkOk, validZone, type Busy, type Rules } from "./bookingTime";
+import { DAY, HOURS_HELP, MINUTE, minorPer, openSlots, parseHours, paymentLinkOk, validZone, type Busy, type Rules } from "./bookingTime";
 
 type Ctx = QueryCtx | MutationCtx;
 export const BOOKING: Actor = { kind: "automation", id: "Booking page" };
@@ -37,7 +37,7 @@ export function pageRules(object: Doc<"objects">, fields: Doc<"fields">[], befor
   if (set("live") === true && (changed("live") || changed("hours") || changed("timezone")) && (!hours || !zone)) fail("VALIDATION", "A live page needs hours and a timezone", { fieldId: f.live!._id });
 }
 
-export type Page = { org: Doc<"orgs">; record: Doc<"records">; item: Item; rules: Rules; description: string; price: number | null; paymentLink: string | null; campaignId: Id<"records"> | null };
+export type Page = { org: Doc<"orgs">; record: Doc<"records">; item: Item; rules: Rules; description: string; price: number | null; currency: string; paymentLink: string | null; campaignId: Id<"records"> | null };
 // The page behind a public link, or null when it is not taking bookings.
 export async function bookable(ctx: Ctx, pageId: string): Promise<Page | null> {
   const id = ctx.db.normalizeId("records", pageId), record = id ? await ctx.db.get(id) : null;
@@ -47,8 +47,8 @@ export async function bookable(ctx: Ctx, pageId: string): Promise<Page | null> {
   const hours = parseHours(String(value(record, item.f.hours) ?? "")), zone = String(value(record, item.f.timezone) ?? "");
   if (!hours || !validZone(zone)) return null;
   const rules = { hours, timezone: zone, minutes: num(value(record, item.f.minutes), 30), noticeHours: num(value(record, item.f.noticeHours), 12), daysAhead: Math.min(num(value(record, item.f.daysAhead), 30), 365) };
-  const price = value(record, item.f.price), link = value(record, item.f.paymentLink), campaign = value(record, item.f.campaign);
-  return { org, record, item, rules, description: String(value(record, item.f.description) ?? ""), price: typeof price === "number" ? price : null, paymentLink: typeof link === "string" && paymentLinkOk(link) ? link : null, campaignId: (campaign as Id<"records">) ?? null };
+  const price = value(record, item.f.price), link = value(record, item.f.paymentLink), campaign = value(record, item.f.campaign), currency = value(record, item.f.currency);
+  return { org, record, item, rules, description: String(value(record, item.f.description) ?? ""), price: typeof price === "number" ? price : null, currency: typeof currency === "string" ? currency : "usd", paymentLink: typeof link === "string" && paymentLinkOk(link) ? link : null, campaignId: (campaign as Id<"records">) ?? null };
 }
 
 // What blocks time anywhere in the workspace between `from` and `to`: confirmed
@@ -71,14 +71,24 @@ export async function busy(ctx: Ctx, orgId: Id<"orgs">, from: number, to: number
 export const slotsFor = async (ctx: Ctx, page: Page, now: number) => openSlots(page.rules, now, await busy(ctx, page.org._id, now, now + (page.rules.daysAhead + 1) * DAY, page.rules.minutes, now));
 export async function isOpen(ctx: Ctx, page: Page, start: number, now: number) {
   const length = page.rules.minutes * MINUTE;
-  return openSlots(page.rules, now, await busy(ctx, page.org._id, start, start + length, page.rules.minutes, now)).includes(start);
+  return openSlots(page.rules, now, await busy(ctx, page.org._id, start, start + length, page.rules.minutes, now), { from: start, to: start }).includes(start);
 }
 
-// Email decides who someone is, as in website intake: a match is linked and never changed.
-export async function personFor(ctx: MutationCtx, orgId: Id<"orgs">, name: string, email: string) {
+export const priceMinor = (page: Page) => Math.round((page.price ?? 0) * minorPer(page.currency));
+
+// Email decides who someone is, and a match is linked, never changed. A public page
+// looks the address up through the Email field's index, as typed and lowercased, so a
+// person stored with other letter case is not found (a second person is made instead).
+// Website intake keeps its full scan: it also matches phones written different ways.
+export async function personFor(ctx: MutationCtx, orgId: Id<"orgs">, name: string, email: string, typed: string) {
   const person = await standardItem(ctx, orgId, "person");
   if (!person?.f.name || !person.f.email || !person.f.phone) fail("NOT_FOUND", "Booking needs the person object");
-  const { byEmail } = await matches(ctx, { object: person.object, fields: person.f }, email);
+  const slot = person.f.email.slot && `${person.f.email.slot.kind}${person.f.email.slot.index}`;
+  for (const form of slot ? new Set([email, typed.trim()]) : []) {
+    const hit = await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", orgId).eq("objectId", person.object._id).eq(slot, form)).first();
+    if (hit) return hit._id as Id<"records">;
+  }
+  const { byEmail } = slot ? { byEmail: null } : await matches(ctx, { object: person.object, fields: person.f }, email);
   if (byEmail) return byEmail._id;
   return (await applyChange(ctx, await ownerOf(ctx, orgId), { action: "create", orgId, objectId: person.object._id, values: { [person.f.name._id]: name, [person.f.email._id]: email }, reason: "Booked a time" }, { actor: BOOKING })).recordId;
 }

@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { internal } from "./_generated/api";
 import { agentFor, api, objectFields, rest } from "./test.helpers";
 import { makeTest } from "./test.setup";
-import { openSlots, parseHours } from "./lib/bookingTime";
+import { instantOf, money, openSlots, parseHours, verifyStripe } from "./lib/bookingTime";
 import crons from "./crons";
 
 // Booking pages: a public page per offer, open times from the page's hours and zone,
@@ -155,7 +155,7 @@ describe("booking", () => {
 
   it("links an existing person by email without changing them, and creates a new one otherwise", async () => {
     const w = await world();
-    const ava = await w.create(w.person, { name: "Ava Stone", email: "Ava@People.test", phone: "+1 555 0100" });
+    const ava = await w.create(w.person, { name: "Ava Stone", email: "ava@people.test", phone: "+1 555 0100" });
     const before = await w.t.run((ctx: any) => ctx.db.get(ava));
     expect(await book(w.t, w.pageId, at(2026, 10, 28, 13), { name: "Someone Else", email: " ava@people.TEST ", note: "Call my cell" })).toMatchObject({ status: "confirmed" });
     expect(await w.t.run((ctx: any) => ctx.db.get(ava))).toEqual(before);
@@ -166,9 +166,9 @@ describe("booking", () => {
     expect(created).toMatchObject({ title: "New Person", values: { [w.person.fields.email._id]: "new@people.test" } });
   });
 
-  it("a filled honeypot looks like success and writes nothing", async () => {
+  it("a filled honeypot gets a neutral error and writes nothing", async () => {
     const w = await world(), before = await w.records();
-    expect(await book(w.t, w.pageId, at(2026, 10, 28, 13), { website: "http://spam.example" })).toEqual({ status: "confirmed" });
+    await expect(book(w.t, w.pageId, at(2026, 10, 28, 13), { hp: "http://spam.example" })).rejects.toThrow("We could not book this time. Please try again.");
     expect(await w.bookings()).toHaveLength(0);
     expect(await w.records()).toEqual(before);
   });
@@ -208,7 +208,7 @@ describe("booking", () => {
     const w = await world(), campaignId = await w.create(w.campaign, { name: "Secret campaign" });
     const paid = await w.newPage({ price: 5, paymentLink: "https://buy.stripe.com/test_secretlink", campaign: campaignId });
     const shown = await visitor(w.t).query(api.bookings.page, { pageId: paid });
-    expect(Object.keys(shown).sort()).toEqual(["description", "minutes", "name", "open", "paid", "price", "slots"]);
+    expect(Object.keys(shown).sort()).toEqual(["currency", "description", "minutes", "name", "open", "paid", "price", "slots"]);
     expect(shown).toMatchObject({ open: true, name: "Intro call", description: "Fifteen minutes about your site.", minutes: 30, price: 5, paid: true });
     const text = JSON.stringify(shown);
     for (const secret of ["test_secretlink", campaignId, w.orgId, "America/New_York", "mon-fri"]) expect(text).not.toContain(secret);
@@ -252,7 +252,7 @@ describe("page records", () => {
 
   it("new workspaces get Booking pages, and the migration adds them to an older workspace once", async () => {
     const t = makeTest(), w = await world({ t });
-    expect(Object.keys(w.page.fields)).toEqual(["name", "description", "minutes", "hours", "timezone", "noticeHours", "daysAhead", "price", "paymentLink", "campaign", "live"]);
+    expect(Object.keys(w.page.fields)).toEqual(["name", "description", "minutes", "hours", "timezone", "noticeHours", "daysAhead", "price", "currency", "paymentLink", "campaign", "live"]);
     expect(w.page.object).toMatchObject({ label: "Booking page", labelPlural: "Booking pages", titleFieldId: w.page.fields.name._id });
     for (const key of ["description", "paymentLink"]) expect(w.page.fields[key].slot).toBeUndefined();
     expect(w.page.fields.campaign).toMatchObject({ type: "lookup", targetObjectId: w.campaign.object._id });
@@ -267,7 +267,7 @@ describe("page records", () => {
     const once = await snapshot();
     const added = once.objects.find((o: any) => o.orgId === w.orgId && o.key === "bookingPage");
     expect(added).toMatchObject({ isStandard: true, labelPlural: "Booking pages" });
-    expect(once.fields.filter((f: any) => f.objectId === added._id)).toHaveLength(11);
+    expect(once.fields.filter((f: any) => f.objectId === added._id)).toHaveLength(12);
     for (const before of old.fields) expect(once.fields.find((f: any) => f._id === before._id)).toEqual(before);
     await t.mutation(internal.seed.ensureStandard, { orgId: w.orgId });
     expect(await snapshot()).toEqual(once);
@@ -451,5 +451,209 @@ describe("attribution", () => {
     await expect(approve(w, draft)).rejects.toThrow(/booking page/i);
     const wrongRef = await w.create(w.email, { subject: "Hi", body: "Book: {{bookingLink:no-such-page}}", campaign: w.campaignId, status: "draft" });
     await expect(approve(w, wrongRef)).rejects.toThrow(/booking page/i);
+  });
+});
+
+// Round 2: independent verification (Fable, REVISE on c1bea0d) and coordinator decisions.
+const zoneRules = (hours: string, timezone: string, minutes = 30, daysAhead = 10) => ({ hours: parseHours(hours)!, timezone, minutes, noticeHours: 0, daysAhead });
+const localAt = (zone: string) => (ms: number) => new Intl.DateTimeFormat("en-GB", { timeZone: zone, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZoneName: "short" }).format(ms);
+const inbox = (t: any) => t.run((ctx: any) => ctx.db.query("agentInbox").collect());
+async function payWorld(page: Record<string, unknown>) {
+  const w = await world(), paid = await w.newPage({ name: "Paid call", paymentLink: "https://buy.stripe.com/test_123", ...page });
+  await w.client.mutation(api.bookings.savePaymentSecret, { orgId: w.orgId, secret: STRIPE });
+  const slot = at(2026, 10, 28, 13), held = await book(w.t, paid, slot);
+  expect(held.status).toBe("held");
+  const token = new URL(held.pay).searchParams.get("client_reference_id")!;
+  const event = (object: Record<string, unknown>, type = "checkout.session.completed", id = "evt_r2") => ({ id, type, livemode: false, data: { object: { id: "cs_r2", client_reference_id: token, payment_status: "paid", amount_total: 500, currency: "usd", ...object } } });
+  const booking = async () => (await w.bookings()).find((b: any) => b.token === token);
+  return { ...w, paid, slot, token, event, booking };
+}
+
+describe("round 2: time zones the first round did not test (verifier)", () => {
+  it("Sydney: 09:00 stays 09:00 across the start of daylight saving, and the 02:00-03:00 gap is never offered", () => {
+    const slots = openSlots(zoneRules("mon-fri 09:00-10:00", "Australia/Sydney"), at(2026, 9, 30, 0), []);
+    expect(slots).toContain(at(2026, 10, 1, 23)); expect(slots).toContain(at(2026, 10, 4, 22)); expect(slots).not.toContain(at(2026, 10, 4, 23));
+    for (const s of slots) expect(localAt("Australia/Sydney")(s)).toMatch(/09:(00|30)/);
+    const day = openSlots(zoneRules("sun 01:00-04:00", "Australia/Sydney"), at(2026, 10, 1, 0), []).filter((s) => s >= at(2026, 10, 3, 12) && s < at(2026, 10, 4, 12));
+    expect(day.map(localAt("Australia/Sydney"))).toEqual(["Sun, 01:00 GMT+10", "Sun, 01:30 GMT+10", "Sun, 03:00 GMT+11", "Sun, 03:30 GMT+11"]);
+  });
+  it("Kolkata, Adelaide and Lord Howe (half-hour offsets and a 30-minute shift)", () => {
+    const kolkata = openSlots(zoneRules("mon-sun 09:00-10:00", "Asia/Kolkata"), at(2026, 10, 1, 0), []);
+    expect(kolkata[0]).toBe(at(2026, 10, 1, 3, 30));
+    const adelaide = openSlots(zoneRules("mon-fri 09:00-09:30", "Australia/Adelaide"), at(2026, 9, 30, 0), []);
+    expect(adelaide).toContain(at(2026, 10, 1, 23, 30)); expect(adelaide).toContain(at(2026, 10, 4, 22, 30));
+    const howe = openSlots(zoneRules("mon-sun 09:00-09:30", "Australia/Lord_Howe"), at(2026, 9, 30, 0), []);
+    expect(howe).toContain(at(2026, 10, 2, 22, 30)); expect(howe).toContain(at(2026, 10, 3, 22));
+    const gap = openSlots(zoneRules("sun 01:30-03:00", "Australia/Lord_Howe"), at(2026, 10, 1, 0), []).filter((s) => s < at(2026, 10, 4, 12));
+    expect(gap.map(localAt("Australia/Lord_Howe"))).toEqual(["Sun, 01:30 GMT+10:30", "Sun, 02:30 GMT+11"]);
+  });
+  it("a local time that happens twice is its first instant, east and west of UTC", () => {
+    expect(instantOf(at(2026, 11, 1, 1, 30), "America/New_York")).toBe(at(2026, 11, 1, 5, 30));
+    expect(instantOf(at(2026, 4, 5, 2, 30), "Australia/Sydney")).toBe(at(2026, 4, 4, 15, 30));
+  });
+  it("the largest legal page (5 minutes, all day, every day, 365 days) computes quickly", () => {
+    const t0 = performance.now(), slots = openSlots(zoneRules("mon-sun 00:00-24:00", "America/New_York", 5, 365), at(2026, 10, 1, 0), []), ms = performance.now() - t0;
+    expect(slots.length).toBeGreaterThan(105_000);
+    expect(new Set(slots).size).toBe(slots.length);
+    expect(ms).toBeLessThan(1000);
+  });
+});
+
+describe("round 2: Stripe signature edge cases (verifier)", () => {
+  const secret = "whsec_abc", sign = (t: number, body: string, key = secret) => createHmac("sha256", key).update(`${t}.${body}`).digest("hex");
+  const now = 1_800_000_000_000, t = now / 1000, body = '{"id":"evt_1"}';
+  it("accepts any matching v1 among others, refuses other bodies, times, empty or uppercase signatures and a missing t", async () => {
+    expect(await verifyStripe(secret, `t=${t},v1=${sign(t, body, "other")},v0=deadbeef,v1=${sign(t, body)}`, body, now)).toBe(true);
+    expect(await verifyStripe(secret, `t=${t},v1=${sign(t, body)}`, body + " ", now)).toBe(false);
+    expect(await verifyStripe(secret, `t=${t + 1},v1=${sign(t, body)}`, body, now)).toBe(false);
+    expect(await verifyStripe(secret, `t=${t - 301},v1=${sign(t - 301, body)}`, body, now)).toBe(false);
+    expect(await verifyStripe(secret, `t=${t - 299},v1=${sign(t - 299, body)}`, body, now)).toBe(true);
+    expect(await verifyStripe(secret, `t=${t},v1=`, body, now)).toBe(false);
+    expect(await verifyStripe(secret, `t=${t},v1=${sign(t, body).toUpperCase()}`, body, now)).toBe(false);
+    expect(await verifyStripe(secret, `v1=${sign(t, body)}`, body, now)).toBe(false);
+  });
+});
+
+describe("round 2: money", () => {
+  it("an underpayment is kept as paid but does not confirm; the owner is asked", async () => {
+    const w = await payWorld({ price: 100 });
+    expect(await stripeHook(w.t, w.orgId, w.event({ amount_total: 100 }))).toBe(200);
+    const b = await w.booking();
+    expect(b.status).not.toBe("confirmed");
+    expect(b).toMatchObject({ amountMinor: 100, currency: "usd", livemode: false });
+    expect(b.paidAt).toBeTypeOf("number");
+    expect(b.attention).toBe("Paid $1.00, but the page asks for $100.00");
+    expect((await inbox(w.t))[0].text).toMatch(/rebook or refund/i);
+    expect(await slotsOf(w.t, w.pageId)).toContain(w.slot);
+  });
+  it("a payment in another currency than the page's does not confirm", async () => {
+    const w = await payWorld({ price: 5 });
+    await stripeHook(w.t, w.orgId, w.event({ amount_total: 500, currency: "eur" }));
+    expect(await w.booking()).toMatchObject({ amountMinor: 500, currency: "eur", attention: "Paid €5.00, but the page asks for $5.00" });
+    expect((await w.booking()).status).not.toBe("confirmed");
+  });
+  it("zero-decimal currencies: ¥500 pays a ¥500 page and shows as ¥500", async () => {
+    const w = await payWorld({ price: 500, currency: "jpy" });
+    await stripeHook(w.t, w.orgId, w.event({ amount_total: 500, currency: "jpy" }));
+    const b = await w.booking();
+    expect(b.status).toBe("confirmed");
+    expect((await w.titlesAbout(b.personRecordId)).map((r: any) => r.title)).toContain("Paid ¥500 for Paid call");
+    expect([money(500, "jpy"), money(500, "usd"), money(1050, "krw")]).toEqual(["¥500", "$5.00", "₩1,050"]);
+  });
+  it("a delayed payment confirms when it succeeds and frees the time when it fails", async () => {
+    const w = await payWorld({ price: 5 });
+    await stripeHook(w.t, w.orgId, w.event({ payment_status: "unpaid" }));
+    expect((await w.booking()).status).toBe("held");
+    await stripeHook(w.t, w.orgId, w.event({}, "checkout.session.async_payment_succeeded", "evt_async_ok"));
+    expect(await w.booking()).toMatchObject({ status: "confirmed", amountMinor: 500 });
+    const v = await payWorld({ price: 5 });
+    await stripeHook(v.t, v.orgId, v.event({ payment_status: "unpaid" }, "checkout.session.async_payment_failed", "evt_async_fail"));
+    expect(await v.booking()).toMatchObject({ status: "cancelled", cancelReason: "payment failed" });
+    expect((await v.booking()).paidAt).toBeUndefined();
+    expect(await slotsOf(v.t, v.pageId)).toContain(v.slot);
+  });
+  it("paid after the owner cancelled: stays cancelled and paid, and asks the owner", async () => {
+    const w = await payWorld({ price: 5 });
+    await w.client.mutation(api.bookings.cancel, { orgId: w.orgId, bookingId: (await w.booking())._id, notify: false });
+    await stripeHook(w.t, w.orgId, w.event({}));
+    const b = await w.booking();
+    expect(b).toMatchObject({ status: "cancelled", cancelReason: "cancelled", amountMinor: 500, attention: "Paid, but the booking was cancelled" });
+    expect(await inbox(w.t)).toHaveLength(1);
+  });
+});
+
+describe("round 2: links, spam and input", () => {
+  async function linkWorld() {
+    Object.assign(process.env, mailEnv);
+    const w = await world(); await w.mail();
+    const ava = await w.create(w.person, { name: "Ava Stone", email: "ava@people.test" });
+    const campaignId = await w.create(w.campaign, { name: "Camp", status: "active", channel: "email", people: [ava] });
+    const pageId = await w.newPage({ name: "Call", campaign: campaignId });
+    const emailId = await w.create(w.email, { subject: "Hi", body: "Book here: {{bookingLink}} thanks", campaign: campaignId, status: "draft" });
+    await approve(w, emailId);
+    const report = async () => (await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId })).emails[0].problems;
+    return { ...w, campaignId, linkPage: pageId, emailId, report };
+  }
+  it("an approved email whose booking page was deleted or taken offline waits instead of sending an empty link", async () => {
+    const w = await linkWorld();
+    await w.update(w.page, w.linkPage, { live: false });
+    expect(await w.report()).toContain("The booking page for {{bookingLink}} is not live");
+    await w.t.action(internal.campaignSend.tick, {});
+    expect(sent.filter((c) => c.url === "https://api.resend.com/emails")).toHaveLength(0);
+    await w.client.mutation(api.records.remove, { orgId: w.orgId, recordId: w.linkPage });
+    expect(await w.report()).toContain("{{bookingLink}} names no booking page on this campaign");
+    await w.t.action(internal.campaignSend.tick, {});
+    expect(sent.filter((c) => c.url === "https://api.resend.com/emails")).toHaveLength(0);
+  });
+  it("pointing the link at a different page after approval needs approval again", async () => {
+    const w = await linkWorld(), other = await w.newPage({ name: "Other" });
+    await w.update(w.page, w.linkPage, { campaign: null });
+    await w.update(w.page, other, { campaign: w.campaignId });
+    expect(await w.report()).toContain("The email or the sending settings changed since approval");
+  });
+  it("probing closed times uses up the page's rate limit", async () => {
+    const w = await world();
+    for (let i = 0; i < 20; i++) expect(await book(w.t, w.pageId, at(2026, 10, 28, 3), { email: `bot${i}@spam.test` })).toEqual({ status: "taken" });
+    expect(await book(w.t, w.pageId, at(2026, 10, 28, 13))).toMatchObject({ status: "limited" });
+  });
+  it("the daily cap counts confirmed bookings, not unpaid holds", async () => {
+    process.env.REMOLD_BOOKING_DAILY_CAP = "2";
+    const w = await world(), paid = await w.newPage({ name: "Paid", paymentLink: "https://buy.stripe.com/x" });
+    for (const [i, h] of [13, 14, 15].entries()) expect((await book(w.t, paid, at(2026, 10, 28, h), { email: `bot${i}@spam.test` })).status).toBe("held");
+    expect(await book(w.t, w.pageId, at(2026, 10, 29, 13), { email: "a@people.test" })).toMatchObject({ status: "confirmed" });
+    expect(await book(w.t, w.pageId, at(2026, 10, 29, 14), { email: "b@people.test" })).toMatchObject({ status: "confirmed" });
+    expect(await book(w.t, w.pageId, at(2026, 10, 29, 15), { email: "c@people.test" })).toMatchObject({ status: "limited" });
+  });
+  it("at most 3 unpaid holds per page and 1 per address", async () => {
+    const w = await world(), paid = await w.newPage({ name: "Paid", paymentLink: "https://buy.stripe.com/x" }), other = await w.newPage({ name: "Paid two", paymentLink: "https://buy.stripe.com/y" });
+    for (const [i, h] of [13, 14, 15].entries()) expect((await book(w.t, paid, at(2026, 10, 28, h), { email: `p${i}@people.test` })).status).toBe("held");
+    expect((await book(w.t, paid, at(2026, 10, 28, 17), { email: "p4@people.test" })).status).toBe("limited");
+    expect((await book(w.t, other, at(2026, 10, 29, 13), { email: "p0@people.test" })).status).toBe("limited");
+    expect((await book(w.t, other, at(2026, 10, 29, 13), { email: "fresh@people.test" })).status).toBe("held");
+    later(31 * MINUTE);
+    expect((await book(w.t, paid, at(2026, 10, 28, 17), { email: "p4@people.test" })).status).toBe("held");
+  });
+  it("the Stripe webhook is rate limited per workspace", async () => {
+    const w = await world(), other = await world({ t: w.t, name: "Other" });
+    const statuses = [];
+    for (let i = 0; i < 61; i++) statuses.push(await stripeHook(w.t, w.orgId, paidEvent("0123456789abcdef0123456789abcdef", {}, `evt_${i}`)));
+    expect(statuses.slice(0, 60).every((s) => s === 503)).toBe(true);
+    expect(statuses[60]).toBe(429);
+    expect(await stripeHook(w.t, other.orgId, paidEvent("x"))).toBe(503);
+  });
+  it("a send token from another workspace does not attribute; the page's own campaign wins (verifier)", async () => {
+    const w = await world(), b = await world({ t: w.t, name: "Other" });
+    const campA = await w.create(w.campaign, { name: "A camp" }), pageA = await w.newPage({ campaign: campA });
+    const campB = await b.create(b.campaign, { name: "B camp" });
+    await w.t.run((ctx: any) => ctx.db.insert("emailSends", { orgId: b.orgId, emailRecordId: campB, campaignRecordId: campB, personRecordId: campB, to: "x@y.z", token: "tokB", status: "sent", attempts: 1 }));
+    expect(await book(w.t, pageA, at(2026, 10, 28, 13), { s: "tokB" })).toEqual({ status: "confirmed" });
+    const [booking] = await w.bookings();
+    expect(booking.sendId).toBeUndefined();
+    expect(booking.campaignRecordId).toBe(campA);
+    await expect(w.create(w.page, { name: "Cross", campaign: campB })).rejects.toThrow();
+  });
+  it("a name with line breaks is stored on one line, so it cannot add email headers", async () => {
+    Object.assign(process.env, mailEnv);
+    const w = await world(); await w.mail();
+    await book(w.t, w.pageId, at(2026, 10, 28, 13), { name: "Eve\r\nBcc: victim@evil.test", note: "line one\nline two" });
+    await settle(w.t);
+    const [b] = await w.bookings();
+    expect(b.name).toBe("Eve Bcc: victim@evil.test");
+    for (const c of sent) expect(c.body.subject).not.toMatch(/[\r\n]/);
+  });
+  it("an invalid visitor time zone is ignored and the confirmation still goes out in the page's zone", async () => {
+    Object.assign(process.env, mailEnv);
+    const w = await world(); await w.mail();
+    await book(w.t, w.pageId, at(2026, 10, 28, 13), { zone: "Mars/Olympus" });
+    await settle(w.t);
+    expect((await w.bookings())[0].zone).toBeUndefined();
+    expect(sent.find((c) => c.body.to[0] === "ben@people.test")?.body.text).toContain("9:00 AM EDT");
+  });
+  it("a person stored with the same email in other letter case is not matched; a new person is made and the old one is untouched", async () => {
+    const w = await world();
+    const ava = await w.create(w.person, { name: "Ava Stone", email: "Ava@People.test" }), before = await w.t.run((ctx: any) => ctx.db.get(ava));
+    await book(w.t, w.pageId, at(2026, 10, 28, 13), { email: "ava@people.test" });
+    expect((await w.bookings())[0].personRecordId).not.toBe(ava);
+    expect(await w.t.run((ctx: any) => ctx.db.get(ava))).toEqual(before);
   });
 });

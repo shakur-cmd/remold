@@ -34,7 +34,7 @@ export function PaymentsCard({ orgId }: { orgId: Id<"orgs"> }) {
           <Button size="icon-xs" variant="ghost" aria-label="Copy webhook address" onClick={() => copy(data.webhookUrl)}><Copy /></Button>
         </div>
         <form className="grid gap-1.5" onSubmit={submit}>
-          <span className="text-muted-foreground">2. Paste the endpoint's signing secret.</span>
+          <span className="text-muted-foreground">2. Paste the endpoint's signing secret. Use the live mode secret: with a test mode secret, test payments would confirm real bookings.</span>
           <div className="flex gap-2">
             <Input type="password" autoComplete="off" value={secret} onChange={(e) => setSecret(e.target.value)} placeholder={data.secretSet ? "Saved. Paste a new one to replace it" : "whsec_..."} aria-label="Signing secret" />
             <Button type="submit" variant="outline" disabled={!secret.trim()}>Save</Button>
@@ -77,7 +77,7 @@ export function PageBookings({ orgId, recordId }: { orgId: Id<"orgs">; recordId:
               {b.personId ? <Link to={`/o/${orgId}/person/${b.personId}`} className="font-medium hover:underline">{b.name}</Link> : <span>Hidden</span>}
               {b.email && <span className="text-xs text-muted-foreground">{b.email}</span>}
               {b.status !== "confirmed" && <Badge variant={b.status === "cancelled" ? "destructive" : "outline"}>{b.held ? "Waiting for payment" : b.status === "held" ? "Hold ran out" : "Cancelled"}</Badge>}
-              {b.paid && <Badge variant="secondary">Paid {b.paid}</Badge>}
+              {b.paid && <Badge variant="secondary">Paid {b.paid}{b.test ? " (test)" : ""}</Badge>}
               {b.attention && <span className="text-xs text-destructive">{b.attention}. Rebook or refund.</span>}
               {b.note && <span className="basis-full text-xs text-muted-foreground">{b.note}</span>}
               {b.status !== "cancelled" && b.end >= now && (

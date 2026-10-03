@@ -60,7 +60,7 @@ try {
   // Real runtime: every open time is inside the hours in New York, and the first is after the notice.
   const shown = await visitor.query(anyApi.bookings.page, { pageId: free });
   const ny = (ms) => new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(ms);
-  check("public page keys", JSON.stringify(Object.keys(shown).sort()) === JSON.stringify(["description", "minutes", "name", "open", "paid", "price", "slots"]), Object.keys(shown));
+  check("public page keys", JSON.stringify(Object.keys(shown).sort()) === JSON.stringify(["currency", "description", "minutes", "name", "open", "paid", "price", "slots"]), Object.keys(shown));
   check("open times inside hours in America/New_York (real Convex runtime Intl)", shown.slots.length > 100 && shown.slots.every((s) => /^(Mon|Tue|Wed|Thu|Fri) (09|10|11|13|14|15|16):(00|30)$/.test(ny(s))), { count: shown.slots.length, first: ny(shown.slots[0]), last: ny(shown.slots.at(-1)) });
   check("first open time after 12 hours notice", shown.slots[0] >= Date.now() + 12 * 3600000);
   const race = shown.slots[3];
@@ -71,7 +71,8 @@ try {
   const held = await visitor.mutation(anyApi.bookings.book, { pageId: paid, start: paidSlots[2], name: "Ava Stone", email: "ava@example.com", zone: "America/New_York" });
   check("paid page holds and redirects to the Payment Link", held.status === "held" && held.pay.startsWith("https://buy.stripe.com/test_harness?client_reference_id="), held);
   const ref = new URL(held.pay).searchParams.get("client_reference_id");
-  await visitor.mutation(anyApi.bookings.book, { pageId: paid, start: paidSlots[5], name: "Finn Hale", email: "finn@example.com" });
+  const finn = await visitor.mutation(anyApi.bookings.book, { pageId: paid, start: paidSlots[5], name: "Finn Hale", email: "finn@example.com" });
+  const nia = await visitor.mutation(anyApi.bookings.book, { pageId: paid, start: paidSlots[7], name: "Nia Short", email: "nia@example.com" });
 
   // Stripe webhook on the real HTTP router.
   const secret = "whsec_" + Buffer.from("ui-harness-stripe").toString("base64");
@@ -83,10 +84,14 @@ try {
   check("webhook with a stale time: 400", (await hook(event, secret, Math.floor(Date.now() / 1000) - 400)) === 400);
   check("signed paid event: 200", (await hook(event)) === 200);
   check("same event again: 200", (await hook(event)) === 200);
+  const cheap = JSON.stringify({ id: "evt_harness_cheap", type: "checkout.session.completed", livemode: false, data: { object: { id: "cs_test_cheap", client_reference_id: new URL(nia.pay).searchParams.get("client_reference_id"), payment_status: "paid", amount_total: 100, currency: "usd" } } });
+  check("underpaid event: 200", (await hook(cheap)) === 200);
+  check("Finn's hold still waiting", finn.status === "held");
   const listed = await owner.query(anyApi.bookings.forPage, { orgId, pageId: paid });
+  check("underpaid booking kept as paid, not confirmed, needs attention", listed.some((b) => b.name === "Nia Short" && b.status !== "confirmed" && b.paid === "$1.00" && /asks for \$5\.00/.test(b.attention ?? "")), listed.find((b) => b.name === "Nia Short"));
   check("paid booking confirmed with the event's amount", listed.some((b) => b.name === "Ava Stone" && b.status === "confirmed" && b.paid === "$5.00"), listed);
   const report = await owner.query(anyApi.campaigns.report, { orgId, campaignId });
-  check("campaign report counts bookings and revenue", report.bookings.booked === 3 && report.bookings.paid === 1 && report.bookings.revenue[0]?.amountMinor === 500, report.bookings);
+  check("campaign report counts bookings and revenue (an underpaid booking counts as booked and paid: money came in and needs a decision)", report.bookings.booked === 4 && report.bookings.paid === 2 && report.bookings.revenue[0]?.amountMinor === 600, report.bookings);
 
   vite = spawn(process.execPath, [join(root, "node_modules/vite/bin/vite.js"), "--port", "5390", "--strictPort"], { cwd: scratch, env: { ...env, VITE_CONVEX_URL: "http://127.0.0.1:3690", VITE_WORKOS_CLIENT_ID: "ui-harness" }, detached: true, stdio: ["ignore", "pipe", "pipe"] });
   let viteLogs = ""; vite.stdout.on("data", (b) => { viteLogs += b; }); vite.stderr.on("data", (b) => { viteLogs += b; });
@@ -108,6 +113,8 @@ try {
   await desk.screenshot({ path: join(out, "booking-page-desktop.png") });
   await desk.getByRole("option").nth(1).click();
   await desk.getByRole("button", { name: /AM|PM/ }).first().click();
+  const hp = await desk.locator('input[name="x_hp7"]').evaluate((el) => ({ name: el.name, autocomplete: el.getAttribute("autocomplete"), tabIndex: el.tabIndex, hidden: el.parentElement.getAttribute("aria-hidden"), label: el.labels.length, left: el.getBoundingClientRect().left }));
+  check("honeypot: non-semantic name, no label, autocomplete off, tabindex -1, aria-hidden, off screen", hp.autocomplete === "off" && hp.tabIndex === -1 && hp.hidden === "true" && hp.label === 0 && hp.left < -1000 && !/name|mail|web|url|phone|site/i.test(hp.name), hp);
   await desk.getByLabel("Name").fill("Gia Ross"); await desk.getByLabel("Email").fill("gia@example.com");
   await desk.screenshot({ path: join(out, "booking-page-form.png") });
   await desk.getByRole("button", { name: "Book this time" }).click();

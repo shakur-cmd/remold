@@ -2787,5 +2787,27 @@
     "masks": "no-record-data",
     "proof": "a payment hold frees its time after 30 minutes, and the cron marks it expired",
     "reason": "only ends holds that ran out"
+  },
+  {
+    "id": "bookings:hookToken",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "the Stripe webhook is rate limited per workspace",
+    "reason": "rate limit bookkeeping only"
+  },
+  {
+    "id": "bookings:failed",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a delayed payment confirms when it succeeds and frees the time when it fails",
+    "reason": "only ends a hold whose payment failed"
   }
 ]

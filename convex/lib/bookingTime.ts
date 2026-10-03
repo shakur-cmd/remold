@@ -43,37 +43,47 @@ function wall(ms: number, zone: string) {
   const p = Object.fromEntries(formatter(zone).formatToParts(ms).map((x) => [x.type, Number(x.value)]));
   return Date.UTC(p.year!, p.month! - 1, p.day!, p.hour! % 24, p.minute!, p.second!);
 }
-// The instant a local wall time names in `zone`; null in a daylight saving gap.
-// A time that happens twice (the autumn change) is the first one.
+const offsetAt = (ms: number, zone: string) => wall(ms, zone) - Math.floor(ms / 1000) * 1000;
+// The instant a local wall time names in `zone`, tried with the offsets a day before and
+// a day after (the two sides of any change near it). Null in a daylight saving gap; a
+// time that happens twice (the autumn change) is its first instant, east or west of UTC.
 export function instantOf(localAsUtc: number, zone: string) {
-  const first = localAsUtc - (wall(localAsUtc, zone) - localAsUtc);
-  const second = localAsUtc - (wall(first, zone) - first);
-  for (const candidate of [Math.min(first, second), Math.max(first, second)]) if (wall(candidate, zone) === localAsUtc) return candidate;
-  return null;
+  const found = [localAsUtc - offsetAt(localAsUtc - DAY, zone), localAsUtc - offsetAt(localAsUtc + DAY, zone)].filter((c) => wall(c, zone) === localAsUtc);
+  return found.length ? Math.min(...found) : null;
 }
 
 export type Busy = { start: number; end: number };
 export type Rules = { hours: Hours; timezone: string; minutes: number; noticeHours: number; daysAhead: number };
 // Open start times: inside the weekly hours in the page's zone, no sooner than the
-// notice, no later than daysAhead from now, and not overlapping anything busy.
-export function openSlots(rules: Rules, now: number, busy: Busy[]) {
-  const length = rules.minutes * MINUTE, earliest = now + rules.noticeHours * HOUR, latest = now + rules.daysAhead * DAY;
-  const today = Math.floor(wall(now, rules.timezone) / DAY) * DAY, out: number[] = [];
+// notice, no later than daysAhead from now, and not overlapping anything busy. A day
+// with no clock change uses one offset for all its times; `within` limits the days
+// looked at (a booking checks only the days around its own time).
+export function openSlots(rules: Rules, now: number, busy: Busy[], within?: { from: number; to: number }) {
+  const length = rules.minutes * MINUTE, earliest = now + rules.noticeHours * HOUR, latest = now + rules.daysAhead * DAY, zone = rules.timezone;
+  const today = Math.floor(wall(now, zone) / DAY) * DAY, out = new Set<number>();
   for (let day = today; day <= today + (rules.daysAhead + 1) * DAY; day += DAY) {
-    for (const [from, to] of rules.hours[new Date(day).getUTCDay()] ?? []) {
+    const ranges = rules.hours[new Date(day).getUTCDay()];
+    // Offsets are within 14 hours of UTC, so a local day's instants lie inside this margin.
+    if (!ranges || (within && (day - 14 * HOUR > within.to || day + DAY + 14 * HOUR < within.from))) continue;
+    const midnight = instantOf(day, zone), next = instantOf(day + DAY, zone), steady = midnight !== null && next !== null && next - midnight === DAY;
+    for (const [from, to] of ranges) {
       for (let m = from; m + rules.minutes <= to; m += rules.minutes) {
-        const start = instantOf(day + m * MINUTE, rules.timezone);
-        if (start === null || start < earliest || start > latest || out.includes(start)) continue;
-        if (!busy.some((b) => b.start < start + length && start < b.end)) out.push(start);
+        const start = steady ? midnight + m * MINUTE : instantOf(day + m * MINUTE, zone);
+        if (start === null || start < earliest || start > latest || out.has(start)) continue;
+        if (!busy.some((b) => b.start < start + length && start < b.end)) out.add(start);
       }
     }
   }
-  return out.sort((a, b) => a - b);
+  return [...out].sort((a, b) => a - b);
 }
 
 export const paymentLinkOk = (link: string) => /^https:\/\/(buy|checkout)\.stripe\.com\/[^\s]+$/.test(link);
 export const payUrl = (link: string, token: string, email: string) => { const url = new URL(link); url.searchParams.set("client_reference_id", token); url.searchParams.set("prefilled_email", email); return url.toString(); };
-export const money = (minor: number, currency: string) => { try { return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(minor / 100); } catch { return `${(minor / 100).toFixed(2)} ${currency.toUpperCase()}`; } };
+// Stripe's zero-decimal currencies: amounts are whole units, not cents.
+const ZERO_DECIMAL = new Set(["bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf"]);
+export const minorPer = (currency: string) => (ZERO_DECIMAL.has(currency.toLowerCase()) ? 1 : 100);
+export const CURRENCIES = ["usd", "eur", "gbp", "cad", "aud", "nzd", "chf", "sek", "inr", "mxn", "brl", "jpy", "krw"];
+export const money = (minor: number, currency: string) => { const per = minorPer(currency); try { return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase(), minimumFractionDigits: per === 1 ? 0 : 2, maximumFractionDigits: per === 1 ? 0 : 2 }).format(minor / per); } catch { return `${(minor / per).toFixed(per === 1 ? 0 : 2)} ${currency.toUpperCase()}`; } };
 export const when = (ms: number, zone: string) => new Intl.DateTimeFormat("en-US", { timeZone: zone, weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" }).format(ms);
 const stamp = (ms: number) => new Date(ms).toISOString().replace(/[-:]|\.\d{3}/g, "");
 export const calendarLink = (title: string, start: number, end: number, details: string) => `https://calendar.google.com/calendar/render?${new URLSearchParams({ action: "TEMPLATE", text: title, dates: `${stamp(start)}/${stamp(end)}`, details })}`;

@@ -1,11 +1,12 @@
 {
  "ok": true,
- "orgId": "qx72vn1esmhydqrf119nwm0z9n8fkfpd",
+ "orgId": "r17af1bw8awtfrm388nbth9csd8fjtzt",
  "checks": [
   {
    "name": "public page keys",
    "ok": true,
    "detail": [
+    "currency",
     "description",
     "minutes",
     "name",
@@ -19,9 +20,9 @@
    "name": "open times inside hours in America/New_York (real Convex runtime Intl)",
    "ok": true,
    "detail": {
-    "count": 280,
+    "count": 282,
     "first": "Mon 09:00",
-    "last": "Fri 16:30"
+    "last": "Mon 09:30"
    }
   },
   {
@@ -41,7 +42,7 @@
    "name": "paid page holds and redirects to the Payment Link",
    "ok": true,
    "detail": {
-    "pay": "https://buy.stripe.com/test_harness?client_reference_id=bddde8d5daddda1ab4e14970c1233538&prefilled_email=ava%40example.com",
+    "pay": "https://buy.stripe.com/test_harness?client_reference_id=9e4e0971960dcae8c7455a6ca19e410e&prefilled_email=ava%40example.com",
     "status": "held"
    }
   },
@@ -66,6 +67,32 @@
    "ok": true
   },
   {
+   "name": "underpaid event: 200",
+   "ok": true
+  },
+  {
+   "name": "Finn's hold still waiting",
+   "ok": true
+  },
+  {
+   "name": "underpaid booking kept as paid, not confirmed, needs attention",
+   "ok": true,
+   "detail": {
+    "attention": "Paid $1.00, but the page asks for $5.00",
+    "email": "nia@example.com",
+    "end": 1791297000000,
+    "held": false,
+    "id": "jh7btjmkvaz6c3mshf7aw22nwh8fkcpy",
+    "name": "Nia Short",
+    "note": null,
+    "paid": "$1.00",
+    "personId": "px727j0r4h2p28dme7p21znhwx8fj0z1",
+    "start": 1791296100000,
+    "status": "cancelled",
+    "test": true
+   }
+  },
+  {
    "name": "paid booking confirmed with the event's amount",
    "ok": true,
    "detail": [
@@ -74,38 +101,54 @@
      "email": "ava@example.com",
      "end": 1791213300000,
      "held": false,
-     "id": "jh77tz6apfvhnj8zknhygagnjs8fjnzy",
+     "id": "jh795f9th7j6pqmdp7aw1d977n8fknh4",
      "name": "Ava Stone",
      "note": null,
      "paid": "$5.00",
-     "personId": "ps7c8w1mbx0hyxf8y22jey2qzn8fjef1",
+     "personId": "px793a49v7mrvcr9vgdpgztt0h8fjntp",
      "start": 1791212400000,
-     "status": "confirmed"
+     "status": "confirmed",
+     "test": true
     },
     {
      "attention": null,
      "email": "finn@example.com",
      "end": 1791216000000,
      "held": true,
-     "id": "jh7cbm2xs7qvkmmqmk8nddkv6d8fj9mj",
+     "id": "jh77d38mme7d3hzp341s5wmz2h8fjn7v",
      "name": "Finn Hale",
      "note": null,
      "paid": null,
-     "personId": "ps78a4jcgpv0549rh7jh0s2m798fk9qq",
+     "personId": "px71qwr4q8crfhgf1z98zxas3n8fjtmc",
      "start": 1791215100000,
-     "status": "held"
+     "status": "held",
+     "test": false
+    },
+    {
+     "attention": "Paid $1.00, but the page asks for $5.00",
+     "email": "nia@example.com",
+     "end": 1791297000000,
+     "held": false,
+     "id": "jh7btjmkvaz6c3mshf7aw22nwh8fkcpy",
+     "name": "Nia Short",
+     "note": null,
+     "paid": "$1.00",
+     "personId": "px727j0r4h2p28dme7p21znhwx8fj0z1",
+     "start": 1791296100000,
+     "status": "cancelled",
+     "test": true
     }
    ]
   },
   {
-   "name": "campaign report counts bookings and revenue",
+   "name": "campaign report counts bookings and revenue (an underpaid booking counts as booked and paid: money came in and needs a decision)",
    "ok": true,
    "detail": {
-    "booked": 3,
-    "paid": 1,
+    "booked": 4,
+    "paid": 2,
     "revenue": [
      {
-      "amountMinor": 500,
+      "amountMinor": 600,
       "currency": "usd"
      }
     ]
@@ -114,6 +157,18 @@
   {
    "name": "visitor sees no owner notice",
    "ok": true
+  },
+  {
+   "name": "honeypot: non-semantic name, no label, autocomplete off, tabindex -1, aria-hidden, off screen",
+   "ok": true,
+   "detail": {
+    "name": "x_hp7",
+    "autocomplete": "off",
+    "tabIndex": -1,
+    "hidden": "true",
+    "label": 0,
+    "left": -9999
+   }
   },
   {
    "name": "Payments card never shows the secret",

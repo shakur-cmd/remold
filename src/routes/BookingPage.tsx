@@ -27,7 +27,7 @@ export function BookingPage() {
   const book = useMutation(api.bookings.book);
   const [day, setDay] = useState<string | null>(null);
   const [start, setStart] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", note: "", website: "" });
+  const [form, setForm] = useState({ name: "", email: "", note: "", hp: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [booked, setBooked] = useState<number | null>(null);
@@ -53,11 +53,11 @@ export function BookingPage() {
     if (start === null) return;
     setBusy(true); setError(null);
     try {
-      const result = await book({ pageId, start, name: form.name, email: form.email, ...(form.note.trim() ? { note: form.note } : {}), zone, ...(params.get("s") ? { s: params.get("s")! } : {}), ...(form.website ? { website: form.website } : {}) });
+      const result = await book({ pageId, start, name: form.name, email: form.email, ...(form.note.trim() ? { note: form.note } : {}), zone, ...(params.get("s") ? { s: params.get("s")! } : {}), ...(form.hp ? { hp: form.hp } : {}) });
       if (result.status === "held") { window.location.assign(result.pay); return; }
       if (result.status === "confirmed") setBooked(start);
       else if (result.status === "taken") { setStart(null); setError("Someone just took that time. Please pick another."); }
-      else if (result.status === "limited") setError("Too many tries. Please wait a few minutes and try again.");
+      else if (result.status === "limited") setError("This page is busy right now, or you already have a time waiting for payment. Please try again in a few minutes.");
       else setError("This page is not taking bookings.");
     } catch (err) { setError(errorMessage(err)); }
     setBusy(false);
@@ -69,7 +69,7 @@ export function BookingPage() {
         <h1 className="text-xl font-semibold tracking-tight">{page.name}</h1>
         <p className="flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground">
           <span className="flex items-center gap-1"><Clock className="size-3.5" aria-hidden /> {page.minutes} minutes</span>
-          {page.price != null && page.price > 0 && <span>${page.price % 1 ? page.price.toFixed(2) : page.price}{page.paid ? ", paid when you book" : ""}</span>}
+          {page.price != null && page.price > 0 && <span>{new Intl.NumberFormat(undefined, { style: "currency", currency: page.currency.toUpperCase(), minimumFractionDigits: page.price % 1 ? 2 : 0 }).format(page.price)}{page.paid ? ", paid when you book" : ""}</span>}
         </p>
         {page.description && <p className="mt-1 whitespace-pre-line text-sm">{page.description}</p>}
       </header>
@@ -105,8 +105,8 @@ export function BookingPage() {
           <div className="grid gap-1.5"><Label htmlFor="name">Name</Label><Input id="name" required autoComplete="name" value={form.name} onChange={set("name")} /></div>
           <div className="grid gap-1.5"><Label htmlFor="email">Email</Label><Input id="email" type="email" required autoComplete="email" value={form.email} onChange={set("email")} /></div>
           <div className="grid gap-1.5"><Label htmlFor="note">Anything we should know? (optional)</Label><Textarea id="note" rows={3} value={form.note} onChange={set("note")} /></div>
-          {/* Left empty by people; bots fill it in. */}
-          <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden"><label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} /></label></div>
+          {/* Left empty by people; bots fill it in. A name and no label that autofill does not recognise. */}
+          <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden"><input name="x_hp7" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={form.hp} onChange={set("hp")} /></div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" disabled={busy}>{page.paid ? "Continue to payment" : "Book this time"}</Button>
           {page.paid && <p className="text-xs text-muted-foreground">We hold this time for 30 minutes while you pay with Stripe.</p>}

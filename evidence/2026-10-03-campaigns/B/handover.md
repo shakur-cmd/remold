@@ -138,3 +138,64 @@ The previous release (`c5e2e6b`) does not declare `bookings` or `paymentSecrets`
 - A booking's Activity is written once; editing a page's name later does not rename past Activities.
 - Codegen in `convex/_generated/api.d.ts` was done by hand.
 - The two pre-existing load timeouts above.
+
+## Round 2 (after independent verification REVISE on c1bea0d)
+
+Verifier: Claude Fable 5.1 (`~/work/briefs-1003/iv-B-verdict.md`). Builder: Claude Opus 5.5. Not re-verified yet. Levels: SIM (convex-test) and SERVICE (local backend, 18/18 checks). Nothing LIVE.
+
+Commits: `118e729` merges `origin/integ/campaigns` (ab5d59b), then one commit with the round 2 fixes and this section. Final: `git log -1 campaigns/booking`.
+
+### Merge with integ/campaigns (ab5d59b)
+
+- Conflicts resolved in `convex/agentApi.ts`, `convex/campaignSend.ts`, `convex/lib/applyChange.ts`, `convex/lib/campaign.ts`, `convex/lib/emailRules.ts`, `ops/authority/inventory.json` and the three MCP files. Their side won wherever it changed the email flow. My additions went back in on top.
+- `{{bookingLink}}` renders inside the payload composed once at claim (`campaignSend.ts`, `pages` from `linksOf`). Uncertain retries reuse the stored bytes as before.
+- `contentVersion` is now async and also covers the page each `{{bookingLink}}` names (`linksOf` in `lib/campaign.ts`, `linkedPages` in `lib/booking.ts`). Pointing a link at another page after approval shows "The email or the sending settings changed since approval" (test "pointing the link at a different page after approval needs approval again").
+- `pageRules` still runs after the event insert in `applyChange`, after their withdraw step.
+- `ops/authority/inventory.json`: their file plus my rows via `inventory-rows.mjs`. A check against both parents finds no lost id (270 ours, 258 theirs, 273 merged), and 275 after round 2 adds two rows.
+- After the merge, before any fix: `--maxWorkers=3` 54 files / 480 tests pass; authority 101/101 (one run had two 5 s timeouts at load 12; three reruns pass); my 20 mutants 20/20 (`mutants-after-merge.txt`). My two attribution tests now approve with the preview `version`, like campaigns.test.ts.
+
+### Fixes (coordinator decisions)
+
+1. **Underpay and currency.** New page field `currency` (select, empty = usd). When a visitor is held, the booking stores `expectedMinor` (price in minor units; zero-decimal currencies such as jpy and krw are whole units) and `expectedCurrency`. A paid event confirms only in that currency and for at least that amount. Otherwise the booking keeps `paidAt` and the real amount, is cancelled with `cancelReason: "underpaid"`, and gets an `attention` line such as "Paid $1.00, but the page asks for $100.00" plus an inbox item, and the time opens up again. `checkout.session.async_payment_succeeded` is handled like a paid `completed` event. `async_payment_failed` ends the hold (`cancelReason: "payment failed"`). `livemode` is stored. The owner's list marks test payments "(test)", and the Payments card says to use the live mode secret.
+2. **Stale booking link.** `stateOf` adds a problem when a `{{bookingLink}}` names no page on the campaign ("... names no booking page on this campaign") or a page that is not live ("The booking page for {{bookingLink}} is not live"). Sending waits and the problem shows on the campaign page. Approval still needs only that the page exists, so an email can be approved before its page goes live.
+3. **Spam.** Every `book` call takes the per-page token before `isOpen`, so probing closed times costs a token too. The daily cap counts confirmed bookings only: a free booking takes from it when confirmed, a paid hold only checks it (`limiter.check`), and the Stripe confirmation takes from it. At most 3 unpaid holds per page and 1 per address in the workspace (new indexes `by_page_hold`, `by_email_hold`), answered with `limited` and the seconds until the oldest of those holds runs out. The webhook takes a token per path org id (60 a minute, 429 beyond) before any lookup.
+4. **openSlots.** It uses a Set. A day with no clock change uses one offset for all its times, so the time zone is looked up twice a day instead of three times a slot. `isOpen` computes only the days around the chosen time. The largest legal page (5 minutes, 24/7, 365 days, New York) took 10.8 s before and about 0.3 s after (test bound 1 s).
+5. **Honeypot.** The input is named `x_hp7` with no label, `autocomplete="off"`, password-manager ignore attributes, `tabIndex -1`, inside an `aria-hidden` box off screen. A filled honeypot now gets the neutral error "We could not book this time. Please try again." and nothing is written. The mutation argument is now `hp`. The SERVICE harness checks the rendered attributes.
+6. **The verifier's four surviving mutants now fail tests:** cross-org send token (verifier's test adopted), line breaks in the name, an invalid visitor zone, and a payment for an owner-cancelled booking. Also adopted: the verifier's Sydney, Kolkata, Adelaide and Lord Howe tests, the Stripe signature edge cases, and the cross-org campaign lookup check. Their UNDERPAY, holds-eat-the-cap, probing and stale-link tests are inverted, since those are now fixed.
+7. **Notes.** `instantOf` now tries the offsets a day either side and returns the earliest match, so a repeated local time is its first instant east and west of UTC (Sydney 5 Apr 02:30 = 15:30Z). The comment says so. `money()` handles zero-decimal currencies (¥500, ₩1,050).
+
+### Decision that departs from the instruction: person lookup
+
+The coordinator asked that `matches()` use the email index. `matches()` is website intake's function, and intake has a verified test that matches a person stored as `"Shakur@X.com "` (other case, trailing space). It also matches phones written different ways. Slot indexes hold values exactly as typed, so no index can answer those lookups. So:
+- **Booking** (`personFor`) now looks the address up through the Email field's slot index, lowercased and as typed: no scan. A person stored with the same address in other letter case is not matched, so a second Person is made and the old one is untouched. A test states this.
+- **Intake** keeps its scan, unchanged.
+If exact case-insensitive matching at scale matters, the next step is a normalized key kept on write (for example a small `contactKeys` table filled through applyChange, plus a backfill). I did not build it.
+
+### Fail before, pass after
+
+- `round2-fail-before.txt`: 13 of the new or changed tests fail on `118e729`: honeypot, seed field count (currency), first-instant, the largest-page bound (10838 ms), underpay, other currency, jpy, async payments, probing, cap counts holds, holds per page/address, webhook rate limit, person case.
+- Six round 2 tests already passed there: the gate came with the merge, and the four guards existed but had no test. Their proof is the mutant run: switching each rule off fails them (cross-org token, line breaks, visitor zone, paid-after-cancel, stale link gate, pages in the content version).
+- `round2-pass-after.txt`: 45/45.
+- Mutants (`mutants.txt`, `mutants.mjs`): 40/40 caught. That is the 20 from round 1 (five updated to the rewritten code) and 20 new: the 4 verifier survivors plus 16 round 2 rules.
+
+### Suites (`round2-after.txt`)
+
+- `pnpm exec vitest run --maxWorkers=3`: 54 files, 500 passed.
+- `pnpm test` with default workers, load 7 to 9: 495/500. All 5 failures are timeouts in older tests: gmailSync "last contact", record paging "follows a page ... without resubscribing", and three posts/calendar paging tests. None are in the booking or campaign files. The same kind failed on base before (`flake.txt`). Use `--maxWorkers=3` or a quiet machine.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: built. `pnpm --dir packages/mcp test`: 9/9.
+
+### SERVICE (`service-run.json`, 18/18)
+
+The round 1 checks plus: public keys now include `currency`; an underpaid signed event ($1.00 on a $5 page) is kept as paid, not confirmed, with attention; another hold is untouched; the report counts 4 booked, 2 paid, $6.00 (an underpaid booking counts as booked and paid, since money came in and needs a decision); the honeypot's rendered attributes. Screenshots were refreshed. `booking-page-record.png` shows the underpaid row and "(test)" payments. The browser again logged six 403 resource loads I did not trace.
+
+### Rollback
+
+Still additive: optional booking fields (`livemode`, `expectedMinor`, `expectedCurrency`), two new indexes, a `currency` field added through `seed:ensureStandard`. Same rollback note as round 1, now against the merged base.
+
+### Left undone or uncertain (round 2)
+
+- No real Stripe delivery. The `async_payment_*` shapes and `livemode` follow Stripe's documented events; I did not observe them live.
+- The public `page` query still computes open times on every load and cannot be rate limited (queries cannot write). It is now about 0.3 s for the worst legal page and much less for normal ones.
+- `busy.some` is still linear per slot. A page with thousands of bookings and meetings in its horizon would be slow; I did not measure that.
+- An underpaid booking cannot be "topped up". The owner refunds or rebooks by hand.
+- Booking does not match a person stored with a differently cased email (see the departure above).

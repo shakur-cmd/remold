@@ -28,4 +28,5 @@ export const intakeLimiter = new RateLimiter(components.rateLimiter, {
 export const bookingLimiter = new RateLimiter(components.rateLimiter, {
   bookingPage: { kind: "token bucket", rate: 20, period: MINUTE, capacity: 20 },
   bookingEmail: { kind: "fixed window", rate: 3, period: HOUR },
+  stripeHook: { kind: "token bucket", rate: 60, period: MINUTE, capacity: 60 },
 });
