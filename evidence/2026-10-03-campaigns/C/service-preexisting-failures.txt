@@ -1,0 +1,74 @@
+c-shot/sweeps.log:PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+c-shot/sweeps.log:PASS Production dispatch records cancelled late acceptance exactly once
+c-shot/sweeps.log:AssertionError [ERR_ASSERTION]: No readonly sweep call for reminders:set
+c-base-service.log:PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+c-base-service.log:PASS Production dispatch records cancelled late acceptance exactly once
+c-base-service.log:PASS SERVICE transaction races reserve organization budget and concurrency once
+c-base-service.log:PASS SERVICE cross-tenant collision leaves the losing account and organization unchanged
+c-base-service.log:PASS Payload edits invalidate immutable approval; destination and schedule are enforced
+c-base-service.log:PASS One-use expiring permit and server scheduled crash recovery retain consumed uncertainty
+c-base-service.log:PASS Readonly between claim and permit stops sends but permits truthful receipt settlement
+c-base-service.log:PASS Missing usage pauses cheaper work until authoritative usage settles exactly once
+c-base-service.log:PASS Actual overrun records the full cost and blocks continuation and new spending
+c-base-service.log:PASS Final absence targets only the current unresolved logical step, then late truth is held as anomaly
+c-base-service.log:PASS Provisional absence permits only same-key retry and old-fence truthful settlement
+c-base-service.log:PASS Receipt collisions persist a durable anomaly instead of rolling it back with an exception
+c-base-service.log:PASS Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)
+c-base-service.log:PASS Human safety rejects expired JWT and same-transaction membership epoch changes (SIM provider)
+c-base-service.log:PASS Client recurring cancel is a distinct zero-amount command with no new collection authority (SIM provider)
+c-base-service.log:PASS Two exact refund receipts exhaust the paid amount; one receipt cannot settle two operations
+c-base-service.log:PASS Outside pending refunds hold headroom; an authoritative failed receipt releases only that receipt
+c-base-service.log:PASS Matched pending receipt replaces its local hold; late acknowledgement cannot overwrite fetched failure
+c-base-service.log:PASS Incomplete reconciliation blocks new safety consume and preserves unknown local holds
+c-base-service.log:PASS General refund and recurring-cancel dispatch refuse the safety-ledger bypass
+c-base-service.log:PASS Only capability-specific finality with a complete post-consume lookup releases an unknown refund
+c-base-service.log:PASS Propose-mode external authority still requires human approval; currency and binding scopes cannot widen
+c-base-service.log:PASS Every approval material field invalidates the reviewed version
+c-base-service.log:PASS Actual human approver role downgrade invalidates already-approved dispatch
+c-base-service.log:PASS Final permit rechecks missing usage discovered after a different operation was claimed
+c-base-service.log:PASS Human adoption creates a new attributed command while preserving the fired agent original
+c-base-service.log:PASS Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose
+c-base-service.log:PASS Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient
+c-base-service.log:PASS Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal
+c-base-service.log:PASS Same external ID under different provider instances stays isolated per connection
+c-base-service.log:PASS Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks
+c-base-service.log:AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Agent inactive/. Input:
+c-base-service.log:'Error: 403:{"error":{"code":"FORBIDDEN","message":"Stale claim"}}'
+c-base-service.log:  actual: Error: 403:{"error":{"code":"FORBIDDEN","message":"Stale claim"}}
+c-shot/service.log:PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+c-shot/service.log:PASS Production dispatch records cancelled late acceptance exactly once
+c-shot/service.log:PASS SERVICE transaction races reserve organization budget and concurrency once
+c-shot/service.log:PASS SERVICE cross-tenant collision leaves the losing account and organization unchanged
+c-shot/service.log:PASS Payload edits invalidate immutable approval; destination and schedule are enforced
+c-shot/service.log:PASS One-use expiring permit and server scheduled crash recovery retain consumed uncertainty
+c-shot/service.log:PASS Readonly between claim and permit stops sends but permits truthful receipt settlement
+c-shot/service.log:PASS Missing usage pauses cheaper work until authoritative usage settles exactly once
+c-shot/service.log:PASS Actual overrun records the full cost and blocks continuation and new spending
+c-shot/service.log:PASS Final absence targets only the current unresolved logical step, then late truth is held as anomaly
+c-shot/service.log:PASS Provisional absence permits only same-key retry and old-fence truthful settlement
+c-shot/service.log:PASS Receipt collisions persist a durable anomaly instead of rolling it back with an exception
+c-shot/service.log:PASS Readonly safety refund races reserve paid headroom transactionally; receipts settle once (SIM provider)
+c-shot/service.log:PASS Human safety rejects expired JWT and same-transaction membership epoch changes (SIM provider)
+c-shot/service.log:PASS Client recurring cancel is a distinct zero-amount command with no new collection authority (SIM provider)
+c-shot/service.log:PASS Two exact refund receipts exhaust the paid amount; one receipt cannot settle two operations
+c-shot/service.log:PASS Outside pending refunds hold headroom; an authoritative failed receipt releases only that receipt
+c-shot/service.log:PASS Matched pending receipt replaces its local hold; late acknowledgement cannot overwrite fetched failure
+c-shot/service.log:PASS Incomplete reconciliation blocks new safety consume and preserves unknown local holds
+c-shot/service.log:PASS General refund and recurring-cancel dispatch refuse the safety-ledger bypass
+c-shot/service.log:PASS Only capability-specific finality with a complete post-consume lookup releases an unknown refund
+c-shot/service.log:PASS Propose-mode external authority still requires human approval; currency and binding scopes cannot widen
+c-shot/service.log:PASS Every approval material field invalidates the reviewed version
+c-shot/service.log:PASS Actual human approver role downgrade invalidates already-approved dispatch
+c-shot/service.log:PASS Final permit rechecks missing usage discovered after a different operation was claimed
+c-shot/service.log:PASS Human adoption creates a new attributed command while preserving the fired agent original
+c-shot/service.log:PASS Actual authenticated callback payload deduplicates, rejects changed content and scopes suppression to recipient/channel/purpose
+c-shot/service.log:PASS Provision deletion wins before and after acknowledgement; tuple collision cannot replace recipient
+c-shot/service.log:PASS Durable cursor keeps partial checkpoint, rejects page gaps and permits only the next committed traversal
+c-shot/service.log:PASS Same external ID under different provider instances stays isolated per connection
+c-shot/service.log:PASS Actual human, REST, history, suggestions, CSV, lookup titles and operation DTOs share current masks
+c-shot/service.log:AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Agent inactive/. Input:
+c-shot/service.log:'Error: 403:{"error":{"code":"FORBIDDEN","message":"Stale claim"}}'
+c-shot/service.log:  actual: Error: 403:{"error":{"code":"FORBIDDEN","message":"Stale claim"}}
+c-base-sweeps.log:PASS Real JWT verification derives human identity and rejects invalid audience and expired tokens
+c-base-sweeps.log:PASS Production dispatch records cancelled late acceptance exactly once
+c-base-sweeps.log:AssertionError [ERR_ASSERTION]: No readonly sweep call for reminders:set

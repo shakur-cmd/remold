@@ -1,0 +1,5 @@
+new build wrote: 1 applied, 1 failed, 1 pending shape proposal; agent read extended to Venue
+old release pushed: functions ready
+old release: objects company,person,opportunity,project,task,note,activity,campaign,invoice,post,venue | venue fields name,capacity,owner | record created true
+old release agent REST: /me ok true | agent sees venue true | shape route 404
+forward again, shape proposals by status: {"pending":1,"applied":1,"failed":1}
