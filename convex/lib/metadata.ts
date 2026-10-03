@@ -5,7 +5,7 @@ import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "../authority/reads";
 import { unrestrictedHuman } from "../authority/inbox";
-import { allocateSlot, kindFor, type SlotKind } from "./slots";
+import { allocateSlot, capacity, kindFor, type SlotKind } from "./slots";
 import { viewSpec } from "./viewSpec";
 
 // The rules for changing a workspace's shape, shared by a person's own Settings
@@ -13,7 +13,7 @@ import { viewSpec } from "./viewSpec";
 type Ctx = QueryCtx | MutationCtx;
 export const fieldType = v.union(v.literal("text"), v.literal("number"), v.literal("select"), v.literal("date"), v.literal("boolean"), v.literal("lookup"), v.literal("links"));
 export const option = v.object({ id: v.string(), label: v.string(), color: v.optional(v.string()) });
-export const fieldSpec = v.object({ key: v.string(), label: v.string(), type: fieldType, options: v.optional(v.array(option)), targetObjectId: v.optional(v.id("objects")), required: v.optional(v.boolean()), withTime: v.optional(v.boolean()) });
+export const fieldSpec = v.object({ key: v.string(), label: v.string(), type: fieldType, options: v.optional(v.array(option)), targetObjectId: v.optional(v.id("objects")), required: v.optional(v.boolean()), withTime: v.optional(v.boolean()), indexed: v.optional(v.boolean()) });
 export const objectSpec = { key: v.string(), label: v.string(), labelPlural: v.string(), icon: v.optional(v.string()) };
 export const shapeChange = v.union(
   v.object({ kind: v.literal("addObject"), ...objectSpec, fields: v.array(fieldSpec) }),
@@ -23,16 +23,25 @@ export const shapeChange = v.union(
   v.object({ kind: v.literal("relabel"), objectId: v.id("objects"), fieldId: v.optional(v.id("fields")), label: v.string(), labelPlural: v.optional(v.string()) }),
   // A shared view; applying it creates the view as the agent's.
   v.object({ kind: v.literal("addView"), objectId: v.id("objects"), view: v.object(viewSpec), pinned: v.optional(v.boolean()) }),
+  // Lifecycle: nothing is deleted; each has an inverse (convex/lib/lifecycle.ts).
+  v.object({ kind: v.literal("retireField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
+  v.object({ kind: v.literal("restoreField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
+  v.object({ kind: v.literal("reorderFields"), objectId: v.id("objects"), fieldIds: v.array(v.id("fields")) }),
+  v.object({ kind: v.literal("reorderObjects"), objectIds: v.array(v.id("objects")) }),
+  v.object({ kind: v.literal("reorderOptions"), objectId: v.id("objects"), fieldId: v.id("fields"), optionIds: v.array(v.string()) }),
+  v.object({ kind: v.literal("archiveObject"), objectId: v.id("objects") }),
+  v.object({ kind: v.literal("unarchiveObject"), objectId: v.id("objects") }),
+  v.object({ kind: v.literal("setTitleField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
 );
 export type ShapeChange = Infer<typeof shapeChange>;
+export type Lifecycle = Exclude<ShapeChange, { kind: "addObject" | "addField" | "addOptions" | "relabel" | "addView" }>;
 export type FieldSpec = Infer<typeof fieldSpec>;
 export type Option = Infer<typeof option>;
 type ObjectSpec = { key: string; label: string; labelPlural: string; icon?: string };
 
 const validKey = (key: string) => /^[a-z][a-zA-Z0-9]*$/.test(key);
 const uniqueOptions = (value: { id: string }[] | undefined) => !!value?.length && new Set(value.map((o) => o.id)).size === value.length;
-const capacity: Record<SlotKind, number> = { n: 8, s: 8, d: 4, b: 4 };
-const fieldsOf = (ctx: Ctx, orgId: Id<"orgs">, objectId: Id<"objects">) => ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
+export const fieldsOf = (ctx: Ctx, orgId: Id<"orgs">, objectId: Id<"objects">) => ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
 
 // A new object can collide with any object key, so only someone who sees every object may add one.
 export async function unrestricted(ctx: Ctx, principal: Principal) {
@@ -43,6 +52,8 @@ export async function unrestricted(ctx: Ctx, principal: Principal) {
   return true;
 }
 export async function requireUnrestricted(ctx: Ctx, principal: Principal) { if (!await unrestricted(ctx, principal)) fail("FORBIDDEN", "Unrestricted workspace access required"); }
+// Archiving keeps an object's records; it takes no new ones until it comes back.
+export const requireLive = (object: Doc<"objects">) => { if (object.archived) fail("VALIDATION", `Unarchive ${object.labelPlural} to add records`); };
 export const requireLabel = (label: string | undefined, what = "Label") => { if (!label?.trim()) fail("VALIDATION", `${what} is required`); };
 
 export async function checkObject(ctx: Ctx, principal: Principal, spec: ObjectSpec, fields: FieldSpec[] = []) {
@@ -61,10 +72,11 @@ async function checkField(ctx: Ctx, principal: Principal, spec: FieldSpec, taken
   if (spec.type === "select" && !uniqueOptions(spec.options)) fail("VALIDATION", "Select needs unique options");
   if (spec.type !== "select" && spec.options) fail("VALIDATION", "Only select fields have options");
   if (spec.withTime !== undefined && spec.type !== "date") fail("VALIDATION", "Only date fields keep time");
+  if (spec.indexed === false && spec.type !== "text") fail("VALIDATION", "Only text fields can skip the index");
   if (spec.targetObjectId && spec.type !== "lookup" && spec.type !== "links") fail("VALIDATION", "Only relation fields have a target");
   if (spec.targetObjectId) { const target = await ctx.db.get(spec.targetObjectId); if (!target || target.orgId !== principal.org._id) fail("NOT_FOUND", "Target object not found"); requireObjectRead(principal, target); }
   // Related records are found through the lookup's slot, so a lookup without one would not work.
-  const kind = kindFor(spec.type);
+  const kind = spec.indexed === false ? undefined : kindFor(spec.type);
   if (kind) { if (spec.type === "lookup" && used[kind] >= capacity[kind]) fail("SLOTS_EXHAUSTED", "No index slot left for another lookup on this object"); used[kind] += 1; }
 }
 export async function checkNewField(ctx: Ctx, principal: Principal, object: Doc<"objects">, spec: FieldSpec) {
@@ -101,8 +113,8 @@ export async function createField(ctx: MutationCtx, principal: Principal, object
   await checkNewField(ctx, principal, object, spec);
   return insertField(ctx, principal.org._id, object._id, spec);
 }
-async function insertField(ctx: MutationCtx, orgId: Id<"orgs">, objectId: Id<"objects">, spec: FieldSpec) {
-  const order = (await fieldsOf(ctx, orgId, objectId)).length, kind = kindFor(spec.type), slot = kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined;
+async function insertField(ctx: MutationCtx, orgId: Id<"orgs">, objectId: Id<"objects">, { indexed, ...spec }: FieldSpec) {
+  const order = (await fieldsOf(ctx, orgId, objectId)).length, kind = indexed === false ? undefined : kindFor(spec.type), slot = kind ? await allocateSlot(ctx, orgId, objectId, kind) : undefined;
   const fieldId = await ctx.db.insert("fields", { orgId, objectId, ...spec, required: spec.required ?? false, slot, encoding: 1, retired: false, order });
   return { fieldId, slot };
 }

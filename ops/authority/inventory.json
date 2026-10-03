@@ -464,6 +464,99 @@
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
   },
   {
+    "id": "fields:restore",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "fields:reorder",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "fields:reorderOptions",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "objects:reorder",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "objects:setArchived",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "objects:setTitleField",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "objects:impact",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "an agent proposes retiring, the person sees the impact, applies, and an agent proposal restores it",
+    "reason": "counts and labels only, for an admin with full object scope"
+  },
+  {
+    "id": "lib/lifecycle:retitle",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "a person and an agent change the title field; record titles follow",
+    "reason": "finishes recomputing titles for a title-field change made before the workspace went read only; changes no values"
+  },
+  {
+    "id": "lib/lifecycle:resumeRetitles",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "a retitle that stopped is resumed by the sweeper and finishes",
+    "reason": "finishes rewriting stored titles after a title-field change made before the workspace went read only; changes no values"
+  },
+  {
     "id": "inbox:audience",
     "kind": "query",
     "visibility": "public",
@@ -1828,6 +1921,17 @@
     "masks": "no-record-data",
     "proof": "delivers each notice to the configured sink, retries failed deliveries, and never resends a delivered one",
     "reason": "operator alerts only"
+  },
+  {
+    "id": "cron Resume title rewrites",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "a retitle that stopped is resumed by the sweeper and finishes",
+    "reason": "finishes rewriting stored titles after a title-field change made before the workspace went read only; changes no values"
   },
   {
     "id": "cron REST telemetry probe",

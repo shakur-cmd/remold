@@ -1,0 +1,28 @@
+ 10:26:24 up 1 day, 20:44,  4 users,  load average: 1.92, 3.64, 3.79
+== pnpm test --maxWorkers=2 --testTimeout=60000 (machine loaded)
+ Test Files  56 passed (56)
+      Tests  510 passed (510)
+== pnpm typecheck
+$ tsc -b && tsc --noEmit -p convex
+== pnpm test:authority
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+== pnpm verify:release
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+== pnpm build
+[plugin builtin:vite-reporter] 
+✓ built in 2.11s
+== pnpm --dir packages/mcp test
+      Tests  8 passed (8)
+== pnpm test (default workers, load 4.97)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/gmailSync.test.ts > last contact > is the newest past activity about each person, and skips activities the reader cannot see
+Error: Test timed out in 5000ms.
+ FAIL  src/components/Calendar.drag.test.tsx > follows a page that is not done and shows the records of the next one, without resubscribing
+Error: Test timed out in 15000ms.
+ FAIL  src/components/Calendar.drag.test.tsx > keeps every post when an insert moves an earlier page boundary while two pages are loaded
+Error: Test timed out in 15000ms.
+ Test Files  2 failed | 54 passed (56)
+      Tests  3 failed | 507 passed (510)

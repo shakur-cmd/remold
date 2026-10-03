@@ -107,7 +107,7 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
         </NavLink>
       )}
       <div className="mt-4 mb-1 px-3 text-xs text-muted-foreground">Records</div>
-      {objects.map((object) => {
+      {objects.filter((object) => !object.archived).map((object) => {
         const views = pinned.filter((view) => view.objectId === object._id);
         return (
           <Fragment key={object._id}>

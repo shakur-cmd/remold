@@ -107,7 +107,7 @@ async function busyDay() {
   const post = await objectFields(client, orgId, "post"), planned = post.fields.planned;
   const create = (title: string, at: number) => client.mutation(api.records.create, { orgId, objectId: post.object._id, values: { [post.fields.title._id]: title, [planned._id]: at } });
   const { recordId } = await create("Post 0", Date.UTC(2026, 9, 5, 12));
-  await t.run(async (ctx: any) => { const { _id, _creationTime, ...doc } = await ctx.db.get(recordId); for (let i = 1; i <= 500; i++) await ctx.db.insert("records", { ...doc, title: `Post ${i}`, ref: `${doc.ref}-${i}` }); });
+  await t.run(async (ctx: any) => { const { _id, _creationTime, ...doc } = await ctx.db.get(recordId); for (let i = 1; i <= 500; i++) await ctx.db.insert("records", { ...doc, title: `Post ${i}`, values: { ...doc.values, [post.fields.title._id]: `Post ${i}` }, ref: `${doc.ref}-${i}` }); });
   const detail = await client.query(api.objects.get, { orgId, objectId: post.object._id });
   await act(async () => { root = createRoot(host); });
   return { orgId, detail, create };

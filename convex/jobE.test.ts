@@ -75,7 +75,8 @@ describe("Job E regression boundaries", () => {
   it("REST Today uses the app selection for retained done values", async () => {
     const { client, orgId, t } = await userAndOrg(), task = await objectFields(client, orgId, "task"), a = await agentFor(client, orgId, { name: "agent" });
     await client.mutation(api.records.create, { orgId, objectId: task.object._id, values: { [task.fields.title._id]: "Finished", [task.fields.dueDate._id]: Date.now() - 86400000, [task.fields.done._id]: true } });
-    await client.mutation(api.fields.retire, { orgId, fieldId: task.fields.done._id });
+    // Done cannot be retired through the app (Job G: Today reads it); a workspace may still hold it retired from before.
+    await t.run((ctx: any) => ctx.db.patch(task.fields.done._id, { retired: true }));
     const today = Math.floor(Date.now() / 86400000) * 86400000, app = await client.query(api.today.get, { orgId, today });
     const result = (await rest(t, a.key)("GET", "/api/v1/today")).json;
     expect(result.tasks.map((r: any) => r.id)).toEqual(app.tasks.map(r => r._id)); expect(result.tasks).toEqual([]);

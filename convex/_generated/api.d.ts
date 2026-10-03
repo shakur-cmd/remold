@@ -62,6 +62,7 @@ import type * as lib_find from "../lib/find.js";
 import type * as lib_idempotency from "../lib/idempotency.js";
 import type * as lib_importCheck from "../lib/importCheck.js";
 import type * as lib_intake from "../lib/intake.js";
+import type * as lib_lifecycle from "../lib/lifecycle.js";
 import type * as lib_list from "../lib/list.js";
 import type * as lib_metadata from "../lib/metadata.js";
 import type * as lib_ref from "../lib/ref.js";
@@ -149,6 +150,7 @@ declare const fullApi: ApiFromModules<{
   "lib/idempotency": typeof lib_idempotency;
   "lib/importCheck": typeof lib_importCheck;
   "lib/intake": typeof lib_intake;
+  "lib/lifecycle": typeof lib_lifecycle;
   "lib/list": typeof lib_list;
   "lib/metadata": typeof lib_metadata;
   "lib/ref": typeof lib_ref;

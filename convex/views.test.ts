@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { anyApi } from "convex/server";
 import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
-import schema from "./schema";
 
 const views = anyApi.views;
 type F = Awaited<ReturnType<typeof userAndOrg>>;
@@ -138,18 +137,20 @@ describe("saved views", () => {
   });
 
   it("keeps working when a field it uses is retired, with that column, filter and sort dropped and flagged", async () => {
-    const f = await pipeline();
-    const viewId = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Proposals by size", layout: "board", groupFieldId: f.o.stage._id, columns: [f.o.amount._id, f.o.closeDate._id], filters: [{ fieldId: f.o.stage._id, value: "proposal" }], sort: { fieldId: f.o.amount._id, direction: "desc" }, shared: true });
-    await f.client.mutation(api.fields.retire, { orgId: f.orgId, fieldId: f.o.stage._id });
+    // Stage cannot be retired (features rely on it), so the board groups and filters by a custom select.
+    const f = await pipeline(), { fieldId: tier } = await f.client.mutation(api.fields.create, { orgId: f.orgId, objectId: f.opp.object._id, key: "tier", label: "Tier", type: "select", options: [{ id: "gold", label: "Gold" }] });
+    const viewId = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Gold by size", layout: "board", groupFieldId: tier, columns: [f.o.amount._id, f.o.closeDate._id], filters: [{ fieldId: tier, value: "gold" }], sort: { fieldId: f.o.amount._id, direction: "desc" }, shared: true });
+    expect((await f.call("GET", `/api/v1/views/${viewId}/records?limit=50`)).json.records).toHaveLength(0);
+    await f.client.mutation(api.fields.retire, { orgId: f.orgId, fieldId: tier });
     await f.client.mutation(api.fields.retire, { orgId: f.orgId, fieldId: f.o.amount._id });
     const [view] = await f.client.query(views.list, { orgId: f.orgId });
     expect(view).toMatchObject({ layout: "table", columns: [f.o.closeDate._id], filters: [], blocked: false });
     expect(view.sort).toBeUndefined();
-    expect(view.dropped).toEqual([{ field: "Amount", part: "column" }, { field: "Stage", part: "filter" }, { field: "Amount", part: "sort" }, { field: "Stage", part: "board" }]);
+    expect(view.dropped).toEqual([{ field: "Amount", part: "column" }, { field: "Tier", part: "filter" }, { field: "Amount", part: "sort" }, { field: "Tier", part: "board" }]);
     const ran = await f.call("GET", `/api/v1/views/${viewId}/records?limit=50`);
     expect(ran.status).toBe(200);
     expect(ran.json.records).toHaveLength(6);
-    expect(ran.json.view).toMatchObject({ layout: "table", columns: ["closeDate"], filters: [], sort: null, dropped: [{ field: "Amount", part: "column" }, { field: "Stage", part: "filter" }, { field: "Amount", part: "sort" }, { field: "Stage", part: "board" }] });
+    expect(ran.json.view).toMatchObject({ layout: "table", columns: ["closeDate"], filters: [], sort: null, dropped: [{ field: "Amount", part: "column" }, { field: "Tier", part: "filter" }, { field: "Amount", part: "sort" }, { field: "Tier", part: "board" }] });
     // Saving the view again stores it without the retired fields.
     await f.client.mutation(views.update, { orgId: f.orgId, viewId, columns: [f.o.closeDate._id] });
     expect((await f.client.query(views.list, { orgId: f.orgId }))[0].dropped).toEqual([]);
@@ -229,8 +230,7 @@ describe("saved views", () => {
     }
   });
 
-  // Archiving objects arrives with the shape-lifecycle branch; this runs once objects can carry `archived`.
-  it.skipIf(!("archived" in (schema.tables.objects.validator as any).fields))("leaves views of an archived object out of lists and runs", async () => {
+  it("leaves views of an archived object out of lists and runs", async () => {
     const f = await pipeline();
     const viewId = await f.client.mutation(views.create, { orgId: f.orgId, objectId: f.opp.object._id, name: "Deals", layout: "table", columns: [], filters: [], shared: true, pinned: true });
     await f.t.run((ctx: any) => ctx.db.patch(f.opp.object._id, { archived: true }));

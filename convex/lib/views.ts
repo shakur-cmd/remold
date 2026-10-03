@@ -19,9 +19,8 @@ const isDay = (day: string | undefined) => day === undefined || (/^\d{4}-\d{2}-\
 
 const fieldsOf = async (ctx: Ctx, object: Doc<"objects">) => new Map((await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).collect()).map((f) => [f._id as string, f]));
 
-// Objects archived by the shape-lifecycle work drop out of view lists and runs. Read
-// defensively so this compiles before that branch adds `archived` to the schema.
-export const archived = (object: Doc<"objects">) => !!(object as { archived?: boolean }).archived;
+// Views of an archived object drop out of view lists and runs.
+export const archived = (object: Doc<"objects">) => !!object.archived;
 
 // The rules a view must meet when it is saved, by a person or by applying an agent's
 // proposal. Returns the view with filter values coerced the way agent input is.
