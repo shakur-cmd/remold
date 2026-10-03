@@ -89,6 +89,16 @@ export function SuggestionCard({ orgId, row }: { orgId: Id<"orgs">; row: Suggest
               </li>
             );
           })}
+          {Object.entries(suggestion.change.links ?? {}).map(([fieldId, delta]) => {
+            const field = fields.get(fieldId);
+            return field ? (
+              <li key={fieldId} className="grid gap-0.5">
+                <span className="text-xs text-muted-foreground">{field.label}</span>
+                {delta.add.length > 0 && <span className="flex flex-wrap items-baseline gap-x-1.5"><span className="text-muted-foreground">add</span><FieldValue orgId={orgId} field={field} value={delta.add} plain /></span>}
+                {delta.remove.length > 0 && <span className="flex flex-wrap items-baseline gap-x-1.5"><span className="text-muted-foreground">remove</span><span className="line-through"><FieldValue orgId={orgId} field={field} value={delta.remove} plain /></span></span>}
+              </li>
+            ) : null;
+          })}
         </ul>
       )}
       <p className="text-muted-foreground">“{suggestion.reason}”</p>

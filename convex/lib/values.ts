@@ -112,3 +112,6 @@ export async function readableMap(ctx: Ctx, principal: Principal, fields: Doc<"f
   for (const [id, value] of Object.entries(values)) { const field = byId.get(id); if (!field) continue; const object = await ctx.db.get(field.objectId); if (!object || !canReadField(principal, object, field)) continue; out[field.key] = (await readableValue(ctx, principal, field, value)) ?? null; }
   return out;
 }
+
+// A links value after a delta: removals drop out, additions append once, and anything else already linked stays.
+export const joined = (current: unknown, delta: { add: string[]; remove: string[] }) => { const kept = ((current as string[] | undefined) ?? []).filter((id) => !delta.remove.includes(id)); return [...kept, ...delta.add.filter((id) => !kept.includes(id))]; };

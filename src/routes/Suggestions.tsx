@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { SuggestionCard, type SuggestionRow } from "@/components/SuggestionCard";
+import { BatchCard } from "@/components/BatchCard";
 import { Loading } from "@/components/Loading";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/errors";
@@ -15,10 +16,11 @@ import type { OrgContext } from "@/routes/OrgLayout";
 const done = { create: "created", update: "changed", delete: "deleted" } as const;
 type ShapeRow = FunctionReturnType<typeof api.shapeSuggestions.list>[number];
 
-// Record changes and shape changes both wait on a person, so the nav badge and Today count both.
+// Record changes, batches and shape changes all wait on a person, so the nav badge and Today count them all.
 export function useWaiting(orgId: Id<"orgs">) {
   const records = useQuery(api.suggestions.list, { orgId, status: "pending" })?.length ?? 0;
-  return records + (useQuery(api.shapeSuggestions.list, { orgId, status: "pending" })?.length ?? 0);
+  const batches = useQuery(api.batches.list, { orgId, status: "pending" })?.length ?? 0;
+  return records + batches + (useQuery(api.shapeSuggestions.list, { orgId, status: "pending" })?.length ?? 0);
 }
 
 export function Suggestions() {
@@ -28,15 +30,24 @@ export function Suggestions() {
   const applied = useQuery(api.suggestions.list, { orgId: org._id, status: "applied" });
   const shape = useQuery(api.shapeSuggestions.list, { orgId: org._id, status: "pending" });
   const failed = useQuery(api.shapeSuggestions.list, { orgId: org._id, status: "failed" });
-  if (!pending || !conflicted || !applied || !shape || !failed) return <Loading />;
+  const batches = useQuery(api.batches.list, { orgId: org._id, status: "pending" });
+  const applying = useQuery(api.batches.list, { orgId: org._id, status: "applying" });
+  const stopped = useQuery(api.batches.list, { orgId: org._id, status: "stopped" });
+  const finished = useQuery(api.batches.list, { orgId: org._id, status: "done" });
+  if (!pending || !conflicted || !applied || !shape || !failed || !batches || !applying || !stopped || !finished) return <Loading />;
+  const running = [...stopped, ...applying];
+  const waiting = pending.length + shape.length + batches.length;
   return (
     <div className="grid max-w-2xl gap-6">
       <div className="grid gap-1">
         <h1 className="text-xl font-semibold tracking-tight">Suggestions</h1>
         <p className="text-sm text-muted-foreground">Changes your agents proposed. Nothing lands until someone applies it.</p>
       </div>
-      <Section title="Waiting for you" count={pending.length + shape.length}>
-        {pending.length + shape.length === 0 && <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">Nothing waiting. When an agent proposes a change it appears here.</p>}
+      <Section title="Waiting for you" count={waiting}>
+        {waiting === 0 && <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">Nothing waiting. When an agent proposes a change it appears here.</p>}
+        {batches.map((row) => (
+          <BatchCard key={row._id} orgId={org._id} row={row} />
+        ))}
         {shape.map((row) => (
           <ShapeCard key={row._id} orgId={org._id} row={row} />
         ))}
@@ -44,6 +55,13 @@ export function Suggestions() {
           <SuggestionCard key={row.suggestion._id} orgId={org._id} row={row} />
         ))}
       </Section>
+      {running.length > 0 && (
+        <Section title="Applying" count={running.length}>
+          {running.map((row) => (
+            <BatchCard key={row._id} orgId={org._id} row={row} />
+          ))}
+        </Section>
+      )}
       {conflicted.length > 0 && (
         <Section title="Changed underneath" count={conflicted.length}>
           {conflicted.map((row) => (
@@ -55,6 +73,13 @@ export function Suggestions() {
         <Section title="Could not apply" count={failed.length}>
           {failed.slice(0, 10).map((row) => (
             <ShapeCard key={row._id} orgId={org._id} row={row} />
+          ))}
+        </Section>
+      )}
+      {finished.length > 0 && (
+        <Section title="Finished batches">
+          {finished.slice(0, 5).map((row) => (
+            <BatchCard key={row._id} orgId={org._id} row={row} />
           ))}
         </Section>
       )}

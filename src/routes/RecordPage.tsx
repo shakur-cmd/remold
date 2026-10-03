@@ -643,6 +643,7 @@ function Timeline({ orgId, recordId, fields, note, activity }: { orgId: Id<"orgs
                   <span className="text-muted-foreground">
                     {entry.action === "create" ? "created this" : entry.action === "delete" ? "deleted this" : "changed"}
                     {entry.appliedByName && `, applied by ${entry.appliedByName}`}
+                    {entry.proposedByName && `, proposed by ${entry.proposedByName}`}
                   </span>
                   <time className="ml-auto text-xs text-muted-foreground tabular-nums">{formatTime(entry.at)}</time>
                 </div>

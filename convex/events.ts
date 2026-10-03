@@ -13,8 +13,10 @@ async function describe(ctx: QueryCtx, principal: Principal, event: Doc<"events"
   const actor = event.actor.kind === "user" ? await ctx.db.get(event.actor.id as Id<"users">) : event.actor.kind === "agent" ? await ctx.db.get(event.actor.id as Id<"agents">) : null;
   const suggestion = event.suggestionId ? await ctx.db.get(event.suggestionId) : null;
   const appliedBy = suggestion?.resolvedBy ? await ctx.db.get(suggestion.resolvedBy) : null;
+  // A batch a person applied names them as actor; the agent that proposed it is credited here.
+  const item = await ctx.db.query("batchItems").withIndex("by_event", (q) => q.eq("eventId", event._id)).unique(), batch = item && await ctx.db.get(item.batchId), proposer = batch?.mode === "proposal" ? await ctx.db.get(batch.agentId) : null;
   const masked = await projectEvent(ctx, principal, event);
-  return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? event.actor.id : null), appliedByName: appliedBy?.name ?? null } : null;
+  return masked ? { ...masked, actorName: actor?.name ?? (event.actor.kind === "automation" ? event.actor.id : null), appliedByName: appliedBy?.name ?? null, batchId: item?.batchId ?? null, proposedByName: proposer?.name ?? null } : null;
 }
 // An unreadable record gets the same answer as a deleted one.
 async function readableRecord(ctx: QueryCtx, principal: Principal, orgId: Id<"orgs">, recordId: Id<"records">) {

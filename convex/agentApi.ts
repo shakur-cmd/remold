@@ -1,6 +1,7 @@
 import { internalMutation, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { recordGranted, requireAgent, type Principal } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
@@ -8,7 +9,7 @@ import { pageRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
 import { visibleInboxItems, visibleSuggestions } from "./authority/pending";
 import { dueTasks, quietDeals } from "./lib/daily";
-import { instantBound, readable, readableMap, resolveValues } from "./lib/values";
+import { instantBound, joined, readable, readableMap, readableValue, resolveValues } from "./lib/values";
 import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex } from "./authority/reads";
 import { writable } from "./authority/readonly";
 import { canSeeInbox, visibleInbox } from "./authority/inbox";
@@ -18,11 +19,20 @@ import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
 import { option } from "./lib/metadata";
 import { agentRow, proposalFor } from "./shapeSuggestions";
+import { linksOf } from "./suggestions";
+import { summaryOf } from "./batches";
 
 const keyHash = v.string();
 const action = v.union(v.literal("create"), v.literal("update"), v.literal("delete"));
 const status = v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("conflicted"));
 const inboxStatus = v.union(v.literal("pending"), v.literal("resolved"));
+// Link deltas add or remove records on a links field against whatever it holds when applied, so concurrent additions survive.
+const links = v.optional(v.record(v.string(), v.object({ add: v.optional(v.array(v.string())), remove: v.optional(v.array(v.string())) })));
+type Links = Record<string, { add?: string[]; remove?: string[] }>;
+type Deltas = Record<string, { add: Id<"records">[]; remove: Id<"records">[] }>;
+type Item = { object: Doc<"objects">; fields: Doc<"fields">[] };
+type Cache = Map<string, Promise<Item>>;
+const memo = (cache: Cache | undefined, key: string, load: () => Promise<Item>) => { if (!cache) return load(); let hit = cache.get(key); if (!hit) cache.set(key, hit = load()); return hit; };
 
 async function objectFor(ctx: any, orgId: Id<"orgs">, key: string): Promise<{ object: Doc<"objects">; fields: Doc<"fields">[] }> {
   const object = await ctx.db.query("objects").withIndex("by_org_key", (q: any) => q.eq("orgId", orgId).eq("key", key)).unique() as Doc<"objects"> | null;
@@ -43,6 +53,11 @@ async function recordFor(ctx: any, orgId: Id<"orgs">, idOrRef: string): Promise<
   return record;
 }
 
+async function readableLinks(ctx: any, principal: Principal, visible: Doc<"fields">[], deltas: Deltas) {
+  const out: Record<string, { add: unknown; remove: unknown }> = {};
+  for (const [id, delta] of Object.entries(deltas)) { const field = visible.find(f => f._id === id); if (field) out[field.key] = { add: await readableValue(ctx, principal, field, delta.add) ?? [], remove: await readableValue(ctx, principal, field, delta.remove) ?? [] }; }
+  return out;
+}
 async function suggestionApi(ctx: any, principal: Principal, suggestion: Doc<"suggestions">) {
   const orgId = principal.org._id;
   const sourceObject = await ctx.db.get(suggestion.change.objectId) as Doc<"objects"> | null;
@@ -52,8 +67,9 @@ async function suggestionApi(ctx: any, principal: Principal, suggestion: Doc<"su
   if (!canReadRecordId(principal, object, suggestion.change.recordId)) fail("NOT_FOUND", "Suggestion not found");
   const visible = fields.filter(f => canReadField(principal, object, f, suggestion.change.recordId));
   const byId = new Map(visible.map((field: Doc<"fields">) => [field._id as string, field]));
+  const links = await linksOf(ctx, suggestion._id);
   const conflicts = suggestion.conflicts ? await Promise.all(suggestion.conflicts.filter(conflict => byId.has(conflict.fieldId)).map(async (conflict) => { const field = byId.get(conflict.fieldId); const show = async (value: unknown) => field ? (await readableMap(ctx, principal, visible, { [field._id]: value }))[field.key] : value; return { field: field?.key ?? conflict.fieldId, expected: await show(conflict.expected), actual: await show(conflict.actual) }; })) : undefined;
-  return { id: suggestion._id, status: suggestion.status, action: suggestion.change.action, object: object.key, record: record ? { id: record._id, ref: record.ref ?? null, title: await visibleTitle(ctx, principal, record) } : null, values: await readableMap(ctx, principal, visible, suggestion.change.values), before: await readableMap(ctx, principal, visible, suggestion.before), reason: visible.length === fields.length ? suggestion.reason : "", agent: agent?.name ?? null, createdAt: suggestion._creationTime, resolvedAt: suggestion.resolvedAt ?? null, ...(conflicts ? { conflicts } : {}) };
+  return { id: suggestion._id, status: suggestion.status, action: suggestion.change.action, object: object.key, record: record ? { id: record._id, ref: record.ref ?? null, title: await visibleTitle(ctx, principal, record) } : null, values: await readableMap(ctx, principal, visible, suggestion.change.values), before: await readableMap(ctx, principal, visible, suggestion.before), reason: visible.length === fields.length ? suggestion.reason : "", agent: agent?.name ?? null, createdAt: suggestion._creationTime, resolvedAt: suggestion.resolvedAt ?? null, ...(conflicts ? { conflicts } : {}), ...(links ? { links: await readableLinks(ctx, principal, visible, links.links) } : {}) };
 }
 
 const ownShape = (ctx: any, agent: Doc<"agents">, status?: Doc<"shapeSuggestions">["status"], limit = 1000): Promise<Doc<"shapeSuggestions">[]> => ctx.db.query("shapeSuggestions").withIndex("by_agent", (q: any) => q.eq("orgId", agent.orgId).eq("agentId", agent._id)).order("desc").filter((q: any) => status ? q.eq(q.field("status"), status) : true).take(limit);
@@ -85,17 +101,34 @@ const isEmpty = (value: unknown) => value === null || value === undefined;
 
 // Finds what a change targets before anything is resolved, so a grant can be
 // refused, and a bad object or record reported, without touching values.
-async function targetOf(ctx: any, orgId: Id<"orgs">, args: { action: "create" | "update" | "delete"; object?: string; record?: string; values?: Record<string, unknown> }) {
-  if (args.action === "create") { if (!args.object || !args.values) fail("VALIDATION", "Create needs object and values"); return { item: await objectFor(ctx, orgId, args.object), record: null as Doc<"records"> | null }; }
+type ChangeInput = { action: "create" | "update" | "delete"; object?: string; record?: string; values?: Record<string, unknown>; links?: Links };
+async function targetOf(ctx: any, orgId: Id<"orgs">, args: ChangeInput, cache?: Cache) {
+  if (args.action === "create") { if (!args.object || !(args.values || args.links)) fail("VALIDATION", "Create needs object and values"); const key = args.object; return { item: await memo(cache, `key:${key}`, () => objectFor(ctx, orgId, key)), record: null as Doc<"records"> | null }; }
   if (!args.record) fail("VALIDATION", "Change needs record");
-  const record = await recordFor(ctx, orgId, args.record), item = await objectForId(ctx, orgId, record.objectId);
+  const record = await recordFor(ctx, orgId, args.record), item = await memo(cache, `id:${record.objectId}`, () => objectForId(ctx, orgId, record.objectId));
   if (args.object && args.object !== item.object.key) fail("NOT_FOUND", "Record does not match object");
-  if (args.action === "update" && !args.values) fail("VALIDATION", "Update needs values");
+  if (args.action === "update" && !(args.values || args.links)) fail("VALIDATION", "Update needs values");
   return { item, record };
+}
+// Field ids a change names, known before anything is resolved.
+const named = (target: { item: Item; record: Doc<"records"> | null }, args: ChangeInput) => args.action === "delete" ? Object.keys(target.record!.values) : [...Object.keys(args.values ?? {}), ...Object.keys(args.links ?? {})].map(key => target.item.fields.find((field: Doc<"fields">) => field.key === key)?._id).filter((id): id is Id<"fields"> => !!id);
+async function deltasOf(ctx: any, principal: Principal, item: Item, visible: Doc<"fields">[], input: Links | undefined, values: Record<string, unknown>) {
+  const out: Deltas = {};
+  for (const [key, delta] of Object.entries(input ?? {})) {
+    const field = visible.find(f => f.key === key);
+    if (!field || field.type !== "links") fail("VALIDATION", `${key} is not a links field`, { fieldKey: key });
+    if (field._id in values) fail("VALIDATION", `${key} is in both values and links`, { fieldKey: key });
+    const ids = async (list?: string[]) => list?.length ? [...new Set((await resolveValues(ctx, principal, item.object, [field], { [key]: list }))[field._id] as Id<"records">[])] : [];
+    const add = await ids(delta.add), remove = await ids(delta.remove);
+    if (add.some(id => remove.includes(id))) fail("VALIDATION", "A record cannot be both added and removed", { fieldKey: key });
+    out[field._id] = { add, remove };
+  }
+  return out;
 }
 // Resolves values and checks required fields now, so a suggestion a person
 // cannot apply is refused at proposal time rather than at their tap.
-async function proposed(ctx: any, principal: Principal, args: { action: "create" | "update" | "delete"; values?: Record<string, unknown> }, target: { item: { object: Doc<"objects">; fields: Doc<"fields">[] }; record: Doc<"records"> | null }) {
+// `merged` is what the record would hold: values plus each link delta applied to the current links.
+async function proposed(ctx: any, principal: Principal, args: ChangeInput, target: { item: Item; record: Doc<"records"> | null }) {
   const { item, record } = target;
   requireObjectRead(principal, item.object);
   if (record) requireRecordRead(principal, item.object, record);
@@ -103,17 +136,20 @@ async function proposed(ctx: any, principal: Principal, args: { action: "create"
   const visible = item.fields.filter(field => canReadField(principal, item.object, field, record?._id));
   if (args.action === 'delete' && Object.keys(record!.values).some(id => !visible.some(field => field._id === id))) fail('VALIDATION', 'Deletion includes restricted fields');
   const values = args.action === "delete" ? {} : await resolveValues(ctx, principal, item.object, visible, args.values ?? {});
-  for (const field of item.fields) if (field.required && (args.action === "create" || field._id in values) && isEmpty(values[field._id])) fail("VALIDATION", `${field.label} is required`, { fieldKey: field.key });
-  const before = args.action === "create" ? {} : args.action === "delete" ? record!.values : Object.fromEntries(Object.keys(values).map((id) => [id, record!.values[id] ?? null]));
-  return { item, record, values, before };
+  const links = args.action === "delete" ? {} : await deltasOf(ctx, principal, item, visible, args.links, values);
+  const merged: Record<string, unknown> = { ...values };
+  for (const [id, delta] of Object.entries(links)) merged[id] = joined(record?.values[id], delta);
+  for (const field of item.fields) if (field.required && (args.action === "create" || field._id in merged) && isEmpty(merged[field._id])) fail("VALIDATION", `${field.label} is required`, { fieldKey: field.key });
+  const before = args.action === "create" ? {} : args.action === "delete" ? record!.values : Object.fromEntries(Object.keys(merged).map((id) => [id, record!.values[id] ?? null]));
+  return { item, record, values, links, merged, before };
 }
-export const propose = internalMutation({ args: { keyHash, action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), reason: v.string(), inboxId: v.optional(v.id("agentInbox")) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); await writable(ctx, principal.org._id); const target = await targetOf(ctx, principal.org._id, args);
+export const propose = internalMutation({ args: { keyHash, action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), links, reason: v.string(), inboxId: v.optional(v.id("agentInbox")) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); await writable(ctx, principal.org._id); const target = await targetOf(ctx, principal.org._id, args);
   // Proposal scope is checked before any value is resolved: resolving a lookup by name must not run for an agent that may not propose here.
-  const touched = args.action === "delete" ? Object.keys(target.record!.values) : Object.keys(args.values ?? {}).map(key => target.item.fields.find((field: Doc<"fields">) => field.key === key)?._id).filter((id): id is Id<"fields"> => !!id);
+  const touched = named(target, args);
   // Unreadable objects and records stay 404, like ones that do not exist.
   requireObjectRead(principal, target.item.object); if (target.record) requireRecordRead(principal, target.item.object, target.record);
   if (!canPropose(principal, target.item.object, target.record?._id, touched)) fail("FORBIDDEN", "Proposal scope required");
-  const result = await proposed(ctx, principal, args, target); agentGuard(principal, result.item.object, result.item.fields, result.record, args.action === "delete" ? "delete" : result.values); if (!canPropose(principal, result.item.object, result.record?._id, Object.keys(args.action === "delete" ? result.before : result.values))) fail("FORBIDDEN", "Proposal scope required"); if (args.inboxId) { const inbox = await ctx.db.get(args.inboxId); if (!inbox || !canSeeInbox(principal, inbox)) fail("NOT_FOUND", "Inbox item not found"); } const id = await ctx.db.insert("suggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, status: "pending", change: { action: args.action, objectId: result.item.object._id, ...(result.record ? { recordId: result.record._id } : {}), values: result.values }, ...(result.record ? { recordId: result.record._id } : {}), before: result.before, reason: args.reason, ...(args.inboxId ? { inboxId: args.inboxId } : {}) }); return { suggestion: await suggestionApi(ctx, principal, await ctx.db.get(id) as Doc<"suggestions">) }; } });
+  const result = await proposed(ctx, principal, args, target); agentGuard(principal, result.item.object, result.item.fields, result.record, args.action === "delete" ? "delete" : result.merged); if (!canPropose(principal, result.item.object, result.record?._id, Object.keys(args.action === "delete" ? result.before : result.merged))) fail("FORBIDDEN", "Proposal scope required"); if (args.inboxId) { const inbox = await ctx.db.get(args.inboxId); if (!inbox || !canSeeInbox(principal, inbox)) fail("NOT_FOUND", "Inbox item not found"); } const id = await ctx.db.insert("suggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, status: "pending", change: { action: args.action, objectId: result.item.object._id, ...(result.record ? { recordId: result.record._id } : {}), values: result.values }, ...(result.record ? { recordId: result.record._id } : {}), before: result.before, reason: args.reason, ...(args.inboxId ? { inboxId: args.inboxId } : {}) }); if (Object.keys(result.links).length) await ctx.db.insert("suggestionLinks", { orgId: principal.org._id, suggestionId: id, links: result.links }); return { suggestion: await suggestionApi(ctx, principal, await ctx.db.get(id) as Doc<"suggestions">) }; } });
 // ADR 002 replay returns the original result, projected through the caller's current
 // authority. The stored copy holds only values the caller could read at write time; on
 // replay a gone record is 404, an unreadable one 403, newly hidden fields are dropped
@@ -131,7 +167,7 @@ async function replayedChange(ctx: any, principal: Principal, stored: Original) 
   const projected = await readable(ctx, principal, { ...current, values: stored.values ?? {}, title: stored.title ?? "", updatedAt: stored.updatedAt ?? current.updatedAt }, item.object, item.fields);
   return { record: { ...projected, title: projected.title && (stored.title ?? "") }, eventId: stored.eventId };
 }
-export const change = internalMutation({ args: { keyHash, action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), reason: v.string(), idempotency }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), prior = await replay(ctx, principal.agent._id, args.idempotency); if (prior) return replayedChange(ctx, principal, prior.result); const target = await targetOf(ctx, principal.org._id, args); if (!recordGranted(principal, args.action, target.item.object, target.record?._id)) fail("FORBIDDEN", `No grant for ${args.action}:${target.item.object.key}. Propose it instead.`); const result = await proposed(ctx, principal, args, target); const change = args.action === "create" ? { action: "create" as const, orgId: principal.org._id, objectId: result.item.object._id, values: result.values, reason: args.reason } : args.action === "update" ? { action: "update" as const, orgId: principal.org._id, recordId: result.record!._id, values: result.values, reason: args.reason } : { action: "delete" as const, orgId: principal.org._id, recordId: result.record!._id, reason: args.reason }; const applied = await applyChange(ctx, principal, change); const record = args.action === "delete" ? null : await ctx.db.get(applied.recordId); const response = record ? await readable(ctx, principal, record, result.item.object, result.item.fields) : null; await remember(ctx, principal.org._id, principal.agent._id, args.idempotency, record && response ? original(record, result.item.fields, response, applied.eventId) : { recordId: applied.recordId, eventId: applied.eventId, deleted: true }); return { record: response, eventId: applied.eventId }; } });
+export const change = internalMutation({ args: { keyHash, action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), links, reason: v.string(), idempotency }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), prior = await replay(ctx, principal.agent._id, args.idempotency); if (prior) return replayedChange(ctx, principal, prior.result); const target = await targetOf(ctx, principal.org._id, args); if (!recordGranted(principal, args.action, target.item.object, target.record?._id)) fail("FORBIDDEN", `No grant for ${args.action}:${target.item.object.key}. Propose it instead.`); const result = await proposed(ctx, principal, args, target); const change = args.action === "create" ? { action: "create" as const, orgId: principal.org._id, objectId: result.item.object._id, values: result.merged, reason: args.reason } : args.action === "update" ? { action: "update" as const, orgId: principal.org._id, recordId: result.record!._id, values: result.merged, reason: args.reason } : { action: "delete" as const, orgId: principal.org._id, recordId: result.record!._id, reason: args.reason }; const applied = await applyChange(ctx, principal, change); const record = args.action === "delete" ? null : await ctx.db.get(applied.recordId); const response = record ? await readable(ctx, principal, record, result.item.object, result.item.fields) : null; await remember(ctx, principal.org._id, principal.agent._id, args.idempotency, record && response ? original(record, result.item.fields, response, applied.eventId) : { recordId: applied.recordId, eventId: applied.eventId, deleted: true }); return { record: response, eventId: applied.eventId }; } });
 export const intakeLead = internalMutation({ args: { keyHash, ...leadArgs, idempotency }, handler: async (ctx, { keyHash, idempotency, ...lead }) => submitLead(ctx, await requireAgent(ctx, keyHash, "intake"), lead, idempotency) });
 
 export const listSuggestions = internalQuery({ args: { keyHash, status: v.optional(status) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return Promise.all((await visibleSuggestions(ctx, principal, args.status ?? "pending", 100)).map((suggestion) => suggestionApi(ctx, principal, suggestion))); } });
@@ -148,3 +184,111 @@ const fieldInput = { key: v.string(), label: v.string(), type: v.string(), optio
 const shapeArgs = { kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))) };
 export const proposeShape = internalMutation({ args: { keyHash, ...shapeArgs }, handler: async (ctx, { keyHash, ...input }) => { const principal = await requireAgent(ctx, keyHash); await writable(ctx, principal.org._id); const change = await proposalFor(ctx, principal, input); const id = await ctx.db.insert("shapeSuggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, change, reason: input.reason, status: "pending" }); return { proposal: await agentRow(ctx, (await ctx.db.get(id))!) }; } });
 export const shapeProposals = internalQuery({ args: { keyHash, status: v.optional(v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("failed"))) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return { proposals: await Promise.all((await ownShape(ctx, principal.agent, args.status, 100)).map((row) => agentRow(ctx, row))) }; } });
+
+// Batches: up to MAX_BATCH changes under one reason, each checked exactly like a single
+// proposal (or, when direct, a single granted change). One bad item refuses the batch.
+export const MAX_BATCH = 1000;
+const batchChange = v.object({ action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), links });
+type Row = { action: ChangeInput["action"]; item: Item; record: Doc<"records"> | null; values: Record<string, unknown>; links: Deltas; before: Record<string, unknown>; impact?: number };
+
+// Incoming links and lookups a delete would clear. Lookup fields are listed once per batch;
+// unindexed ones are scanned once and counted by target.
+async function impactCounter(ctx: any, orgId: Id<"orgs">) {
+  const objects = await ctx.db.query("objects").withIndex("by_org", (q: any) => q.eq("orgId", orgId)).collect() as Doc<"objects">[];
+  const lookups = (await Promise.all(objects.map((o) => ctx.db.query("fields").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", o._id)).collect()))).flat().filter((f: Doc<"fields">) => f.type === "lookup") as Doc<"fields">[];
+  const scanned = new Map<string, Map<string, number>>();
+  return async (record: Doc<"records">) => {
+    let count = (await ctx.db.query("links").withIndex("by_target_any", (q: any) => q.eq("orgId", orgId).eq("toRecordId", record._id)).collect()).filter((row: Doc<"links">) => row.fromRecordId !== record._id).length;
+    for (const field of lookups) {
+      if (field.targetObjectId && field.targetObjectId !== record.objectId) continue;
+      if (field.slot) { const name = `${field.slot.kind}${field.slot.index}`; count += (await ctx.db.query("records").withIndex(`by_${name}`, (q: any) => q.eq("orgId", orgId).eq("objectId", field.objectId).eq(name, record._id)).collect()).filter((r: Doc<"records">) => r._id !== record._id).length; continue; }
+      let byTarget = scanned.get(field._id);
+      if (!byTarget) { byTarget = new Map(); for (const r of await ctx.db.query("records").withIndex("by_object", (q: any) => q.eq("orgId", orgId).eq("objectId", field.objectId)).collect() as Doc<"records">[]) { const to = r.values[field._id]; if (typeof to === "string" && to !== r._id) byTarget.set(to, (byTarget.get(to) ?? 0) + 1); } scanned.set(field._id, byTarget); }
+      count += byTarget.get(record._id) ?? 0;
+    }
+    return count;
+  };
+}
+
+const counted = (n: number, object: Doc<"objects">) => `${n} ${n === 1 ? object.label : object.labelPlural}`;
+const listed = (parts: string[]) => parts.length < 2 ? parts.join("") : `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}`;
+const verbs = { create: "Create", update: "Update", delete: "Delete" } as const;
+// One line a person can approve from: "Update Stage on 140 Opportunities", "Add 60 People to {record}".
+// {record} is filled in per reader (summaryOf), so a title is shown only to those who may read it.
+async function summarize(ctx: any, rows: Row[]) {
+  const first = rows[0]!, label = (row: Row, id: string) => row.item.fields.find((f) => f._id === id)?.label ?? "a field";
+  const deltas = Object.entries(first.links);
+  if (rows.length === 1 && first.action === "update" && !Object.keys(first.values).length && deltas.length === 1) {
+    const [id, { add, remove }] = deltas[0]!, field = first.item.fields.find((f) => f._id === id)!, target = field.targetObjectId ? await ctx.db.get(field.targetObjectId) as Doc<"objects"> | null : null;
+    const name = (n: number) => target ? counted(n, target) : `${n} ${field.label}`, title = "{record}";
+    if (!remove.length) return `Add ${name(add.length)} to ${title}`;
+    if (!add.length) return `Remove ${name(remove.length)} from ${title}`;
+    return `Add ${add.length} and remove ${remove.length} ${target?.labelPlural ?? field.label} on ${title}`;
+  }
+  const groups = new Map<string, { action: Row["action"]; object: Doc<"objects">; count: number; fields: Set<string> }>();
+  for (const row of rows) {
+    const key = `${row.action}:${row.item.object._id}`, group = groups.get(key) ?? { action: row.action, object: row.item.object, count: 0, fields: new Set<string>() };
+    group.count++; for (const id of [...Object.keys(row.values), ...Object.keys(row.links)]) group.fields.add(label(row, id)); groups.set(key, group);
+  }
+  const all = [...groups.values()];
+  if (all.length === 1 && all[0]!.action === "update") { const names = [...all[0]!.fields]; return `Update ${names.length <= 2 ? listed(names) : `${names.length} fields`} on ${counted(all[0]!.count, all[0]!.object)}`; }
+  if (all.length <= 3 && all.every((g) => g.action === first.action)) return `${verbs[first.action]} ${listed(all.map((g) => counted(g.count, g.object)))}`;
+  if (all.length <= 3) return listed(all.map((g, i) => `${i ? verbs[g.action].toLowerCase() : verbs[g.action]} ${counted(g.count, g.object)}`));
+  return `${rows.length} changes across ${new Set(all.map((g) => g.object._id)).size} objects`;
+}
+
+const progressOf = (batch: Doc<"batches">) => ({ done: batch.applied + batch.conflicted + batch.failed, applied: batch.applied, conflicted: batch.conflicted, failed: batch.failed });
+// No delete impact here: it counts links from records the agent may not be able to read.
+const batchApi = async (ctx: any, principal: Principal, batch: Doc<"batches">) => ({ id: batch._id, status: batch.status, mode: batch.mode, summary: await summaryOf(ctx, principal, batch), reason: batch.reason, total: batch.total, counts: batch.counts, progress: progressOf(batch), createdAt: batch._creationTime, resolvedAt: batch.resolvedAt ?? null, ...(batch.error ? { error: batch.error } : {}) });
+
+export const proposeBatch = internalMutation({ args: { keyHash, reason: v.string(), changes: v.array(batchChange), direct: v.optional(v.boolean()), idempotency }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), orgId = principal.org._id, direct = !!args.direct, prior = await replay(ctx, principal.agent._id, args.idempotency);
+  // A replayed direct batch that stopped or lost its driver is picked up again; the driver never applies an item twice.
+  if (prior) { const batch = await ctx.db.get(prior.result.batchId as Id<"batches">); if (!batch) fail("NOT_FOUND", "Batch not found"); if (batch.mode === "direct" && (batch.status === "applying" || batch.status === "stopped")) { await ctx.db.patch(batch._id, { status: "applying", error: undefined }); await ctx.scheduler.runAfter(0, internal.batches.drive, { batchId: batch._id }); } return { batch: await batchApi(ctx, principal, (await ctx.db.get(batch._id))!) }; }
+  await writable(ctx, orgId);
+  if (args.changes.length < 1 || args.changes.length > MAX_BATCH) fail("VALIDATION", `A batch needs 1 to ${MAX_BATCH} changes`);
+  const cache: Cache = new Map(), seen = new Set<string>(), rows: Row[] = [], errors: { index: number; code: string; message: string }[] = [];
+  const impact = args.changes.some((c) => c.action === "delete") ? await impactCounter(ctx, orgId) : null;
+  for (const [index, input] of args.changes.entries()) {
+    try {
+      const target = await targetOf(ctx, orgId, input, cache), { object } = target.item, recordId = target.record?._id;
+      requireObjectRead(principal, object); if (target.record) requireRecordRead(principal, object, target.record);
+      if (recordId) { if (seen.has(recordId)) fail("VALIDATION", "This record already has a change earlier in the batch"); seen.add(recordId); }
+      const allowed = (ids: string[]) => direct ? recordGranted(principal, input.action, object, recordId, ids) : canPropose(principal, object, recordId, ids);
+      const refuse = () => fail("FORBIDDEN", direct ? `No grant for ${input.action}:${object.key}. Propose it instead.` : "Proposal scope required");
+      if (!allowed(named(target, input))) refuse();
+      const result = await proposed(ctx, principal, input, target);
+      agentGuard(principal, object, result.item.fields, result.record, input.action === "delete" ? "delete" : result.merged);
+      if (!allowed(Object.keys(input.action === "delete" ? result.before : result.merged))) refuse();
+      rows.push({ action: input.action, item: result.item, record: result.record, values: result.values, links: result.links, before: result.before, ...(input.action === "delete" && impact ? { impact: await impact(result.record!) } : {}) });
+    } catch (error) {
+      const data = error instanceof ConvexError ? error.data as { code?: string; message?: string } : null;
+      if (!data?.code) throw error;
+      errors.push({ index, code: data.code, message: data.message ?? data.code });
+    }
+  }
+  // The batch takes the first failing item's code, so its status matches what that change alone would get.
+  if (errors.length) fail(errors[0]!.code as any, errors.length === 1 ? `Change ${errors[0]!.index}: ${errors[0]!.message}. Nothing was saved.` : `${errors.length} changes cannot be made, starting with change ${errors[0]!.index}: ${errors[0]!.message}. Nothing was saved.`, { items: errors });
+  const counts = { create: 0, update: 0, delete: 0 }; for (const row of rows) counts[row.action]++;
+  const touched = new Set<Id<"fields">>(); for (const row of rows) for (const id of Object.keys(row.action === "delete" ? row.before : { ...row.values, ...row.links })) touched.add(id as Id<"fields">);
+  const batchId = await ctx.db.insert("batches", { orgId, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, mode: direct ? "direct" : "proposal", status: direct ? "applying" : "pending", reason: args.reason, summary: await summarize(ctx, rows), ...(rows.length === 1 && rows[0]!.record ? { subjectId: rows[0]!.record._id } : {}), total: rows.length, counts, impact: rows.reduce((sum, row) => sum + (row.impact ?? 0), 0), objectIds: [...new Set(rows.map((row) => row.item.object._id))], fieldIds: [...touched], applied: 0, conflicted: 0, failed: 0, ...(direct ? { progressAt: Date.now() } : {}) });
+  for (const [index, row] of rows.entries()) await ctx.db.insert("batchItems", { orgId, batchId, index, action: row.action, objectId: row.item.object._id, ...(row.record ? { recordId: row.record._id } : {}), values: row.values, ...(Object.keys(row.links).length ? { links: row.links } : {}), before: row.before, ...(row.impact !== undefined ? { impact: row.impact } : {}), status: "queued" });
+  if (direct) await ctx.scheduler.runAfter(0, internal.batches.drive, { batchId });
+  await remember(ctx, orgId, principal.agent._id, args.idempotency, { batchId });
+  return { batch: await batchApi(ctx, principal, (await ctx.db.get(batchId))!) };
+} });
+
+// The submitting agent reads its batch and a page of items, projected through what it may read now.
+export const batchStatus = internalQuery({ args: { keyHash, id: v.string(), cursor: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), id = ctx.db.normalizeId("batches", args.id), batch = id ? await ctx.db.get(id) : null;
+  if (!batch || batch.orgId !== principal.org._id || batch.agentId !== principal.agent._id) fail("NOT_FOUND", "Batch not found");
+  const page = await paginateIndex(ctx.db.query("batchItems").withIndex("by_batch", (q) => q.eq("batchId", batch._id)), { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 50) || 50, 1), 100) });
+  const items = await Promise.all(page.page.map(async (item: Doc<"batchItems">) => {
+    const { object, fields } = await objectForId(ctx, principal.org._id, item.objectId), record = item.recordId ? await ctx.db.get(item.recordId) : null;
+    const readableRecord = !!record && canReadRecord(principal, object, record), visible = fields.filter((f) => canReadField(principal, object, f, item.recordId));
+    const show = async (fieldId: string, value: unknown) => { const field = visible.find((f) => f._id === fieldId); return field ? (await readableValue(ctx, principal, field, value)) ?? null : null; };
+    const conflicts = item.conflicts && await Promise.all(item.conflicts.filter((c) => c.fieldId === "*" || visible.some((f) => f._id === c.fieldId)).map(async (c) => ({ field: visible.find((f) => f._id === c.fieldId)?.key ?? "*", expected: await show(c.fieldId, c.expected), actual: await show(c.fieldId, c.actual) })));
+    return { index: item.index, action: item.action, object: object.key, record: item.recordId ? { id: item.recordId, ...(readableRecord ? { ref: record.ref ?? null, title: await visibleTitle(ctx, principal, record) } : {}) } : null, values: await readableMap(ctx, principal, visible, item.values), ...(item.links ? { links: await readableLinks(ctx, principal, visible, item.links) } : {}), status: item.status, ...(item.error ? { error: item.error } : {}), ...(conflicts ? { conflicts } : {}) };
+  }));
+  return { batch: await batchApi(ctx, principal, batch), items, nextCursor: page.isDone ? null : page.continueCursor };
+} });

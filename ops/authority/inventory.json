@@ -2596,5 +2596,129 @@
     "readonly": "refused",
     "masks": "n/a",
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agentApi:proposeBatch",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agentApi:batchStatus",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "only the submitting agent reads a batch over REST"
+  },
+  {
+    "id": "HTTP POST /api/v1/batches",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP GET /api/v1/batches/:id",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "only the submitting agent reads a batch over REST"
+  },
+  {
+    "id": "batches:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "a member-role person cannot see or apply a batch touching an object they cannot write"
+  },
+  {
+    "id": "batches:items",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "a member-role person cannot see or apply a batch touching an object they cannot write"
+  },
+  {
+    "id": "batches:apply",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "batches:dismiss",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "batches:step",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "stops an applying batch when the workspace turns read only and resumes it later",
+    "reason": "batch driver; a read-only workspace stops the batch before any item is written"
+  },
+  {
+    "id": "batches:next",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "stops an applying batch when the workspace turns read only and resumes it later",
+    "reason": "batch driver; a read-only workspace stops the batch before any item is written"
+  },
+  {
+    "id": "batches:failItem",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "stops an applying batch when the workspace turns read only and resumes it later",
+    "reason": "batch driver; a read-only workspace stops the batch before any item is written"
+  },
+  {
+    "id": "batches:drive",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "stops an applying batch when the workspace turns read only and resumes it later",
+    "reason": "batch driver; a read-only workspace stops the batch before any item is written"
   }
 ]

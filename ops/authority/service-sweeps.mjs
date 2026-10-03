@@ -20,6 +20,8 @@ async function workspace(runtime, tenant, label) {
   const grantId = await t.human.mutation(anyApi['authority/grants'].grant, { orgId: t.orgId, target: target.agentId, capability: 'model.call', scope: { kind: 'model', maxUnitsPerRun: 1, maxSteps: 1 }, mode: 'direct', delegate: false, expiresAt: Date.now() + 600000 });
   const suggest = async value => (await (await request(runtime, agent.key, 'POST', '/api/v1/suggestions', { action: 'update', record, values: { name: value }, reason: 'sweep' })).json()).suggestion.id;
   const suggestions = { apply: await suggest('Suggested A'), dismiss: await suggest('Suggested B'), adopt: await suggest('Suggested C') };
+  const batch = async value => (await (await request(runtime, agent.key, 'POST', '/api/v1/batches', { reason: 'sweep', changes: [{ action: 'update', record, values: { name: value } }] })).json()).batch.id;
+  const batches = { apply: await batch('Batched A'), dismiss: await batch('Batched B') };
   const shaper = await t.human.action(anyApi.agents.create, { orgId: t.orgId, name: 'sweep shaper', role: 'admin', grants: [] });
   const proposeShape = async key => (await (await request(runtime, shaper.key, 'POST', '/api/v1/shape/proposals', { kind: 'addField', object: 'company', key, label: key, type: 'number', reason: 'sweep' })).json()).proposal.id;
   const shapes = { apply: await proposeShape('sweepApply'), dismiss: await proposeShape('sweepDismiss') };
@@ -39,7 +41,7 @@ async function workspace(runtime, tenant, label) {
   const claimerOp = await (await request(runtime, claimer.key, 'POST', '/api/v1/operations', { logical: 'claimer-op', bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 1 })).json();
   const secondSecret = runtime.run('integrations/connections:registerSecret', { orgId: t.orgId, provider: 'fake', environment: 'test', account: 'sweep-second-' + randomUUID(), handle: 'vault:' + randomUUID() });
   const money = await financial(t);
-  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, shaper, shapes, inboxId, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
+  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, batches, shaper, shapes, inboxId, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
 }
 
 export async function replaySweeps({ runtime, tenant, test }) {
@@ -94,6 +96,8 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'suggestions:apply': () => t.human.mutation(fn('suggestions:apply'), { orgId, suggestionId: w.suggestions.apply }),
       'suggestions:dismiss': () => t.human.mutation(fn('suggestions:dismiss'), { orgId, suggestionId: w.suggestions.dismiss }),
       'suggestions:adopt': () => t.human.mutation(fn('suggestions:adopt'), { orgId, suggestionId: w.suggestions.adopt }),
+      'batches:apply': () => t.human.mutation(fn('batches:apply'), { orgId, batchId: w.batches.apply }),
+      'batches:dismiss': () => t.human.mutation(fn('batches:dismiss'), { orgId, batchId: w.batches.dismiss }),
       'shapeSuggestions:apply': () => t.human.mutation(fn('shapeSuggestions:apply'), { orgId, id: w.shapes.apply }),
       'shapeSuggestions:dismiss': () => t.human.mutation(fn('shapeSuggestions:dismiss'), { orgId, id: w.shapes.dismiss }),
     };
@@ -102,6 +106,7 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'HTTP POST /api/v1/intake/lead': ['/api/v1/intake/lead', { name: 'Denied', email: 'denied@example.com' }],
       'HTTP POST /api/v1/suggestions': ['/api/v1/suggestions', { action: 'create', object: 'company', values: { name: 'Denied proposal' }, reason: 'readonly sweep' }],
       'HTTP POST /api/v1/inbox': ['/api/v1/inbox', { text: 'Denied inbox' }],
+      'HTTP POST /api/v1/batches': ['/api/v1/batches', { reason: 'readonly sweep', changes: [{ action: 'create', object: 'company', values: { name: 'Denied batch' } }] }],
       'HTTP POST /api/v1/sends/:id/replied': ['/api/v1/sends/none/replied', {}],
       'HTTP POST /api/v1/shape/proposals': ['/api/v1/shape/proposals', { key: 'shaper', kind: 'relabel', object: 'company', label: 'Denied', reason: 'readonly sweep' }],
       'HTTP POST /api/v1/inbox/:id/resolve': ['/api/v1/inbox/' + w.inboxId + '/resolve', { note: 'Denied resolve' }],

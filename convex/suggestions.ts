@@ -1,21 +1,24 @@
 import { mutation, query, type QueryCtx } from "./_generated/server";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { requireWriter, requireMember, type Principal } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
+import { joined } from "./lib/values";
 import { canReadRecordId, canReadField, requireObjectRead, requireRecordRead, visibleTitle } from "./authority/reads";
 import { visibleSuggestions } from "./authority/pending";
 
 const same = (left: unknown, right: unknown) => JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+export const linksOf = (ctx: QueryCtx, suggestionId: Id<"suggestions">) => ctx.db.query("suggestionLinks").withIndex("by_suggestion", (q) => q.eq("suggestionId", suggestionId)).unique();
 
 async function row(ctx: QueryCtx, principal: Principal, suggestion: Doc<"suggestions">) {
   const [agent, object, record] = await Promise.all([ctx.db.get(suggestion.agentId), ctx.db.get(suggestion.change.objectId), suggestion.change.recordId ? ctx.db.get(suggestion.change.recordId) : null]);
   if (!object || !canReadRecordId(principal, object, suggestion.change.recordId)) return null;
   const fields = await ctx.db.query("fields").withIndex("by_object", q => q.eq("orgId", principal.org._id).eq("objectId", object._id)).collect();
   const visible = new Set(fields.filter(f => canReadField(principal, object, f, suggestion.change.recordId)).map(f => String(f._id)));
-  const mask = (values: Record<string, unknown>) => Object.fromEntries(Object.entries(values).filter(([id]) => visible.has(id)));
-  return { suggestion: { ...suggestion, before: mask(suggestion.before), change: { ...suggestion.change, values: mask(suggestion.change.values) }, conflicts: suggestion.conflicts?.filter(c => visible.has(c.fieldId)), reason: visible.size === fields.length ? suggestion.reason : "" }, agentName: agent?.name ?? null, objectKey: object.key, objectLabel: object.label, recordTitle: record ? await visibleTitle(ctx, principal, record) : null, recordRef: record?.ref ?? null, paused: !suggestion.adoptedBy && (!agent || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active") || (agent.authorityEpoch ?? 0) !== (suggestion.authorityEpoch ?? 0)) };
+  const mask = <T,>(values: Record<string, T>) => Object.fromEntries(Object.entries(values).filter(([id]) => visible.has(id)));
+  const links = await linksOf(ctx, suggestion._id);
+  return { suggestion: { ...suggestion, before: mask(suggestion.before), change: { ...suggestion.change, values: mask(suggestion.change.values), ...(links ? { links: mask(links.links) } : {}) }, conflicts: suggestion.conflicts?.filter(c => visible.has(c.fieldId)), reason: visible.size === fields.length ? suggestion.reason : "" }, agentName: agent?.name ?? null, objectKey: object.key, objectLabel: object.label, recordTitle: record ? await visibleTitle(ctx, principal, record) : null, recordRef: record?.ref ?? null, paused: !suggestion.adoptedBy && (!agent || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active") || (agent.authorityEpoch ?? 0) !== (suggestion.authorityEpoch ?? 0)) };
 }
 
 export const list = query({ args: { orgId: v.id("orgs"), status: v.optional(v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("conflicted"))) }, handler: async (ctx, args) => {
@@ -45,7 +48,8 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
   const object = await ctx.db.get(suggestion.change.objectId);
   if (!object) fail("NOT_FOUND"); requireObjectRead(member, object);
   if (record) requireRecordRead(member, object, record);
-  for (const id of Object.keys(suggestion.change.values)) {
+  const links = (await linksOf(ctx, suggestion._id))?.links ?? {};
+  for (const id of [...Object.keys(suggestion.change.values), ...Object.keys(links)]) {
     const fieldId = ctx.db.normalizeId("fields", id), field = fieldId ? await ctx.db.get(fieldId) : null;
     if (!field || !canReadField(member, object, field, record?._id)) fail("NOT_FOUND", "Field not found");
   }
@@ -53,13 +57,16 @@ export const apply = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
     const conflicts = Object.keys(suggestion.change.values).flatMap((fieldId) => same(record!.values[fieldId], suggestion.before[fieldId]) ? [] : [{ fieldId, expected: suggestion.before[fieldId] ?? null, actual: record!.values[fieldId] ?? null }]);
     if (conflicts.length) { await ctx.db.patch(suggestion._id, { status: "conflicted", conflicts }); return { status: "conflicted" as const, conflicts }; }
   }
+  // Link deltas apply to the links as they are now, so a person added meanwhile stays.
+  const values: Record<string, unknown> = { ...suggestion.change.values };
+  for (const [id, delta] of Object.entries(links)) values[id] = joined(record?.values[id], delta);
   const agent = await ctx.db.get(suggestion.agentId), org = await ctx.db.get(args.orgId);
   if (!agent || !org) fail("NOT_FOUND", "Suggestion agent not found");
   if (!suggestion.adoptedBy && (agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active") || (agent.authorityEpoch ?? 0) !== (suggestion.authorityEpoch ?? 0))) fail("FORBIDDEN", "Agent access was revoked; adopt this suggestion as a new human action");
   const change = suggestion.change.action === "create"
-    ? { action: "create" as const, orgId: args.orgId, objectId: suggestion.change.objectId, values: suggestion.change.values, reason: suggestion.reason }
+    ? { action: "create" as const, orgId: args.orgId, objectId: suggestion.change.objectId, values, reason: suggestion.reason }
     : suggestion.change.action === "update"
-      ? { action: "update" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, values: suggestion.change.values, reason: suggestion.reason }
+      ? { action: "update" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, values, reason: suggestion.reason }
       : { action: "delete" as const, orgId: args.orgId, recordId: suggestion.change.recordId!, reason: suggestion.reason };
   if (suggestion.adoptedBy && (suggestion.adoptedBy !== member.user._id || (suggestion.authorityEpoch ?? 0) !== (member.member.authorityEpoch ?? 0))) fail("FORBIDDEN", "Only the adopting member can apply this action");
   const result = await applyChange(ctx, suggestion.adoptedBy ? member : { agent, org, actor: { kind: "agent", id: agent._id } }, change, { suggestionId: suggestion._id, approvedBy: member });
@@ -82,5 +89,8 @@ export const adopt = mutation({ args: { orgId: v.id("orgs"), suggestionId: v.id(
   if (!source || source.orgId !== args.orgId || !["pending", "conflicted"].includes(source.status)) fail("NOT_FOUND", "Suggestion cannot be adopted");
   if (!await row(ctx, member, source)) fail("NOT_FOUND", "Suggestion cannot be adopted");
   const { _id, _creationTime, resolvedBy, resolvedAt, eventId, conflicts, ...content } = source;
-  return ctx.db.insert("suggestions", { ...content, status: "pending", adoptedFrom: _id, adoptedBy: member.user._id, authorityEpoch: member.member.authorityEpoch ?? 0 });
+  const adopted = await ctx.db.insert("suggestions", { ...content, status: "pending", adoptedFrom: _id, adoptedBy: member.user._id, authorityEpoch: member.member.authorityEpoch ?? 0 });
+  const links = await linksOf(ctx, _id);
+  if (links) await ctx.db.insert("suggestionLinks", { orgId: links.orgId, suggestionId: adopted, links: links.links });
+  return adopted;
 } });

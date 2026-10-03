@@ -52,4 +52,17 @@ describe("RemoldClient", () => {
     expect(await requests[0]?.json()).toEqual({ kind: "addField", object: "opportunity", key: "budget", label: "Budget", type: "number", reason: "tracked" });
     expect([requests[1]?.method, requests[1]?.url]).toEqual(["GET", "https://remold.convex.site/api/v1/shape/proposals?status=applied"]);
   });
+  it("proposes a batch, applies a granted one with an Idempotency-Key, and pages its status", async () => {
+    const requests: Request[] = [];
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } });
+    const changes = [{ action: "update", record: "brisk-ember-oyster", values: { stage: "Qualified" } }];
+    await client.proposeBatch({ reason: "webinar", changes });
+    await client.applyBatch({ reason: "webinar", changes, idempotencyKey: "run-7" });
+    await client.batchStatus({ id: "b1", cursor: "c", limit: 10 });
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["POST", "https://remold.convex.site/api/v1/batches"], ["POST", "https://remold.convex.site/api/v1/batches"], ["GET", "https://remold.convex.site/api/v1/batches/b1?cursor=c&limit=10"]]);
+    expect(await requests[0]?.json()).toEqual({ reason: "webinar", changes });
+    expect(requests[0]?.headers.get("idempotency-key")).toBeNull();
+    expect(await requests[1]?.json()).toEqual({ reason: "webinar", changes, direct: true });
+    expect(requests[1]?.headers.get("idempotency-key")).toBe("run-7");
+  });
 });

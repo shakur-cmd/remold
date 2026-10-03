@@ -5,8 +5,8 @@ export class RemoldError extends Error {
 type Fetch = typeof fetch;
 export class RemoldClient {
   constructor(private readonly options: { url: string; key: string; fetch?: Fetch }) {}
-  private async request(method: "GET" | "POST", path: string, body?: unknown) {
-    const response = await (this.options.fetch ?? fetch)(`${this.options.url.replace(/\/$/, "")}/api/v1${path}`, { method, headers: { authorization: `Bearer ${this.options.key}`, ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  private async request(method: "GET" | "POST", path: string, body?: unknown, headers: Record<string, string> = {}) {
+    const response = await (this.options.fetch ?? fetch)(`${this.options.url.replace(/\/$/, "")}/api/v1${path}`, { method, headers: { authorization: `Bearer ${this.options.key}`, ...(body === undefined ? {} : { "content-type": "application/json" }), ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     const json = await response.json();
     if (!response.ok) throw new RemoldError(json.error?.message ?? "Remold request failed", json.error?.code ?? "INTERNAL");
     return json;
@@ -25,6 +25,10 @@ export class RemoldClient {
   inboxAdd(args: Record<string, unknown>) { return this.request("POST", "/inbox", args); }
   proposeShape(args: Record<string, unknown>) { return this.request("POST", "/shape/proposals", args); }
   shapeProposals(args: Record<string, unknown> = {}) { return this.request("GET", `/shape/proposals?${params(args)}`); }
+  proposeBatch(args: Record<string, unknown>) { return this.request("POST", "/batches", args); }
+  // A retry with the same key replays the first answer, and picks the batch up again if it stopped.
+  applyBatch(args: Record<string, unknown> & { idempotencyKey?: string }) { const { idempotencyKey, ...body } = args; return this.request("POST", "/batches", { ...body, direct: true }, idempotencyKey ? { "idempotency-key": idempotencyKey } : {}); }
+  batchStatus(args: { id: string; cursor?: string; limit?: number }) { const query = params({ cursor: args.cursor, limit: args.limit }); return this.request("GET", `/batches/${encodeURIComponent(args.id)}${query ? `?${query}` : ""}`); }
   inboxResolve(args: { id: string; note?: string; suggestionId?: string; recordId?: string }) { const { id, ...body } = args; return this.request("POST", `/inbox/${encodeURIComponent(id)}/resolve`, body); }
   campaignReport(idOrRef: string) { return this.request("GET", `/campaigns/${encodeURIComponent(idOrRef)}/report`); }
   emailPreview(args: { idOrRef: string; person?: string }) { const query = params({ person: args.person }); return this.request("GET", `/emails/${encodeURIComponent(args.idOrRef)}/preview${query ? `?${query}` : ""}`); }

@@ -19,6 +19,7 @@ import type * as authority_pending from "../authority/pending.js";
 import type * as authority_policies from "../authority/policies.js";
 import type * as authority_readonly from "../authority/readonly.js";
 import type * as authority_reads from "../authority/reads.js";
+import type * as batches from "../batches.js";
 import type * as campaignSend from "../campaignSend.js";
 import type * as campaigns from "../campaigns.js";
 import type * as capture from "../capture.js";
@@ -100,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   "authority/policies": typeof authority_policies;
   "authority/readonly": typeof authority_readonly;
   "authority/reads": typeof authority_reads;
+  batches: typeof batches;
   campaignSend: typeof campaignSend;
   campaigns: typeof campaigns;
   capture: typeof capture;
