@@ -4,13 +4,14 @@ import { internal } from "./_generated/api";
 import { agentFor, api, objectFields, rest } from "./test.helpers";
 import { makeTest } from "./test.setup";
 import crons from "./crons";
+import { applyChange } from "./lib/applyChange";
 
 // Campaign email: people approve, Remold sends through Resend (mocked here), and
 // opens, clicks, bounces, replies and unsubscribes come back through a signed webhook.
 const MINUTE = 60_000, DAY = 86_400_000, start = Date.UTC(2026, 9, 5, 14);
 const SECRET_KEY = Buffer.from("campaign-webhook-test-secret-key");
 const env = { RESEND_API_KEY: "re_test_key", REMOLD_SENDER_DOMAINS: "mail.example.com, other.example.com", REMOLD_CAMPAIGN_DAILY_CAP: "100", CONVEX_SITE_URL: "https://site.example.com", RESEND_WEBHOOK_SECRET: `whsec_${SECRET_KEY.toString("base64")}` };
-const ENV_KEYS = [...Object.keys(env), "REMOLD_INBOUND_DOMAIN"];
+const ENV_KEYS = [...Object.keys(env), "REMOLD_INBOUND_DOMAIN", "REMOLD_AUTOMATION_DAILY_CAP"];
 
 type Call = { url: string; method: string; headers: Record<string, string>; body: any; raw?: string };
 let calls: Call[], delivered: Call[], byKey: Map<string, string>, inbound: string;
@@ -980,6 +981,60 @@ describe("campaign email", () => {
       const before = await used();
       await w.t.mutation(internal.campaignSend.forwarded, { forwardId: again[0].forwardId, attempt: again[0].attempt, outcome: { ok: false, retry: false, reason: "Resend 422" } });
       expect(await used()).toEqual(before);
+    });
+  });
+
+  describe("automations and campaign email", () => {
+    // An automation is an Automation record, turned on by the owner, running as them.
+    async function automate(w: Awaited<ReturnType<typeof world>>, values: Record<string, unknown>) {
+      process.env.REMOLD_AUTOMATION_DAILY_CAP = "100";
+      const automation = await objectFields(w.client, w.orgId, "automation");
+      const id = await w.create(automation, { name: "Automation", ...values, actions: JSON.stringify(values.actions) });
+      await w.client.mutation(api.automations.setOn, { orgId: w.orgId, recordId: id, on: true });
+      return { id, runs: async () => (await w.t.run((ctx: any) => ctx.db.query("automationRuns").collect())).filter((r: any) => r.automationId === id) };
+    }
+    const drain = (t: any) => t.finishAllScheduledFunctions(vi.runAllTimers);
+
+    it("people an automation adds to an active campaign never get an email approved before they were added", async () => {
+      const w = await world();
+      const stranger = await w.create(w.person, { name: "Stranger Danger", email: "stranger@people.test" });
+      const auto = await automate(w, { when: "fieldChanged", object: "campaign", field: "goal", actions: [{ type: "updateTrigger", values: { people: [...Object.values(w.people), stranger] } }] });
+      await w.update(w.campaign, w.campaignId, { goal: "More calls" });
+      await drain(w.t);
+      expect(await auto.runs()).toMatchObject([{ status: "done" }]);
+      expect((await w.read(w.campaignId)).values[w.campaign.fields.people._id]).toContain(stranger);
+      for (const day of [5, 6, 7]) { vi.setSystemTime(Date.UTC(2026, 9, day, 23)); await tick(w.t); }
+      expect(delivered.map(to).sort()).toEqual(["ava@people.test", "ben@people.test"]);
+      expect((await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId })).emails[0].added).toBe(1);
+    });
+
+    it("an automation that edits an approved email withdraws the approval once and is not set off again by the withdrawal", async () => {
+      const w = await world();
+      const next = await w.draft({ subject: "Second", body: "Hi {{firstName}}" });
+      const auto = await automate(w, { when: "fieldChanged", object: "email", field: "status", actions: [{ type: "updateTrigger", values: { body: "{{record.body}} (checked)" } }] });
+      await w.approve(next);
+      await drain(w.t);
+      expect((await auto.runs()).map((r: any) => r.status)).toEqual(["done"]);
+      const email = await w.read(next);
+      expect(email.values[w.email.fields.body._id]).toBe("Hi {{firstName}} (checked)");
+      expect(email.values[w.email.fields.status._id]).toBe("draft");
+    });
+
+    it("an automation record's actor is never the sender: it cannot set Sending or Sent, nor approve as a member", async () => {
+      const w = await world();
+      const next = await w.draft({ subject: "Third", body: "Hi" });
+      const mo = await w.member("mo");
+      const write = (status: string, as: "owner" | "member") => w.t.run(async (ctx: any) => {
+        const members = (await ctx.db.query("members").collect()).filter((m: any) => m.orgId === w.orgId);
+        const member = as === "owner" ? members.find((m: any) => m.role === "owner") : members.find((m: any) => m.role === "member");
+        const principal = { user: await ctx.db.get(member.userId), actor: { kind: "user" as const, id: member.userId }, member, org: await ctx.db.get(w.orgId) };
+        await applyChange(ctx, principal, { action: "update", orgId: w.orgId, recordId: next, values: { [w.email.fields.status._id]: status } }, { actor: { kind: "automation", id: w.campaignId } });
+      });
+      await expect(write("sent", "owner")).rejects.toMatchObject({ data: { code: "VALIDATION", message: "Remold sets Sending and Sent itself" } });
+      await expect(write("sending", "owner")).rejects.toMatchObject({ data: { code: "VALIDATION" } });
+      await expect(write("approved", "member")).rejects.toMatchObject({ data: { code: "FORBIDDEN", message: "Only an admin can approve an email" } });
+      expect((await w.read(next)).values[w.email.fields.status._id]).toBe("draft");
+      void mo;
     });
   });
 });

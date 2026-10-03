@@ -34,6 +34,15 @@ async function world(name = "Owner") {
   return { ...f, o, ids, as, create, update, automation, turnOn, read, value, runs, all, drain, tick, inbox };
 }
 type World = Awaited<ReturnType<typeof world>>;
+async function join(w: World, name: string, role: "admin" | "member" = "admin") {
+  const invite = await w.client.mutation(api.invites.create, { orgId: w.orgId, role });
+  const client = w.t.withIdentity({ tokenIdentifier: `clerk|${name}`, name });
+  await client.mutation(api.users.store, {});
+  await client.mutation(api.invites.accept, { token: invite.token });
+  const userId = (await client.query(api.users.me, {}))!._id;
+  const member: any = await w.t.run(async (ctx: any) => (await ctx.db.query("members").collect()).find((m: any) => m.userId === userId));
+  return { client, userId, memberId: member._id };
+}
 
 const wonToProject = [
   { type: "createRecord", object: "project", values: { name: "Delivery: {{record.name}}", company: "{{record.company}}", status: "active" } },
@@ -344,6 +353,72 @@ describe("automations", () => {
     await w.drain();
     expect((await w.runs(id)).at(-1)).toMatchObject({ status: "refused", error: expect.stringMatching(/read only/i) });
     expect(await w.value("automation", id, "status")).toBe("paused");
+  });
+
+  it("a person cannot turn on an automation whose trigger reads what is hidden from them", async () => {
+    const w = await world();
+    const ben = await join(w, "Ben");
+    // The verifier's probe: amount is hidden from Ben, so firing on its value would tell him what it is.
+    await w.client.mutation(api.authority.policies.setMember, { orgId: w.orgId, memberId: ben.memberId, hiddenFieldIds: [w.o.opportunity.fields.amount._id, w.o.opportunity.fields.closeDate._id] });
+    const big = await w.automation({ name: "Big deal", when: "fieldChanged", object: "opportunity", field: "amount", equals: "1000000", actions: [{ type: "inbox", text: "Big: {{record.name}} [{{record.amount}}]" }] });
+    await expect(w.turnOn(big, ben.client)).rejects.toMatchObject({ data: { code: "FORBIDDEN", message: "To turn this on you need to see every opportunities and their amount, because it runs as you" } });
+    for (const values of [{ when: "recordCreated", object: "opportunity", field: "amount", equals: "5" }, { when: "dateReached", object: "opportunity", field: "closeDate", offsetDays: 0 }]) {
+      const id = await w.automation({ name: "Hidden", ...values, actions: [{ type: "inbox", text: "x" }] });
+      await expect(w.turnOn(id, ben.client), values.when).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    }
+    const created = await w.automation({ name: "Any deal", when: "recordCreated", object: "opportunity", actions: [{ type: "inbox", text: "x" }] });
+    await w.turnOn(created, ben.client);
+    const opp = await w.create("opportunity", { name: "Acme", stage: "proposal", amount: 5 });
+    await w.update("opportunity", opp, { amount: 1000000 });
+    await w.drain();
+    expect(await w.runs(big)).toEqual([]);
+    expect(await w.value("automation", big, "status")).toBe("draft");
+    // Scoped to automations only, Ben cannot turn on one that watches companies.
+    await w.client.mutation(api.authority.policies.setMember, { orgId: w.orgId, memberId: ben.memberId, scopes: [{ objectId: w.o.automation.object._id, records: "all", fields: "all" }], hiddenFieldIds: [] });
+    const companies = await w.automation({ name: "Companies", when: "recordCreated", object: "company", actions: [{ type: "inbox", text: "New {{record.name}}" }] });
+    await expect(w.turnOn(companies, ben.client)).rejects.toMatchObject({ data: { code: "FORBIDDEN", message: expect.stringMatching(/every companies/) } });
+  });
+
+  it("a run is refused and the automation paused at once when the person can no longer read what it watches", async () => {
+    const w = await world();
+    const ben = await join(w, "Ben");
+    const big = await w.automation({ name: "Big deal", when: "fieldChanged", object: "opportunity", field: "amount", actions: [{ type: "inbox", text: "Deal {{record.name}} changed" }] });
+    await w.turnOn(big, ben.client);
+    // An authority change that did not move Ben's epoch: the run checks what it reads itself.
+    await w.t.run((ctx: any) => ctx.db.patch(ben.memberId, { hiddenFieldIds: [w.o.opportunity.fields.amount._id] }));
+    for (const amount of [1, 2]) await w.create("opportunity", { name: `Deal ${amount}`, amount });
+    await w.drain();
+    expect(await w.runs(big)).toMatchObject([{ status: "refused", error: "Ben can no longer see every opportunities and their amount" }, { status: "skipped", error: "The automation was not on" }]);
+    expect(await w.value("automation", big, "status")).toBe("paused");
+    expect((await w.inbox()).map((i: any) => i.text)).toEqual(['Automation "Big deal" paused: Ben can no longer see every opportunities and their amount. Turn it on again to run it as you.']);
+    // The same when his scope stops covering every opportunity.
+    await w.t.run((ctx: any) => ctx.db.patch(ben.memberId, { hiddenFieldIds: [], readScopes: [{ objectId: w.o.opportunity.object._id, records: [], fields: "all" }, { objectId: w.o.automation.object._id, records: "all", fields: "all" }] }));
+    await w.turnOn(big);
+    await w.t.run(async (ctx: any) => { const state = await ctx.db.query("automationState").first(); await ctx.db.patch(state._id, { enabledBy: ben.userId, memberId: ben.memberId, epoch: 0 }); });
+    await w.create("opportunity", { name: "Deal 3", amount: 3 });
+    await w.drain();
+    expect((await w.runs(big)).at(-1)).toMatchObject({ status: "refused", error: expect.stringMatching(/every opportunities/) });
+    expect(await w.value("automation", big, "status")).toBe("paused");
+  });
+
+  it("fields hidden from the person it runs as read as empty in its templates and its dry run", async () => {
+    const w = await world();
+    const ben = await join(w, "Ben");
+    await w.client.mutation(api.authority.policies.setMember, { orgId: w.orgId, memberId: ben.memberId, hiddenFieldIds: [w.o.opportunity.fields.amount._id] });
+    const id = await w.automation({ name: "Won", when: "fieldChanged", object: "opportunity", field: "stage", equals: "won", actions: [{ type: "inbox", text: "Won {{record.name}} [{{record.amount}}]" }] });
+    await w.turnOn(id, ben.client);
+    const opp = await w.create("opportunity", { name: "Acme", stage: "proposal", amount: 5000 });
+    // The dry run of an on automation renders as Ben; paused, it renders as the caller.
+    const agent = await agentFor(w.client, w.orgId, { name: "reader" });
+    const ref = (await w.read(id)).ref, oppRef = (await w.read(opp)).ref;
+    const asBen = await rest(w.t, agent.key)("POST", `/api/v1/automations/${ref}/test`, { record: oppRef });
+    expect(asBen.json).toMatchObject({ renderedAs: { who: "enabler", name: "Ben" }, steps: [{ action: "inbox", text: "Won Acme []" }] });
+    await w.update("opportunity", opp, { stage: "won" });
+    await w.drain();
+    expect((await w.inbox()).map((i: any) => i.text)).toEqual(["Won Acme []"]);
+    await w.client.mutation(api.automations.setOn, { orgId: w.orgId, recordId: id, on: false });
+    const asCaller = await rest(w.t, agent.key)("POST", `/api/v1/automations/${ref}/test`, { record: oppRef });
+    expect(asCaller.json).toMatchObject({ renderedAs: { who: "caller", name: "reader" }, steps: [{ action: "inbox", text: "Won Acme [5000]" }] });
   });
 
   it("a run that fails writes nothing, and three failures in a row pause the automation with an inbox item", async () => {

@@ -137,3 +137,66 @@ So yes, the previous release runs against data written by this one. While rolled
 - `api.d.ts` was hand-edited (codegen needs a deployment).
 - The pre-existing SERVICE mask-sweep gaps above.
 - Not independently verified.
+
+## Round 2 (after Fable's REVISE on 9137dc0)
+
+Commits: b929988 merges origin/integ/campaigns (4bce955) and covers S1 and S2. The next commit has the rest; see `git log -1 remold/automations`. Level: unit plus SERVICE (local backend) for rollback. Not independently re-verified.
+
+### Fixes
+
+- **B1 (blocker), the hidden-field oracle.** New `triggerAccess` in `convex/lib/automation.ts`. The person an automation runs as must read every record of the watched object (all-record scope). They must also read the field it watches, for fieldChanged and dateReached, or matches on, for recordCreated with field and equals.
+  - At turn-on, a person who cannot is refused with `To turn this on you need to see every opportunities and their amount, because it runs as you`.
+  - Every run re-checks this in `runAs` (`convex/automations.ts`). A run that fails the check is refused, and the automation pauses.
+  - The verifier's probe P1 is now a test: Ben, with amount hidden, cannot turn on `fieldChanged amount equals 1000000`. The same goes for recordCreated matching on amount, dateReached on a hidden closeDate, and an object outside his scope (P4).
+  - The old per-record `canReadRecord` check in `step()` (verifier mutant M-a) was removed. It was dead code: all-record scope is now required on every run, and mutants R3 and R4 test that requirement.
+  - Templates still read hidden fields as empty. That is now tested; mutant R5 is the verifier's M-b.
+- **S4, refused means paused.** Every refusal (access changed, read-only workspace, cannot read what it watches) records the run as refused, pauses the automation at once and leaves one inbox item. Runs already queued behind it are then skipped with "The automation was not on". It never stays on refusing.
+- **S1, merge with 4bce955.** Six conflicts resolved. `emailCheck` now treats only the actor `{ kind: "automation", id: "Campaign email" }` as the sender, for both Sending/Sent and the admin-approval bypass, so an automation record's actor is not the engine. The automation hooks are back in the merged applyChange. The inventory keeps all 259 rows from integ/campaigns plus my 12 (271).
+- **S2, the chain through nested writes.** The withdraw write (an approved email edited goes back to draft) carries `options.automation`. So do the reference and link cleanup writes on delete. The test: an automation fires on email status and appends " (checked)" to the body. Approving sets it off once; the withdrawal it causes does not set it off again. The body has one " (checked)" and the email is back to draft.
+- **S3, proven, no new gate.** Test: an automation adds a stranger to an active campaign after its first email was approved. Over three days of ticks only Ava and Ben are sent to, and the report shows `added: 1`. The approval snapshot holds.
+- **Dry run.** While an automation is on, the dry run renders as the person who turned it on. As a draft or paused, it renders as the caller. The response says which: `renderedAs: { who: "enabler" | "caller", name }`. If the enabler would be refused, the dry run says so. The MCP instructions and tool description say this, and that a person needs full read on the watched object and field to turn one on.
+- **`lastRun` is a direct patch, with no event and no `updatedAt` change** (verifier probe P5). It is engine bookkeeping, like the email sender's counters. This is the one record-value write outside applyChange. The engine's pause is also a direct patch, but it writes an attributed event. Shakur should accept this knowingly; the alternative is an event on every run.
+- **Tick scans bounded and indexed.**
+  - Schedules: each state row keeps `dueAt`, the next due time. The tick reads only due rows through index `by_due` (on, when, dueAt), at most 200 per minute, then moves `dueAt` to the next occurrence. A tick that runs late fires once, not once per missed day.
+  - Dates: the tick takes the 100 date automations scanned longest ago through `by_scan` (on, when, scannedAt). It stamps them, then reads each date's slot index for one day, at most 200 records per automation.
+  - A dateReached on a date field without an index slot is now refused when saved, which removes the 5,000-record scan.
+  - Schema change: two optional fields on `automationState` and two indexes replacing `by_when`. This is additive for data.
+
+### Scale limits (stated)
+
+Per minute: 200 due schedules; 100 date automations (each reached about every N/100 minutes when there are N); 200 matching records per date automation per day; a stuck-queue sweep over 100 rows. Per automation: runs one at a time, 100 per job before handing on, 200 per day. Per workspace: `REMOLD_AUTOMATION_DAILY_CAP` runs per day. Per write: one scheduled job per automation it sets off.
+
+### Fail before, pass after
+
+- `round2-fail-before.txt`: the three new automation tests run against the pre-fix code (automations.ts, lib/automation.ts and schema.ts from b929988) give `3 failed | 19 passed (22)`. After: `22 passed (22)`.
+  - a person cannot turn on an automation whose trigger reads what is hidden from them
+  - a run is refused and the automation paused at once when the person can no longer read what it watches
+  - fields hidden from the person it runs as read as empty in its templates and its dry run
+- Three new tests in `convex/campaigns.test.ts` ("automations and campaign email"). S1 and S2 were fixed inside the merge commit, so their fail-before is shown by mutants R9 and R10 rather than a run on older code:
+  - people an automation adds to an active campaign never get an email approved before they were added
+  - an automation that edits an approved email withdraws the approval once and is not set off again by the withdrawal
+  - an automation record's actor is never the sender: it cannot set Sending or Sent, nor approve as a member
+- Mutants (`mutants.mjs`, `mutants-round2.txt`): **38/38 caught.** That is 28 from round 1, updated to the new code, and 10 new: R1 to R4 (B1 at turn-on, at run time, field, record scope), R5 (template masking, the verifier's M-b), R6 (S4 pause), R7 (dry run as the enabler), R8 (schedule due time), R9 (S1) and R10 (S2). Round-1 M17 is replaced by R6. Verifier M-c (the person check in automationRules) is still redundant with agentGuard on every path, so it is not in the list.
+
+### Suites (round 2)
+
+| Suite | integ/campaigns 4bce955 | After |
+|---|---|---|
+| `pnpm test` | 469 (488 after the merge, minus my 19) | **494/494** (55 files) |
+| `pnpm typecheck` | clean | **clean** |
+| `pnpm test:authority` | 101/101 | **101/101** |
+| `pnpm verify:release` | 37/37 | **37/37** |
+| `pnpm build` | ok | **ok** |
+| `pnpm --dir packages/mcp test` | 8/8 | **8/8** |
+
+(`after-round2.txt`)
+
+### Rollback (round 2)
+
+`BASE=4bce955 node evidence/2026-10-03-campaigns/I/rollback.mjs` (`rollback-round2.log`) ran against the integ/campaigns head. The old functions loaded ("functions ready"), the old code read and wrote records, and runs returned 404. Forward again: the automation is still on and its run is intact. `rollback.mjs` now raises git's output buffer, because the convex/ archive grew.
+
+### Still open
+
+- The screenshots are from round 1 and were not retaken. The page is unchanged apart from the refusal message on Turn on.
+- `GATED` names `booking`, which does not exist yet. When Job B merges, check which booking fields an automation must not write (verifier N4).
+- Not independently re-verified.

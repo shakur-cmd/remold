@@ -32,7 +32,7 @@ await withAuthority(async ({ scratch, root, client, site, reload }) => {
   console.log('new build wrote: automation on, 1 run done, created', view.runs[0].created.map(c => c.title).join(', '));
 
   const old = mkdtempSync(join(tmpdir(), 'remold-rollback-base-'));
-  execFileSync('tar', ['-x', '-C', old], { input: execFileSync('git', ['archive', base, 'convex'], { cwd: root }) });
+  execFileSync('tar', ['-x', '-C', old], { input: execFileSync('git', ['archive', base, 'convex'], { cwd: root, maxBuffer: 1 << 28 }) });
   const keep = new Set(['auth.config.ts']);
   const output = await reload(() => {
     for (const entry of readdirSync(join(scratch, 'convex'))) if (!keep.has(entry) && !entry.startsWith('authorityFixture') && entry !== '_generated') rmSync(join(scratch, 'convex', entry), { recursive: true, force: true });

@@ -3,6 +3,7 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { Principal } from "../identity";
 import { fail } from "../errors";
+import { canReadField, canReadRecordId } from "../authority/reads";
 
 // The rules an Automation record follows on every write, and the event triggers. The
 // runner itself (actions, caps, the cron) is convex/automations.ts.
@@ -36,6 +37,25 @@ export function parseSchedule(text: string | undefined) {
   return match ? { weekday: match[1] ? DAYS.indexOf(match[1].toLowerCase()) : undefined, minutes: +match[2]! * 60 + +match[3]! } : null;
 }
 
+// The next time a schedule is due at or after `from` (UTC).
+export function nextDue(text: string | undefined, from: number) {
+  const schedule = parseSchedule(text);
+  if (!schedule) return undefined;
+  const day = Math.floor(from / DAY) * DAY;
+  for (let i = 0; i <= 7; i++) { const at = day + i * DAY + schedule.minutes * 60_000; if (at >= from && (schedule.weekday === undefined || new Date(day + i * DAY).getUTCDay() === schedule.weekday)) return at; }
+  return undefined;
+}
+
+// What the person an automation runs as must be able to read for its trigger to tell
+// them nothing new: every record of the watched object, and the field it watches or
+// matches on. Null when they can; otherwise what they are missing, in words.
+export function triggerAccess(principal: Principal, trigger: Item | null, d: Definition) {
+  if (d.when === "schedule" || !trigger) return null;
+  const field = d.when === "recordCreated" && !d.equals ? undefined : fieldOf(trigger, d.field);
+  if (!canReadRecordId(principal, trigger.object) || (field && !canReadField(principal, trigger.object, field))) return `every ${trigger.object.labelPlural.toLowerCase()}${field ? ` and their ${field.label.toLowerCase()}` : ""}`;
+  return null;
+}
+
 export function definitionOf(automation: Item, values: Record<string, unknown>): Definition {
   const raw = (key: string) => { const field = fieldOf(automation, key); return field ? values[field._id] : undefined; };
   const text = (key: string) => { const value = raw(key); return typeof value === "string" && value.trim() ? value.trim() : undefined; };
@@ -67,6 +87,7 @@ export async function check(ctx: Ctx, orgId: Id<"orgs">, d: Definition, complete
   const field = fieldOf(trigger, d.field);
   if (trigger && d.field && !field) bad(`No field "${d.field}" on ${trigger.object.label}`);
   if (d.when === "dateReached" && field && field.type !== "date") bad(`${field.label} is not a date`);
+  if (d.when === "dateReached" && field?.type === "date" && !field.slot) bad(`${field.label} is not indexed, so it cannot start an automation`);
   if (field?.type === "select" && d.equals && !field.options?.some((o) => matches(field, o.id, d.equals))) bad(`${field.label} has no option "${d.equals}"`);
   if (d.schedule && !parseSchedule(d.schedule)) bad('Schedule must look like "daily HH:MM" or "weekly mon HH:MM" (UTC)');
   if (d.offsetDays !== undefined && !Number.isSafeInteger(d.offsetDays)) bad("Offset days must be a whole number");
@@ -176,6 +197,10 @@ export async function automationRules(ctx: MutationCtx, principal: Principal, au
   const turningOn = values[status._id] === "on" && was !== "on";
   if (turningOn && !("member" in principal)) fail("FORBIDDEN", "Only a person can turn on an automation", { fieldId: status._id });
   if (edited || turningOn) await check(ctx, automation.object.orgId, definitionOf(automation, values), values[status._id] === "on");
+  if (turningOn) {
+    const d = definitionOf(automation, values), missing = triggerAccess(principal, await itemByKey(ctx, automation.object.orgId, d.object), d);
+    if (missing) fail("FORBIDDEN", `To turn this on you need to see ${missing}, because it runs as you`, { fieldId: status._id });
+  }
 }
 
 // After an Automation record is written: the state row follows its status and names
@@ -187,7 +212,8 @@ export async function automationAfter(ctx: MutationCtx, principal: Principal, ob
     const status = fields.find((f) => f.key === "status" && !f.retired), now = status && after[status._id], was = status && before?.[status._id];
     if (now === "on" && was !== "on" && "member" in principal) {
       const d = definitionOf({ object, fields: fields.filter((f) => !f.retired) }, after);
-      const row = { orgId: object.orgId, automationId: recordId, on: true, objectKey: d.when === "schedule" ? "" : d.object ?? "", when: d.when ?? "", enabledBy: principal.user._id, memberId: principal.member._id, epoch: principal.member.authorityEpoch ?? 0, enabledAt: Date.now(), failures: 0 };
+      const now = Date.now(), dueAt = d.when === "schedule" ? nextDue(d.schedule, now) : undefined;
+      const row = { orgId: object.orgId, automationId: recordId, on: true, objectKey: d.when === "schedule" ? "" : d.object ?? "", when: d.when ?? "", enabledBy: principal.user._id, memberId: principal.member._id, epoch: principal.member.authorityEpoch ?? 0, enabledAt: now, failures: 0, ...(dueAt !== undefined ? { dueAt } : {}), ...(d.when === "dateReached" ? { scannedAt: 0 } : {}) };
       if (state) await ctx.db.replace(state._id, row); else await ctx.db.insert("automationState", row);
     } else if (now !== "on" && state?.on) await ctx.db.patch(state._id, { on: false });
     return;

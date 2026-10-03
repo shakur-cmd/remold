@@ -9,7 +9,7 @@ import { applyChange } from "./lib/applyChange";
 import { projections } from "./lib/slots";
 import { allDay, fromInstant, readableMap, resolveValues } from "./lib/values";
 import { canReadField, canReadRecord, requireRecordRead, visibleTitle } from "./authority/reads";
-import { DAY, TAG, definitionOf, enqueue, fieldOf, itemByKey, nextQueued, parseSchedule, sentence, type Chain, type Definition, type Item } from "./lib/automation";
+import { DAY, TAG, definitionOf, enqueue, fieldOf, itemByKey, nextDue, nextQueued, sentence, triggerAccess, type Chain, type Definition, type Item } from "./lib/automation";
 
 // The automation runner. A trigger (lib/automation.ts) or the minute cron queues a run
 // and schedules `run`, which executes the actions in one mutation as the person who
@@ -159,25 +159,33 @@ export const execute = internalMutation({ args: { runId: v.id("automationRuns") 
   if (run.status === "queued") await step(ctx, run);
   return nextQueued(ctx, run.automationId);
 } });
+// The person who turned it on, as they were then, still able to read what the trigger
+// watches. A changed role or scope, removal or a read-only workspace means refused.
+async function runAs(ctx: Ctx, state: Doc<"automationState">, d: Definition): Promise<{ principal: Principal; user: Doc<"users"> } | { refused: string }> {
+  const org = await ctx.db.get(state.orgId), user = await ctx.db.get(state.enabledBy), member = await ctx.db.get(state.memberId);
+  if (!org || org.flags?.readonly) return { refused: "the workspace is read only" };
+  const who = user?.name ?? "the person who turned it on";
+  const principal = user && member ? await currentPrincipal(ctx, { user, member: { ...member, authorityEpoch: state.epoch }, org, actor: { kind: "user", id: user._id } }).catch(() => null) : null;
+  if (!principal || !user) return { refused: `${who} no longer has the access they had when turning it on` };
+  const missing = triggerAccess(principal, await itemByKey(ctx, state.orgId, d.object), d);
+  if (missing) return { refused: `${who} can no longer see ${missing}` };
+  return { principal, user };
+}
 async function step(ctx: MutationCtx, run: Doc<"automationRuns">) {
   const runId = run._id;
   const finish = (status: "done" | "refused" | "skipped", error?: string, created: Id<"records">[] = []) => ctx.db.patch(runId, { status, created, finishedAt: Date.now(), ...(error ? { error } : {}) });
   const automation = await ctx.db.get(run.automationId), item = await itemByKey(ctx, run.orgId, "automation"), state = await stateOf(ctx, run.automationId);
   if (!automation || !item || !state?.on) return finish("skipped", "The automation was not on");
-  const d = definitionOf(item, automation.values), org = await ctx.db.get(run.orgId), user = await ctx.db.get(state.enabledBy), member = await ctx.db.get(state.memberId);
-  // The person who turned it on, as they were then: a changed role, removal or read-only workspace refuses and pauses.
-  let principal: Principal | null = null;
-  if (org && !org.flags?.readonly && user && member) principal = await currentPrincipal(ctx, { user, member: { ...member, authorityEpoch: state.epoch }, org, actor: { kind: "user", id: user._id } }).catch(() => null);
-  if (!principal) {
-    const reason = !org || org.flags?.readonly ? "the workspace is read only" : `${user?.name ?? "the person who turned it on"} no longer has the access they had when turning it on`;
-    await finish("refused", reason[0]!.toUpperCase() + reason.slice(1));
-    return pause(ctx, automation, item, state, `Automation "${d.name}" paused: ${reason}. Turn it on again to run it as you.`);
-  }
+  const d = definitionOf(item, automation.values), as = await runAs(ctx, state, d);
+  // Any refusal pauses at once, so an automation never stays on refusing every run.
+  const refuse = async (reason: string) => { await finish("refused", reason[0]!.toUpperCase() + reason.slice(1)); await pause(ctx, automation, item, state, `Automation "${d.name}" paused: ${reason}. Turn it on again to run it as you.`); };
+  if ("refused" in as) return refuse(as.refused);
+  const { principal, user } = as;
   let trigger: Trigger = null;
   if (run.triggerRecordId) {
     const record = await ctx.db.get(run.triggerRecordId), object = record && await ctx.db.get(record.objectId), triggerItem = object && await itemByKey(ctx, run.orgId, object.key);
+    // runAs already required every record of the watched object to be readable.
     if (!record || !triggerItem) return finish("skipped", "Its record was deleted");
-    if (!canReadRecord(principal, triggerItem.object, record)) return finish("refused", `${user!.name} cannot see this record`);
     trigger = { record, item: triggerItem };
   }
   const limit = await reserve(ctx, run.orgId, run.automationId, false);
@@ -219,25 +227,29 @@ export const run = internalAction({ args: { runId: v.id("automationRuns") }, han
 } });
 
 // Every minute: schedules that are due today and dates that land on today (UTC), once per day each.
+// Scale limits per minute: 200 due schedules, 100 date automations (oldest scan first, so
+// all are reached in turn) and 200 records per date automation per day.
+const SCHEDULES_PER_TICK = 200, DATES_PER_TICK = 100, RECORDS_PER_DATE = 200;
 export const tick = internalMutation({ args: {}, handler: async (ctx) => {
   const now = Date.now(), today = Math.floor(now / DAY) * DAY;
   // A queue whose runner died (a crash, a deploy) is picked up again; a run already done is never redone.
   const stuck = new Set<Id<"records">>();
   for (const run of await ctx.db.query("automationRuns").withIndex("by_status", (q) => q.eq("status", "queued").lt("_creationTime", now - 10 * 60_000)).take(100)) if (!stuck.has(run.automationId)) { stuck.add(run.automationId); await ctx.scheduler.runAfter(0, internal.automations.run, { runId: run._id }); }
-  const on = (when: string) => ctx.db.query("automationState").withIndex("by_when", (q) => q.eq("on", true).eq("when", when)).take(500);
   const definition = async (state: Doc<"automationState">) => { const record = await ctx.db.get(state.automationId), item = await itemByKey(ctx, state.orgId, "automation"); return record && item ? definitionOf(item, record.values) : null; };
-  for (const state of await on("schedule")) {
-    const schedule = parseSchedule((await definition(state))?.schedule), at = today + (schedule?.minutes ?? 0) * 60_000;
-    if (!schedule || (schedule.weekday !== undefined && new Date(today).getUTCDay() !== schedule.weekday) || now < at || at < state.enabledAt) continue;
-    await enqueue(ctx, state, { key: `${state.automationId}:day:${today}`, depth: 1, chain: [state.automationId] });
+  // Schedules: only those due now, through the due-time index, then the next due time.
+  for (const state of await ctx.db.query("automationState").withIndex("by_due", (q) => q.eq("on", true).eq("when", "schedule").lte("dueAt", now)).take(SCHEDULES_PER_TICK)) {
+    const d = await definition(state), dueAt = state.dueAt!;
+    await enqueue(ctx, state, { key: `${state.automationId}:day:${Math.floor(dueAt / DAY) * DAY}`, depth: 1, chain: [state.automationId] });
+    const next = nextDue(d?.schedule, now + 1);
+    await ctx.db.patch(state._id, next === undefined ? { on: false } : { dueAt: next });
   }
-  for (const state of await on("dateReached")) {
+  // Dates: the automations scanned longest ago, each over its date's index for one day.
+  for (const state of await ctx.db.query("automationState").withIndex("by_scan", (q) => q.eq("on", true).eq("when", "dateReached")).take(DATES_PER_TICK)) {
+    await ctx.db.patch(state._id, { scannedAt: now });
     const d = await definition(state), trigger = await itemByKey(ctx, state.orgId, d?.object), field = fieldOf(trigger, d?.field);
-    if (!d || !trigger || field?.type !== "date") continue;
-    const day = today - (d.offsetDays ?? 0) * DAY, slot = field.slot && `${field.slot.kind}${field.slot.index}`;
-    const records: Doc<"records">[] = slot
-      ? await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", state.orgId).eq("objectId", trigger.object._id).gte(slot, day).lt(slot, day + DAY)).take(200)
-      : (await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", state.orgId).eq("objectId", trigger.object._id)).take(5000)).filter((r) => { const value = r.values[field._id]; return typeof value === "number" && value >= day && value < day + DAY; }).slice(0, 200);
+    if (!d || !trigger || field?.type !== "date" || !field.slot) continue;
+    const day = today - (d.offsetDays ?? 0) * DAY, slot = `${field.slot.kind}${field.slot.index}`;
+    const records: Doc<"records">[] = await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", state.orgId).eq("objectId", trigger.object._id).gte(slot, day).lt(slot, day + DAY)).take(RECORDS_PER_DATE);
     for (const record of records) await enqueue(ctx, state, { key: `${state.automationId}:${record._id}:${today}`, triggerRecordId: record._id, depth: 1, chain: [state.automationId] });
   }
 } });
@@ -258,19 +270,28 @@ export async function history(ctx: Ctx, principal: Principal, record: Doc<"recor
   return { automation: { id: record._id, ref: record.ref ?? null, title: await visibleTitle(ctx, principal, record), status: (status && record.values[status._id]) ?? "draft", sentence: d ? await sentence(ctx, record.orgId, d) : "Its actions are not valid JSON" }, runs };
 }
 
-export async function dryRun(ctx: Ctx, principal: Principal, record: Doc<"records">, triggerRecord: Doc<"records"> | null) {
-  const item = await automationItem(ctx, principal, record), d = definitionOf(item, record.values);
+// Renders as the person it runs as while it is on (what would really be written), and as
+// the caller while it is a draft or paused; `renderedAs` says which.
+export async function dryRun(ctx: Ctx, caller: Principal, record: Doc<"records">, triggerRecord: Doc<"records"> | null) {
+  const item = await automationItem(ctx, caller, record), d = definitionOf(item, record.values), state = await stateOf(ctx, record._id);
+  let principal = caller, renderedAs: { who: "enabler" | "caller"; name: string | null } = { who: "caller", name: "member" in caller ? caller.user.name : caller.agent.name };
+  if (state?.on) {
+    const as = await runAs(ctx, state, d);
+    if ("refused" in as) fail("FORBIDDEN", `It would be refused: ${as.refused}`);
+    principal = as.principal; renderedAs = { who: "enabler", name: as.user.name };
+  }
   let trigger: Trigger = null;
   if (d.when !== "schedule") {
     const watched = await itemByKey(ctx, record.orgId, d.object);
     if (!watched) fail("VALIDATION", "Choose the object it watches first");
     const which = `${/^[aeiou]/i.test(watched.object.label) ? "an" : "a"} ${watched.object.label}`;
     if (!triggerRecord || triggerRecord.objectId !== watched.object._id) fail("VALIDATION", `Test it with ${which} record`);
+    requireRecordRead(caller, watched.object, triggerRecord);
     requireRecordRead(principal, watched.object, triggerRecord);
     trigger = { record: triggerRecord, item: watched };
   }
   const { steps, problems } = await perform(ctx, principal, d, trigger);
-  return { sentence: await sentence(ctx, record.orgId, d), steps, problems };
+  return { sentence: await sentence(ctx, record.orgId, d), renderedAs, steps, problems };
 }
 
 // Each action in plain words, for the automation's page.
