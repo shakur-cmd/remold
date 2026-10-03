@@ -33,6 +33,8 @@ const rows = [
   row("campaignSend:reserveOne", "mutation", "internal", true, "human", "refused", "no-record-data", ONE, sender),
   row("campaignSend:releaseOne", "mutation", "internal", true, "human", "reduction-only", "no-record-data", ONE, sender),
   row("campaignSend:transactional", "action", "internal", true, "human", "refused", "no-record-data", ONE, sender),
+  row("campaignSend:claimForwards", "mutation", "internal", true, "human", "refused", "no-record-data", "a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it", "reply forwarding; a read-only workspace forwards nothing"),
+  row("campaignSend:forwarded", "mutation", "internal", true, "human", "reduction-only", "no-record-data", "a forward that fails is retried until Resend takes it, exactly once, and a read-only workspace holds it", "records a forward's outcome"),
   row("cron Campaign email", "cron", "cron", true, "scheduler", "refused", "no-record-data", "runs the sender every minute", sender),
 ];
 const known = new Set(inventory.map((entry) => entry.id));

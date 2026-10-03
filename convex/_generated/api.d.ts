@@ -19,6 +19,7 @@ import type * as authority_pending from "../authority/pending.js";
 import type * as authority_policies from "../authority/policies.js";
 import type * as authority_readonly from "../authority/readonly.js";
 import type * as authority_reads from "../authority/reads.js";
+import type * as automations from "../automations.js";
 import type * as blueprints from "../blueprints.js";
 import type * as campaignSend from "../campaignSend.js";
 import type * as campaigns from "../campaigns.js";
@@ -51,10 +52,12 @@ import type * as integrations_tables from "../integrations/tables.js";
 import type * as invites from "../invites.js";
 import type * as invoices from "../invoices.js";
 import type * as lib_applyChange from "../lib/applyChange.js";
+import type * as lib_automation from "../lib/automation.js";
 import type * as lib_blueprint from "../lib/blueprint.js";
 import type * as lib_campaign from "../lib/campaign.js";
 import type * as lib_campaignText from "../lib/campaignText.js";
 import type * as lib_daily from "../lib/daily.js";
+import type * as lib_days from "../lib/days.js";
 import type * as lib_email from "../lib/email.js";
 import type * as lib_emailRules from "../lib/emailRules.js";
 import type * as lib_find from "../lib/find.js";
@@ -72,6 +75,8 @@ import type * as lib_slots from "../lib/slots.js";
 import type * as lib_standard from "../lib/standard.js";
 import type * as lib_templates from "../lib/templates.js";
 import type * as lib_values from "../lib/values.js";
+import type * as lib_viewSpec from "../lib/viewSpec.js";
+import type * as lib_views from "../lib/views.js";
 import type * as objects from "../objects.js";
 import type * as ops from "../ops.js";
 import type * as orgs from "../orgs.js";
@@ -86,6 +91,7 @@ import type * as telemetry from "../telemetry.js";
 import type * as telemetryHttp from "../telemetryHttp.js";
 import type * as today from "../today.js";
 import type * as users from "../users.js";
+import type * as views from "../views.js";
 
 import type {
   ApiFromModules,
@@ -105,6 +111,7 @@ declare const fullApi: ApiFromModules<{
   "authority/policies": typeof authority_policies;
   "authority/readonly": typeof authority_readonly;
   "authority/reads": typeof authority_reads;
+  automations: typeof automations;
   blueprints: typeof blueprints;
   campaignSend: typeof campaignSend;
   campaigns: typeof campaigns;
@@ -137,10 +144,12 @@ declare const fullApi: ApiFromModules<{
   invites: typeof invites;
   invoices: typeof invoices;
   "lib/applyChange": typeof lib_applyChange;
+  "lib/automation": typeof lib_automation;
   "lib/blueprint": typeof lib_blueprint;
   "lib/campaign": typeof lib_campaign;
   "lib/campaignText": typeof lib_campaignText;
   "lib/daily": typeof lib_daily;
+  "lib/days": typeof lib_days;
   "lib/email": typeof lib_email;
   "lib/emailRules": typeof lib_emailRules;
   "lib/find": typeof lib_find;
@@ -158,6 +167,8 @@ declare const fullApi: ApiFromModules<{
   "lib/standard": typeof lib_standard;
   "lib/templates": typeof lib_templates;
   "lib/values": typeof lib_values;
+  "lib/viewSpec": typeof lib_viewSpec;
+  "lib/views": typeof lib_views;
   objects: typeof objects;
   ops: typeof ops;
   orgs: typeof orgs;
@@ -172,6 +183,7 @@ declare const fullApi: ApiFromModules<{
   telemetryHttp: typeof telemetryHttp;
   today: typeof today;
   users: typeof users;
+  views: typeof views;
 }>;
 
 /**

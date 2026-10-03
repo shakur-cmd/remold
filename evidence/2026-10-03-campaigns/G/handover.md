@@ -134,3 +134,107 @@ None. No env vars, no external services. After deploying, existing orgs see the 
 - `pnpm proof:authority` not run (pre-existing base failures per Job C).
 - Ordering uses up/down buttons rather than dnd-kit dragging; one arrow click is one server call carrying the whole new order.
 - `convex/_generated/api.d.ts` was edited by hand to register `lib/lifecycle` (same form codegen writes); a later `convex codegen` will produce the same lines.
+
+---
+
+# Round 2 (after independent verification: REVISE on 050abad)
+
+Verdict: `~/work/briefs-1003/iv-G-verdict.md` (Claude Fable 5.1). Coordinator decisions 1–6 carried out on `remold/shape-lifecycle`. Commits: merge `2b8263e` (integ/campaigns 4bce955), then the round 2 commit that carries this section. Not pushed. Evidence level unchanged: tests are convex-test (SIM); screenshots ran on an isolated local backend (SERVICE, synthetic data).
+
+## What changed in round 2
+
+- **Merge (decision 4)**: `git merge origin/integ/campaigns` (4bce955). Conflicts in `convex/schema.ts`, `convex/agentApi.ts`, `packages/mcp/src/index.ts`.
+  - `schema.ts`: integ's `authorityAudit.by_target` index and G's `before` field are both kept.
+  - `agentApi.ts`: `/objects` keeps integ's per-field `withTime`, `protectedFromAgents` and `write {create, update}` alongside G's `includeArchived`, `archived`, `retiredFields` and `slotsLeft`. `me` is integ's. `proposeShape` keeps integ's idempotency replay with G's `indexed` and `order` args. `markReplied` is integ's.
+  - MCP: `remold_objects` describes write modes and archived/slots, and takes `includeArchived`. `remold_propose_shape` has integ's `writeKey` with G's 12 kinds, `indexed` and `order`. The server instructions keep both additions.
+  - Every inventory entry from both sides is kept (269 rows).
+- **Stale search index (decision 1)**: `objects.retitling` (optional `{from, cursor, at}`, index `by_retitling`).
+  - `setTitleField` sets `retitling` with every earlier title field and rewrites the first 50 stored titles in the same transaction. Each later page advances `cursor`/`at`, and the last page clears the field. A second change during a rewrite adds to `from` and restarts from the top.
+  - **Choice: restricted, not refused.** While an object is retitling, its stored titles are used for search (`lib/search.ts` `storedTitlesReadable`) and title matching for lookups, CSV and capture (`lib/find.ts`) only when the caller can query every field in `from`. Anyone else gets no title matches from that object until the rewrite ends. Why: a caller who can read both the old and new title fields learns nothing from a stale match, so blocking them (often the admin who made the change) would only take search away. A caller who cannot read an old field would learn that field's values from which record matched, so they get nothing. Display was already correct (`visibleTitle` reads the current field).
+  - **Resume**: new minute cron "Resume title rewrites" runs `lib/lifecycle:resumeRetitles`. It picks up any object whose rewrite has not advanced for 2 minutes and continues it in pages of 10, so a page that failed on the read limit is retried smaller. Up to 20 objects per minute.
+- **Probes and mutants (decision 2)**: P1–P5 adopted into `convex/lifecycle.test.ts` (P3 covers both the human and apply paths; P3b also checks apply re-checks unrestricted access). **Verifier mutants: 6/6 killed** (`round2-mutants.txt`).
+- **Impact previews (decision 5)**:
+  - Counts stop at 500 records or about 3 MB read and then say "500+".
+  - An indexed field's "hold a value" count reads only records through its slot index; the total, and unindexed fields, scan `by_object` under the same cap. Convex allows one `.paginate()` per function, so both use bounded async iteration.
+  - Settings: the retire and archive handlers run inside `attempt`. If the preview fails, a toast shows the error and the confirm still opens with "Could not count what this touches: …".
+  - Suggestions: each card renders its preview inside its own error boundary. A failing preview shows that message in its card, and the other proposals still render. Tested in `src/routes/Suggestions.test.tsx`.
+- **Decision 6**:
+  - `opportunity.stage` is protected: "Stage cannot be retired: Today's quiet deals and agent guards need it".
+  - An archived object takes no new records: human create, agent `POST /changes` create, agent `POST /suggestions` create, and CSV `importRows` all refuse with "Unarchive Venues to add records" (`requireLive` in `lib/metadata.ts`, checked in `applyChange`, `agentApi.propose` and `csv.importRows`). Updates and reads still work.
+  - Archived objects are hidden from both agent scope pickers in `AgentsCard`. This is display only, so access an agent already has to an archived object is not dropped on save.
+  - Email preview and campaign report names (recipient and audience rows, the campaign name) now come from `visibleTitle`, never the stored title. The merge-tag `{{name}}` used for sending reads the current title field's value.
+- **Tests changed elsewhere (setup only, assertions untouched)**:
+  - `convex/intake.test.ts` retired `opportunity.stage`, and integ's `convex/jobE.test.ts` ("REST Today uses the app selection for retained done values") retired `task.done`. Both are now refused by design, so both tests put the workspace into the retired state with `t.run`, as an older workspace could be.
+  - `convex/lifecycle.test.ts`: the 500-record fixture now writes slot projections like `applyChange` does.
+
+## Fail before, pass after (round 2)
+
+- `round2-fail-before.txt`: before the fixes, 8 new tests failed for the intended reasons:
+  - P1: a reader got 50 records for `q=Secret`.
+  - The lookup by title matched hidden "Secret110".
+  - No `retitling` field (×3 tests).
+  - Stage was retirable.
+  - Archived objects took new records (null message).
+  - The preview and report contained "Secret Ava".
+
+  The 500+ impact test also failed against the old "first 500" wording. P2–P5 and P3b passed on the unfixed code, as the verifier found; they are there to kill the verifier's mutants.
+- `round2-ui-fail-before.txt`: the Suggestions test fails with the round 1 card (one failing preview takes the page down). It passes now.
+- `round2-pass-after.txt`: `convex/lifecycle.test.ts` + `src/routes/Suggestions.test.tsx`: **41 passed (41)**.
+- `round2-mutants.txt`:
+  - Verifier mutants M-a, M-c, M-h, M-d, M-i and the P3 apply path: **6/6 killed**.
+  - Round 2 guards R1–R14 (search and matching ignoring retitling, flag never cleared, sweeper idle or ignoring the stall threshold, second change forgetting fields, stage unprotected, archived creates through each of the 3 paths, stored titles in preview and report, no card boundary, slot count ignored): **14/14 killed**. R5 and R11 survived the first run, and I strengthened those tests before recording.
+- `round2-verifier-probes.txt`: the verifier's own probe file run on this branch. P1–P6 pass. P7 now fails **by design**: it asserted that an agent's create proposal on an archived object returns 201, and decision 6 makes it 400 "Unarchive Venues to add records".
+
+## Full suites, round 2 (`round2-suites.txt`)
+
+| Suite | Result |
+|---|---|
+| `pnpm test --maxWorkers=2 --testTimeout=60000` (machine loaded by other jobs) | **510/510** |
+| `pnpm test` (default workers, load ~5) | 507/510. 3 timeouts (`gmailSync` 5 s, two `Calendar.drag` 15 s), the same tests that time out on the base under load. All pass in the run above. |
+| `pnpm typecheck` | clean |
+| `pnpm test:authority` | **101/101** (inventory adds `lib/lifecycle:resumeRetitles` and `cron Resume title rewrites`; `inventory.test.ts` cron list updated) |
+| `pnpm verify:release` | **37/37** |
+| `pnpm build` | ok |
+| `pnpm --dir packages/mcp test` | **8/8** |
+
+Job E's MCP probes (`convex/jobE.probe.test.ts`) are part of `pnpm test` and pass.
+
+Screenshots retaken on the final code (`screenshot.log`, `non-local requests blocked: none`). `suggestions-retire-archive-impact.png` shows the per-card previews loading.
+
+## Rollback (decision 3: no code here)
+
+The coordinator ships one schema expand commit for the release. These are the exact schema lines G needs on top of aa68030's schema (all additive; integ's own lines are not listed):
+
+In `convex/schema.ts`:
+```ts
+// Set while stored record titles still hold earlier title fields' values (lib/lifecycle.ts).
+const retitling = v.object({ from: v.array(v.id("fields")), cursor: v.union(v.string(), v.null()), at: v.number() });
+// authorityAudit: add the field
+before: v.optional(v.string())
+// objects: add the fields and the index
+archived: v.optional(v.boolean()), retitling: v.optional(retitling)
+.index("by_retitling", ["retitling.at"])
+```
+In `convex/lib/metadata.ts` (imported by the schema for `shapeSuggestions.change`):
+```ts
+// fieldSpec: add
+indexed: v.optional(v.boolean())
+// shapeChange union: add these variants
+v.object({ kind: v.literal("retireField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
+v.object({ kind: v.literal("restoreField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
+v.object({ kind: v.literal("reorderFields"), objectId: v.id("objects"), fieldIds: v.array(v.id("fields")) }),
+v.object({ kind: v.literal("reorderObjects"), objectIds: v.array(v.id("objects")) }),
+v.object({ kind: v.literal("reorderOptions"), objectId: v.id("objects"), fieldId: v.id("fields"), optionIds: v.array(v.string()) }),
+v.object({ kind: v.literal("archiveObject"), objectId: v.id("objects") }),
+v.object({ kind: v.literal("unarchiveObject"), objectId: v.id("objects") }),
+v.object({ kind: v.literal("setTitleField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
+```
+Round 1 showed old code runs on these declarations (`rollback.log`). One caveat for code older than this branch: it ignores `retitling`. If an older build runs while an object is mid-rewrite, nothing restricts search on that object, and no cron resumes the rewrite. Rolling forward again resumes it via the sweeper, because the marker is still on the object.
+
+## Still open or uncertain
+
+- The resume cron retries pages of 10. A single record close to Convex's 1 MiB document limit is still read within budget, but a page of 10 such records is about 10 MiB, under the 16 MiB limit. I have not tested real byte limits; convex-test does not enforce them.
+- The impact byte budget is estimated from `JSON.stringify` length, not Convex's own accounting.
+- Archived objects still show in the Settings object selector (marked "(archived)") so they can be managed. They are hidden from both agent scope pickers.
+- Records of other objects whose title is a lookup to a retitled object keep their stored lookup-derived title until edited (pre-existing behavior for lookup titles; display follows `visibleTitle`).
+- `pnpm proof:authority` was not run (pre-existing base failures per Job C). The new public writes already have sweep calls from round 1; no new public writes were added in round 2.

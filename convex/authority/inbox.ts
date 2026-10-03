@@ -8,7 +8,7 @@ export function unrestrictedHuman(principal: Principal) {
 export function sharedInboxReader(principal: Principal) {
   if ('member' in principal) return unrestrictedHuman(principal);
   const a = principal.agent, old = a.authorityVersion === undefined && principal.org.authorityFrozenAt !== undefined && a._creationTime <= principal.org.authorityFrozenAt;
-  return (a.sharedInbox ?? old) && !a.hiddenFieldIds?.length && (old || !!a.readObjectIds?.length) && !(principal.capabilities ?? []).some(g => g.capability === 'read' || g.capability === 'propose');
+  return (a.sharedInbox ?? old) && !a.hiddenFieldIds?.length && (old || !!principal.readsEverything) && !(principal.capabilities ?? []).some(g => g.capability === 'read' || g.capability === 'propose');
 }
 export function canSeeInbox(principal: Principal, item: Doc<'agentInbox'>) {
   if (item.orgId !== principal.org._id) return false;

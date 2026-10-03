@@ -10,12 +10,21 @@ const score = (title: string, terms: string[]) => { const have = words(title); r
 // True when the caller can read every record of the object and its search title,
 // so the search index holds no match they cannot see.
 async function fullySearchable(ctx: QueryCtx, principal: Principal, object: Doc<"objects">, depth = 0): Promise<boolean> {
-  if (depth > 5 || listedRecordIds(principal, object) !== null || !object.titleFieldId) return false;
+  if (depth > 5 || listedRecordIds(principal, object) !== null || !object.titleFieldId || !await storedTitlesReadable(ctx, principal, object)) return false;
   const field = await ctx.db.get(object.titleFieldId);
   if (!field || !canQueryField(principal, object, field)) return false;
   if (field.type !== "lookup") return true;
   const target = field.targetObjectId ? await ctx.db.get(field.targetObjectId) : null;
   return !!target && fullySearchable(ctx, principal, target, depth + 1);
+}
+
+// While an object is retitling (lib/lifecycle.ts) its stored titles may still hold
+// earlier title fields' values. Matching on them is safe only for a caller who can query
+// every one of those fields; anyone else gets no title matches from the object until the
+// rewrite ends, rather than learning a hidden value from which record matched.
+export async function storedTitlesReadable(ctx: QueryCtx, principal: Principal, object: Doc<"objects">) {
+  for (const id of object.retitling?.from ?? []) { const field = await ctx.db.get(id); if (field && !canQueryField(principal, object, field)) return false; }
+  return true;
 }
 
 // Title search and recent-first lists for pickers, the search box and agents. No

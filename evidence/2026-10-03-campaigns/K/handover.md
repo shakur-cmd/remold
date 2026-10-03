@@ -133,3 +133,45 @@ Six findings; I checked each.
 - The read-only service sweep for the new public writes is written but never ran, because the service proof stops earlier on a pre-existing harness buffer limit (see the suites section). The convex-test suite does cover refusal for member-role and restricted principals.
 - Transaction headroom for the largest allowed blueprint was reasoned, not measured on a real backend with a maximal blueprint.
 - `convex/_generated/api.d.ts` was edited by hand.
+
+## Round 2 (merge)
+
+Merged `origin/integ/campaigns` at f94e828 into `remold/blueprints` (merge commit: see `git log`). Integ had gained shape lifecycle round 2 (retitling flag and resume cron, bounded impact previews, opportunity.stage protected, archived objects refuse new records, visibleTitle), saved views (`addView` proposal kind, `views` table), automations, agent object access, campaign email fixes and defect fixes.
+
+### Conflicts and how they were resolved
+- `convex/shapeSuggestions.ts`: kept this branch's split (key resolution and `perform` live in `convex/lib/proposals.ts`). Ported integ's `addView` into it: `changeFor` builds and checks the view (`checkView`, as integ wrote it), `perform` saves it with `insertView` as the person applying, credited to the proposing agent. `authorize` keeps both the blueprint rule and integ's addView rule. `apply` keeps integ's `viewId` in `result` and this branch's blueprint path.
+- `convex/lib/metadata.ts`: `Lifecycle` excludes both `addView` and `blueprint`. Integ's agent view input validators moved here as `viewInput`, so `changeInput` (one blueprint step) can carry a view.
+- `convex/agentApi.ts`: kept integ's idempotent `proposeShape`, views, view records, automations and `markReplied`. Shape args now come from `changeInput` plus `blueprint`. Kept the three blueprint functions.
+- `convex/lib/lifecycle.ts`: kept integ's `retitling` flag, cursor, resume cron and search protections. Integ's title change paginated its first page inline again, which would bring back the Round 1 review bug (two title changes in one transaction break Convex's one-paginate rule). So the first page inside the change is now a `take`. If everything fits, the flag clears at once; otherwise the flag stays and the scheduled pass pages from the top (rewrites are idempotent). Integ's lifecycle tests ("the first page of titles is rewritten with the change ...", P1 search hiding, the resume sweeper) pass unchanged.
+- `convex/http.ts`, `packages/mcp/src/*`, `src/routes/Settings.tsx`, `src/routes/Suggestions.tsx`, `convex/_generated/api.d.ts`, `ops/authority/service-sweeps.mjs`: kept both sides.
+- `ops/authority/inventory.json`: merged by id. All 290 integ rows plus this branch's 13 new rows, 303 in total. No row was dropped and none was changed by both sides.
+
+### Blueprints and the new kinds and rules
+- **addView in blueprints.** A step may be `{ kind: "addView", object, name, layout, columns, filters, range, sort, groupBy, dateField, pinned }`, the same body as integ's agent proposal, with the object named by key, so a view can sit on an object the blueprint creates. Views run after every other step, so a view may use fields added anywhere in the blueprint. Each view goes through integ's `checkView` (board needs a select, calendar needs a date, filters coerced, indexed fields only) and `insertView` as a shared view. It is saved by the person applying and credited to the proposing agent (or to the person, for a template they picked). In an agent's trial the workspace owner stands in to save it, as for starter records, since only a person may share a view; the trial is rolled back. The review card describes it in plain words ("New shared board view "Open jobs by stage", grouped by Status, pinned in the menu").
+- **Archived objects.** A starter record on an object the blueprint archives (or that is already archived) is refused by integ's `requireLive` in `applyChange`. The message is "Starter record 1 (Workshop Pottery): Unarchive Workshops to add records". The whole blueprint is refused at proposal time, and a person's apply with the box ticked changes nothing. Without the box it applies.
+- **Retitling.** `setTitleField` in a blueprint goes through `applyLifecycle`, so integ's `retitling` flag is set and restricted readers cannot find records by the old title values until the pass finishes. Several title changes in one blueprint work.
+- **Export** now includes shared views (by key), and the round-trip test compares them. A view that filters on a lookup or links field is left out, because its value names a record in this workspace.
+- **Templates:** each gained two views. Service: "Open jobs by stage" (board, pinned) and "Visit calendar". Agency: "Deliverables by status" (board, pinned) and "Active retainers" (filtered on Active, by renewal). Creator: "Session calendar" (pinned) and "Sponsor pipeline" (board). Retail: "Orders by status" (board, pinned) and "Low stock" (for sale, by stock).
+
+### New tests, fail before and pass after (`round2-fail-before.txt`, `pass-after-round2.txt`)
+The behaviours depend on merged code, so "before" is each test run against the targeted reversion that represents the pre-merge or unfixed state:
+
+| Test | Reversion | Before | After |
+|---|---|---|---|
+| a blueprint adds a shared view to an object it creates, credited to the proposing agent | blueprint kinds without addView (pre-merge) | × "Step 2: kind must be one of ..." | ✓ |
+| same | views not run last | × "Step 2, add view job "Open jobs by stage": Field not found" | ✓ |
+| a blueprint that archives an object refuses starter records on it | archived objects accept records (pre-merge rule) | × proposal accepted | ✓ |
+| setTitleField inside a blueprint marks the object retitling, hides old titles from restricted readers, then finishes | integ's inline paginate kept | × 500 (second paginate in one transaction) | ✓ |
+
+The built-in template test now also checks each template's views exist, are shared and usable, and are credited to the agent. The export round-trip test compares views. `convex/blueprints.test.ts`: 21/21.
+
+### Suites (`suites-round2.txt`)
+- `pnpm test`, default settings: 586/587. The one failure is `gmailSync` "last contact" timing out at 5.3 s against the 5 s default (the same pre-existing timing test as Round 1). With `--testTimeout=60000 --maxWorkers=2`: **587/587**. Load average was about 2.5 during the run.
+- `pnpm typecheck`: clean. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: built.
+- `packages/mcp` build: integ f94e828 alone fails (`TS1005` at `src/index.ts:11`: unescaped double quotes inside the `instructions` string, from the automations change). I made that string a template literal, with no text change, and the build is clean. This is outside the job's scope; flagging it so the coordinator knows integ's MCP build was broken.
+
+### Rollback (Round 2)
+No schema change of this branch's own in the merge beyond Round 1's `blueprint` variant. A blueprint can now store view steps inside `shapeSuggestions.change.blueprint`. Those are optional fields of the `blueprint` validator, so the Round 1 statement stands: a plain rollback to a release without the `blueprint` variant is refused once a blueprint proposal exists; the schema-only rollback recipe applies. The rollback script was not rerun after the merge.
+
+### Not redone in Round 2
+Screenshots and the SERVICE rollback run were not repeated; the UI code is unchanged apart from the merge (the card renders the new view lines from the same diff).

@@ -23,6 +23,7 @@ const relied: Record<string, Record<string, string>> = {
   note: { about: "email replies are saved as notes about a person" },
   activity: { about: timelines, when: timelines, type: timelines },
   task: { dueDate: today, done: today },
+  opportunity: { stage: "Today's quiet deals and agent guards need it" },
   invoice: { amount: invoices, due: invoices, paidOn: invoices },
 };
 
@@ -99,8 +100,10 @@ export async function checkLifecycle(ctx: Ctx, principal: Principal, change: Lif
       if (field.type !== "text") fail("VALIDATION", "Only a text field can be the title");
       if (object.titleFieldId === field._id) fail("VALIDATION", "This is already the title field");
       return { target: field._id, objectIds: [object._id], fieldIds: [field._id], write: async (m) => {
-        await m.db.patch(object._id, { titleFieldId: field._id });
-        await retitlePage(m, object._id, null, true);
+        // Every field whose values stored titles may still hold, until a full pass ends; a pass restarts from the top.
+        const from = [...new Set([...(object.retitling?.from ?? []), ...(object.titleFieldId ? [object.titleFieldId] : [])])].filter((id) => id !== field._id);
+        await m.db.patch(object._id, { titleFieldId: field._id, retitling: { from, cursor: null, at: Date.now() } });
+        await retitlePage(m, object._id, RETITLED, true);
         return object.titleFieldId ? (await m.db.get(object.titleFieldId))?.key : undefined;
       } };
     }
@@ -113,52 +116,77 @@ export async function applyLifecycle(ctx: MutationCtx, principal: Principal, cha
   return { objectIds, fieldIds };
 }
 
-// Stored record titles (the search index) follow the title field: the first page is
-// rewritten with the change, the rest in later transactions. Each page reads the current
-// title field, so a later change simply wins. Readers never see a stale title: visibleTitle
-// reads the title field's value. Safe to re-run by hand with cursor null.
-const RETITLED = 50;
-const retitleRef = makeFunctionReference<"mutation", { objectId: Id<"objects">; cursor: string | null }>("lib/lifecycle:retitle");
-async function retitlePage(ctx: MutationCtx, objectId: Id<"objects">, cursor: string | null, first = false) {
-  const object = await ctx.db.get(objectId), field = object?.titleFieldId ? await ctx.db.get(object.titleFieldId) : null;
-  if (!object || field?.type !== "text") return;
+// Stored record titles feed the search index and title matching. After the title field
+// changes they still hold earlier fields' values until rewritten, so the object carries
+// `retitling` (those fields and a cursor) until the last page is done, and search and
+// title matching treat it as unsafe for anyone who cannot read every one of them
+// (lib/search.ts). The first page is rewritten with the change, the rest in scheduled
+// pages; a page that stops is picked up by resumeRetitles (minute cron) in smaller pages.
+const RETITLED = 50, RESUMED = 10, STALLED = 2 * 60_000;
+const retitleRef = makeFunctionReference<"mutation", { objectId: Id<"objects"> }>("lib/lifecycle:retitle");
+async function retitlePage(ctx: MutationCtx, objectId: Id<"objects">, size = RETITLED, inline = false) {
+  const object = await ctx.db.get(objectId);
+  if (!object?.retitling) return;
+  const field = object.titleFieldId ? await ctx.db.get(object.titleFieldId) : null;
+  // Lookup titles are copied from the target by applyChange; nothing to rewrite here.
+  if (field?.type !== "text") return ctx.db.patch(object._id, { retitling: undefined });
   const rows = ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id));
   const rewrite = async (page: Doc<"records">[]) => { for (const record of page) { const value = record.values[field._id], title = value == null ? "" : String(value); if (record.title !== title) await ctx.db.patch(record._id, { title }); } };
   // Within the change itself a plain take: Convex allows one paginate per function, and a
-  // blueprint can retitle several objects. The rest pages from the start (rewrites are idempotent).
-  if (first) { const page = await rows.take(RETITLED + 1); await rewrite(page.slice(0, RETITLED)); if (page.length > RETITLED) await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id, cursor: null }); return; }
-  const page = await rows.paginate({ cursor, numItems: RETITLED });
+  // blueprint can retitle several objects. A larger object then pages from the top (rewrites are idempotent).
+  if (inline) {
+    const first = await rows.take(size + 1);
+    await rewrite(first.slice(0, size));
+    if (first.length <= size) return ctx.db.patch(object._id, { retitling: undefined });
+    return void await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id });
+  }
+  const page = await rows.paginate({ cursor: object.retitling.cursor, numItems: size });
   await rewrite(page.page);
-  if (!page.isDone) await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id, cursor: page.continueCursor });
+  if (page.isDone) return ctx.db.patch(object._id, { retitling: undefined });
+  await ctx.db.patch(object._id, { retitling: { ...object.retitling, cursor: page.continueCursor, at: Date.now() } });
+  await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id });
 }
-export const retitle = internalMutation({ args: { objectId: v.id("objects"), cursor: v.union(v.string(), v.null()) }, handler: (ctx, args) => retitlePage(ctx, args.objectId, args.cursor) });
+export const retitle = internalMutation({ args: { objectId: v.id("objects") }, handler: (ctx, args) => retitlePage(ctx, args.objectId) });
+export const resumeRetitles = internalMutation({ args: {}, handler: async (ctx) => {
+  for (const object of await ctx.db.query("objects").withIndex("by_retitling", (q) => q.gte("retitling.at", 0).lt("retitling.at", Date.now() - STALLED)).take(20)) await retitlePage(ctx, object._id, RESUMED);
+} });
 
-// What retiring a field or archiving an object touches, for the person deciding.
-const plural = (n: number, word: string) => `${n.toLocaleString("en-US")} ${word}${n === 1 ? "" : "s"}`;
-// Each preview is its own query; it reads a bounded number of records.
-const COUNTED = 500;
+// What retiring a field or archiving an object touches, for the person deciding. Each
+// preview is its own query and stops counting at 500 records or a few megabytes read.
+const COUNTED = 500, BYTES = 3_000_000;
 const held = (value: unknown) => value != null && value !== "" && !(Array.isArray(value) && !value.length);
+// Reads in index order until 500 records or about 3 MB; past either the count reads "500+" or "N+".
+async function upTo(query: AsyncIterable<Doc<"records">>) {
+  const rows: Doc<"records">[] = [];
+  let bytes = 0, more = false;
+  for await (const row of query) { if (rows.length === COUNTED || bytes > BYTES) { more = true; break; } rows.push(row); bytes += JSON.stringify(row).length; }
+  return { rows, text: `${rows.length.toLocaleString("en-US")}${more ? "+" : ""}`, one: !more && rows.length === 1 };
+}
 // Only what the person may read is named: a hidden target or linking field is left out.
 export async function impactOf(ctx: Ctx, principal: Principal, change: ShapeChange): Promise<string[]> {
   if (change.kind !== "retireField" && change.kind !== "archiveObject") return [];
   const object = await ctx.db.get(change.objectId);
   if (!object) return [];
-  const read = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).take(COUNTED + 1);
-  const records = read.slice(0, COUNTED), more = read.length > COUNTED;
+  const records = () => ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id));
   if (change.kind === "retireField") {
     const field = await ctx.db.get(change.fieldId);
     if (!field || field.objectId !== object._id) return [];
-    const count = records.filter((r) => held(r.values[field._id])).length, linked = field.targetObjectId ? await ctx.db.get(field.targetObjectId) : null, target = linked && canReadObject(principal, linked) ? linked : null;
+    const linked = field.targetObjectId ? await ctx.db.get(field.targetObjectId) : null, target = linked && canReadObject(principal, linked) ? linked : null;
+    // An indexed field is counted through its slot, reading only records that hold a value.
+    const slot = field.slot && `${field.slot.kind}${field.slot.index}`, empty = field.slot?.kind === "s" ? "" : null;
+    const all = await upTo(records());
+    const holding = slot ? await upTo(ctx.db.query("records").withIndex(`by_${slot}` as "by_s0", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id).gt(slot as "s0", empty as string))) : null;
+    const count = holding ? holding.text : `${all.rows.filter((r) => held(r.values[field._id])).length.toLocaleString("en-US")}${all.text.endsWith("+") ? "+" : ""}`;
     return [
-      `${more ? `${count.toLocaleString("en-US")} of the first ${plural(COUNTED, "record")}` : `${plural(count, "record")} of ${records.length}`} hold a value. Values are kept and come back if you restore it.`,
+      `${count} ${count === "1" ? "record" : "records"} of ${all.text} hold a value. Values are kept and come back if you restore it.`,
       ...(field.type === "lookup" || field.type === "links" ? [`Its links stop showing on ${target ? target.labelPlural : "related records"} until it is restored.`] : []),
       "People, agents, imports and exports stop seeing it.",
     ];
   }
-  const inbound = [];
+  const all = await upTo(records()), inbound = [];
   for (const other of await objectsOf(ctx, object.orgId)) if (other._id !== object._id && canReadObject(principal, other)) for (const field of await fieldsOf(ctx, object.orgId, other._id)) if (!field.retired && field.targetObjectId === object._id && canReadField(principal, other, field)) inbound.push(`${other.label}: ${field.label}`);
   return [
-    `${more ? `More than ${plural(COUNTED, "record")}` : plural(records.length, "record")} kept. Links to them keep working.`,
+    `${all.text} ${all.one ? "record" : "records"} kept. Links to them keep working.`,
     ...(inbound.length ? [`Linked from ${inbound.join(", ")}.`] : []),
     "Hidden from navigation, search and the agents' object list until you unarchive it.",
   ];

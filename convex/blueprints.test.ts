@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { anyApi } from "convex/server";
-import { agentFor, api, objectFields, rest, userAndOrg } from "./test.helpers";
+import { agentFor, api, bulk, objectFields, rest, userAndOrg } from "./test.helpers";
 import { RemoldClient } from "../packages/mcp/src/client";
 
 const shape = anyApi.shapeSuggestions, blueprints = anyApi.blueprints;
@@ -212,6 +212,10 @@ describe("blueprint export", () => {
     expect(await g.client.action(blueprints.check, { orgId: g.orgId, blueprint: exported })).toMatchObject({ ok: true });
     await g.client.mutation(blueprints.apply, { orgId: g.orgId, blueprint: exported, withRecords: false });
     expect(await shapeOf(g)).toEqual(source);
+    // Shared views come along by key (the Service template's two, one on the archived Visit).
+    const viewsOf = (w: F) => w.t.run(async (ctx: any) => { const views = await ctx.db.query("views").withIndex("by_org", (q: any) => q.eq("orgId", w.orgId)).collect(); return Promise.all(views.map(async (v: any) => { const key = async (id: any) => id && (await ctx.db.get(id)).key; return { object: (await ctx.db.get(v.objectId)).key, name: v.name, layout: v.layout, columns: await Promise.all(v.columns.map(key)), group: await key(v.groupFieldId), date: await key(v.dateFieldId), sort: v.sort ? [await key(v.sort.fieldId), v.sort.direction] : null, filters: await Promise.all(v.filters.map(async (x: any) => [await key(x.fieldId), x.value])), pinned: !!v.pinned }; })); });
+    expect((await viewsOf(f)).length).toBe(2);
+    expect(await viewsOf(g)).toEqual(await viewsOf(f));
   });
 
   it("a blueprint can change several titles at once, as an export of such a workspace does", async () => {
@@ -259,6 +263,9 @@ describe("built-in blueprints", () => {
       expect(await fresh.f.client.action(shape.applyBlueprint, { orgId: fresh.f.orgId, id: card._id, withRecords: true }), id).toMatchObject({ status: "applied" });
       const keys = (await shapeOf(fresh.f)).map((o: any) => o.key);
       for (const change of blueprint.changes) if (change.kind === "addObject") expect(keys, id).toContain(change.key);
+      const views = await fresh.f.client.query(api.views.list, { orgId: fresh.f.orgId });
+      expect(views.map((x: any) => x.name), id).toEqual(blueprint.changes.filter((c: any) => c.kind === "addView").map((c: any) => c.name));
+      expect(views.every((x: any) => x.shared && !x.blocked && x.createdBy.kind === "agent"), id).toBe(true);
       expect((await counts(fresh.f)).records, id).toBe(blueprint.records?.length ?? 0);
     }
   }, 60_000);
@@ -304,6 +311,71 @@ describe("blueprints need sight of every record", () => {
     expect(absent.json).toEqual(hidden.json);
     expect(await pending(f)).toEqual([]);
   });
+});
+
+// Round 2: kinds and rules from the merged integration branch (saved views, archived objects, retitling).
+describe("round 2: views, archived objects and retitling inside blueprints", () => {
+  const shop = (view: Record<string, unknown>) => ({ version: 1, name: "Jobs", description: "", changes: [
+    { kind: "addObject", key: "job", label: "Job", labelPlural: "Jobs", fields: [{ key: "status", label: "Status", type: "select", options: [{ id: "open", label: "Open" }, { id: "done", label: "Done" }] }] },
+    // Listed before the field it sorts by: views run after every other step.
+    { kind: "addView", object: "job", ...view },
+    { kind: "addField", object: "job", key: "price", label: "Price", type: "number" },
+  ] });
+  it("a blueprint adds a shared view to an object it creates, credited to the proposing agent", async () => {
+    const { f, call } = await adminAgent();
+    const made = await propose(call, shop({ name: "Open jobs by stage", layout: "board", groupBy: "status", columns: ["name", "price"], sort: { field: "price", direction: "desc" }, pinned: true }));
+    expect(made.status, JSON.stringify(made.json)).toBe(201);
+    expect(await f.client.query(api.views.list, { orgId: f.orgId })).toEqual([]);
+    const [card] = await pending(f);
+    expect(card.blueprint.groups[0].lines).toContain('New shared board view "Open jobs by stage", grouped by Status, pinned in the menu');
+    expect(await f.client.action(shape.applyBlueprint, { orgId: f.orgId, id: card._id, withRecords: false })).toMatchObject({ status: "applied" });
+    const job = await objectFields(f.client, f.orgId, "job"), [view] = await f.client.query(api.views.list, { orgId: f.orgId });
+    expect(view).toMatchObject({ objectId: job.object._id, name: "Open jobs by stage", layout: "board", groupFieldId: job.fields.status._id, columns: [job.fields.name._id, job.fields.price._id], sort: { fieldId: job.fields.price._id, direction: "desc" }, shared: true, pinned: true, createdBy: { kind: "agent", name: "shaper" } });
+    // A view the shared rules refuse is refused at proposal time, naming the step.
+    const { f: g, call: other } = await adminAgent("other");
+    const bad = await propose(other, shop({ name: "Bad board", layout: "board", groupBy: "price" }));
+    expect([bad.status, bad.json.error.message]).toEqual([400, 'Step 2, add view job "Bad board": A board view needs a select field to group by']);
+    expect(await pending(g)).toEqual([]);
+  });
+
+  it("a blueprint that archives an object refuses starter records on it", async () => {
+    const f = await userAndOrg();
+    await f.client.mutation(api.objects.create, { orgId: f.orgId, key: "workshop", label: "Workshop", labelPlural: "Workshops" });
+    const call = rest(f.t, (await agentFor(f.client, f.orgId, { name: "shaper", role: "admin" })).key);
+    const plan = { version: 1, name: "Tidy", description: "", changes: [{ kind: "archiveObject", object: "workshop" }], records: [{ object: "workshop", values: { name: "Pottery" } }] };
+    const refused = await propose(call, plan);
+    expect([refused.status, refused.json.error.message]).toEqual([400, "Starter record 1 (Workshop Pottery): Unarchive Workshops to add records"]);
+    const before = await shapeOf(f);
+    await expect(f.client.mutation(blueprints.apply, { orgId: f.orgId, blueprint: plan, withRecords: true })).rejects.toThrow(/Unarchive Workshops to add records/);
+    expect(await shapeOf(f)).toEqual(before);
+    // Without the records it applies.
+    await f.client.mutation(blueprints.apply, { orgId: f.orgId, blueprint: plan, withRecords: false });
+    expect((await shapeOf(f)).find((o: any) => o.key === "workshop").archived).toBe(true);
+    expect((await counts(f)).records).toBe(0);
+  });
+
+  it("setTitleField inside a blueprint marks the object retitling, hides old titles from restricted readers, then finishes", async () => {
+    vi.useFakeTimers();
+    try {
+      const { f, call } = await adminAgent();
+      const company = (await objectFields(f.client, f.orgId, "company")).fields;
+      await bulk(f.t, f.orgId, async (apply) => { for (let i = 0; i < 120; i++) await apply({ action: "create", objectId: company.name.objectId, values: { [company.name._id]: `Secret${i}`, [company.domain._id]: `site${i}.test` } }); });
+      const reader = await agentFor(f.client, f.orgId, { name: "reader" });
+      await f.client.mutation(anyApi["authority/policies"].setAgentMasks, { orgId: f.orgId, agentId: reader.agentId, hiddenFieldIds: [company.name._id] });
+      // Two title changes in one blueprint: the second used to break Convex's one-paginate rule.
+      expect((await propose(call, { version: 1, name: "Titles", description: "", changes: [{ kind: "setTitleField", object: "company", field: "domain" }, { kind: "setTitleField", object: "person", field: "email" }] })).status).toBe(201);
+      const [card] = await pending(f);
+      expect(await f.client.action(shape.applyBlueprint, { orgId: f.orgId, id: card._id, withRecords: false })).toMatchObject({ status: "applied" });
+      const object: any = await f.t.run((ctx: any) => ctx.db.get(company.name.objectId));
+      expect(object.retitling).toMatchObject({ from: [company.name._id] });
+      const read = rest(f.t, reader.key);
+      expect((await read("GET", "/api/v1/search?q=Secret&object=company&limit=50")).json).toEqual([]);
+      await f.t.finishAllScheduledFunctions(vi.runAllTimers);
+      expect((await f.t.run((ctx: any) => ctx.db.get(company.name.objectId)) as any).retitling).toBeUndefined();
+      expect((await read("GET", "/api/v1/search?q=site1&object=company&limit=5")).json.length).toBe(5);
+      expect((await read("GET", "/api/v1/search?q=Secret&object=company&limit=50")).json).toEqual([]);
+    } finally { vi.useRealTimers(); }
+  }, 60_000);
 });
 
 describe("MCP client", () => {

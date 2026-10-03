@@ -158,6 +158,46 @@
           "label": "Proposal"
         }
       ]
+    },
+    {
+      "kind": "addView",
+      "object": "deliverable",
+      "name": "Deliverables by status",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "project",
+        "dueDate",
+        "owner"
+      ],
+      "sort": {
+        "field": "dueDate",
+        "direction": "asc"
+      },
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "retainer",
+      "name": "Active retainers",
+      "layout": "table",
+      "columns": [
+        "name",
+        "client",
+        "monthlyFee",
+        "renewsOn"
+      ],
+      "filters": [
+        {
+          "field": "status",
+          "value": "active"
+        }
+      ],
+      "sort": {
+        "field": "renewsOn",
+        "direction": "asc"
+      }
     }
   ],
   "records": [

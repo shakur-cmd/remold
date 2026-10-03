@@ -205,6 +205,32 @@
           "label": "Call booked"
         }
       ]
+    },
+    {
+      "kind": "addView",
+      "object": "session",
+      "name": "Session calendar",
+      "layout": "calendar",
+      "dateField": "when",
+      "columns": [
+        "name",
+        "client",
+        "offer"
+      ],
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "sponsor",
+      "name": "Sponsor pipeline",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "brand",
+        "fee",
+        "airDate"
+      ]
     }
   ],
   "records": [

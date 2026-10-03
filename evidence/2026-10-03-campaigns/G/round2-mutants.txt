@@ -1,0 +1,45 @@
+## Verifier mutants (iv-G-verdict.md finding 2)
+M-a drop requireUnrestricted in reorderObjects =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+M-c drop retired check in reorderOptions =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+M-h drop lookup-without-slot refusal on restore =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+M-d impact names an unreadable lookup target =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+M-i retitle entirely deferred =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+P3 apply path: authorize drops unrestricted check for reorderObjects =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 3 failed | 38 passed (41)
+## Round 2 guards
+R1 search ignores retitling =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R2 title matching ignores retitling =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R3 retitling flag never cleared =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 4 failed | 37 passed (41)
+R4 sweeper resumes nothing =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R5 sweeper ignores the stall threshold => Tests 41 passed (41)
+R6 second title change forgets earlier fields =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R7 opportunity stage unprotected =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R8 applyChange creates on archived objects =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R9 agent create proposals on archived objects =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R10 CSV import into archived objects =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R11 campaign report rows use stored title => Tests 41 passed (41)
+R12 email preview uses stored title =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R13 no per-card error boundary =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R14 held count ignores the slot index =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+## Strengthened after the first run (R5 and R11 survived it)
+R5 sweeper ignores the stall threshold =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)
+R11 campaign report rows use stored title =>⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Tests 1 failed | 40 passed (41)

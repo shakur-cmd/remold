@@ -207,6 +207,46 @@
           "type": "date"
         }
       ]
+    },
+    {
+      "kind": "addView",
+      "object": "order",
+      "name": "Orders by status",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "customer",
+        "total",
+        "orderedOn"
+      ],
+      "sort": {
+        "field": "orderedOn",
+        "direction": "desc"
+      },
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "product",
+      "name": "Low stock",
+      "layout": "table",
+      "columns": [
+        "name",
+        "sku",
+        "stock",
+        "price"
+      ],
+      "filters": [
+        {
+          "field": "forSale",
+          "value": true
+        }
+      ],
+      "sort": {
+        "field": "stock",
+        "direction": "asc"
+      }
     }
   ],
   "records": [

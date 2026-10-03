@@ -1,15 +1,19 @@
 import type { Doc, Id } from '../_generated/dataModel';
 import type { QueryCtx, MutationCtx } from '../_generated/server';
-import type { Principal } from '../identity';
+import type { AgentMembership, Principal } from '../identity';
 import type { RecordScope } from '../../packages/contracts/authority';
 import { fail } from '../errors';
 import { compareValues, type Value } from 'convex/values';
 
 type Ctx = QueryCtx | MutationCtx;
+// What an admin lets the agent read: listed objects, or every object in the workspace including ones added later.
+export function agentReads({ agent: a, org }: Pick<AgentMembership, 'agent' | 'org'>, object: Doc<'objects'>) {
+  return a.authorityVersion === 1 ? !!a.readAllObjects || !!a.readObjectIds?.includes(object._id) : org.authorityFrozenAt !== undefined && object._creationTime <= org.authorityFrozenAt;
+}
 export function scopes(principal: Principal, object: Doc<'objects'>): RecordScope[] {
   if (object.orgId !== principal.org._id) return [];
   if ('member' in principal) return principal.member.readScopes?.filter(s => s.objectId === object._id) ?? [{ objectId: object._id, records: 'all', fields: 'all' }];
-  const a = principal.agent, allowed = a.authorityVersion === 1 ? a.readObjectIds?.includes(object._id) : principal.org.authorityFrozenAt !== undefined && object._creationTime <= principal.org.authorityFrozenAt;
+  const allowed = agentReads(principal, object);
   const granted: RecordScope[] = (principal.capabilities ?? []).filter(g => g.capability === 'read' && g.scope.kind === 'records' && g.scope.objectId === object._id).flatMap(g => g.scope.kind === 'records' ? [{ objectId: g.scope.objectId, records: g.scope.records, fields: g.scope.fields }] : []);
   return [...(allowed ? [{ objectId: object._id, records: 'all' as const, fields: 'all' as const }] : []), ...granted];
 }
@@ -115,6 +119,5 @@ export async function projectEvent(ctx: Ctx, principal: Principal, event: Doc<'e
 
 export function canPropose(principal: Principal, object: Doc<'objects'>, recordId?: Id<'records'>, fieldIds: string[] = []) {
   if ('member' in principal) return true;
-  const a = principal.agent, legacy = a.authorityVersion === 1 ? a.readObjectIds?.includes(object._id) : principal.org.authorityFrozenAt !== undefined && object._creationTime <= principal.org.authorityFrozenAt;
-  return legacy || (principal.capabilities ?? []).some(g => g.capability === 'propose' && g.scope.kind === 'records' && g.scope.objectId === object._id && (g.scope.records === 'all' || (recordId !== undefined && g.scope.records.includes(recordId))) && fieldIds.every(id => g.scope.kind === 'records' && g.scope.fields.includes(id as Id<'fields'>)));
+  return agentReads(principal, object) || (principal.capabilities ?? []).some(g => g.capability === 'propose' && g.scope.kind === 'records' && g.scope.objectId === object._id && (g.scope.records === 'all' || (recordId !== undefined && g.scope.records.includes(recordId))) && fieldIds.every(id => g.scope.kind === 'records' && g.scope.fields.includes(id as Id<'fields'>)));
 }

@@ -1,7 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { ConvexError } from "convex/values";
-import type { Principal } from "../identity";
+import type { Actor, Membership, Principal } from "../identity";
 import { fail } from "../errors";
 import { canReadField, canReadObject, canReadRecordId } from "../authority/reads";
 import { createObject, fieldsOf, requireLabel, requireUnrestricted, validKey, type Blueprint, type FieldSpec } from "./metadata";
@@ -19,9 +19,9 @@ import { standard } from "./standard";
 // well inside one transaction's limits, so it never needs chunks.
 type Ctx = QueryCtx | MutationCtx;
 export type { Blueprint };
-const steps = ["addObject", "addField", "addOptions", "relabel", "reorderFields", "reorderObjects", "reorderOptions", "archiveObject", "setTitleField", "retireField"];
+const steps = ["addObject", "addField", "addOptions", "relabel", "addView", "reorderFields", "reorderObjects", "reorderOptions", "archiveObject", "setTitleField", "retireField"];
 const MAX_CHANGES = 100, MAX_OBJECTS = 20, MAX_RECORDS = 50;
-const verbs: Record<string, string> = { addObject: "add object", addField: "add field", addOptions: "add options", relabel: "relabel", reorderFields: "reorder fields", reorderObjects: "reorder objects", reorderOptions: "reorder options", archiveObject: "archive object", setTitleField: "set title", retireField: "retire field" };
+const verbs: Record<string, string> = { addObject: "add object", addField: "add field", addOptions: "add options", relabel: "relabel", addView: "add view", reorderFields: "reorder fields", reorderObjects: "reorder objects", reorderOptions: "reorder options", archiveObject: "archive object", setTitleField: "set title", retireField: "retire field" };
 const kindWords: Record<SlotKind, string> = { s: "text", n: "number", d: "date", b: "boolean" };
 const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order;
 const plural = (n: number, word: string, words = `${word}s`) => `${n} ${n === 1 ? word : words}`;
@@ -46,7 +46,7 @@ export function parseBlueprint(blueprint: Blueprint) {
 }
 
 const stepName = (change: ChangeInput, i: number) => {
-  const target = change.kind === "addObject" ? change.key : change.kind === "addField" ? `${change.object}.${change.key}` : change.field ? `${change.object}.${change.field}` : change.object;
+  const target = change.kind === "addObject" ? change.key : change.kind === "addView" ? `${change.object} "${change.name ?? ""}"` : change.kind === "addField" ? `${change.object}.${change.key}` : change.field ? `${change.object}.${change.field}` : change.object;
   return `Step ${i + 1}, ${verbs[change.kind]}${target ? ` ${target}` : ""}`;
 };
 // Says which step a shared check refused, keeping its code (and so its HTTP status).
@@ -70,9 +70,11 @@ function checkReferences(blueprint: Blueprint, known: (key: string) => boolean) 
 }
 
 export type Applied = { objectIds: Id<"objects">[]; slots: { object: string; text: string; number: string; date: string; boolean: string }[]; records: number };
-// writer creates the starter records, or null leaves them out. An agent's trial has them written as the
-// workspace owner, standing in for the person who will apply it, since agents need grants to create records.
-export async function runBlueprint(ctx: MutationCtx, proposer: Principal, blueprint: Blueprint, writer: Principal | null): Promise<Applied> {
+// person saves the shared views and, if records is set, the starter records: the person applying it.
+// An agent's trial uses the workspace owner in their place, since agents need grants to create
+// records and only a person may share a view. createdBy is credited with the views.
+type Run = { person: Membership; records: boolean; createdBy?: Actor };
+export async function runBlueprint(ctx: MutationCtx, proposer: Principal, blueprint: Blueprint, { person, records: withRecords, createdBy }: Run): Promise<Applied> {
   let principal = proposer;
   parseBlueprint(blueprint);
   await requireWholeWorkspace(ctx, principal);
@@ -92,10 +94,12 @@ export async function runBlueprint(ctx: MutationCtx, proposer: Principal, bluepr
   const run = async (input: ChangeInput) => {
     const change = await changeFor(ctx, principal, input);
     if (change.kind === "blueprint") fail("VALIDATION", "A blueprint cannot contain a blueprint");
-    const result = await perform(ctx, principal, change);
+    const result = await perform(ctx, change.kind === "addView" ? person : principal, change, createdBy);
     if (change.kind === "addField") added.push({ objectId: change.objectId, fieldId: result.fieldIds[0]!, kind: wantsSlot(change.field) });
   };
-  for (const [i, change] of blueprint.changes.entries()) {
+  // Views last, so a view can use any field the blueprint adds, wherever it is listed.
+  const ordered = [...blueprint.changes.entries()].sort(([, a], [, b]) => Number(a.kind === "addView") - Number(b.kind === "addView"));
+  for (const [i, change] of ordered) {
     if (change.kind === "addObject") { for (const field of change.fields ?? []) await within(`${stepName(change, i)}: ${field.label}`, () => run({ ...field, kind: "addField", object: change.key })); continue; }
     await within(stepName(change, i), async () => {
       if (change.kind !== "addOptions") return run(change);
@@ -117,6 +121,7 @@ export async function runBlueprint(ctx: MutationCtx, proposer: Principal, bluepr
     slots.push({ object: object.label, text: `${used.s} of ${capacity.s}`, number: `${used.n} of ${capacity.n}`, date: `${used.d} of ${capacity.d}`, boolean: `${used.b} of ${capacity.b}` });
   }
   let records = 0;
+  const writer = withRecords ? person : null;
   if (writer) for (const [i, record] of (blueprint.records ?? []).entries()) {
     const object = (await readableKeys(ctx, writer)).get(record.object)!, fields = (await fieldsOf(ctx, object.orgId, object._id)).filter((f) => !f.retired && canReadField(writer, object, f));
     const titleKey = fields.find((f) => f._id === object.titleFieldId)?.key;
@@ -166,6 +171,11 @@ export async function diffOf(ctx: Ctx, principal: Principal, blueprint: Blueprin
       case "reorderFields": at.lines.push(`Fields reordered: ${(await Promise.all((change.order ?? []).map((key) => fieldLabel(change.object, key)))).join(", ")}`); break;
       case "reorderOptions": { const field = (await fieldsByKey(change.object)).find((f) => f.key === change.field), options = [...(field?.options ?? []), ...blueprint.changes.flatMap((c) => c.kind === "addOptions" && c.object === change.object && c.field === change.field ? c.options ?? [] : [])]; at.lines.push(`${await fieldLabel(change.object, change.field)} options reordered: ${(change.order ?? []).map((id) => options.find((o) => o.id === id)?.label ?? id).join(", ")}`); break; }
       case "reorderObjects": at.lines.push(`Objects reordered: ${(change.order ?? []).map((key) => objectLabel(key, true)).join(", ")}`); break;
+      case "addView": {
+        const by = change.layout === "board" && change.groupBy ? `, grouped by ${await fieldLabel(change.object, change.groupBy)}` : change.layout === "calendar" && change.dateField ? `, by ${await fieldLabel(change.object, change.dateField)}` : "";
+        at.lines.push(`New shared ${change.layout === "board" || change.layout === "calendar" ? `${change.layout} ` : ""}view "${change.name ?? ""}"${by}${change.filters?.length ? `, filtered on ${(await Promise.all(change.filters.map((f) => fieldLabel(change.object, f.field)))).join(", ")}` : ""}${change.pinned ? ", pinned in the menu" : ""}`);
+        break;
+      }
       case "setTitleField": at.lines.push(`${await fieldLabel(change.object, change.field)} becomes the title`); break;
       case "retireField": case "archiveObject": {
         const label = change.kind === "retireField" ? `Retire field ${await fieldLabel(change.object, change.field)}` : `Archive ${objectLabel(change.object)}`;
@@ -229,6 +239,17 @@ export async function exportBlueprint(ctx: Ctx, principal: Principal): Promise<B
     const liveKeys = live.map((f) => f.key);
     if (whole && liveKeys.join() !== plain.filter((k) => liveKeys.includes(k)).join()) changes.push({ kind: "reorderFields", object: key, order: liveKeys });
     if (object.archived && !def) changes.push({ kind: "archiveObject", object: key });
+  }
+  // Shared views, by key. One that filters on a relation is left out: its value names a record of this workspace.
+  for (const object of objects) {
+    const fields = new Map((await fieldsOf(ctx, object.orgId, object._id)).map((f) => [f._id as string, f]));
+    const views = (await ctx.db.query("views").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).collect()).filter((view) => !view.ownerId).sort((a, b) => a.order - b.order || a._creationTime - b._creationTime);
+    for (const view of views) {
+      const used = [...view.columns, ...view.filters.map((f) => f.fieldId), view.range?.fieldId, view.sort?.fieldId, view.groupFieldId, view.dateFieldId].flatMap((id) => id ? [fields.get(id)] : []);
+      if (used.some((f) => !f || f.retired || !canReadField(principal, object, f)) || view.filters.some((f) => ["lookup", "links"].includes(fields.get(f.fieldId)!.type))) continue;
+      const key = (id: Id<"fields">) => fields.get(id)!.key, { range, sort } = view;
+      changes.push({ kind: "addView", object: object.key, name: view.name, layout: view.layout, columns: view.columns.map(key), filters: view.filters.map((f) => ({ field: key(f.fieldId), value: f.value })), ...(range ? { range: { field: key(range.fieldId), ...(range.from ? { from: range.from } : {}), ...(range.to ? { to: range.to } : {}), ...(range.relative ? { relative: range.relative } : {}) } } : {}), ...(sort ? { sort: { field: key(sort.fieldId), direction: sort.direction } } : {}), ...(view.groupFieldId ? { groupBy: key(view.groupFieldId) } : {}), ...(view.dateFieldId ? { dateField: key(view.dateFieldId) } : {}), ...(view.pinned ? { pinned: true } : {}) });
+    }
   }
   // A new workspace lists the standard objects in their usual order, then these in the order added.
   const shownOrder = objects.filter((o) => !o.archived).map((o) => o.key), plainOrder = [...standard.map((d) => d.key).filter((key) => shownOrder.includes(key)), ...customs.filter((key) => shownOrder.includes(key))];

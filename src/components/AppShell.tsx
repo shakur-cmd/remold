@@ -1,9 +1,12 @@
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router";
+import { useQuery } from "convex/react";
 import { cn } from "cn";
 import { LogOut, Menu } from "lucide-react";
+import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { useIdentity } from "@/lib/identity";
+import { viewSearch } from "@/lib/views";
 import { SearchDialog } from "@/components/SearchDialog";
 import { useWaiting } from "@/routes/Suggestions";
 import { Button } from "@/components/ui/button";
@@ -71,6 +74,9 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
   const identity = useIdentity();
   const location = useLocation();
   const posts = objects.find((object) => object.key === "post");
+  // Shared views an admin pinned sit under their object; while one is open, it is lit instead of the object.
+  const pinned = useQuery(api.views.list, { orgId: org._id })?.filter((view) => view.shared && view.pinned) ?? [];
+  const openView = new URLSearchParams(location.search).get("v");
   // The social calendar is the Posts list in calendar view, so only one of the two is lit.
   const onCalendar = !!posts && location.pathname === `/o/${org._id}/${posts.key}` && new URLSearchParams(location.search).get("view") === "calendar";
   const link = ({ isActive }: { isActive: boolean }) =>
@@ -101,11 +107,21 @@ function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"obj
         </NavLink>
       )}
       <div className="mt-4 mb-1 px-3 text-xs text-muted-foreground">Records</div>
-      {objects.filter((object) => !object.archived).map((object) => (
-        <NavLink key={object._id} to={`/o/${org._id}/${object.key}`} className={({ isActive }) => link({ isActive: isActive && !(object === posts && onCalendar) })} onClick={onNavigate}>
-          {object.labelPlural}
-        </NavLink>
-      ))}
+      {objects.filter((object) => !object.archived).map((object) => {
+        const views = pinned.filter((view) => view.objectId === object._id);
+        return (
+          <Fragment key={object._id}>
+            <NavLink to={`/o/${org._id}/${object.key}`} className={({ isActive }) => link({ isActive: isActive && !(object === posts && onCalendar) && !views.some((view) => view._id === openView) })} onClick={onNavigate}>
+              {object.labelPlural}
+            </NavLink>
+            {views.map((view) => (
+              <NavLink key={view._id} to={`/o/${org._id}/${object.key}?${viewSearch(view)}`} className={({ isActive }) => cn(link({ isActive: isActive && view._id === openView }), "pl-6")} onClick={onNavigate}>
+                {view.name}
+              </NavLink>
+            ))}
+          </Fragment>
+        );
+      })}
       <div className="mt-auto grid gap-0.5 border-t pt-3">
         {item("settings", "Settings")}
         <div className="flex items-center gap-1 pt-1 pl-3">

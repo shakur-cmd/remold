@@ -209,6 +209,36 @@
       "label": "Job",
       "type": "lookup",
       "target": "job"
+    },
+    {
+      "kind": "addView",
+      "object": "job",
+      "name": "Open jobs by stage",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "customer",
+        "scheduledFor",
+        "price"
+      ],
+      "sort": {
+        "field": "scheduledFor",
+        "direction": "asc"
+      },
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "visit",
+      "name": "Visit calendar",
+      "layout": "calendar",
+      "dateField": "when",
+      "columns": [
+        "name",
+        "job",
+        "technician"
+      ]
     }
   ],
   "records": [

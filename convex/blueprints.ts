@@ -16,7 +16,7 @@ export const preview = query({ args: { orgId: v.id("orgs"), blueprint }, handler
   return diffOf(ctx, principal, parseBlueprint(args.blueprint));
 } });
 export const apply = mutation({ args: { orgId: v.id("orgs"), blueprint, withRecords: v.boolean() }, handler: async (ctx, args) => {
-  const principal = await requireWriter(ctx, args.orgId, "admin"), result = await runBlueprint(ctx, principal, args.blueprint, args.withRecords ? principal : null);
+  const principal = await requireWriter(ctx, args.orgId, "admin"), result = await runBlueprint(ctx, principal, args.blueprint, { person: principal, records: args.withRecords });
   await ctx.db.insert("authorityAudit", { orgId: args.orgId, actor: principal.actor, action: "blueprintApplied", targetId: args.orgId, objectIds: result.objectIds, before: args.blueprint.name });
   return result;
 } });
@@ -30,7 +30,7 @@ export const trial = internalMutation({ args: { orgId: v.id("orgs"), blueprint: 
   if (row) await authorize(ctx, principal, row);
   const plan = row?.change.kind === "blueprint" ? row.change.blueprint : args.blueprint;
   if (!plan) fail("NOT_FOUND", "Blueprint not found");
-  rollBack(await runBlueprint(ctx, principal, plan, args.withRecords === false ? null : principal));
+  rollBack(await runBlueprint(ctx, principal, plan, { person: principal, records: args.withRecords !== false, ...(row ? { createdBy: { kind: "agent" as const, id: row.agentId } } : {}) }));
 } });
 export const check = action({ args: { orgId: v.id("orgs"), blueprint: v.optional(blueprint), id: v.optional(v.id("shapeSuggestions")), withRecords: v.optional(v.boolean()) }, handler: async (ctx, args): Promise<{ ok: true; slots: Applied["slots"]; records: number } | { ok: false; error: string }> => {
   try { const { slots, records } = await trialOf(() => ctx.runMutation(internal.blueprints.trial, args)); return { ok: true, slots, records }; }

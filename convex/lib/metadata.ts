@@ -6,6 +6,7 @@ import { fail } from "../errors";
 import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "../authority/reads";
 import { unrestrictedHuman } from "../authority/inbox";
 import { allocateSlot, capacity, kindFor, type SlotKind } from "./slots";
+import { viewSpec } from "./viewSpec";
 
 // The rules for changing a workspace's shape, shared by a person's own Settings
 // mutations and by applying an agent's proposal, so the two cannot drift apart.
@@ -16,7 +17,8 @@ export const fieldSpec = v.object({ key: v.string(), label: v.string(), type: fi
 export const objectSpec = { key: v.string(), label: v.string(), labelPlural: v.string(), icon: v.optional(v.string()) };
 // What agents send: objects and fields named by key. A blueprint is a list of these (lib/blueprint.ts).
 export const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()) };
-export const changeInput = { kind: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))), order: v.optional(v.array(v.string())) };
+export const viewInput = { name: v.optional(v.string()), layout: v.optional(v.string()), columns: v.optional(v.array(v.string())), filters: v.optional(v.array(v.object({ field: v.string(), value: v.any() }))), range: v.optional(v.object({ field: v.string(), from: v.optional(v.string()), to: v.optional(v.string()), relative: v.optional(v.string()) })), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), groupBy: v.optional(v.string()), dateField: v.optional(v.string()), pinned: v.optional(v.boolean()) };
+export const changeInput = { ...viewInput, kind: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))), order: v.optional(v.array(v.string())) };
 export const blueprint = v.object({ version: v.number(), name: v.string(), description: v.optional(v.string()), changes: v.array(v.object(changeInput)), records: v.optional(v.array(v.object({ object: v.string(), values: v.record(v.string(), v.any()) }))) });
 export const shapeChange = v.union(
   v.object({ kind: v.literal("addObject"), ...objectSpec, fields: v.array(fieldSpec) }),
@@ -24,6 +26,8 @@ export const shapeChange = v.union(
   // Only the options to add; existing ones are kept as they are when it is applied.
   v.object({ kind: v.literal("addOptions"), objectId: v.id("objects"), fieldId: v.id("fields"), options: v.array(option) }),
   v.object({ kind: v.literal("relabel"), objectId: v.id("objects"), fieldId: v.optional(v.id("fields")), label: v.string(), labelPlural: v.optional(v.string()) }),
+  // A shared view; applying it creates the view as the agent's.
+  v.object({ kind: v.literal("addView"), objectId: v.id("objects"), view: v.object(viewSpec), pinned: v.optional(v.boolean()) }),
   // Lifecycle: nothing is deleted; each has an inverse (convex/lib/lifecycle.ts).
   v.object({ kind: v.literal("retireField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
   v.object({ kind: v.literal("restoreField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
@@ -37,7 +41,7 @@ export const shapeChange = v.union(
   v.object({ kind: v.literal("blueprint"), blueprint }),
 );
 export type ShapeChange = Infer<typeof shapeChange>;
-export type Lifecycle = Exclude<ShapeChange, { kind: "addObject" | "addField" | "addOptions" | "relabel" | "blueprint" }>;
+export type Lifecycle = Exclude<ShapeChange, { kind: "addObject" | "addField" | "addOptions" | "relabel" | "addView" | "blueprint" }>;
 export type Blueprint = Infer<typeof blueprint>;
 export type FieldSpec = Infer<typeof fieldSpec>;
 export type Option = Infer<typeof option>;
@@ -56,6 +60,8 @@ export async function unrestricted(ctx: Ctx, principal: Principal) {
   return true;
 }
 export async function requireUnrestricted(ctx: Ctx, principal: Principal) { if (!await unrestricted(ctx, principal)) fail("FORBIDDEN", "Unrestricted workspace access required"); }
+// Archiving keeps an object's records; it takes no new ones until it comes back.
+export const requireLive = (object: Doc<"objects">) => { if (object.archived) fail("VALIDATION", `Unarchive ${object.labelPlural} to add records`); };
 export const requireLabel = (label: string | undefined, what = "Label") => { if (!label?.trim()) fail("VALIDATION", `${what} is required`); };
 
 export async function checkObject(ctx: Ctx, principal: Principal, spec: ObjectSpec, fields: FieldSpec[] = []) {
