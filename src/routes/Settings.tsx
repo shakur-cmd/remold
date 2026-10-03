@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
+import { PaymentsCard } from "@/components/Bookings";
 import { attempt } from "@/lib/errors";
 import { toKey } from "@/lib/fields";
 import type { OrgContext } from "@/routes/OrgLayout";
@@ -26,6 +27,7 @@ export function Settings() {
       <OrgCard org={org} admin={admin} />
       <RemindersCard orgId={org._id} />
       {admin && <EmailSendingCard orgId={org._id} />}
+      {admin && <PaymentsCard orgId={org._id} />}
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} owner={role === "owner"} />
       <ObjectsCard orgId={org._id} objects={objects} admin={admin} />

@@ -16,8 +16,11 @@ import { Today } from "@/routes/Today";
 import { InvitePage } from "@/routes/InvitePage";
 import { CapturePage } from "@/routes/CapturePage";
 import { Suggestions } from "@/routes/Suggestions";
+import { BookingPage } from "@/routes/BookingPage";
 
 export default function App() {
+  // Booking pages are public: no sign-in, whoever opens the link.
+  if (useLocation().pathname.startsWith("/book/")) return <Routes><Route path="book/:pageId" element={<BookingPage />} /></Routes>;
   return (
     <>
       <Toaster position="top-center" />

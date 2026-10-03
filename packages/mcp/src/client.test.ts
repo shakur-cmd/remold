@@ -43,4 +43,11 @@ describe("RemoldClient", () => {
     expect(await requests[0]?.json()).toEqual({ kind: "addField", object: "opportunity", key: "budget", label: "Budget", type: "number", reason: "tracked" });
     expect([requests[1]?.method, requests[1]?.url]).toEqual(["GET", "https://remold.convex.site/api/v1/shape/proposals?status=applied"]);
   });
+  it("lists bookings by page and time", async () => {
+    let url: URL | undefined;
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { url = new URL(String(input)); return Response.json({ bookings: [] }); } });
+    expect(await client.bookings({ page: "brisk-ember-oyster", from: "2026-11-01", to: "2026-11-30" })).toEqual({ bookings: [] });
+    expect(url?.pathname).toBe("/api/v1/bookings");
+    expect(Object.fromEntries(url!.searchParams)).toEqual({ page: "brisk-ember-oyster", from: "2026-11-01", to: "2026-11-30" });
+  });
 });
