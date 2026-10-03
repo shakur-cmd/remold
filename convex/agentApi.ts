@@ -1,7 +1,7 @@
 import { internalMutation, internalQuery, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
-import { recordGranted, requireAgent, type Principal } from "./identity";
+import { ownerOf, recordGranted, requireAgent, type Principal } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
 import { pageRecords, takeRecords, listedRelated } from "./lib/list";
@@ -18,7 +18,9 @@ import { agentGuard } from "./authority/agentGuards";
 import { idempotency, remember, replay } from "./lib/idempotency";
 import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
-import { option, requireLive } from "./lib/metadata";
+import { blueprint, changeInput, requireLive } from "./lib/metadata";
+import { exportBlueprint, rollBack, runBlueprint } from "./lib/blueprint";
+import { templates } from "./lib/templates";
 import { slotsLeft } from "./lib/slots";
 import { agentRow, proposalFor } from "./shapeSuggestions";
 import { archived, forReader, runView } from "./lib/views";
@@ -212,11 +214,19 @@ export const markReplied = internalMutation({ args: { keyHash, id: v.string(), i
 // Automations for agents: what one did (run history) and what it would do for a record, writing nothing.
 export const automationRuns = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return history(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
 export const automationTest = internalQuery({ args: { keyHash, idOrRef: v.string(), record: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return dryRun(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), args.record ? await recordFor(ctx, principal.org._id, args.record) : null); } });
-const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()) };
-const viewInput = { name: v.optional(v.string()), layout: v.optional(v.string()), columns: v.optional(v.array(v.string())), filters: v.optional(v.array(v.object({ field: v.string(), value: v.any() }))), range: v.optional(v.object({ field: v.string(), from: v.optional(v.string()), to: v.optional(v.string()), relative: v.optional(v.string()) })), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), groupBy: v.optional(v.string()), dateField: v.optional(v.string()), pinned: v.optional(v.boolean()) };
-const shapeArgs = { ...viewInput, kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))), order: v.optional(v.array(v.string())) };
+const shapeArgs = { ...changeInput, reason: v.string(), blueprint: v.optional(blueprint) };
 export const proposeShape = internalMutation({ args: { keyHash, ...shapeArgs, idempotency }, handler: async (ctx, { keyHash, idempotency, ...input }) => { const principal = await requireAgent(ctx, keyHash); const prior = await replay(ctx, principal.agent._id, idempotency); if (prior) { const proposal = await ctx.db.get(prior.result.id as Id<"shapeSuggestions">); if (!proposal) fail("NOT_FOUND"); return { proposal: await agentRow(ctx, proposal) }; } await writable(ctx, principal.org._id); const change = await proposalFor(ctx, principal, input); const id = await ctx.db.insert("shapeSuggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, change, reason: input.reason, status: "pending" }); await remember(ctx, principal.org._id, principal.agent._id, idempotency, { id }); return { proposal: await agentRow(ctx, (await ctx.db.get(id))!) }; } });
 export const shapeProposals = internalQuery({ args: { keyHash, status: v.optional(v.union(v.literal("pending"), v.literal("applied"), v.literal("dismissed"), v.literal("failed"))) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return { proposals: await Promise.all((await ownShape(ctx, principal.agent, args.status, 100)).map((row) => agentRow(ctx, row))) }; } });
+// Blueprints: the built-in ones, this workspace's shape as one, and the trial run that checks
+// a proposed one with the very code that applies it, then rolls it back (lib/blueprint.ts).
+export const blueprints = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { await requireAgent(ctx, args.keyHash); return { blueprints: templates }; } });
+export const currentBlueprint = internalQuery({ args: { keyHash }, handler: async (ctx, args) => ({ blueprint: await exportBlueprint(ctx, await requireAgent(ctx, args.keyHash)) }) });
+export const trialBlueprint = internalMutation({ args: { keyHash, blueprint }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash);
+  if (principal.agent.role !== "admin") fail("FORBIDDEN", "Only an admin agent can propose shape changes");
+  await writable(ctx, principal.org._id);
+  rollBack(await runBlueprint(ctx, principal, args.blueprint, { person: await ownerOf(ctx, principal.org._id), records: true, agent: principal.agent }));
+} });
 
 // Saved views for agents: the shared ones, by key, as far as the key may read. A view
 // that filters or sorts by a field the key cannot read is listed as not usable.

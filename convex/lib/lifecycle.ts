@@ -2,7 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { makeFunctionReference } from "convex/server";
 import { v } from "convex/values";
-import type { Membership, Principal } from "../identity";
+import type { Principal } from "../identity";
 import { fail } from "../errors";
 import { canReadField, canReadObject, requireObjectAdministration } from "../authority/reads";
 import { fieldFor, fieldsOf, requireUnrestricted, type Lifecycle, type ShapeChange } from "./metadata";
@@ -103,14 +103,14 @@ export async function checkLifecycle(ctx: Ctx, principal: Principal, change: Lif
         // Every field whose values stored titles may still hold, until a full pass ends; a pass restarts from the top.
         const from = [...new Set([...(object.retitling?.from ?? []), ...(object.titleFieldId ? [object.titleFieldId] : [])])].filter((id) => id !== field._id);
         await m.db.patch(object._id, { titleFieldId: field._id, retitling: { from, cursor: null, at: Date.now() } });
-        await retitlePage(m, object._id);
+        await retitlePage(m, object._id, RETITLED, true);
         return object.titleFieldId ? (await m.db.get(object.titleFieldId))?.key : undefined;
       } };
     }
   }
 }
 
-export async function applyLifecycle(ctx: MutationCtx, principal: Membership, change: Lifecycle) {
+export async function applyLifecycle(ctx: MutationCtx, principal: Principal, change: Lifecycle) {
   const { target, objectIds, fieldIds, write } = await checkLifecycle(ctx, principal, change), before = await write(ctx);
   await ctx.db.insert("authorityAudit", { orgId: principal.org._id, actor: principal.actor, action: change.kind, targetId: target, objectIds, ...(before ? { before } : {}) });
   return { objectIds, fieldIds };
@@ -124,14 +124,24 @@ export async function applyLifecycle(ctx: MutationCtx, principal: Membership, ch
 // pages; a page that stops is picked up by resumeRetitles (minute cron) in smaller pages.
 const RETITLED = 50, RESUMED = 10, STALLED = 2 * 60_000;
 const retitleRef = makeFunctionReference<"mutation", { objectId: Id<"objects"> }>("lib/lifecycle:retitle");
-async function retitlePage(ctx: MutationCtx, objectId: Id<"objects">, size = RETITLED) {
+async function retitlePage(ctx: MutationCtx, objectId: Id<"objects">, size = RETITLED, inline = false) {
   const object = await ctx.db.get(objectId);
   if (!object?.retitling) return;
   const field = object.titleFieldId ? await ctx.db.get(object.titleFieldId) : null;
   // Lookup titles are copied from the target by applyChange; nothing to rewrite here.
   if (field?.type !== "text") return ctx.db.patch(object._id, { retitling: undefined });
-  const page = await ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id)).paginate({ cursor: object.retitling.cursor, numItems: size });
-  for (const record of page.page) { const value = record.values[field._id], title = value == null ? "" : String(value); if (record.title !== title) await ctx.db.patch(record._id, { title }); }
+  const rows = ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", object.orgId).eq("objectId", object._id));
+  const rewrite = async (page: Doc<"records">[]) => { for (const record of page) { const value = record.values[field._id], title = value == null ? "" : String(value); if (record.title !== title) await ctx.db.patch(record._id, { title }); } };
+  // Within the change itself a plain take: Convex allows one paginate per function, and a
+  // blueprint can retitle several objects. A larger object then pages from the top (rewrites are idempotent).
+  if (inline) {
+    const first = await rows.take(size + 1);
+    await rewrite(first.slice(0, size));
+    if (first.length <= size) return ctx.db.patch(object._id, { retitling: undefined });
+    return void await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id });
+  }
+  const page = await rows.paginate({ cursor: object.retitling.cursor, numItems: size });
+  await rewrite(page.page);
   if (page.isDone) return ctx.db.patch(object._id, { retitling: undefined });
   await ctx.db.patch(object._id, { retitling: { ...object.retitling, cursor: page.continueCursor, at: Date.now() } });
   await ctx.scheduler.runAfter(0, retitleRef, { objectId: object._id });

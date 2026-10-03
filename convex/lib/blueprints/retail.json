@@ -1,0 +1,301 @@
+{
+  "version": 1,
+  "name": "Local retail or maker",
+  "description": "Products, orders and wholesale accounts, for shops, makers and market sellers.",
+  "changes": [
+    {
+      "kind": "addObject",
+      "key": "product",
+      "label": "Product",
+      "labelPlural": "Products",
+      "fields": [
+        {
+          "key": "sku",
+          "label": "SKU",
+          "type": "text"
+        },
+        {
+          "key": "price",
+          "label": "Price",
+          "type": "number"
+        },
+        {
+          "key": "cost",
+          "label": "Cost",
+          "type": "number"
+        },
+        {
+          "key": "stock",
+          "label": "In stock",
+          "type": "number"
+        },
+        {
+          "key": "category",
+          "label": "Category",
+          "type": "select",
+          "options": [
+            {
+              "id": "ready",
+              "label": "Ready made"
+            },
+            {
+              "id": "custom",
+              "label": "Made to order"
+            },
+            {
+              "id": "supplies",
+              "label": "Supplies"
+            }
+          ]
+        },
+        {
+          "key": "forSale",
+          "label": "For sale",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "wholesaleAccount",
+      "label": "Wholesale account",
+      "labelPlural": "Wholesale accounts",
+      "fields": [
+        {
+          "key": "store",
+          "label": "Store",
+          "type": "lookup",
+          "target": "company"
+        },
+        {
+          "key": "buyer",
+          "label": "Buyer",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "terms",
+          "label": "Terms",
+          "type": "select",
+          "options": [
+            {
+              "id": "prepaid",
+              "label": "Prepaid"
+            },
+            {
+              "id": "net15",
+              "label": "Net 15"
+            },
+            {
+              "id": "net30",
+              "label": "Net 30"
+            }
+          ]
+        },
+        {
+          "key": "discount",
+          "label": "Discount %",
+          "type": "number"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "prospect",
+              "label": "Prospect"
+            },
+            {
+              "id": "active",
+              "label": "Active"
+            },
+            {
+              "id": "paused",
+              "label": "Paused"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "addObject",
+      "key": "order",
+      "label": "Order",
+      "labelPlural": "Orders",
+      "fields": [
+        {
+          "key": "customer",
+          "label": "Customer",
+          "type": "lookup",
+          "target": "person"
+        },
+        {
+          "key": "account",
+          "label": "Wholesale account",
+          "type": "lookup",
+          "target": "wholesaleAccount"
+        },
+        {
+          "key": "products",
+          "label": "Products",
+          "type": "links",
+          "target": "product"
+        },
+        {
+          "key": "total",
+          "label": "Total",
+          "type": "number"
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            {
+              "id": "new",
+              "label": "New"
+            },
+            {
+              "id": "paid",
+              "label": "Paid"
+            },
+            {
+              "id": "packed",
+              "label": "Packed"
+            },
+            {
+              "id": "shipped",
+              "label": "Shipped"
+            },
+            {
+              "id": "delivered",
+              "label": "Delivered"
+            },
+            {
+              "id": "cancelled",
+              "label": "Cancelled"
+            }
+          ]
+        },
+        {
+          "key": "channel",
+          "label": "Channel",
+          "type": "select",
+          "options": [
+            {
+              "id": "online",
+              "label": "Online"
+            },
+            {
+              "id": "inStore",
+              "label": "In store"
+            },
+            {
+              "id": "market",
+              "label": "Market"
+            },
+            {
+              "id": "wholesale",
+              "label": "Wholesale"
+            }
+          ]
+        },
+        {
+          "key": "orderedOn",
+          "label": "Ordered on",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "kind": "addView",
+      "object": "order",
+      "name": "Orders by status",
+      "layout": "board",
+      "groupBy": "status",
+      "columns": [
+        "name",
+        "customer",
+        "total",
+        "orderedOn"
+      ],
+      "sort": {
+        "field": "orderedOn",
+        "direction": "desc"
+      },
+      "pinned": true
+    },
+    {
+      "kind": "addView",
+      "object": "product",
+      "name": "Low stock",
+      "layout": "table",
+      "columns": [
+        "name",
+        "sku",
+        "stock",
+        "price"
+      ],
+      "filters": [
+        {
+          "field": "forSale",
+          "value": true
+        }
+      ],
+      "sort": {
+        "field": "stock",
+        "direction": "asc"
+      }
+    }
+  ],
+  "records": [
+    {
+      "object": "product",
+      "values": {
+        "name": "Hand-thrown mug",
+        "sku": "MUG-01",
+        "price": 28,
+        "cost": 9,
+        "stock": 12,
+        "category": "ready",
+        "forSale": true
+      }
+    },
+    {
+      "object": "product",
+      "values": {
+        "name": "Linen tote",
+        "sku": "TOTE-01",
+        "price": 22,
+        "cost": 7,
+        "stock": 30,
+        "category": "ready",
+        "forSale": true
+      }
+    },
+    {
+      "object": "wholesaleAccount",
+      "values": {
+        "name": "Corner Gift Shop",
+        "terms": "net30",
+        "discount": 40,
+        "status": "active"
+      }
+    },
+    {
+      "object": "order",
+      "values": {
+        "name": "Order 1001",
+        "account": "Corner Gift Shop",
+        "products": [
+          "Hand-thrown mug",
+          "Linen tote"
+        ],
+        "total": 50,
+        "status": "paid",
+        "channel": "wholesale"
+      }
+    }
+  ]
+}

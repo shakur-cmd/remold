@@ -15,6 +15,11 @@ export const fieldType = v.union(v.literal("text"), v.literal("number"), v.liter
 export const option = v.object({ id: v.string(), label: v.string(), color: v.optional(v.string()) });
 export const fieldSpec = v.object({ key: v.string(), label: v.string(), type: fieldType, options: v.optional(v.array(option)), targetObjectId: v.optional(v.id("objects")), required: v.optional(v.boolean()), withTime: v.optional(v.boolean()), indexed: v.optional(v.boolean()) });
 export const objectSpec = { key: v.string(), label: v.string(), labelPlural: v.string(), icon: v.optional(v.string()) };
+// What agents send: objects and fields named by key. A blueprint is a list of these (lib/blueprint.ts).
+export const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()) };
+export const viewInput = { name: v.optional(v.string()), layout: v.optional(v.string()), columns: v.optional(v.array(v.string())), filters: v.optional(v.array(v.object({ field: v.string(), value: v.any() }))), range: v.optional(v.object({ field: v.string(), from: v.optional(v.string()), to: v.optional(v.string()), relative: v.optional(v.string()) })), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), groupBy: v.optional(v.string()), dateField: v.optional(v.string()), pinned: v.optional(v.boolean()) };
+export const changeInput = { ...viewInput, kind: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), indexed: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))), order: v.optional(v.array(v.string())) };
+export const blueprint = v.object({ version: v.number(), name: v.string(), description: v.optional(v.string()), changes: v.array(v.object(changeInput)), records: v.optional(v.array(v.object({ object: v.string(), values: v.record(v.string(), v.any()) }))) });
 export const shapeChange = v.union(
   v.object({ kind: v.literal("addObject"), ...objectSpec, fields: v.array(fieldSpec) }),
   v.object({ kind: v.literal("addField"), objectId: v.id("objects"), field: fieldSpec }),
@@ -32,14 +37,17 @@ export const shapeChange = v.union(
   v.object({ kind: v.literal("archiveObject"), objectId: v.id("objects") }),
   v.object({ kind: v.literal("unarchiveObject"), objectId: v.id("objects") }),
   v.object({ kind: v.literal("setTitleField"), objectId: v.id("objects"), fieldId: v.id("fields") }),
+  // Applied all at once by lib/blueprint.ts; objects are named by key, since new ones have no id yet.
+  v.object({ kind: v.literal("blueprint"), blueprint }),
 );
 export type ShapeChange = Infer<typeof shapeChange>;
-export type Lifecycle = Exclude<ShapeChange, { kind: "addObject" | "addField" | "addOptions" | "relabel" | "addView" }>;
+export type Lifecycle = Exclude<ShapeChange, { kind: "addObject" | "addField" | "addOptions" | "relabel" | "addView" | "blueprint" }>;
+export type Blueprint = Infer<typeof blueprint>;
 export type FieldSpec = Infer<typeof fieldSpec>;
 export type Option = Infer<typeof option>;
 type ObjectSpec = { key: string; label: string; labelPlural: string; icon?: string };
 
-const validKey = (key: string) => /^[a-z][a-zA-Z0-9]*$/.test(key);
+export const validKey = (key: string) => /^[a-z][a-zA-Z0-9]*$/.test(key);
 const uniqueOptions = (value: { id: string }[] | undefined) => !!value?.length && new Set(value.map((o) => o.id)).size === value.length;
 export const fieldsOf = (ctx: Ctx, orgId: Id<"orgs">, objectId: Id<"objects">) => ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", orgId).eq("objectId", objectId)).collect();
 

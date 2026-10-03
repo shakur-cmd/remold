@@ -1,0 +1,22 @@
+     × refuses at proposal: automation on 745ms
+     × refuses at proposal: campaign active 73ms
+     × refuses at proposal: email approved 75ms
+     × refuses at proposal: post published 65ms
+     × refuses at proposal: protected field 72ms
+     × refuses again at apply: a field protected after the proposal fails the blueprint, nothing applied 72ms
+     × allowed starter records are the agent's, approved by the person, and an automation stays a draft 66ms
+     × an agent cannot put starter records on an archived object 45ms
+     × the card lists each starter record's values, not only counts 70ms
+     × check leaves starter records out unless asked, and names a missing required value 30ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ 201, undefined ] to deeply equal [ 403, …(1) ]
+AssertionError: expected [ 201, undefined ] to deeply equal [ 403, …(1) ]
+AssertionError: expected [ 201, undefined ] to deeply equal [ 403, …(1) ]
+AssertionError: expected [ 201, undefined ] to deeply equal [ 403, …(1) ]
+AssertionError: expected [ 201, undefined ] to deeply equal [ 403, …(1) ]
+AssertionError: expected { status: 'applied' } to deeply equal { status: 'failed', …(1) }
+AssertionError: expected false to be true // Object.is equality
+AssertionError: expected [ 400, …(1) ] to deeply equal [ 400, …(1) ]
+AssertionError: Target cannot be null or undefined.
+AssertionError: expected { …(2) } to match object { ok: true, records: +0 }
+      Tests  10 failed | 5 passed (15)

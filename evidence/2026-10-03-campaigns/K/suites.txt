@@ -1,0 +1,22 @@
+Branch remold/blueprints, final code (see handover for commit). Machine shared with other jobs (load average 3 to 7).
+
+pnpm test (default workers):        Tests 3 failed | 440 passed (443)   failing: gmailSync "last contact" (timeout), Calendar.drag x2 (timeout)
+pnpm vitest run --maxWorkers=4:     Tests 1 failed | 442 passed (443)   failing: gmailSync "last contact" (timeout 6861ms)
+the three failing files alone:      convex/gmailSync.test.ts + src/components/Calendar.drag.test.tsx: Tests 9 passed (9)
+convex/blueprints.test.ts:          Tests 18 passed (18)
+
+Base 050abad, same machine, same time (vitest from this node_modules):
+  default workers:   Tests 2 failed | 423 passed (425)   gmailSync "last contact", Calendar.drag "follows a page..."
+  --maxWorkers=4:    Tests 2 failed | 423 passed (425)   gmailSync "last contact", Calendar.drag "keeps every post..."
+
+pnpm typecheck:       tsc -b && tsc --noEmit -p convex, exit 0
+pnpm test:authority:  Tests 101 passed (101)
+pnpm verify:release:  tests 37, pass 37, fail 0
+pnpm build:           built (vite), exit 0
+packages/mcp build:   tsc, exit 0
+
+pnpm proof:authority (SERVICE, optional): 50 PASS, then the harness stops with "spawnSync unzip ENOBUFS" at
+ops/authority/service-secrets.mjs:94 (unzip output over Node's 1 MB default buffer). Base 050abad on this machine
+stops at the same place with the same error after the same 50 PASS lines, so it is pre-existing and unrelated.
+The read-only sweep (service-sweeps.mjs), which now includes the 3 new public writes, runs after that point and
+therefore did not run on either.
