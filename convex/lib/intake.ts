@@ -60,7 +60,7 @@ async function companyNamed(ctx: MutationCtx, item: Item, name: string) {
   return null;
 }
 
-async function matches(ctx: MutationCtx, item: Item, email: string, phone?: string) {
+export async function matches(ctx: MutationCtx, item: Item, email: string, phone?: string) {
   const emailId = item.fields.email!._id, phoneId = item.fields.phone!._id;
   let byEmail: Doc<"records"> | null = null, byPhone: Doc<"records"> | null = null;
   for await (const record of ctx.db.query("records").withIndex("by_object", (q) => q.eq("orgId", item.object.orgId).eq("objectId", item.object._id))) {

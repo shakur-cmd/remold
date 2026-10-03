@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { httpAction, internalAction, internalMutation, internalQuery, type ActionCtx, type MutationCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
+import { campaignPages } from "./lib/booking";
 import { MAX_ATTEMPTS, addNote, audience, exclusion, logActivity, recipientOf, release, reserve, setStatus, standardItem, stateOf, suppress } from "./lib/campaign";
 import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart, resendPost, settingsProblems, validAddress, verifySvix } from "./lib/campaignText";
 
@@ -45,7 +46,7 @@ async function claimFor(ctx: MutationCtx, run: Doc<"emailRuns">, now: number, ro
     if (c.replied) await ctx.db.patch(c.replied, { repliedAt: now });
     await ctx.db.insert("emailSends", { orgId: org._id, emailRecordId: email._id, campaignRecordId: campaign._id, personRecordId: c.personId, to: c.address ?? "", token: newToken(), status: c.reason ? "skipped" : "queued", ...(c.reason ? { skipReason: c.reason } : {}), attempts: 0 });
   }
-  const template = { subject: String(valueOf(email, item.f.subject) ?? ""), body: String(valueOf(email, item.f.body) ?? "") }, out: Claimed[] = [];
+  const template = { subject: String(valueOf(email, item.f.subject) ?? ""), body: String(valueOf(email, item.f.body) ?? "") }, out: Claimed[] = [], pages = await campaignPages(ctx, org._id, campaign._id);
   for (const send of await ctx.db.query("emailSends").withIndex("by_email_status", (q) => q.eq("emailRecordId", email._id).eq("status", "queued")).take(room)) {
     if (send.attempts >= MAX_ATTEMPTS) { await ctx.db.patch(send._id, { status: "failed", failReason: send.failReason ?? `Gave up after ${MAX_ATTEMPTS} attempts` }); continue; }
     const reason = await exclusion(ctx, org._id, send.to);
@@ -53,7 +54,7 @@ async function claimFor(ctx: MutationCtx, run: Doc<"emailRuns">, now: number, ro
     const day = await reserve(ctx, org._id, settings.dailyLimit ?? 0, now);
     if (day === null) break;
     const record = await ctx.db.get(send.personRecordId), recipient: { name: string; company?: string } = record ? await recipientOf(ctx, person, record) : { name: "" };
-    const message = compose(template, { name: recipient.name, company: recipient.company, token: send.token }, settings.postalAddress!, send.token);
+    const message = compose(template, { name: recipient.name, company: recipient.company, token: send.token, pages }, settings.postalAddress!, send.token);
     const replyTo = inbound ? `r-${send.token}@${inbound}` : state.replyTo!;
     await ctx.db.patch(send._id, { status: "sending", lease: now + LEASE, attempts: send.attempts + 1, reservedDay: day, subject: message.subject });
     out.push({ sendId: send._id, attempt: send.attempts + 1, mail: { from: fromHeader(settings.fromName, settings.fromAddress!), to: [send.to], subject: message.subject, text: message.text, html: message.html, headers: message.headers, reply_to: replyTo, tags: [{ name: "send", value: send._id }] } });

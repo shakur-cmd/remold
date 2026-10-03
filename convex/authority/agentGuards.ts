@@ -17,11 +17,13 @@ const approved = (value: unknown) => value === 'approved' || value === 'sending'
 // only a won or lost deal or a protected value stored on the record blocks it.
 // Emails follow the same rule, except that an agent may always stop one. Only a
 // person starts a campaign (sets its status to active); pausing is always allowed.
+// Publishing a booking page is a live action: only a person turns `live` on.
 export function agentGuard(principal: Principal, object: Doc<'objects'>, fields: Doc<'fields'>[], record: Doc<'records'> | null, values: Record<string, unknown> | 'delete') {
   if (!('agent' in principal)) return;
   const status = object.isStandard && object.key === 'post' ? fields.find(f => f.key === 'status' && f.type === 'select') : undefined;
   const email = object.isStandard && object.key === 'email' ? fields.find(f => f.key === 'status' && f.type === 'select') : undefined;
   const start = object.isStandard && object.key === 'campaign' ? fields.find(f => f.key === 'status' && f.type === 'select') : undefined;
+  const live = object.isStandard && object.key === 'bookingPage' ? fields.find(f => f.key === 'live' && f.type === 'boolean') : undefined;
   const changes = values === 'delete' ? Object.fromEntries(Object.keys(record!.values).map(id => [id, null])) : values;
   for (const [id, to] of Object.entries(changes)) {
     const field = fields.find(f => f._id === id), from = record?.values[id];
@@ -34,6 +36,7 @@ export function agentGuard(principal: Principal, object: Doc<'objects'>, fields:
       if (field === email && approved(to)) fail('FORBIDDEN', 'Only a person can approve an email', { fieldId: field._id });
     }
     if (field === start && to === 'active') fail('FORBIDDEN', 'Only a person can start a campaign', { fieldId: field._id });
+    if (field === live && to === true) fail('FORBIDDEN', 'Only a person can publish a booking page', { fieldId: field._id });
     if (!isStage(object, field) || from == null) continue;
     if (final(from)) fail('FORBIDDEN', `Agents cannot change the stage of a won or lost ${object.label.toLowerCase()}`, { fieldId: field._id });
     const order = (field.options ?? []).map(o => o.id);

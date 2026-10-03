@@ -144,6 +144,26 @@ export const inboxResolve = internalMutation({ args: { keyHash, id: v.id("agentI
 export const campaignReport = internalQuery({ args: { keyHash, idOrRef: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); return reportOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef)); } });
 export const emailPreview = internalQuery({ args: { keyHash, idOrRef: v.string(), person: v.optional(v.string()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const person = args.person ? await recordFor(ctx, principal.org._id, args.person) : undefined; return previewOf(ctx, principal, await recordFor(ctx, principal.org._id, args.idOrRef), person?._id); } });
 export const markReplied = internalMutation({ args: { keyHash, id: v.string() }, handler: async (ctx, args) => markSendReplied(ctx, await requireAgent(ctx, args.keyHash), args.id) });
+// Bookings on the pages this key can read, by page and start time. People's names and
+// addresses only as far as the key may read the person.
+export const bookings = internalQuery({ args: { keyHash, page: v.optional(v.string()), from: v.optional(v.string()), to: v.optional(v.string()) }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), item = await objectFor(ctx, principal.org._id, "bookingPage"), person = await objectFor(ctx, principal.org._id, "person").catch(() => null);
+  requireObjectRead(principal, item.object);
+  const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instantBound(text); if (ms === undefined) fail("VALIDATION", "from and to must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
+  const from = bound(args.from, false) ?? 0, to = bound(args.to, true) ?? Number.MAX_SAFE_INTEGER;
+  const page = args.page ? await recordFor(ctx, principal.org._id, args.page) : null;
+  if (page) { if (page.objectId !== item.object._id) fail("NOT_FOUND", "Booking page not found"); requireRecordRead(principal, item.object, page); }
+  const rows = page ? await ctx.db.query("bookings").withIndex("by_page_start", (q) => q.eq("pageRecordId", page._id).gte("start", from).lte("start", to)).take(500) : await ctx.db.query("bookings").withIndex("by_org_start", (q) => q.eq("orgId", principal.org._id).gte("start", from).lte("start", to)).take(500);
+  const field = (key: string) => person?.fields.find((f) => f.key === key), out = [];
+  for (const b of rows) {
+    const pageRecord = page ?? await ctx.db.get(b.pageRecordId);
+    if (!pageRecord || !canReadRecord(principal, item.object, pageRecord)) continue;
+    const who = person ? await ctx.db.get(b.personRecordId) : null, readable = !!who && !!person && canReadRecord(principal, person.object, who);
+    const show = (key: string) => readable && !!field(key) && canReadField(principal, person!.object, field(key)!, who!._id);
+    out.push({ id: b._id, page: { id: pageRecord._id, ref: pageRecord.ref ?? null }, person: readable ? { id: who!._id, ref: who!.ref ?? null } : null, name: show("name") ? b.name : null, email: show("email") ? b.email : null, start: new Date(b.start).toISOString(), end: new Date(b.end).toISOString(), status: b.status, paid: !!b.paidAt, amountMinor: b.amountMinor ?? null, currency: b.currency ?? null, campaign: b.campaignRecordId ?? null, sendId: b.sendId ?? null, attention: b.attention ?? null });
+  }
+  return { bookings: out };
+} });
 const fieldInput = { key: v.string(), label: v.string(), type: v.string(), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()) };
 const shapeArgs = { kind: v.string(), reason: v.string(), object: v.optional(v.string()), field: v.optional(v.string()), key: v.optional(v.string()), label: v.optional(v.string()), labelPlural: v.optional(v.string()), icon: v.optional(v.string()), type: v.optional(v.string()), options: v.optional(v.array(option)), target: v.optional(v.string()), withTime: v.optional(v.boolean()), required: v.optional(v.boolean()), fields: v.optional(v.array(v.object(fieldInput))) };
 export const proposeShape = internalMutation({ args: { keyHash, ...shapeArgs }, handler: async (ctx, { keyHash, ...input }) => { const principal = await requireAgent(ctx, keyHash); await writable(ctx, principal.org._id); const change = await proposalFor(ctx, principal, input); const id = await ctx.db.insert("shapeSuggestions", { orgId: principal.org._id, agentId: principal.agent._id, authorityEpoch: principal.agent.authorityEpoch ?? 0, change, reason: input.reason, status: "pending" }); return { proposal: await agentRow(ctx, (await ctx.db.get(id))!) }; } });

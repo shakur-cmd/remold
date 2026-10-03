@@ -31,6 +31,11 @@ export default defineSchema({
   emailCaps: defineTable({ key: v.string(), used: v.number() }).index("by_key", ["key"]),
   webhookEvents: defineTable({ provider: v.string(), eventId: v.string(), at: v.number() }).index("by_event", ["provider", "eventId"]),
 
+  // Booking pages. A booking holds one time on a page; a paid page's booking is held until Stripe says it is paid.
+  bookings: defineTable({ orgId: v.id("orgs"), pageRecordId: v.id("records"), personRecordId: v.id("records"), start: v.number(), end: v.number(), name: v.string(), email: v.string(), note: v.optional(v.string()), zone: v.optional(v.string()), status: v.union(v.literal("held"), v.literal("confirmed"), v.literal("cancelled")), holdUntil: v.optional(v.number()), cancelReason: v.optional(v.string()), token: v.string(), sendId: v.optional(v.id("emailSends")), campaignRecordId: v.optional(v.id("records")), paidAt: v.optional(v.number()), amountMinor: v.optional(v.number()), currency: v.optional(v.string()), stripeSessionId: v.optional(v.string()), attention: v.optional(v.string()) })
+    .index("by_org_start", ["orgId", "start"]).index("by_page_start", ["pageRecordId", "start"]).index("by_token", ["token"]).index("by_status_hold", ["status", "holdUntil"]).index("by_campaign", ["campaignRecordId"]),
+  // Write-only: only internal functions read a workspace's Stripe webhook signing secret.
+  paymentSecrets: defineTable({ orgId: v.id("orgs"), stripeWebhookSecret: v.string() }).index("by_org", ["orgId"]),
   users: defineTable({ tokenIdentifier: v.string(), name: v.string(), email: v.optional(v.string()), imageUrl: v.optional(v.string()) }).index("by_token", ["tokenIdentifier"]),
   orgs: defineTable({ emailSettings: v.optional(emailSettings), authorityFrozenAt: v.optional(v.number()), authorityFrozenKeys: v.optional(v.record(v.id("objects"), v.string())), name: v.string(), createdBy: v.id("users"), flags: v.optional(v.record(v.string(), v.boolean())) }),
   opsEvents: defineTable({ orgId: v.id("orgs"), actor: v.object({ kind: v.literal("operator"), id: v.literal("internal-admin") }), action: v.literal("featureFlagChanged"), flag: v.string(), before: v.boolean(), after: v.boolean(), reason: v.string() }).index("by_org", ["orgId"]),

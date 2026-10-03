@@ -6,4 +6,5 @@ crons.interval("Expire operational metrics",{minutes:5},internal.telemetry.purge
 crons.cron("Operator alerts","* * * * *",internal.alerts.check,{});
 crons.cron("Daily reminder email","0 11 * * *",internal.reminders.send,{});
 crons.cron("Campaign email","* * * * *",internal.campaignSend.tick,{});
+crons.cron("Expire booking holds","* * * * *",internal.bookings.expire,{});
 export default crons;

@@ -6,6 +6,7 @@ import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { agentGuard } from "../authority/agentGuards";
 import { emailRules } from "./emailRules";
+import { pageRules } from "./booking";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
 import { dateValue } from "./values";
@@ -171,5 +172,6 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   const after = Object.fromEntries(changedIds.map((fieldId) => [fieldId, values[fieldId] ?? null]));
   const eventId = await ctx.db.insert("events", { orgId: change.orgId, actor, action: change.action, objectId: object._id, recordId, before: change.action === "create" ? null : before, after, reason: change.reason, suggestionId: options.suggestionId });
   await emailRules(ctx, membership, actor, object, fields, record?.values ?? null, values, recordId, options.clearingReference);
+  pageRules(object, fields, record?.values ?? null, values);
   return { recordId, eventId };
 }

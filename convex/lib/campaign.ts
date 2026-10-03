@@ -5,7 +5,8 @@ import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, canReadObject, canReadRecord, requireRecordRead } from "../authority/reads";
 import { applyChange } from "./applyChange";
-import { DAY, compose, deploymentCap, inboundDomain, normalAddress, settingsProblems, validAddress, type Recipient } from "./campaignText";
+import { campaignBookings, campaignPages } from "./booking";
+import { DAY, appUrl, compose, deploymentCap, inboundDomain, normalAddress, settingsProblems, validAddress, type Recipient } from "./campaignText";
 
 type Ctx = QueryCtx | MutationCtx;
 export type Item = { object: Doc<"objects">; f: Record<string, Doc<"fields">> };
@@ -112,6 +113,7 @@ export async function stateOf(ctx: Ctx, email: Doc<"records">, now: number): Pro
   if (!value(email, item.f.followsUp) && sendAt && sendAt > now) problems.push(`Waits until ${new Date(sendAt).toISOString().slice(0, 16).replace("T", " ")} UTC`);
   // Before approval the approving admin is not known yet; their email becomes the default.
   if (run && !inboundDomain() && !replyTo) problems.push("No reply-to address");
+  if (!appUrl() && /\{\{\s*bookingLink/.test(`${value(email, item.f.subject) ?? ""} ${value(email, item.f.body) ?? ""}`)) problems.push("Booking links need REMOLD_APP_URL to be set");
   return { org, email, item, campaign, run, replyTo, problems };
 }
 
@@ -181,11 +183,12 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
   if (!campaignObject?.isStandard || campaignObject.key !== "campaign") fail("NOT_FOUND", "Campaign not found");
   requireRecordRead(principal, campaignObject, campaign);
   const item = await standardItem(ctx, principal.org._id, "email"), person = await standardItem(ctx, principal.org._id, "person");
-  if (!item?.f.campaign?.slot || !canReadObject(principal, item.object)) return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, emails: [] };
+  const booked = await campaignBookings(ctx, campaign._id), bookings = booked.counts;
+  if (!item?.f.campaign?.slot || !canReadObject(principal, item.object)) return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, bookings, emails: [] };
   const slot = `${item.f.campaign.slot.kind}${item.f.campaign.slot.index}`, now = Date.now();
   const emails: Doc<"records">[] = (await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", principal.org._id).eq("objectId", item.object._id).eq(slot, campaign._id)).collect()).filter((e: Doc<"records">) => canReadRecord(principal, item.object, e));
   const shown = (record: Doc<"records">, key: string) => { const field = item.f[key]; return field && canReadField(principal, item.object, field, record._id) ? record.values[field._id] ?? null : null; };
-  return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, emails: await Promise.all(chain(emails, item).map(async (email) => {
+  return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: campaign.title }, bookings, emails: await Promise.all(chain(emails, item).map(async (email) => {
     const rows = await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect();
     const count = (test: (s: Doc<"emailSends">) => unknown) => rows.filter(test).length, sent = count((s) => s.status === "sent");
     const counts = { recipients: count((s) => s.status !== "skipped"), queued: count((s) => s.status === "queued" || s.status === "sending"), sent, failed: count((s) => s.status === "failed"), skipped: count((s) => s.status === "skipped"), delivered: count((s) => s.deliveredAt), opened: count((s) => s.openedAt), clicked: count((s) => s.clickedAt), replied: count((s) => s.repliedAt), bounced: count((s) => s.bouncedAt), unsubscribed: count((s) => s.unsubscribedAt) };
@@ -194,7 +197,7 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
       const record = person ? await ctx.db.get(s.personRecordId) : null;
       if (!record || !person || !canReadRecord(principal, person.object, record)) continue;
       const address = person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? s.to || null : null;
-      recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: person.f.name && canReadField(principal, person.object, person.f.name, record._id) ? record.title : null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt });
+      recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: person.f.name && canReadField(principal, person.object, person.f.name, record._id) ? record.title : null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt, booked: !!booked.people.get(s.personRecordId)?.booked, paid: !!booked.people.get(s.personRecordId)?.paid });
     }
     const state = await stateOf(ctx, email, now);
     return { id: email._id, ref: email.ref ?? null, subject: shown(email, "subject"), status: shown(email, "status"), followsUp: shown(email, "followsUp"), waitDays: shown(email, "waitDays"), sendTo: shown(email, "sendTo"), sendAt: shown(email, "sendAt"), problems: state?.problems ?? ["This email is missing a standard field"], counts, rates: { opened: share(counts.opened, sent), clicked: share(counts.clicked, sent), replied: share(counts.replied, sent) }, recipients };
@@ -218,6 +221,6 @@ export async function emailPreview(ctx: Ctx, principal: Principal, email: Doc<"r
   let target = chosen?.c.recipient;
   if (personId && !chosen) { const record = await ctx.db.get(personId); if (!record || record.orgId !== principal.org._id || !canReadRecord(principal, person.object, record)) fail("NOT_FOUND", "Person not found"); target = { name: record.title, company: (await recipientOf(ctx, person, record)).company }; }
   const template = { subject: String(value(email, item.f.subject) ?? ""), body: String(value(email, item.f.body) ?? "") };
-  const rendered = target ? { person: { name: target.name }, ...compose(template, target, state.org.emailSettings?.postalAddress ?? "", "preview") } : null;
+  const rendered = target ? { person: { name: target.name }, ...compose(template, { ...target, pages: await campaignPages(ctx, principal.org._id, state.campaign._id) }, state.org.emailSettings?.postalAddress ?? "", "preview") } : null;
   return { rendered, recipients: listed.filter(({ c }) => !c.reason).map(({ row }) => row), excluded: listed.filter(({ c }) => c.reason).map(({ row }) => row), counts: { recipients: candidates.filter((c) => !c.reason).length, excluded: candidates.filter((c) => c.reason).length, waiting }, problems: state.problems };
 }
