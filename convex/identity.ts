@@ -9,7 +9,7 @@ export type Role = "owner" | "admin" | "member";
 export type Actor = { kind: "user" | "agent" | "automation"; id: string };
 export type UserPrincipal = { user: Doc<"users">; actor: { kind: "user"; id: string } };
 export type Membership = UserPrincipal & { member: Doc<"members">; org: Doc<"orgs"> };
-export type AgentMembership = { capabilities?: Doc<"capabilityGrants">[]; agent: Doc<"agents">; org: Doc<"orgs">; actor: { kind: "agent"; id: string } };
+export type AgentMembership = { capabilities?: Doc<"capabilityGrants">[]; readsEverything?: boolean; agent: Doc<"agents">; org: Doc<"orgs">; actor: { kind: "agent"; id: string } };
 export type Principal = Membership | AgentMembership;
 type Ctx = QueryCtx | MutationCtx;
 const rank: Record<Role, number> = { member: 0, admin: 1, owner: 2 };
@@ -30,7 +30,14 @@ export async function requireAgent(ctx: Ctx, keyHash: string, purpose?: "intake"
   const org = await ctx.db.get(agent.orgId);
   if (!org) fail("UNAUTHENTICATED", "Invalid or revoked agent key");
   if (agent.authorityVersion !== 1 && org.authorityFrozenAt === undefined) fail("AUTHORITY_MIGRATING", "Workspace authority migration is pending; retry shortly", { retryable: true });
-  return { agent, org, capabilities: await validGrants(ctx, agent), actor: { kind: "agent", id: agent._id } };
+  return { agent, org, capabilities: await validGrants(ctx, agent), readsEverything: await readsEverything(ctx, agent), actor: { kind: "agent", id: agent._id } };
+}
+
+// Whether a migrated agent reads every current object: the shared inbox holds free text about any of them.
+export async function readsEverything(ctx: Ctx, agent: Doc<"agents">) {
+  if (agent.authorityVersion !== 1) return false;
+  if (agent.readAllObjects) return true;
+  return (await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", agent.orgId)).collect()).every((o) => agent.readObjectIds?.includes(o._id));
 }
 
 export function granted(agent: Doc<"agents">, action: "create" | "update" | "delete", object: Doc<"objects">, org: Doc<"orgs">) {
@@ -65,7 +72,7 @@ export async function currentPrincipal(ctx: Ctx, principal: Principal): Promise<
   if ("agent" in principal) {
     const agent = await ctx.db.get(principal.agent._id);
     if (!agent || agent.orgId !== org._id || principal.actor.kind !== "agent" || principal.actor.id !== agent._id || agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== "active") || (agent.authorityEpoch ?? 0) !== (principal.agent.authorityEpoch ?? 0)) fail("FORBIDDEN", "Agent authority changed");
-    return { agent, org, capabilities: await validGrants(ctx, agent), actor: { kind: "agent", id: agent._id } };
+    return { agent, org, capabilities: await validGrants(ctx, agent), readsEverything: await readsEverything(ctx, agent), actor: { kind: "agent", id: agent._id } };
   }
   const user = await ctx.db.get(principal.user._id);
   const member = await ctx.db.query("members").withIndex("by_org_user", q => q.eq("orgId", org._id).eq("userId", principal.user._id)).unique();

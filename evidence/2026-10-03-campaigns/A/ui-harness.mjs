@@ -35,7 +35,8 @@ writeFileSync(join(scratch, "convex/uiFixture.ts"), `import { v } from "convex/v
 import { internalMutation } from "./_generated/server";
 export const sends = internalMutation({ args: { orgId: v.id("orgs"), emailId: v.id("records"), campaignId: v.id("records"), statusFieldId: v.string(), rows: v.array(v.object({ personId: v.id("records"), to: v.string(), subject: v.string(), opened: v.boolean(), clicked: v.boolean(), replied: v.boolean(), skip: v.optional(v.string()) })) }, handler: async (ctx, a) => {
   const at = Date.now() - 86400000;
-  for (const [i, r] of a.rows.entries()) await ctx.db.insert("emailSends", { orgId: a.orgId, emailRecordId: a.emailId, campaignRecordId: a.campaignId, personRecordId: r.personId, to: r.to, subject: r.subject, token: "f".repeat(31) + i, attempts: r.skip ? 0 : 1, ...(r.skip ? { status: "skipped" as const, skipReason: r.skip } : { status: "sent" as const, providerId: "sim_" + i, sentAt: at, deliveredAt: at, ...(r.opened ? { openedAt: at + 3600000, opens: 1 } : {}), ...(r.clicked ? { clickedAt: at + 3700000, clicks: 1 } : {}), ...(r.replied ? { repliedAt: at + 7200000 } : {}) }) });
+  // The approval already queued a row per person; give each the outcome the webhook would have left.
+  for (const [i, r] of a.rows.entries()) { const row = (await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", a.emailId).eq("personRecordId", r.personId)).first())!; await ctx.db.patch(row._id, { subject: r.subject, ...(r.skip ? { status: "skipped" as const, skipReason: r.skip } : { status: "sent" as const, attempts: 1, providerId: "sim_" + i, sentAt: at, deliveredAt: at, ...(r.opened ? { openedAt: at + 3600000, opens: 1 } : {}), ...(r.clicked ? { clickedAt: at + 3700000, clicks: 1 } : {}), ...(r.replied ? { repliedAt: at + 7200000 } : {}) }) }); }
   const email = (await ctx.db.get(a.emailId))!;
   await ctx.db.patch(a.emailId, { values: { ...email.values, [a.statusFieldId]: "sent" } });
   const run = await ctx.db.query("emailRuns").withIndex("by_email", (q) => q.eq("emailRecordId", a.emailId)).unique();
@@ -65,7 +66,10 @@ try {
   for (const name of names) people.push({ name, id: await create(person, { name, email: name.split(" ")[0].toLowerCase() + "@example.com", company: await create(company, { name: name.split(" ")[1] + " Plumbing" }) }) });
   const campaignId = await create(campaign, { name: "Five-minute calls", status: "active", channel: "email", goal: "Book ten $5 calls", people: people.map((p) => p.id) });
   const first = await create(email, { subject: "Quick call, {{firstName|there}}?", body: "Hi {{firstName|there}},\n\nI help small businesses like {{company}} get more from their CRM. Want a five-minute call for $5?\n\nBook here: https://example.com/book\n\nShakur", campaign: campaignId, status: "draft" });
-  await client.mutation(anyApi.campaigns.approve, { orgId, emailId: first, confirmed: true });
+  await client.mutation(anyApi.campaigns.approve, { orgId, emailId: first, confirmed: true, version: (await client.query(anyApi.campaigns.preview, { orgId, emailId: first })).version });
+  // Linked after approval: shows as added since approval.
+  const late = await create(person, { name: "Ivy Lane", email: "ivy@example.com" });
+  await client.mutation(anyApi.records.update, { orgId, recordId: campaignId, values: { [campaign.f.people]: [...people.map((p) => p.id), late] } });
   const outcome = [[1, 1, 1], [1, 1, 0], [1, 0, 0], [1, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
   run("uiFixture:sends", { orgId, emailId: first, campaignId, statusFieldId: email.f.status, rows: people.map((p, i) => i === 7 ? { personId: p.id, to: "hal@example.com", subject: "Quick call, Hal?", opened: false, clicked: false, replied: false, skip: "unsubscribed" } : { personId: p.id, to: p.name.split(" ")[0].toLowerCase() + "@example.com", subject: `Quick call, ${p.name.split(" ")[0]}?`, opened: !!outcome[i][0], clicked: !!outcome[i][1], replied: !!outcome[i][2] }) });
   await create(email, { subject: "Still up for a quick call?", body: "Hi {{firstName|there}},\n\nJust checking you saw this. Five minutes, $5: https://example.com/book\n\nShakur", campaign: campaignId, followsUp: first, waitDays: 1, sendTo: "notReplied", status: "draft" });
@@ -88,7 +92,7 @@ try {
   await section.getByText("Mark replied").first().waitFor();
   await section.screenshot({ path: join(out, "campaign-emails.png") });
   await page.screenshot({ path: join(out, "campaign-page.png"), fullPage: true });
-  await section.getByRole("button", { name: "Approve" }).click();
+  await section.getByRole("button", { name: "Approve", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByText(/^As .* sees it$/).waitFor({ timeout: 30000 });
   await dialog.screenshot({ path: join(out, "approve-dialog.png") });

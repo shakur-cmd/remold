@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -28,6 +29,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
   const [name, setName] = useState("");
   const [role, setRole] = useState<"member" | "admin">("member");
   const [grants, setGrantsDraft] = useState<Grant[]>([]);
+  const [open, setOpen] = useState<Id<"agents"> | null>(null);
   const [issued, setIssued] = useState<{ name: string; key: string; intake?: boolean; gmail?: boolean } | null>(null);
 
   async function add(e: FormEvent) {
@@ -48,7 +50,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
     <Card>
       <CardHeader>
         <CardTitle>Agents</CardTitle>
-        <CardDescription>New keys read the current workspace objects and propose changes. Future objects need new permission. Grant an action to allow direct changes. Shared notes need the separate inbox permission.</CardDescription>
+        <CardDescription>New keys read the current workspace objects and propose changes. Objects added later stay hidden until you let the agent read them. Grant an action to allow direct changes. Shared notes need the separate inbox permission.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         {agents && agents.length > 0 && (
@@ -71,11 +73,17 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
                         Remove grants
                       </Button>
                     )}
+                    {!agent.fixedScope && (
+                      <Button size="xs" variant="ghost" className="text-muted-foreground" aria-expanded={open === agent._id} onClick={() => setOpen(open === agent._id ? null : agent._id)}>
+                        Access
+                      </Button>
+                    )}
                     <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => confirm(`Revoke ${agent.name}'s key? Its past changes stay in the timeline.`) && attempt(() => revoke({ orgId, agentId: agent._id }), "Revoked")}>
                       Revoke
                     </Button>
                   </span>
                 )}
+                {!agent.revokedAt && !agent.fixedScope && <ReadAccess orgId={orgId} agent={agent} objects={objects} admin={admin} open={admin && open === agent._id} />}
               </li>
             ))}
           </ul>
@@ -172,6 +180,68 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
         )}
       </CardContent>
     </Card>
+  );
+}
+
+type Listed = FunctionReturnType<typeof api.agents.list>[number];
+// What one agent reads, and per object whether it may apply changes directly.
+function ReadAccess({ orgId, agent, objects, admin, open }: { orgId: Id<"orgs">; agent: Listed; objects: Doc<"objects">[]; admin: boolean; open: boolean }) {
+  const setReadAccess = useMutation(api.agents.setReadAccess);
+  const setGrants = useMutation(api.agents.setGrants);
+  const all = !!agent.readAllObjects, hidden = objects.filter((o) => agent.cannotRead.includes(o.key)), reads = (o: Doc<"objects">) => !agent.cannotRead.includes(o.key);
+  const readable = objects.filter(reads).map((o) => o._id);
+  const save = (readAllObjects: boolean, objectIds: Id<"objects">[], done: string) => attempt(() => setReadAccess({ orgId, agentId: agent._id, readAllObjects, objectIds }), done);
+  const can = (action: Grant["action"], o: Doc<"objects">) => agent.grants.some((g) => g.action === action && (g.objectKey === o.key || g.objectKey === "*"));
+  const toggleGrant = (action: Grant["action"], o: Doc<"objects">) => attempt(() => setGrants({ orgId, agentId: agent._id, grants: can(action, o) ? agent.grants.filter((g) => !(g.action === action && g.objectKey === o.key)) : [...agent.grants, { action, objectKey: o.key }] }), "Saved");
+  const allObjects = (
+    <Button size="xs" variant="ghost" onClick={() => save(true, [], "It reads all objects")}>
+      All objects
+    </Button>
+  );
+  return (
+    <div className="grid w-full gap-2 pb-1 text-xs text-muted-foreground">
+      <p className="flex flex-wrap items-center gap-1.5">
+        {all ? "Reads all objects, including new ones." : hidden.length ? `Cannot see: ${hidden.map((o) => o.labelPlural).join(", ")}` : "Reads every current object. New ones stay hidden until you let it read them."}
+        {admin && !all && hidden.map((o) => (
+          <Button key={o._id} size="xs" variant="outline" onClick={() => save(false, [...readable, o._id], `It can read ${o.labelPlural}`)}>
+            Let it read {o.labelPlural}
+          </Button>
+        ))}
+        {admin && !all && !agent.inboxNeedsAll && allObjects}
+      </p>
+      {agent.inboxNeedsAll && (
+        <p className="flex flex-wrap items-center gap-1.5">
+          Shared inbox needs access to all objects.
+          {admin && allObjects}
+        </p>
+      )}
+      {open && (
+        <table className="w-full max-w-md text-sm text-foreground">
+          <thead>
+            <tr className="text-xs text-muted-foreground">
+              <th className="py-1 text-left font-normal" />
+              <th className="w-16 py-1 font-normal">read</th>
+              {ACTIONS.map((action) => <th key={action} className="w-16 py-1 font-normal">{action}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-t">
+              <td className="py-1.5">All objects, including new ones</td>
+              <td className="text-center"><Checkbox checked={all} onCheckedChange={() => save(!all, objects.map((o) => o._id), all ? "New objects now stay hidden" : "It reads all objects")} aria-label={`${agent.name} reads all objects`} /></td>
+            </tr>
+            {objects.map((o) => (
+              <tr key={o._id} className="border-t">
+                <td className="py-1.5">{o.labelPlural}</td>
+                <td className="text-center"><Checkbox checked={reads(o)} disabled={all} onCheckedChange={() => save(false, reads(o) ? readable.filter((id) => id !== o._id) : [...readable, o._id], reads(o) ? `It no longer reads ${o.labelPlural}` : `It can read ${o.labelPlural}`)} aria-label={`${agent.name} reads ${o.labelPlural}`} /></td>
+                {ACTIONS.map((action) => (
+                  <td key={action} className="text-center"><Checkbox checked={reads(o) && can(action, o)} disabled={!reads(o)} onCheckedChange={() => toggleGrant(action, o)} aria-label={`${agent.name} may ${action} ${o.labelPlural}`} /></td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 }
 

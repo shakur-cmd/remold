@@ -1,0 +1,6 @@
+this build: reads-all agent sees venue true | narrowed agent sees company false
+plain previous release: refused: Schema validation failed. Document with ID "j97dn1wwwzbc6f4p99h9a1yk6s8fkjbb" in table "agents" does not match the schema: Object contains extra field `readAllObjects` that is not in the validator.
+previous release + readAllObjects schema line: functions ready
+previous code: reads-all agent sees 11 objects, venue false | narrowed agent sees company false
+forward again: functions ready
+forward: reads-all flag true | sees venue true | narrowed grants [{"action":"create","objectKey":"task"}]
