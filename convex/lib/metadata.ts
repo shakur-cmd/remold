@@ -49,6 +49,8 @@ export async function unrestricted(ctx: Ctx, principal: Principal) {
   return true;
 }
 export async function requireUnrestricted(ctx: Ctx, principal: Principal) { if (!await unrestricted(ctx, principal)) fail("FORBIDDEN", "Unrestricted workspace access required"); }
+// Archiving keeps an object's records; it takes no new ones until it comes back.
+export const requireLive = (object: Doc<"objects">) => { if (object.archived) fail("VALIDATION", `Unarchive ${object.labelPlural} to add records`); };
 export const requireLabel = (label: string | undefined, what = "Label") => { if (!label?.trim()) fail("VALIDATION", `${what} is required`); };
 
 export async function checkObject(ctx: Ctx, principal: Principal, spec: ObjectSpec, fields: FieldSpec[] = []) {

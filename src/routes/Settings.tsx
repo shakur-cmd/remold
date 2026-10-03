@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
-import { attempt } from "@/lib/errors";
+import { attempt, errorMessage } from "@/lib/errors";
 import { toKey } from "@/lib/fields";
 import { capacity, slotsLeft, type SlotKind } from "../../convex/lib/slots";
 import type { OrgContext } from "@/routes/OrgLayout";
@@ -209,6 +209,16 @@ function MembersCard({ orgId, admin }: { orgId: Id<"orgs">; admin: boolean }) {
   );
 }
 
+// The confirm still opens when the preview cannot load, and says so; the error is also shown as a toast.
+async function impactLines(load: () => Promise<string[]>) {
+  try {
+    return (await load()).join("\n");
+  } catch (error) {
+    toast.error(`Could not count what this touches: ${errorMessage(error)}`);
+    return `Could not count what this touches: ${errorMessage(error)}`;
+  }
+}
+
 // Moves one item a place up or down; the server takes the whole new order.
 function moved<T>(list: T[], index: number, by: -1 | 1) {
   const next = [...list];
@@ -289,8 +299,8 @@ function ObjectOrder({ orgId, objects }: { orgId: Id<"orgs">; objects: Doc<"obje
   const convex = useConvex();
   const shown = objects.filter((o) => !o.archived), archived = objects.filter((o) => o.archived);
   async function archive(object: Doc<"objects">) {
-    const impact = await convex.query(api.objects.impact, { orgId, objectId: object._id });
-    if (confirm(`Archive ${object.labelPlural}?\n\n${impact.join("\n")}`)) await attempt(() => setArchived({ orgId, objectId: object._id, archived: true }), "Archived");
+    const impact = await impactLines(() => convex.query(api.objects.impact, { orgId, objectId: object._id }));
+    if (confirm(`Archive ${object.labelPlural}?\n\n${impact}`)) await attempt(() => setArchived({ orgId, objectId: object._id, archived: true }), "Archived");
   }
   return (
     <div className="grid gap-1.5">
@@ -301,7 +311,7 @@ function ObjectOrder({ orgId, objects }: { orgId: Id<"orgs">; objects: Doc<"obje
             <span className="mr-auto">{object.labelPlural}</span>
             <MoveButtons label={object.labelPlural} index={index} count={shown.length} onMove={(by) => attempt(() => reorder({ orgId, objectIds: moved(shown, index, by).map((o) => o._id) }))} />
             {!object.isStandard && (
-              <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => void archive(object)}>
+              <Button size="xs" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => void attempt(() => archive(object))}>
                 Archive
               </Button>
             )}
@@ -362,8 +372,8 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
   // Retired fields keep their slots so they can come back.
   const left = slotsLeft(fields ?? []), kind: SlotKind | undefined = type === "number" ? "n" : type === "date" ? "d" : type === "boolean" ? "b" : type === "links" ? undefined : "s";
   async function retireField(field: Doc<"fields">) {
-    const impact = await convex.query(api.objects.impact, { orgId, objectId: object._id, fieldId: field._id });
-    if (confirm(`Retire ${field.label}?\n\n${impact.join("\n")}`)) await attempt(() => retire({ orgId, fieldId: field._id }), "Retired");
+    const impact = await impactLines(() => convex.query(api.objects.impact, { orgId, objectId: object._id, fieldId: field._id }));
+    if (confirm(`Retire ${field.label}?\n\n${impact}`)) await attempt(() => retire({ orgId, fieldId: field._id }), "Retired");
   }
   return (
     <div className="grid gap-3">
@@ -376,7 +386,7 @@ function Fields({ orgId, object, objects, admin }: { orgId: Id<"orgs">; object: 
             isTitle={field._id === object.titleFieldId}
             admin={admin}
             move={admin ? <MoveButtons label={field.label} index={index} count={live.length} onMove={(by) => attempt(() => reorder({ orgId, objectId: object._id, fieldIds: moved(live, index, by).map((f) => f._id) }))} /> : null}
-            onRetire={() => void retireField(field)}
+            onRetire={() => void attempt(() => retireField(field))}
             onTitle={() => attempt(() => setTitle({ orgId, objectId: object._id, fieldId: field._id }), `${field.label} is now the title`)}
           />
         ))}

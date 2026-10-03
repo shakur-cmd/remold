@@ -1,4 +1,5 @@
 import type { Doc, Id } from "../_generated/dataModel";
+import { requireLive } from "./metadata";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { currentPrincipal, fieldGranted, recordGranted, type Actor, type Membership, type Principal } from "../identity";
 import { fail } from "../errors";
@@ -95,6 +96,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
   if (change.action === "create") object = await ctx.db.get(change.objectId);
   else { record = await ctx.db.get(change.recordId); object = record ? await ctx.db.get(record.objectId) : null; }
   if (!object || object.orgId !== change.orgId || (record && record.orgId !== change.orgId)) fail("NOT_FOUND", "Record or object not found");
+  if (change.action === "create") requireLive(object);
   const fields = await fieldsFor(ctx, change.orgId, object._id);
   if (!options.clearingReference) {
     const touched = change.action === "delete" ? Object.keys(record!.values) : Object.keys(change.values);

@@ -16,7 +16,7 @@ import { agentGuard } from "./authority/agentGuards";
 import { idempotency, remember, replay } from "./lib/idempotency";
 import { leadArgs, submitLead } from "./lib/intake";
 import { campaignReport as reportOf, emailPreview as previewOf, markReplied as markSendReplied } from "./lib/campaign";
-import { option } from "./lib/metadata";
+import { option, requireLive } from "./lib/metadata";
 import { slotsLeft } from "./lib/slots";
 import { agentRow, proposalFor } from "./shapeSuggestions";
 
@@ -124,7 +124,7 @@ async function proposed(ctx: any, principal: Principal, args: { action: "create"
   const before = args.action === "create" ? {} : args.action === "delete" ? record!.values : Object.fromEntries(Object.keys(values).map((id) => [id, record!.values[id] ?? null]));
   return { item, record, values, before };
 }
-export const propose = internalMutation({ args: { keyHash, action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), reason: v.string(), inboxId: v.optional(v.id("agentInbox")), idempotency }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const prior = await replay(ctx, principal.agent._id, args.idempotency); if (prior) { const suggestion = await ctx.db.get(prior.result.id as Id<"suggestions">); if (!suggestion) fail("NOT_FOUND"); return { suggestion: await suggestionApi(ctx, principal, suggestion) }; } await writable(ctx, principal.org._id); const target = await targetOf(ctx, principal.org._id, args);
+export const propose = internalMutation({ args: { keyHash, action, object: v.optional(v.string()), record: v.optional(v.string()), values: v.optional(v.record(v.string(), v.any())), reason: v.string(), inboxId: v.optional(v.id("agentInbox")), idempotency }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const prior = await replay(ctx, principal.agent._id, args.idempotency); if (prior) { const suggestion = await ctx.db.get(prior.result.id as Id<"suggestions">); if (!suggestion) fail("NOT_FOUND"); return { suggestion: await suggestionApi(ctx, principal, suggestion) }; } await writable(ctx, principal.org._id); const target = await targetOf(ctx, principal.org._id, args); if (args.action === "create") requireLive(target.item.object);
   // Proposal scope is checked before any value is resolved: resolving a lookup by name must not run for an agent that may not propose here.
   const touched = args.action === "delete" ? Object.keys(target.record!.values) : Object.keys(args.values ?? {}).map(key => target.item.fields.find((field: Doc<"fields">) => field.key === key)?._id).filter((id): id is Id<"fields"> => !!id);
   // Unreadable objects and records stay 404, like ones that do not exist.

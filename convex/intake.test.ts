@@ -371,7 +371,8 @@ describe("website intake key", () => {
     expect((await post(t, intake.key, "/api/v1/intake/leads", lead, "p1")).status).toBe(404);
     expect((await t.fetch("/api/v1/intake/lead", { headers: { authorization: `Bearer ${intake.key}` } })).status).toBe(404);
     const opportunity = await objectFields(client, orgId, "opportunity");
-    await client.mutation(api.fields.retire, { orgId, fieldId: opportunity.fields.stage._id });
+    // Stage cannot be retired through the app any more (Today and agent guards read it); an older workspace may still have it retired.
+    await t.run((ctx: any) => ctx.db.patch(opportunity.fields.stage._id, { retired: true }));
     const missing = await send(lead, "p2");
     expect(missing.status).toBe(404);
     expect(missing.json.error.code).toBe("NOT_FOUND");

@@ -167,11 +167,11 @@ describe("retire and restore", () => {
     expect((await v(w, "venue")).fields.city).toBeDefined();
     expect((await audits(w)).map((a) => a.action)).toEqual(["retireField", "shapeProposalApplied", "restoreField", "shapeProposalApplied"]);
   });
-  it("impact counting stops at the first 500 records and says so", async () => {
+  it("impact counting stops at 500 and says 500+", async () => {
     const w = await world(), venue = await v(w, "venue");
-    await w.t.run(async (ctx: any) => { const member = (await ctx.db.query("members").collect())[0]; for (let i = 0; i < 501; i++) await ctx.db.insert("records", { orgId: w.orgId, objectId: w.venueId, values: { [venue.fields.name._id]: `V${i}`, ...(i % 2 ? {} : { [venue.fields.city._id]: "Leeds" }) }, title: `V${i}`, createdBy: member.userId, updatedAt: i }); });
-    expect((await w.client.query(objects.impact, { orgId: w.orgId, objectId: w.venueId, fieldId: venue.fields.city._id }))[0]).toBe("250 of the first 500 records hold a value. Values are kept and come back if you restore it.");
-    expect((await w.client.query(objects.impact, { orgId: w.orgId, objectId: w.venueId }))[0]).toBe("More than 500 records kept. Links to them keep working.");
+    await w.t.run(async (ctx: any) => { const member = (await ctx.db.query("members").collect())[0]; for (let i = 0; i < 501; i++) await ctx.db.insert("records", { orgId: w.orgId, objectId: w.venueId, values: { [venue.fields.name._id]: `V${i}`, ...(i % 2 ? {} : { [venue.fields.city._id]: "Leeds" }) }, ...(i % 2 ? {} : { [`${venue.fields.city.slot.kind}${venue.fields.city.slot.index}`]: "Leeds" }), title: `V${i}`, createdBy: member.userId, updatedAt: i }); });
+    expect((await w.client.query(objects.impact, { orgId: w.orgId, objectId: w.venueId, fieldId: venue.fields.city._id }))[0]).toBe("251 records of 500+ hold a value. Values are kept and come back if you restore it.");
+    expect((await w.client.query(objects.impact, { orgId: w.orgId, objectId: w.venueId }))[0]).toBe("500+ records kept. Links to them keep working.");
   });
   it("a relation field's retire impact names the links that stop showing", async () => {
     const w = await world(), opportunity = await v(w, "opportunity");
@@ -330,5 +330,164 @@ describe("no stale or hidden data through lifecycle changes", () => {
     await w.client.mutation(fields.create, { orgId: w.orgId, objectId: email.object._id, key: "internalName", label: "Internal Name", type: "text" });
     await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: email.object._id, fieldId: (await v(w, "email")).fields.internalName._id });
     expect(await parity(w, () => w.client.mutation(fields.retire, { orgId: w.orgId, fieldId: email.fields.subject._id }), { kind: "retireField", object: "email", field: "subject" })).toEqual({ personError: "Subject cannot be retired: campaign sending needs it", agentError: "Subject cannot be retired: campaign sending needs it" });
+  });
+});
+
+// Round 2: independent verification findings and coordinator decisions.
+describe("round 2", () => {
+  const seed = (w: World, n: number, values: (i: number, f: any) => Record<string, unknown>, title: (i: number) => string) => v(w, "venue").then(({ fields: f }) => w.t.run(async (ctx: any) => { const member = (await ctx.db.query("members").collect())[0]; for (let i = 0; i < n; i++) await ctx.db.insert("records", { orgId: w.orgId, objectId: w.venueId, values: values(i, f), title: title(i), createdBy: member.userId, updatedAt: i }); }));
+  const secrets = (w: World) => seed(w, 120, (i, f) => ({ [f.name._id]: `Secret${i}`, [f.city._id]: `City ${i}` }), (i) => `Secret${i}`);
+  const stored = (w: World) => w.t.run(async (ctx: any) => (await ctx.db.query("records").collect()).filter((r: any) => r.objectId === w.venueId).sort((a: any, b: any) => a._creationTime - b._creationTime).map((r: any) => r.title)) as Promise<string[]>;
+  const object = (w: World) => w.t.run((ctx: any) => ctx.db.get(w.venueId)) as Promise<any>;
+
+  it("P1: while titles are being rewritten, a reader hidden from the old title field cannot find records by its values", async () => {
+    vi.useFakeTimers();
+    const w = await world(), f = (await v(w, "venue")).fields;
+    await secrets(w);
+    const reader = await agentFor(w.client, w.orgId, { name: "reader" });
+    await w.client.mutation(anyApi["authority/policies"].setAgentMasks, { orgId: w.orgId, agentId: reader.agentId, hiddenFieldIds: [f.name._id] });
+    await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: w.venueId, fieldId: f.city._id });
+    const read = rest(w.t, reader.key);
+    expect((await read("GET", "/api/v1/search?q=Secret&object=venue&limit=50")).json).toEqual([]);
+    expect((await read("GET", "/api/v1/search?q=Secret&limit=50")).json).toEqual([]);
+    // Someone who can read both fields learns nothing new, so their search keeps working meanwhile.
+    expect((await w.call("GET", "/api/v1/search?q=Secret&object=venue&limit=5")).json.length).toBe(5);
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await object(w)).retitling).toBeUndefined();
+    expect((await read("GET", "/api/v1/search?q=City&object=venue&limit=5")).json.length).toBe(5);
+    expect((await read("GET", "/api/v1/search?q=Secret&object=venue&limit=50")).json).toEqual([]);
+  });
+  it("a lookup written by title cannot match the hidden old title while retitling", async () => {
+    vi.useFakeTimers();
+    const w = await world(), f = (await v(w, "venue")).fields;
+    await secrets(w);
+    const writer = await agentFor(w.client, w.orgId, { name: "writer", grants: [{ action: "create", objectKey: "opportunity" }] });
+    await w.client.mutation(anyApi["authority/policies"].setAgentMasks, { orgId: w.orgId, agentId: writer.agentId, hiddenFieldIds: [f.name._id] });
+    await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: w.venueId, fieldId: f.city._id });
+    const made = await rest(w.t, writer.key)("POST", "/api/v1/changes", { action: "create", object: "opportunity", values: { name: "Gala", venue: "Secret110" }, reason: "x" });
+    expect(made.json.error?.message, JSON.stringify(made.json)).toBe('No Venue named "Secret110"');
+  });
+  it("the first page of titles is rewritten with the change, the object is marked retitling until the last page", async () => {
+    vi.useFakeTimers();
+    const w = await world(), f = (await v(w, "venue")).fields;
+    await secrets(w);
+    await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: w.venueId, fieldId: f.city._id });
+    const titles = await stored(w);
+    expect(titles.slice(0, 50).every((t) => t.startsWith("City "))).toBe(true);
+    expect(titles.slice(50).every((t) => t.startsWith("Secret"))).toBe(true);
+    expect((await object(w)).retitling).toMatchObject({ from: [f.name._id] });
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await stored(w)).every((t) => t.startsWith("City "))).toBe(true);
+    expect((await object(w)).retitling).toBeUndefined();
+  });
+  it("a retitle that stopped is resumed by the sweeper and finishes", async () => {
+    vi.useFakeTimers();
+    const w = await world(), f = (await v(w, "venue")).fields;
+    await secrets(w);
+    // As if the title field changed and the scheduled pages then failed: nothing pending, the object still marked.
+    await w.t.run((ctx: any) => ctx.db.patch(w.venueId, { titleFieldId: f.city._id, retitling: { from: [f.name._id], cursor: null, at: 0 } }));
+    await w.t.mutation(anyApi["lib/lifecycle"].resumeRetitles, {});
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await stored(w)).every((t) => t.startsWith("City "))).toBe(true);
+    expect((await object(w)).retitling).toBeUndefined();
+    // A retitle still moving is left alone.
+    const moving = { from: [f.name._id], cursor: null, at: Date.now() };
+    await w.t.run((ctx: any) => ctx.db.patch(w.venueId, { retitling: moving }));
+    await w.t.mutation(anyApi["lib/lifecycle"].resumeRetitles, {});
+    expect((await object(w)).retitling).toEqual(moving);
+  });
+  it("changing the title again mid-rewrite keeps every earlier field restricted and starts over", async () => {
+    vi.useFakeTimers();
+    const w = await world(), f = (await v(w, "venue")).fields;
+    await secrets(w);
+    await w.client.mutation(fields.create, { orgId: w.orgId, objectId: w.venueId, key: "alias", label: "Alias", type: "text" });
+    const alias = (await v(w, "venue")).fields.alias;
+    await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: w.venueId, fieldId: f.city._id });
+    await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: w.venueId, fieldId: alias._id });
+    expect((await object(w)).retitling).toMatchObject({ from: [f.name._id, f.city._id] });
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect((await stored(w)).every((t) => t === "")).toBe(true);
+    expect((await object(w)).retitling).toBeUndefined();
+  });
+
+  it("P2: retire impact does not name a lookup target the admin cannot read", async () => {
+    const w = await world(), opportunity = await v(w, "opportunity");
+    const memberId = await w.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]._id);
+    await w.client.mutation(anyApi["authority/policies"].setMember, { orgId: w.orgId, memberId, scopes: [{ objectId: opportunity.object._id, records: "all", fields: "all" }], hiddenFieldIds: [] });
+    const lines = await w.client.query(objects.impact, { orgId: w.orgId, objectId: opportunity.object._id, fieldId: opportunity.fields.venue._id });
+    expect(lines.join(" ")).not.toContain("Venues");
+    expect(lines).toContain("Its links stop showing on related records until it is restored.");
+  });
+  it("P3: an admin scoped to one object cannot reorder the navigation, by hand or by applying a proposal", async () => {
+    const w = await world(), list = await w.client.query(api.objects.list, { orgId: w.orgId });
+    const made = await propose(w, { kind: "reorderObjects", order: list.map((o: any) => o.key).reverse() });
+    expect(made.status).toBe(201);
+    const memberId = await w.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]._id);
+    await w.client.mutation(anyApi["authority/policies"].setMember, { orgId: w.orgId, memberId, scopes: [{ objectId: w.venueId, records: "all", fields: "all" }], hiddenFieldIds: [] });
+    await expect(w.client.mutation(objects.reorder, { orgId: w.orgId, objectIds: list.map((o: any) => o._id).reverse() })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    await expect(w.client.mutation(shape.apply, { orgId: w.orgId, id: made.json.proposal.id })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    expect((await w.t.run((ctx: any) => ctx.db.query("objects").collect()) as any[]).map((o: any) => o.order).sort((a: number, b: number) => a - b)).toEqual(list.map((_: any, i: number) => i));
+  });
+  it("P3b: applying a reorderObjects proposal re-checks unrestricted access even when the person can see the proposal", async () => {
+    const w = await world(), list = await w.client.query(api.objects.list, { orgId: w.orgId });
+    const made = await propose(w, { kind: "reorderObjects", order: list.map((o: any) => o.key).reverse() });
+    // Hide one field of an object the person otherwise reads in full: not unrestricted any more.
+    const memberId = await w.t.run(async (ctx: any) => (await ctx.db.query("members").collect())[0]._id), company = await v(w, "company");
+    await w.client.mutation(anyApi["authority/policies"].setMember, { orgId: w.orgId, memberId, hiddenFieldIds: [company.fields.city._id] });
+    await expect(w.client.mutation(shape.apply, { orgId: w.orgId, id: made.json.proposal.id })).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+  });
+  it("P4: options of a retired select cannot be reordered", async () => {
+    const w = await world(), f = (await v(w, "venue")).fields;
+    await w.client.mutation(fields.retire, { orgId: w.orgId, fieldId: f.kind._id });
+    await expect(w.client.mutation(fields.reorderOptions, { orgId: w.orgId, fieldId: f.kind._id, optionIds: ["bar", "hall", "park"] })).rejects.toMatchObject({ data: { message: "Field was retired" } });
+  });
+  it("P5: a lookup whose slot was released is refused on restore, values intact", async () => {
+    const w = await world(), opportunity = await v(w, "opportunity");
+    await w.client.mutation(fields.retire, { orgId: w.orgId, fieldId: opportunity.fields.venue._id });
+    await w.t.run((ctx: any) => ctx.db.patch(opportunity.fields.venue._id, { slot: undefined }));
+    await expect(w.client.mutation(fields.restore, { orgId: w.orgId, fieldId: opportunity.fields.venue._id })).rejects.toMatchObject({ data: { code: "SLOTS_EXHAUSTED", message: "Venue cannot be restored: a lookup needs an index slot and it has none" } });
+    expect((await w.t.run((ctx: any) => ctx.db.get(opportunity.fields.venue._id)) as any).retired).toBe(true);
+  });
+
+  it("opportunity stage cannot be retired: Today's quiet deals and agent guards read it", async () => {
+    const w = await world(), opportunity = await v(w, "opportunity");
+    expect(await parity(w, () => w.client.mutation(fields.retire, { orgId: w.orgId, fieldId: opportunity.fields.stage._id }), { kind: "retireField", object: "opportunity", field: "stage" })).toEqual({ personError: "Stage cannot be retired: Today's quiet deals and agent guards need it", agentError: "Stage cannot be retired: Today's quiet deals and agent guards need it" });
+  });
+  it("an archived object takes no new records from people, agents, proposals or CSV import; existing ones still update", async () => {
+    const w = await world(), f = (await v(w, "venue")).fields, [hall] = await venueRecords(w);
+    const maker = rest(w.t, (await agentFor(w.client, w.orgId, { name: "maker", grants: [{ action: "create", objectKey: "venue" }, { action: "update", objectKey: "venue" }] })).key);
+    await w.client.mutation(objects.setArchived, { orgId: w.orgId, objectId: w.venueId, archived: true });
+    const refusal = "Unarchive Venues to add records";
+    expect(await message(w.client.mutation(api.records.create, { orgId: w.orgId, objectId: w.venueId, values: { [f.name._id]: "New Hall" } }))).toBe(refusal);
+    expect((await maker("POST", "/api/v1/changes", { action: "create", object: "venue", values: { name: "New Hall" }, reason: "x" })).json.error.message).toBe(refusal);
+    expect((await w.call("POST", "/api/v1/suggestions", { action: "create", object: "venue", values: { name: "New Hall" }, reason: "x" })).json.error?.message).toBe(refusal);
+    expect(await message(w.client.mutation(anyApi.csv.importRows, { orgId: w.orgId, objectId: w.venueId, columns: [f.name._id], rows: [["New Hall"]], firstRow: 1, skipDuplicates: false, createMissing: false }))).toBe(refusal);
+    expect((await w.call("GET", "/api/v1/records?object=venue")).json.records).toHaveLength(3);
+    expect((await maker("POST", "/api/v1/changes", { action: "update", record: hall, values: { city: "Hull" }, reason: "x" })).status).toBe(200);
+    await w.client.mutation(objects.setArchived, { orgId: w.orgId, objectId: w.venueId, archived: false });
+    expect((await maker("POST", "/api/v1/changes", { action: "create", object: "venue", values: { name: "New Hall" }, reason: "x" })).status).toBe(200);
+  });
+  it("the email preview and campaign report name people only as far as the reader may read the title field", async () => {
+    vi.useFakeTimers();
+    const w = await world(), person = await v(w, "person"), campaign = await v(w, "campaign"), email = await v(w, "email");
+    await w.client.mutation(fields.create, { orgId: w.orgId, objectId: person.object._id, key: "nickname", label: "Nickname", type: "text" });
+    const nickname = (await v(w, "person")).fields.nickname;
+    const ava = (await w.client.mutation(api.records.create, { orgId: w.orgId, objectId: person.object._id, values: { [person.fields.name._id]: "Ava Stone", [person.fields.email._id]: "ava@people.test", [nickname._id]: "Secret Ava" } })).recordId;
+    const campaignId = (await w.client.mutation(api.records.create, { orgId: w.orgId, objectId: campaign.object._id, values: { [campaign.fields.name._id]: "Calls", [campaign.fields.status._id]: "active", [campaign.fields.channel._id]: "email", [campaign.fields.people._id]: [ava] } })).recordId;
+    const emailId = (await w.client.mutation(api.records.create, { orgId: w.orgId, objectId: email.object._id, values: { [email.fields.subject._id]: "Hi", [email.fields.body._id]: "Hello", [email.fields.status._id]: "draft", [email.fields.campaign._id]: campaignId } })).recordId;
+    await w.client.mutation(objects.setTitleField, { orgId: w.orgId, objectId: person.object._id, fieldId: nickname._id });
+    await w.t.finishAllScheduledFunctions(vi.runAllTimers);
+    // One send row, as the sender writes it, so the report lists Ava as a recipient.
+    await w.t.run((ctx: any) => ctx.db.insert("emailSends", { orgId: w.orgId, emailRecordId: emailId, campaignRecordId: campaignId, personRecordId: ava, to: "ava@people.test", token: "t1", status: "sent", attempts: 1, sentAt: 1 }));
+    const reader = await agentFor(w.client, w.orgId, { name: "reader" });
+    await w.client.mutation(anyApi["authority/policies"].setAgentMasks, { orgId: w.orgId, agentId: reader.agentId, hiddenFieldIds: [nickname._id] });
+    const read = rest(w.t, reader.key);
+    expect(JSON.stringify((await w.call("GET", `/api/v1/campaigns/${campaignId}/report`)).json)).toContain("Secret Ava");
+    const preview = await read("GET", `/api/v1/emails/${emailId}/preview`);
+    expect(preview.status).toBe(200);
+    expect(JSON.stringify(preview.json)).not.toContain("Secret Ava");
+    const report = await read("GET", `/api/v1/campaigns/${campaignId}/report`);
+    expect(report.status).toBe(200);
+    expect(JSON.stringify(report.json)).not.toContain("Secret Ava");
   });
 });
