@@ -302,7 +302,7 @@ describe("automations", () => {
     await w.drain();
     expect((await w.inbox()).map((i: any) => i.text).slice(0, 3)).toEqual(["New Bulk 0", "New Bulk 1", "New Bulk 2"]);
     expect((await w.runs(id)).filter((r: any) => r.status === "done")).toHaveLength(150);
-    const state = await w.t.run((ctx: any) => ctx.db.query("automationState").first());
+    const state: any = await w.t.run((ctx: any) => ctx.db.query("automationState").first());
     await w.t.run((ctx: any) => ctx.db.insert("automationRuns", { orgId: w.orgId, automationId: id, key: "orphan", depth: 1, chain: [id], enabledBy: state.enabledBy, created: [], status: "queued" }));
     await w.tick();
     expect((await w.runs(id)).at(-1).status).toBe("queued");

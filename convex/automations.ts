@@ -277,7 +277,9 @@ export async function dryRun(ctx: Ctx, principal: Principal, record: Doc<"record
 async function lines(ctx: Ctx, orgId: Id<"orgs">, d: Definition) {
   const label = async (objectKey: string | undefined, values: Record<string, unknown> = {}) => {
     const item = await itemByKey(ctx, orgId, objectKey);
-    return Object.entries(values).map(([key, value]) => `${fieldOf(item, key)?.label ?? key} ${JSON.stringify(value)}`).join(", ");
+    const made = /^\{\{\s*created\.(\w+)\s*\}\}$/;
+    const shown = async (value: unknown) => { const key = typeof value === "string" ? made.exec(value)?.[1] : undefined; return key ? `the new ${(await itemByKey(ctx, orgId, key))?.object.label ?? key}` : JSON.stringify(value); };
+    return (await Promise.all(Object.entries(values).map(async ([key, value]) => `${fieldOf(item, key)?.label ?? key} ${await shown(value)}`))).join(", ");
   };
   const out = [];
   for (const action of d.actions) {
