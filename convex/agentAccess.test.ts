@@ -259,7 +259,7 @@ describe("agent object access, round 2", () => {
   it("/me ignores the read-all flag on an agent that has not been migrated", async () => {
     const { t, client, orgId } = await userAndOrg();
     const agent = await agentFor(client, orgId, { name: "old" });
-    await t.run(async (ctx: any) => { await ctx.db.patch(orgId, { authorityFrozenAt: Date.now() }); await ctx.db.patch(agent.agentId, { authorityVersion: undefined, readAllObjects: true }); });
+    await t.run(async (ctx: any) => { await ctx.db.patch(orgId, { authorityFrozenAt: Date.now() - 1000 }); await ctx.db.patch(agent.agentId, { authorityVersion: undefined, readAllObjects: true }); });
     await venue(client, orgId);
     const me = (await rest(t, agent.key)("GET", "/api/v1/me")).json.agent;
     expect(me.readsAllObjects).toBe(false);
