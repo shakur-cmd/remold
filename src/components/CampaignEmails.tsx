@@ -65,8 +65,8 @@ export function CampaignEmails({ orgId, recordId, status, admin }: { orgId: Id<"
           {last && <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setCreating("followUp")}><Plus /> New follow-up</Button>}
         </div>
       </div>
-      {report.bookings.booked > 0 && <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums">
-        {[["Bookings", report.bookings.booked], ["Paid", report.bookings.paid], ["Revenue", report.bookings.revenue.map((r) => money(r.amountMinor, r.currency)).join(", ") || money(0, "usd")]].map(([label, value]) => (
+      {(report.bookings.booked > 0 || report.bookings.released > 0) && <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums">
+        {[["Bookings", report.bookings.booked], ["Paid", report.bookings.paid], ["Revenue", report.bookings.revenue.map((r) => money(r.amountMinor, r.currency)).join(", ") || money(0, "usd")], ...(report.bookings.released ? [["Refund due", report.bookings.refundDue.map((r) => money(r.amountMinor, r.currency)).join(", ")]] : [])].map(([label, value]) => (
           <div key={label} className="flex gap-1"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>
         ))}
       </dl>}

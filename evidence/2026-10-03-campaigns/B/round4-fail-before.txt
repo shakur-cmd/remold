@@ -1,0 +1,9 @@
+Round 4 fail-before, at 95ce56a (merge) with the new and changed tests:
+     × {{bookingLink}} carries the send, and the booking and payment show up in the campaign report 148ms
+     × a page whose payment link has no currency takes no bookings 51ms
+     × a hold renewed every 25 minutes still runs out 30 minutes after it was made (verifier's squatting probe) 55ms
+     × moving a hold to another time or page keeps its original expiry 55ms
+     × an address whose payment waits on the owner cannot open another hold 69ms
+     × a released payment leaves revenue and shows as a refund due in the campaign report 71ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  6 failed | 52 passed (58)

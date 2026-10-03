@@ -48,6 +48,8 @@ export async function bookable(ctx: Ctx, pageId: string): Promise<Page | null> {
   if (!org || org.flags?.readonly || !item || record.objectId !== item.object._id || value(record, item.f.live) !== true) return null;
   const hours = parseHours(String(value(record, item.f.hours) ?? "")), zone = String(value(record, item.f.timezone) ?? "");
   if (!hours || !validZone(zone)) return null;
+  // A paid page always names its currency; without one it takes no bookings rather than guess.
+  if (typeof value(record, item.f.paymentLink) === "string" && typeof value(record, item.f.currency) !== "string") return null;
   const rules = { hours, timezone: zone, minutes: num(value(record, item.f.minutes), 30), noticeHours: num(value(record, item.f.noticeHours), 12), daysAhead: Math.min(num(value(record, item.f.daysAhead), 30), 365) };
   const price = value(record, item.f.price), link = value(record, item.f.paymentLink), campaign = value(record, item.f.campaign), currency = value(record, item.f.currency);
   return { org, record, item, rules, description: String(value(record, item.f.description) ?? ""), price: typeof price === "number" ? price : null, currency: typeof currency === "string" ? currency : null, paymentLink: typeof link === "string" && paymentLinkOk(link) ? link : null, campaignId: (campaign as Id<"records">) ?? null };
@@ -129,14 +131,14 @@ export async function linkedPages(ctx: Ctx, campaignId: Id<"records"> | null | u
   return { pages, versions: named.map((n) => n.page?.id ?? null), missing: missing ? `${say(missing)} names no booking page on this campaign` : null, problem: missing ? `${say(missing)} names no booking page on this campaign` : off ? `The booking page for ${say(off.tag)} is not live` : null };
 }
 
-// A campaign's bookings: kept times (confirmed, or paid even if they need a new time).
+// A campaign's bookings: kept times (confirmed, or paid and waiting on a decision) count as
+// booked, paid and revenue. A payment the owner released is money to give back, so it is
+// counted apart as a refund due; its payment record and timeline entry stay.
 export async function campaignBookings(ctx: Ctx, campaignId: Id<"records">) {
-  const rows = (await ctx.db.query("bookings").withIndex("by_campaign", (q) => q.eq("campaignRecordId", campaignId)).collect()).filter((b) => b.status === "confirmed" || b.paidAt);
-  const revenue = new Map<string, number>(), people = new Map<string, { booked: boolean; paid: boolean }>();
-  for (const b of rows) {
-    if (b.paidAt && b.currency) revenue.set(b.currency, (revenue.get(b.currency) ?? 0) + (b.amountMinor ?? 0));
-    const seen = people.get(b.personRecordId) ?? { booked: false, paid: false };
-    people.set(b.personRecordId, { booked: true, paid: seen.paid || !!b.paidAt });
-  }
-  return { counts: { booked: rows.length, paid: rows.filter((b) => b.paidAt).length, revenue: [...revenue].map(([currency, amountMinor]) => ({ currency, amountMinor })) }, people };
+  const all = await ctx.db.query("bookings").withIndex("by_campaign", (q) => q.eq("campaignRecordId", campaignId)).collect();
+  const released = all.filter((b) => b.cancelReason === "released" && b.paidAt), rows = all.filter((b) => (b.status === "confirmed" || b.paidAt) && !released.includes(b));
+  const sum = (list: Doc<"bookings">[]) => { const by = new Map<string, number>(); for (const b of list) if (b.paidAt && b.currency) by.set(b.currency, (by.get(b.currency) ?? 0) + (b.amountMinor ?? 0)); return [...by].map(([currency, amountMinor]) => ({ currency, amountMinor })); };
+  const people = new Map<string, { booked: boolean; paid: boolean }>();
+  for (const b of rows) people.set(b.personRecordId, { booked: true, paid: !!people.get(b.personRecordId)?.paid || !!b.paidAt });
+  return { counts: { booked: rows.length, paid: rows.filter((b) => b.paidAt).length, revenue: sum(rows), released: released.length, refundDue: sum(released) }, people };
 }

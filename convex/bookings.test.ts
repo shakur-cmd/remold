@@ -432,7 +432,7 @@ describe("attribution", () => {
     expect(await stripeHook(w.t, w.orgId, paidEvent(booking.token))).toBe(200);
     const agent = await agentFor(w.client, w.orgId, { name: "reporter" });
     const report = (await rest(w.t, agent.key)("GET", `/api/v1/campaigns/${w.campaignId}/report`)).json;
-    expect(report.bookings).toEqual({ booked: 1, paid: 1, revenue: [{ currency: "usd", amountMinor: 500 }] });
+    expect(report.bookings).toEqual({ booked: 1, paid: 1, revenue: [{ currency: "usd", amountMinor: 500 }], released: 0, refundDue: [] });
     expect(report.emails[0].recipients[0]).toMatchObject({ booked: true, paid: true });
     const app = await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId: w.campaignId });
     expect(app.bookings).toEqual(report.bookings);
@@ -685,14 +685,11 @@ describe("round 3", () => {
     return member;
   };
 
-  it("a legacy page with no currency accepts the payment's currency and checks the amount in its units", async () => {
+  // Round 4: booking pages are new in this release, so there is no legacy fallback.
+  it("a page whose payment link has no currency takes no bookings", async () => {
     const w = await world(), id = await legacyPage(w);
-    const eur = await book(w.t, id, at(2026, 10, 28, 13));
-    expect(await stripeHook(w.t, w.orgId, paidEvent(holdToken(eur), { currency: "eur", amount_total: 500 }, "evt_eur"))).toBe(200);
-    expect((await w.bookings())[0]).toMatchObject({ status: "confirmed", currency: "eur", amountMinor: 500 });
-    const yen = await book(w.t, await legacyPage(w, { name: "Yen", price: 500 }), at(2026, 10, 28, 14), { email: "yen@people.test" });
-    await stripeHook(w.t, w.orgId, paidEvent(holdToken(yen), { currency: "jpy", amount_total: 499 }, "evt_jpy"));
-    expect((await w.bookings()).find((b: any) => b.email === "yen@people.test")).toMatchObject({ status: "held", attention: "Paid ¥499, but the page asks for ¥500" });
+    expect(await visitor(w.t).query(api.bookings.page, { pageId: id })).toEqual({ open: false, message: "This page is not taking bookings." });
+    expect(await book(w.t, id, at(2026, 10, 28, 13))).toEqual({ status: "closed" });
   });
 
   it("a payment link without a currency is refused for new and edited pages, in the app and for agents", async () => {
@@ -704,9 +701,9 @@ describe("round 3", () => {
     const refused = await rest(w.t, agent.key)("POST", "/api/v1/changes", { action: "create", object: "bookingPage", values: { name: "Agent paid", paymentLink: "https://buy.stripe.com/x", live: false }, reason: "t" });
     expect(refused.status).toBe(400);
     expect(refused.json.error.message).toContain(message);
-    // An existing page without a currency keeps working when other fields change.
-    const legacy = await legacyPage(w);
-    await w.update(w.page, legacy, { description: "New words" });
+    // Round 4: a paid page always keeps a currency.
+    const paid = await w.newPage({ name: "Paid", paymentLink: "https://buy.stripe.com/x" });
+    await expect(w.update(w.page, paid, { currency: null })).rejects.toThrow(message);
   });
 
   it("automations cannot publish or take down a booking page, and cannot reach booking statuses", async () => {
@@ -800,5 +797,67 @@ describe("round 3", () => {
     expect(new Set(statuses)).toEqual(new Set([503]));
     // A well-formed id of another table is not a workspace either.
     for (let i = 0; i < 65; i++) expect((await w.t.fetch(`/webhooks/stripe/${w.pageId}`, { method: "POST", body: "{}" })).status).toBe(503);
+  });
+});
+
+// Round 4: verification round 3 (Fable, REVISE narrow on ccb7af5) and coordinator decisions.
+describe("round 4", () => {
+  const holdToken = (r: any) => new URL(r.pay).searchParams.get("client_reference_id")!;
+  it("a hold renewed every 25 minutes still runs out 30 minutes after it was made (verifier's squatting probe)", async () => {
+    const w = await world(), paid = await w.newPage({ name: "Paid", paymentLink: "https://buy.stripe.com/x", price: 5 }), slot = at(2026, 10, 30, 13);
+    const first: any = await book(w.t, paid, slot);
+    const made = (await w.bookings())[0];
+    later(25 * MINUTE);
+    expect(await book(w.t, paid, slot)).toEqual(first);
+    expect(await book(w.t, paid, slot, { email: "real@people.test" })).toEqual({ status: "taken" });
+    expect((await w.bookings())[0].holdUntil).toBe(made.holdUntil);
+    later(6 * MINUTE);
+    await w.t.mutation(internal.bookings.expire, {});
+    expect((await book(w.t, paid, slot, { email: "real@people.test" })).status).toBe("held");
+    // Six hours of renewals never stretch a hold either.
+    const squat = at(2026, 10, 30, 15);
+    await book(w.t, paid, squat, { email: "squat@spam.test" });
+    const original = (await w.bookings()).find((b: any) => b.email === "squat@spam.test").holdUntil;
+    for (let i = 0; i < 14; i++) {
+      later(25 * MINUTE);
+      await w.t.mutation(internal.bookings.expire, {});
+      await book(w.t, paid, squat, { email: "squat@spam.test" });
+      const hold = (await w.bookings()).filter((b: any) => b.email === "squat@spam.test" && b.status === "held");
+      for (const h of hold) expect(h.holdUntil - h._creationTime).toBeLessThanOrEqual(30 * MINUTE);
+    }
+    const firstSquat = (await w.bookings()).find((b: any) => b.email === "squat@spam.test");
+    expect(firstSquat.holdUntil).toBe(original);
+    expect(original - firstSquat._creationTime).toBeCloseTo(30 * MINUTE, -1);
+  });
+  it("moving a hold to another time or page keeps its original expiry", async () => {
+    const w = await world(), p1 = await w.newPage({ name: "One", paymentLink: "https://buy.stripe.com/x", price: 5 }), p2 = await w.newPage({ name: "Two", paymentLink: "https://buy.stripe.com/y", price: 5 });
+    await book(w.t, p1, at(2026, 10, 30, 13));
+    const until = (await w.bookings())[0].holdUntil;
+    later(10 * MINUTE);
+    await book(w.t, p2, at(2026, 10, 30, 14));
+    expect((await w.bookings())[0]).toMatchObject({ pageRecordId: p2, start: at(2026, 10, 30, 14), holdUntil: until });
+  });
+  it("an address whose payment waits on the owner cannot open another hold", async () => {
+    const w = await world(), paid = await w.newPage({ name: "Paid", paymentLink: "https://buy.stripe.com/x", price: 5 });
+    await w.client.mutation(api.bookings.savePaymentSecret, { orgId: w.orgId, secret: STRIPE });
+    const r: any = await book(w.t, paid, at(2026, 10, 28, 13));
+    await stripeHook(w.t, w.orgId, paidEvent(holdToken(r), { amount_total: 400 }, "evt_short"));
+    await expect(book(w.t, paid, at(2026, 10, 28, 15), { email: " BEN@people.test " })).rejects.toThrow("Your earlier payment is waiting for the owner to look at it. They will be in touch.");
+    expect(await w.bookings()).toHaveLength(1);
+  });
+  it("a released payment leaves revenue and shows as a refund due in the campaign report", async () => {
+    const w = await world(), campaignId = await w.create(w.campaign, { name: "Camp" });
+    const paid = await w.newPage({ name: "Paid", paymentLink: "https://buy.stripe.com/x", price: 5, campaign: campaignId });
+    await w.client.mutation(api.bookings.savePaymentSecret, { orgId: w.orgId, secret: STRIPE });
+    const ok: any = await book(w.t, paid, at(2026, 10, 28, 13), { email: "ok@people.test" }), short: any = await book(w.t, paid, at(2026, 10, 28, 14));
+    await stripeHook(w.t, w.orgId, paidEvent(holdToken(ok), {}, "evt_ok"));
+    await stripeHook(w.t, w.orgId, paidEvent(holdToken(short), { amount_total: 400 }, "evt_short"));
+    const report = async () => (await w.client.query(api.campaigns.report, { orgId: w.orgId, campaignId })).bookings;
+    expect(await report()).toEqual({ booked: 2, paid: 2, revenue: [{ currency: "usd", amountMinor: 900 }], released: 0, refundDue: [] });
+    await w.client.mutation(api.bookings.resolve, { orgId: w.orgId, bookingId: (await w.bookings()).find((b: any) => b.token === holdToken(short))._id, action: "release" });
+    expect(await report()).toEqual({ booked: 1, paid: 1, revenue: [{ currency: "usd", amountMinor: 500 }], released: 1, refundDue: [{ currency: "usd", amountMinor: 400 }] });
+    const kept = (await w.bookings()).find((b: any) => b.token === holdToken(short));
+    expect(kept).toMatchObject({ cancelReason: "released", amountMinor: 400, paidAt: expect.any(Number) });
+    expect((await w.titlesAbout(kept.personRecordId)).map((x: any) => x.title)).toEqual(expect.arrayContaining(["Paid $4.00 for Paid", "Released by Owner, refund in Stripe: Paid $4.00, but the page asks for $5.00"]));
   });
 });

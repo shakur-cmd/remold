@@ -10,7 +10,7 @@ import { canReadRecord } from "./authority/reads";
 import { normalAddress, settingsProblems, siteUrl, validAddress } from "./lib/campaignText";
 import { standardItem } from "./lib/campaign";
 import { HOLD, type Page, bookable, busy, confirm, dailyCap, isOpen, logActivity, pageName, personFor, priceMinor, slotsFor } from "./lib/booking";
-import { MINUTE, calendarLink, minorPer, money, payUrl, validZone, verifyStripe, when } from "./lib/bookingTime";
+import { MINUTE, calendarLink, money, payUrl, validZone, verifyStripe, when } from "./lib/bookingTime";
 import { sendTransactional } from "./campaignSend";
 
 // Public booking pages (/book/<pageId> in the app). Visitors read a page and book a
@@ -32,9 +32,8 @@ export const page = query({ args: { pageId: v.string() }, handler: async (ctx, {
 
 const HOLDS_PER_PAGE = 3;
 const limited = (retryAfterMs: number) => ({ status: "limited" as const, retryAfter: Math.max(1, Math.ceil(retryAfterMs / 1000)) });
-// What a paid hold expects from Stripe. A page saved before currency was required takes
-// the payment's currency and checks the price in that currency's units.
-const expected = (page: Page) => (!page.paymentLink ? {} : page.currency ? { expectedMinor: priceMinor(page), expectedCurrency: page.currency } : { expectedPrice: page.price ?? 0 });
+// What a paid hold expects from Stripe: a paid page always has a currency (pageRules, bookable).
+const expected = (page: Page) => (page.paymentLink && page.currency ? { expectedMinor: priceMinor(page), expectedCurrency: page.currency } : {});
 const daily = () => ({ key: "", config: { kind: "fixed window" as const, rate: dailyCap(), period: LIMIT_DAY, start: 0 } });
 
 export const book = mutation({ args: { pageId: v.string(), start: v.number(), name: v.string(), email: v.string(), note: v.optional(v.string()), zone: v.optional(v.string()), s: v.optional(v.string()), hp: v.optional(v.string()) }, handler: async (ctx, a) => {
@@ -49,15 +48,18 @@ export const book = mutation({ args: { pageId: v.string(), start: v.number(), na
   const perPage = await limiter.limit(ctx, "bookingPage", { key: page.record._id });
   if (!perPage.ok) return limited(perPage.retryAfter ?? 0);
   // Someone back from Stripe (a declined card, a closed tab) is never locked out by their own
-  // hold: choosing a time moves the hold there (the same time just renews it) with the same payment link.
-  // A hold waiting on the owner's decision about a payment stays where it is.
-  const own = page.paymentLink ? await ctx.db.query("bookings").withIndex("by_email_hold", (q) => q.eq("orgId", orgId).eq("email", email).eq("status", "held").gt("holdUntil", now)).filter((q) => q.eq(q.field("attention"), undefined)).first() : null;
+  // hold: choosing a time moves the hold there with the same payment link. It keeps its first
+  // expiry, so renewing cannot keep a time blocked. While a payment of theirs waits on the
+  // owner's decision, they get no second hold.
+  const mine = page.paymentLink ? await ctx.db.query("bookings").withIndex("by_email_hold", (q) => q.eq("orgId", orgId).eq("email", email).eq("status", "held").gt("holdUntil", now)).take(2) : [];
+  if (mine.some((b) => b.attention)) fail("VALIDATION", "Your earlier payment is waiting for the owner to look at it. They will be in touch.");
+  const own = mine[0];
   // Checked inside this transaction, so of two people racing for one time exactly one wins.
   if (!(await isOpen(ctx, page, a.start, now, own?._id))) return { status: "taken" as const };
   const perEmail = await limiter.limit(ctx, "bookingEmail", { key: `${orgId}:${email}` });
   if (!perEmail.ok) return limited(perEmail.retryAfter ?? 0);
   if (own) {
-    await ctx.db.patch(own._id, { pageRecordId: page.record._id, start: a.start, end: a.start + page.rules.minutes * MINUTE, holdUntil: now + HOLD, name, ...(note ? { note } : {}), expectedMinor: undefined, expectedCurrency: undefined, expectedPrice: undefined, ...expected(page) });
+    await ctx.db.patch(own._id, { pageRecordId: page.record._id, start: a.start, end: a.start + page.rules.minutes * MINUTE, name, ...(note ? { note } : {}), ...expected(page) });
     return { status: "held" as const, pay: payUrl(page.paymentLink!, own.token, email) };
   }
   // Unpaid holds block times for others, so few may wait at once: 3 a page, 1 an address.
@@ -135,10 +137,10 @@ export const paid = internalMutation({ args: { orgId: v.id("orgs"), eventId: v.s
   if (booking.status === "confirmed") return;
   // Any Payment Link on the same Stripe account can carry this token, so the amount must
   // cover the page's price (a promotion code lands here too; the owner confirms it anyway).
-  const asked = booking.expectedCurrency ?? a.currency, min = booking.expectedCurrency !== undefined ? booking.expectedMinor ?? 0 : Math.round((booking.expectedPrice ?? 0) * minorPer(a.currency));
-  const short = a.currency !== asked || a.amountMinor < min, owned = booking.cancelReason === "cancelled";
+  const asked = booking.expectedCurrency, min = booking.expectedMinor ?? 0;
+  const short = asked !== undefined && (a.currency !== asked || a.amountMinor < min), owned = booking.cancelReason === "cancelled";
   const free = !(await busy(ctx, booking.orgId, booking.start, booking.end, (booking.end - booking.start) / MINUTE, now, booking._id)).some((b) => b.start < booking.end && booking.start < b.end);
-  const attention = short ? `Paid ${amount}, but the page asks for ${money(min, asked)}` : owned ? "Paid, but the booking was cancelled" : !free ? "Paid, but the hold ran out and the time was taken" : null;
+  const attention = short ? `Paid ${amount}, but the page asks for ${money(min, asked!)}` : owned ? "Paid, but the booking was cancelled" : !free ? "Paid, but the hold ran out and the time was taken" : null;
   if (!attention) {
     if (dailyCap() > 0) await limiter.limit(ctx, "bookingDaily", { ...daily(), key: booking.orgId });
     return confirm(ctx, (await ctx.db.get(booking._id))!);

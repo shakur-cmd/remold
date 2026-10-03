@@ -28,8 +28,8 @@ const mutants = [
   ["name keeps line breaks", "convex/bookings.ts", "text?.replace(/\\s+/g, \" \").trim()", "text?.trim()"],
   ["visitor zone not validated", "convex/bookings.ts", "...(a.zone && validZone(a.zone) ? { zone: a.zone } : {})", "...(a.zone ? { zone: a.zone } : {})"],
   ["paid confirms an owner-cancelled booking", "convex/bookings.ts", ": owned ? \"Paid, but the booking was cancelled\"", ": false ? \"\""],
-  ["underpayment confirms", "convex/bookings.ts", "|| a.amountMinor < min,", "|| false,"],
-  ["other currency confirms", "convex/bookings.ts", "short = a.currency !== asked || ", "short = "],
+  ["underpayment confirms", "convex/bookings.ts", "|| a.amountMinor < min)", "|| false)"],
+  ["other currency confirms", "convex/bookings.ts", "(a.currency !== asked || ", "(false || "],
   ["zero-decimal currencies divided by 100", "convex/lib/bookingTime.ts", "ZERO_DECIMAL.has(currency.toLowerCase()) ? 1 : 100", "100"],
   ["async success ignored", "convex/bookings.ts", " || type === \"checkout.session.async_payment_succeeded\"", ""],
   ["async failure ignored", "convex/bookings.ts", "if (type === \"checkout.session.async_payment_failed\") await ctx.runMutation(internal.bookings.failed, ids);", ""],
@@ -45,8 +45,6 @@ const mutants = [
   ["no steady-day fast path", "convex/lib/bookingTime.ts", "steady ? midnight + m * MINUTE :", "false ? 0 :"],
   // Round 3.
   ["paid page without currency allowed", "convex/lib/booking.ts", "if (link !== null && set(\"currency\") === null && (changed(\"paymentLink\") || changed(\"currency\"))) fail(", "if (false) fail("],
-  ["legacy page assumes usd", "convex/bookings.ts", "asked = booking.expectedCurrency ?? a.currency", "asked = booking.expectedCurrency ?? \"usd\""],
-  ["legacy price always in cents", "convex/bookings.ts", "Math.round((booking.expectedPrice ?? 0) * minorPer(a.currency))", "Math.round((booking.expectedPrice ?? 0) * 100)"],
   ["automation may set live", "convex/lib/automation.ts", "if (item.object.key === \"bookingPage\" && key === \"live\") bad(", "if (false) bad("],
   ["another time adds a second hold", "convex/bookings.ts", "  if (own) {\n", "  if (own && false) {\n"],
   ["attention frees the time", "convex/bookings.ts", "if (short && !owned && free) await ctx.db.patch(", "if (false) await ctx.db.patch("],
@@ -58,6 +56,12 @@ const mutants = [
   ["resolve without a decision pending", "convex/bookings.ts", "if (!b.attention) fail(\"CONFLICT\", \"This booking needs no decision\");", ""],
   ["members see the decision buttons", "convex/bookings.ts", "!!b.attention && principal.member.role !== \"member\"", "!!b.attention"],
   ["webhook limits unknown ids", "convex/bookings.ts", "  if (!id || !(await ctx.db.get(id))) return null;\n  return (await limiter.limit(ctx, \"stripeHook\", { key: id })).ok;", "  return (await limiter.limit(ctx, \"stripeHook\", { key: orgId.slice(0, 64) })).ok;"],
+  // Round 4.
+  ["a move renews the hold", "convex/bookings.ts", "await ctx.db.patch(own._id, { pageRecordId", "await ctx.db.patch(own._id, { holdUntil: now + HOLD, pageRecordId"],
+  ["an address with a payment waiting gets a second hold", "convex/bookings.ts", "if (mine.some((b) => b.attention)) fail(", "if (false) fail("],
+  ["a paid page without a currency takes bookings", "convex/lib/booking.ts", "if (typeof value(record, item.f.paymentLink) === \"string\" && typeof value(record, item.f.currency) !== \"string\") return null;", ""],
+  ["a released payment stays in revenue", "convex/lib/booking.ts", "&& !released.includes(b))", ")"],
+  ["a refund due is not reported", "convex/lib/booking.ts", "refundDue: sum(released)", "refundDue: []"],
 ];
 const lines = [];
 const [lo = 0, hi = mutants.length] = process.argv.slice(2).map(Number);

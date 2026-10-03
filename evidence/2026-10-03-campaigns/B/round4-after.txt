@@ -1,0 +1,90 @@
+Round 4 suites, 2026-10-03T18:20:07Z, load: 3.32 3.84 3.59
+pnpm test:
+     × is the newest past activity about each person, and skips activities the reader cannot see 8876ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 15214ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 18441ms
+     × lists the standard features that exist and the agent can read 330ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  3 failed | 63 passed (66)
+      Tests  4 failed | 714 passed (718)
+pnpm typecheck:
+exit 0
+pnpm test:authority:
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+pnpm verify:release:
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+(agentMap: integ's 'not.toContain("bookingPages")' assertion failed after the merge, 330ms, not a timeout; updated, see handover Round 4.)
+pnpm exec vitest run --maxWorkers=3 (after the agentMap update), load 3.24:
+ Test Files  66 passed (66)
+      Tests  718 passed (718)
+pnpm typecheck:
+exit 0
+pnpm build:
+exit 0
+pnpm --dir packages/mcp build:
+exit 0
+pnpm --dir packages/mcp test:
+      Tests  12 passed (12)
+bookings.test.ts:
+ ✓ convex/bookings.test.ts > open times > follow the page's hours in its own zone, after the notice and within the horizon 467ms
+ ✓ convex/bookings.test.ts > open times > keep 09:00 local across the end of daylight saving time 78ms
+ ✓ convex/bookings.test.ts > open times > leave out confirmed bookings and live holds on any page in the workspace, and timed meetings 262ms
+ ✓ convex/bookings.test.ts > open times > a payment hold frees its time after 30 minutes, and the cron marks it expired 87ms
+ ✓ convex/bookings.test.ts > booking > two people racing for one time: exactly one gets it 78ms
+ ✓ convex/bookings.test.ts > booking > refuses a time that is not open 71ms
+ ✓ convex/bookings.test.ts > booking > a page that is not live, deleted, in a read-only workspace, or without a daily cap takes no bookings 403ms
+ ✓ convex/bookings.test.ts > booking > stops at the workspace's daily cap 86ms
+ ✓ convex/bookings.test.ts > booking > links an existing person by email without changing them, and creates a new one otherwise 76ms
+ ✓ convex/bookings.test.ts > booking > a filled honeypot gets a neutral error and writes nothing 54ms
+ ✓ convex/bookings.test.ts > booking > a confirmed booking lands on the person's timeline and emails the booker and the owner 109ms
+ ✓ convex/bookings.test.ts > booking > succeeds without email set up; only the owner is told on the page 80ms
+ ✓ convex/bookings.test.ts > booking > the public page shows only what the visitor needs 64ms
+ ✓ convex/bookings.test.ts > page records > check hours, zone, length and payment link 64ms
+ ✓ convex/bookings.test.ts > page records > agents draft and edit pages and may take one down, but only a person publishes 595ms
+ ✓ convex/bookings.test.ts > page records > new workspaces get Booking pages, and the migration adds them to an older workspace once 140ms
+ ✓ convex/bookings.test.ts > payments > the signing secret is write-only and the card shows the webhook address 73ms
+ ✓ convex/bookings.test.ts > payments > a webhook with no secret, a bad signature, a stale time or another workspace's secret writes nothing 208ms
+ ✓ convex/bookings.test.ts > payments > a paid event confirms the booking once, with the amount from the event, even when delivered twice 81ms
+ ✓ convex/bookings.test.ts > payments > paid after the hold ran out and the time was taken: stays paid and asks the owner 94ms
+ ✓ convex/bookings.test.ts > payments > paid after the hold ran out with the time still free: confirmed 66ms
+ ✓ convex/bookings.test.ts > owner and agents > the owner lists a page's bookings upcoming first and cancels one, which frees the time 98ms
+ ✓ convex/bookings.test.ts > owner and agents > agents list bookings over REST, by page and time, and see people only as far as they may 85ms
+ ✓ convex/bookings.test.ts > attribution > {{bookingLink}} carries the send, and the booking and payment show up in the campaign report 144ms
+ ✓ convex/bookings.test.ts > attribution > {{bookingLink:<ref>}} picks one of several pages; a link with no page refuses approval 130ms
+ ✓ convex/bookings.test.ts > round 2: time zones the first round did not test (verifier) > Sydney: 09:00 stays 09:00 across the start of daylight saving, and the 02:00-03:00 gap is never offered 8ms
+ ✓ convex/bookings.test.ts > round 2: time zones the first round did not test (verifier) > Kolkata, Adelaide and Lord Howe (half-hour offsets and a 30-minute shift) 6ms
+ ✓ convex/bookings.test.ts > round 2: time zones the first round did not test (verifier) > a local time that happens twice is its first instant, east and west of UTC 1ms
+ ✓ convex/bookings.test.ts > round 2: time zones the first round did not test (verifier) > the largest legal page (5 minutes, all day, every day, 365 days) computes quickly 227ms
+ ✓ convex/bookings.test.ts > round 2: Stripe signature edge cases (verifier) > accepts any matching v1 among others, refuses other bodies, times, empty or uppercase signatures and a missing t 3ms
+ ✓ convex/bookings.test.ts > round 2: money > an underpayment is kept as paid but does not confirm; the owner is asked 67ms
+ ✓ convex/bookings.test.ts > round 2: money > a payment in another currency than the page's does not confirm 68ms
+ ✓ convex/bookings.test.ts > round 2: money > zero-decimal currencies: ¥500 pays a ¥500 page and shows as ¥500 88ms
+ ✓ convex/bookings.test.ts > round 2: money > a delayed payment confirms when it succeeds and frees the time when it fails 123ms
+ ✓ convex/bookings.test.ts > round 2: money > paid after the owner cancelled: stays cancelled and paid, and asks the owner 59ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > an approved email whose booking page was deleted or taken offline waits instead of sending an empty link 93ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > pointing the link at a different page after approval needs approval again 74ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > probing closed times uses up the page's rate limit 93ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > the daily cap counts confirmed bookings, not unpaid holds 79ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > at most 3 unpaid holds per page and 1 per address 87ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > the Stripe webhook is rate limited per workspace 164ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > a send token from another workspace does not attribute; the page's own campaign wins (verifier) 119ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > a name with line breaks is stored on one line, so it cannot add email headers 66ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > an invalid visitor time zone is ignored and the confirmation still goes out in the page's zone 56ms
+ ✓ convex/bookings.test.ts > round 2: links, spam and input > a person stored with the same email in other letter case is not matched; a new person is made and the old one is untouched 57ms
+ ✓ convex/bookings.test.ts > round 3 > a page whose payment link has no currency takes no bookings 47ms
+ ✓ convex/bookings.test.ts > round 3 > a payment link without a currency is refused for new and edited pages, in the app and for agents 65ms
+ ✓ convex/bookings.test.ts > round 3 > automations cannot publish or take down a booking page, and cannot reach booking statuses 55ms
+ ✓ convex/bookings.test.ts > round 3 > the same address picking the same time again gets its own hold back, and picking another moves the hold 73ms
+ ✓ convex/bookings.test.ts > round 3 > an underpaid booking keeps its time until an admin confirms it anyway or releases it, each on the timeline 75ms
+ ✓ convex/bookings.test.ts > round 3 > releasing an attention booking frees its time and says to refund in Stripe 72ms
+ ✓ convex/bookings.test.ts > round 3 > paid after the hold ran out and the time was taken: confirm anyway needs the time free, release closes it 70ms
+ ✓ convex/bookings.test.ts > round 3 > a promotion code payment lands in attention and the owner confirms it anyway 67ms
+ ✓ convex/bookings.test.ts > round 3 > the webhook answers unknown or malformed workspace ids without touching the rate limiter 90ms
+ ✓ convex/bookings.test.ts > round 4 > a hold renewed every 25 minutes still runs out 30 minutes after it was made (verifier's squatting probe) 131ms
+ ✓ convex/bookings.test.ts > round 4 > moving a hold to another time or page keeps its original expiry 52ms
+ ✓ convex/bookings.test.ts > round 4 > an address whose payment waits on the owner cannot open another hold 60ms
+ ✓ convex/bookings.test.ts > round 4 > a released payment leaves revenue and shows as a refund due in the campaign report 82ms
+      Tests  58 passed (58)

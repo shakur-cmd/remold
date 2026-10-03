@@ -255,3 +255,40 @@ Still additive: optional `expectedPrice` on bookings, nothing else in the schema
 - Rebooking moves a hold even across pages and renews its 30 minutes. Each move costs a per-page token and a per-address token (3 an hour), which bounds how long one address can keep a time.
 - Underpaid bookings still count as "booked" in the campaign report (money arrived).
 - The full suite on a busy machine times out in older tests; run it on a quiet machine or per file.
+
+## Round 4 (after independent verification round 3, REVISE narrow on ccb7af5)
+
+Verifier: Claude Fable 5.1 (`~/work/briefs-1003/iv-B3-verdict.md`). Builder: Claude Opus 5.5. Not re-verified yet. Levels: SIM (convex-test) and SERVICE (local backend, 21/21). Nothing LIVE.
+
+Commits: `95ce56a` merges `origin/integ/campaigns` (907d000: work queue, onboarding map, blueprints), then the round 4 fixes with this section, then one commit recording hashes. Final: `git log -1 campaigns/booking`.
+
+### Merge with integ/campaigns (907d000)
+
+- Four conflicts: `standard.ts` and `Settings.tsx` imports (kept both), `packages/mcp/src/index.ts` (their template-literal instructions with my booking recipe sentence appended), and `ops/authority/inventory.json`. The inventory is their file plus my rows; a check against both parents finds no lost id (308 ours, 310 theirs, 328 merged).
+- **One of their tests changed by the merge:** `convex/agentMap.test.ts` "lists the standard features that exist and the agent can read" asserted `not.toContain("bookingPages")`. That was true on integ, where booking pages did not exist yet. After the merge it fails on behavior, not a timeout (330 ms): the map's own `FEATURES` already names `bookingPage`, so the feature now correctly appears. The test now expects it, and also checks that a key that cannot read Booking pages does not see it.
+
+### Fixes (coordinator decisions)
+
+1. **No renewing.** A moved or renewed hold keeps its original `holdUntil`; moving changes page, time and price but never the expiry. The verifier's squatting probe is adopted: renewing every 25 minutes still lets the hold run out 30 minutes after it was made, and over six hours of renewals no hold lives longer than 30 minutes.
+2. **One question at a time.** An address with a hold waiting on the owner's decision cannot open another hold: "Your earlier payment is waiting for the owner to look at it. They will be in touch."
+3. **No legacy fallback.** Booking pages are new in this release, so the no-currency path is gone (`expectedPrice` removed from the schema; it was never released). A page with a payment link always has a currency (`pageRules` on create and change, including clearing it). A page that somehow has a link but no currency takes no bookings. The payment's currency must match.
+4. **Release leaves revenue.** The campaign report's `bookings` is now `{ booked, paid, revenue, released, refundDue }`. A released payment is not booked, paid or revenue; it counts in `released`, and its amount in `refundDue`. The payment fields on the booking and the "Paid …" and "Released by …, refund in Stripe" timeline entries stay. The funnel page shows "Refund due" when there is one.
+
+### Fail before, pass after
+
+- `round4-fail-before.txt`: 6 failing on `95ce56a` (the four round 4 tests, the no-currency page test, and the report shape in the attribution test). The clearing-currency check already passed: round 3's rule covers currency changes.
+- `round4-pass-after.txt`: 58/58.
+- `mutants.txt`: 56/56 caught (foreground, four slices, load ~1). That includes five new round 4 mutants and the updated currency targets; the two legacy-path mutants are gone with the path. "No steady-day fast path" is caught here (1 failing, via the time zone lookup count). The verifier saw it survive on their machine at ccb7af5, and I cannot explain the difference.
+
+### Suites (`round4-after.txt`)
+
+- `pnpm test` (default workers, load ~3.5): 714/718. Three are the usual timeouts in files this job does not touch (gmailSync, records and posts paging). The fourth was the agentMap assertion above.
+- After updating it, `pnpm exec vitest run --maxWorkers=3`: 66 files, 718/718.
+- `pnpm typecheck`: exit 0. `pnpm test:authority`: 101/101. `pnpm verify:release`: 37/37. `pnpm build`: exit 0. `pnpm --dir packages/mcp build`: exit 0. `pnpm --dir packages/mcp test`: 12/12.
+- SERVICE `service-run.json`: 21/21. The six 403 resource loads are still untraced.
+
+### Left undone or uncertain (round 4)
+
+- Confirm anyway has no "time already passed" check, so an admin could confirm a past slot (verifier note; not decided, not changed).
+- Attention holds still never expire on their own.
+- No real Stripe delivery.
