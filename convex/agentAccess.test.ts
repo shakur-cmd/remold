@@ -156,3 +156,113 @@ describe("agent object access", () => {
     expect(preview.status).toBe(200);
   });
 });
+
+describe("agent object access, round 2", () => {
+  const scopeTo = (client: any, orgId: any, memberId: any, objectIds: any[]) => client.mutation(api.authority.policies.setMember, { orgId, memberId, scopes: objectIds.map((objectId) => ({ objectId, records: "all", fields: "all" })), hiddenFieldIds: [] });
+  const objectId = async (client: any, orgId: any, key: string) => (await client.query(api.objects.list, { orgId })).find((o: any) => o.key === key)._id;
+
+  it("an admin who sees only some objects changes only those; the agent keeps everything else", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "worker", grants: [{ action: "create", objectKey: "company" }] }), call = rest(t, agent.key);
+    const v = await venue(client, orgId), person = await objectId(client, orgId, "person"), company = await objectId(client, orgId, "company");
+    await setAccess(client, orgId, agent.agentId, false, [...(await listed(client, orgId, agent.agentId)).readObjectIds, v.objectId]);
+    // Older data: a grant on Opportunities, which it no longer reads. It is not the restricted admin's to remove.
+    const opportunity = await objectId(client, orgId, "opportunity");
+    await setAccess(client, orgId, agent.agentId, false, (await listed(client, orgId, agent.agentId)).readObjectIds.filter((id: any) => id !== opportunity));
+    await t.run(async (ctx: any) => { const a = await ctx.db.get(agent.agentId); await ctx.db.patch(agent.agentId, { grants: [...a.grants, { action: "update", objectKey: "opportunity", objectId: opportunity }] }); });
+    const { client: admin, memberId } = await member(t, orgId, "admin");
+    await scopeTo(client, orgId, memberId, [person, v.objectId]);
+    // What the Access panel sends when this admin unticks Venues: the objects it can see, minus Venues.
+    const seen = (await admin.query(api.objects.list, { orgId })).map((o: any) => o._id);
+    expect(seen.length).toBe(2);
+    await setAccess(admin, orgId, agent.agentId, false, seen.filter((id: any) => id !== v.objectId));
+    expect((await listed(client, orgId, agent.agentId)).cannotRead).toEqual(["opportunity", "venue"]);
+    expect((await listed(client, orgId, agent.agentId)).grants).toEqual([{ action: "create", objectKey: "company" }]);
+    expect((await t.run((ctx: any) => ctx.db.get(agent.agentId)) as any).grants.map((g: any) => `${g.action} ${g.objectKey}`)).toEqual(["create company", "update opportunity"]);
+    expect((await call("GET", "/api/v1/records?object=company")).status).toBe(200);
+    expect((await call("POST", "/api/v1/changes", { action: "create", object: "company", values: { name: "Kept" }, reason: "x" })).status).toBe(200);
+    // Objects it cannot see are not its to change, and the All objects switch covers them too.
+    await expect(setAccess(admin, orgId, agent.agentId, false, [person, company])).rejects.toMatchObject({ data: { code: "NOT_FOUND" } });
+    await setAccess(client, orgId, agent.agentId, true, []);
+    await expect(setAccess(admin, orgId, agent.agentId, false, [person])).rejects.toMatchObject({ data: { code: "FORBIDDEN" } });
+    // Settings names only objects the viewer can read.
+    await setAccess(client, orgId, agent.agentId, false, (await listed(client, orgId, agent.agentId)).readObjectIds.filter((id: any) => id !== company && id !== v.objectId));
+    expect((await listed(client, orgId, agent.agentId)).cannotRead).toEqual(["company", "venue"]);
+    expect((await listed(admin, orgId, agent.agentId)).cannotRead).toEqual(["venue"]);
+  });
+
+  it("an agent sees the shared inbox only while it reads every object", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "inbox" }), call = rest(t, agent.key);
+    await client.mutation(api.agents.setSharedInbox, { orgId, agentId: agent.agentId, enabled: true });
+    await client.mutation(api.inbox.add, { orgId, text: "Venue Hall capacity is secret", shareWithAgents: true });
+    const shared = async () => (await call("GET", "/api/v1/inbox")).json.length;
+    expect(await shared()).toBe(1);
+    expect((await listed(client, orgId, agent.agentId)).inboxNeedsAll).toBe(false);
+    await venue(client, orgId);
+    expect(await shared()).toBe(0);
+    expect((await listed(client, orgId, agent.agentId)).inboxNeedsAll).toBe(true);
+    await setAccess(client, orgId, agent.agentId, true, []);
+    await client.mutation(api.objects.create, { orgId, key: "room", label: "Room", labelPlural: "Rooms" });
+    expect(await shared()).toBe(1);
+    expect((await listed(client, orgId, agent.agentId)).inboxNeedsAll).toBe(false);
+  });
+
+  it("removing read revokes capability write grants on that object, and the list hides grants on objects it cannot read", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "capable" }), call = rest(t, agent.key);
+    const v = await venue(client, orgId), base = (await listed(client, orgId, agent.agentId)).readObjectIds;
+    await setAccess(client, orgId, agent.agentId, false, [...base, v.objectId]);
+    const grantId = await client.mutation(api.authority.grants.grant, { orgId, target: agent.agentId, capability: "record.update", scope: { kind: "records", objectId: v.objectId, records: "all", fields: [v.fields.name._id] }, mode: "direct", delegate: false, expiresAt: Date.now() + 86400000 });
+    const update = () => call("POST", "/api/v1/changes", { action: "update", record: v.recordId, values: { name: "Big hall" }, reason: "x" });
+    expect((await update()).status).toBe(200);
+    expect((await listed(client, orgId, agent.agentId)).access).toEqual(["update venue"]);
+    await setAccess(client, orgId, agent.agentId, false, base);
+    expect((await t.run((ctx: any) => ctx.db.get(grantId)) as any).revokedAt).toBeDefined();
+    expect(await audit(t, grantId)).toEqual(["capabilityGranted", "capabilityRevoked"]);
+    await setAccess(client, orgId, agent.agentId, false, [...base, v.objectId]);
+    expect((await update()).status).toBe(403);
+    // A grant on an object it cannot read (older data) is not shown.
+    await setAccess(client, orgId, agent.agentId, false, base);
+    await t.run((ctx: any) => ctx.db.patch(agent.agentId, { grants: [{ action: "create", objectKey: "venue", objectId: v.objectId }] }));
+    expect((await listed(client, orgId, agent.agentId)).grants).toEqual([]);
+  });
+
+  it("a read-all agent proposes on objects added later", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "proposer" });
+    await setAccess(client, orgId, agent.agentId, true, []);
+    await venue(client, orgId);
+    expect((await rest(t, agent.key)("POST", "/api/v1/suggestions", { action: "create", object: "venue", values: { name: "Annex" }, reason: "x" })).status).toBe(201);
+  });
+
+  it("widening is refused while the workspace is read only; narrowing is not", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "held" }), v = await venue(client, orgId), base = (await listed(client, orgId, agent.agentId)).readObjectIds;
+    await t.run((ctx: any) => ctx.db.patch(orgId, { flags: { readonly: true } }));
+    await expect(setAccess(client, orgId, agent.agentId, false, [...base, v.objectId])).rejects.toMatchObject({ data: { message: "Workspace is read only" } });
+    await expect(setAccess(client, orgId, agent.agentId, true, [])).rejects.toMatchObject({ data: { message: "Workspace is read only" } });
+    await setAccess(client, orgId, agent.agentId, false, base.slice(1));
+  });
+
+  it("/me ignores the read-all flag on an agent that has not been migrated", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "old" });
+    await t.run(async (ctx: any) => { await ctx.db.patch(orgId, { authorityFrozenAt: Date.now() }); await ctx.db.patch(agent.agentId, { authorityVersion: undefined, readAllObjects: true }); });
+    await venue(client, orgId);
+    const me = (await rest(t, agent.key)("GET", "/api/v1/me")).json.agent;
+    expect(me.readsAllObjects).toBe(false);
+    expect(me.readableObjects).not.toContain("venue");
+  });
+
+  it("write grants need read first", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const agent = await agentFor(client, orgId, { name: "granted" }), call = rest(t, agent.key);
+    const v = await venue(client, orgId);
+    await expect(client.mutation(api.agents.setGrants, { orgId, agentId: agent.agentId, grants: [{ action: "create", objectKey: "venue" }] })).rejects.toMatchObject({ data: { code: "FORBIDDEN", message: "Let it read Venues before it changes them" } });
+    await expect(client.mutation(api.agents.setGrants, { orgId, agentId: agent.agentId, grants: [{ action: "create", objectKey: "*" }] })).rejects.toMatchObject({ data: { message: "Let it read Venues before it changes them" } });
+    await client.mutation(api.agents.setGrants, { orgId, agentId: agent.agentId, grants: [{ action: "create", objectKey: "company" }] });
+    await setAccess(client, orgId, agent.agentId, false, [...(await listed(client, orgId, agent.agentId)).readObjectIds, v.objectId]);
+    expect((await call("POST", "/api/v1/changes", { action: "create", object: "venue", values: { name: "Annex" }, reason: "x" })).status).toBe(403);
+  });
+});

@@ -22,6 +22,7 @@ await withAuthority(async ({ scratch, client, token, url, site }) => {
   const early = await owner.action(anyApi.agents.create, { orgId, name: 'Research agent' });
   const wide = await owner.action(anyApi.agents.create, { orgId, name: 'Ops agent', grants: [{ action: 'create', objectKey: 'task' }] });
   await owner.mutation(anyApi.agents.setReadAccess, { orgId, agentId: wide.agentId, readAllObjects: true, objectIds: [] });
+  await owner.mutation(anyApi.agents.setSharedInbox, { orgId, agentId: early.agentId, enabled: true });
   // Objects added after both agents were made.
   await owner.mutation(anyApi.objects.create, { orgId, key: 'venue', label: 'Venue', labelPlural: 'Venues' });
   await owner.mutation(anyApi.objects.create, { orgId, key: 'bookingPage', label: 'Booking page', labelPlural: 'Booking pages' });
@@ -51,6 +52,7 @@ export function useIdentity() { return { isLoading: false, user: { name: "Sam Ri
     await page.goto(`http://localhost:5199/o/${orgId}/settings`);
     const card = page.locator('[data-slot="card"]', { hasText: 'Website intake key' }).first();
     await page.getByText('Cannot see: Venues, Booking pages').waitFor({ timeout: 60000 });
+    await page.getByText('Shared inbox needs access to all objects.').waitFor();
     await card.screenshot({ path: join(here, 'agents-card.png') });
     // One click: the Research agent may now read Venues.
     await page.getByRole('button', { name: 'Let it read Venues' }).click();

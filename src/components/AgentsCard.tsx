@@ -193,6 +193,11 @@ function ReadAccess({ orgId, agent, objects, admin, open }: { orgId: Id<"orgs">;
   const save = (readAllObjects: boolean, objectIds: Id<"objects">[], done: string) => attempt(() => setReadAccess({ orgId, agentId: agent._id, readAllObjects, objectIds }), done);
   const can = (action: Grant["action"], o: Doc<"objects">) => agent.grants.some((g) => g.action === action && (g.objectKey === o.key || g.objectKey === "*"));
   const toggleGrant = (action: Grant["action"], o: Doc<"objects">) => attempt(() => setGrants({ orgId, agentId: agent._id, grants: can(action, o) ? agent.grants.filter((g) => !(g.action === action && g.objectKey === o.key)) : [...agent.grants, { action, objectKey: o.key }] }), "Saved");
+  const allObjects = (
+    <Button size="xs" variant="ghost" onClick={() => save(true, [], "It reads all objects")}>
+      All objects
+    </Button>
+  );
   return (
     <div className="grid w-full gap-2 pb-1 text-xs text-muted-foreground">
       <p className="flex flex-wrap items-center gap-1.5">
@@ -202,12 +207,14 @@ function ReadAccess({ orgId, agent, objects, admin, open }: { orgId: Id<"orgs">;
             Let it read {o.labelPlural}
           </Button>
         ))}
-        {admin && !all && (
-          <Button size="xs" variant="ghost" onClick={() => save(true, [], "It reads all objects")}>
-            All objects
-          </Button>
-        )}
+        {admin && !all && !agent.inboxNeedsAll && allObjects}
       </p>
+      {agent.inboxNeedsAll && (
+        <p className="flex flex-wrap items-center gap-1.5">
+          Shared inbox needs access to all objects.
+          {admin && allObjects}
+        </p>
+      )}
       {open && (
         <table className="w-full max-w-md text-sm text-foreground">
           <thead>
