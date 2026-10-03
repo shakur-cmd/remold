@@ -1,0 +1,3 @@
+READONLY SWEEP {"shapeSuggestions:apply":"refused: Workspace is read only","HTTP POST /api/v1/shape/proposals":"403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Workspace is read only\"}}","shapeSuggestions:dismiss":"allowed","HTTP POST /api/v1/operations/:id/cancel":"200 null"}
+PASS Readonly workspace refuses every public human write and every agent REST write
+PASS Hidden field value never appears in any human query or agent REST read

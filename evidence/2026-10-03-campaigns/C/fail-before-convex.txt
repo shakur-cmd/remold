@@ -1,0 +1,40 @@
+     × refuses a member-role agent and stores nothing 130ms
+     × stores an admin agent's proposal without changing the shape 10ms
+     × bad key 12ms
+     × duplicate key 8ms
+     × select without options 7ms
+     × withTime on a field that is not a date 6ms
+     × a relation to an object the proposer cannot read 11ms
+     × removing an existing option 7ms
+     × a lookup with no index slot left 11ms
+     × applies a new field exactly once and attributes it 6ms
+     × applies a new object with its fields, and the proposer can then use it 5ms
+     × adds options and relabels without touching anything else 6ms
+     × an agent may not rename an existing option 6ms
+     × fails a proposal made stale by a later change, with nothing half-applied 6ms
+     × dismisses without changing the shape 6ms
+     × a member-role person can neither see nor apply 9ms
+     × a person with restricted reads cannot apply a new object 6ms
+     × refuses proposals and applies while the workspace is read only 6ms
+     × lists only the calling agent's proposals and counts them in /me 5ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 19 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  convex/shape.test.ts > agents propose shape changes > refuses a member-role agent and stores nothing
+ FAIL  convex/shape.test.ts > agents propose shape changes > stores an admin agent's proposal without changing the shape
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > bad key
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > duplicate key
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > select without options
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > withTime on a field that is not a date
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > a relation to an object the proposer cannot read
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > removing an existing option
+ FAIL  convex/shape.test.ts > proposals are refused by the same rules as the person's path > a lookup with no index slot left
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > applies a new field exactly once and attributes it
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > applies a new object with its fields, and the proposer can then use it
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > adds options and relabels without touching anything else
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > an agent may not rename an existing option
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > fails a proposal made stale by a later change, with nothing half-applied
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > dismisses without changing the shape
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > a member-role person can neither see nor apply
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > a person with restricted reads cannot apply a new object
+ FAIL  convex/shape.test.ts > a person applies or dismisses shape proposals > refuses proposals and applies while the workspace is read only
+ FAIL  convex/shape.test.ts > agents read their own proposals > lists only the calling agent's proposals and counts them in /me
+      Tests  19 failed (19)

@@ -1,12 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router";
-import { useQuery } from "convex/react";
 import { cn } from "cn";
 import { LogOut, Menu } from "lucide-react";
-import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { useIdentity } from "@/lib/identity";
 import { SearchDialog } from "@/components/SearchDialog";
+import { useWaiting } from "@/routes/Suggestions";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -68,7 +67,7 @@ export function AppShell({ org, orgs, objects, children }: Props) {
 }
 
 function Nav({ org, objects, onNavigate }: { org: Doc<"orgs">; objects: Doc<"objects">[]; onNavigate: () => void }) {
-  const pending = useQuery(api.suggestions.list, { orgId: org._id, status: "pending" })?.length ?? 0;
+  const pending = useWaiting(org._id);
   const identity = useIdentity();
   const location = useLocation();
   const posts = objects.find((object) => object.key === "post");

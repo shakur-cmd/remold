@@ -22,4 +22,25 @@ describe("RemoldClient", () => {
     const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async () => Response.json({ error: { code: "FORBIDDEN", message: "No grant" } }, { status: 403 }) });
     await expect(client.change({ action: "delete", record: "x", reason: "x" })).rejects.toMatchObject<Partial<RemoldError>>({ code: "FORBIDDEN", message: "No grant" });
   });
+  it("passes multi-field filters and a range to REST", async () => {
+    let url: URL | undefined;
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { url = new URL(String(input)); return Response.json({ records: [] }); } });
+    await client.listRecords({ object: "person", filters: [{ field: "company", value: "Atlas" }, { field: "city", value: "Boston" }], range: { field: "createdOn", from: "2026-01-01", to: "2026-01-31" } });
+    expect(url?.pathname).toBe("/api/v1/records");
+    expect(url?.searchParams.get("object")).toBe("person");
+    expect(url?.searchParams.get("filter[company]")).toBe("Atlas");
+    expect(url?.searchParams.get("filter[city]")).toBe("Boston");
+    expect(url?.searchParams.get("range[createdOn]")).toBe("2026-01-01..2026-01-31");
+    await client.listRecords({ object: "task", range: { field: "dueDate", from: "2026-02-01" } });
+    expect(url?.searchParams.get("range[dueDate]")).toBe("2026-02-01..");
+  });
+  it("proposes shape changes and lists the agent's own proposals", async () => {
+    const requests: Request[] = [];
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } });
+    await client.proposeShape({ kind: "addField", object: "opportunity", key: "budget", label: "Budget", type: "number", reason: "tracked" });
+    await client.shapeProposals({ status: "applied" });
+    expect([requests[0]?.method, requests[0]?.url]).toEqual(["POST", "https://remold.convex.site/api/v1/shape/proposals"]);
+    expect(await requests[0]?.json()).toEqual({ kind: "addField", object: "opportunity", key: "budget", label: "Budget", type: "number", reason: "tracked" });
+    expect([requests[1]?.method, requests[1]?.url]).toEqual(["GET", "https://remold.convex.site/api/v1/shape/proposals?status=applied"]);
+  });
 });

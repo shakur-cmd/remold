@@ -2526,5 +2526,75 @@
     "masks": "no-record-data",
     "proof": "runs the sender every minute",
     "reason": "campaign email sender; a read-only workspace sends nothing"
+  },
+  {
+    "id": "agentApi:proposeShape",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "agentApi:shapeProposals",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "shapeSuggestions:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "shapeSuggestions:apply",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "shapeSuggestions:dismiss",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "HTTP GET /api/v1/shape/proposals",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP POST /api/v1/shape/proposals",
+    "kind": "route",
+    "visibility": "http",
+    "writes": true,
+    "principal": "agent",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
   }
 ]
