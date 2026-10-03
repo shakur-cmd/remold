@@ -38,7 +38,7 @@ function agentRoutes(http: string) {
     if (!/\breturn\b/.test(line)) continue;
     if (/_probe/.test(line)) { routes.push({ method: 'GET', path: '/api/v1/_probe' }); handled++; continue; }
     if (!/return json\(/.test(line)) continue;
-    const context = block + line, method = /request\.method === "(GET|POST)"/.exec(context)?.[1], first = /path\[0\] === "(\w+)"/.exec(context)?.[1], second = /path\[1\] === "(\w+)"/.exec(line)?.[1], length = Number(/path\.length === (\d)/.exec(line)?.[1] ?? 1), third = /path\[2\] === "(\w+)"/.exec(line)?.[1];
+    const context = block + line, method = /request\.method === "(GET|POST)"/.exec(context)?.[1], first = /path\[0\] === "([\w-]+)"/.exec(context)?.[1], second = /path\[1\] === "(\w+)"/.exec(line)?.[1], length = Number(/path\.length === (\d)/.exec(line)?.[1] ?? 1), third = /path\[2\] === "(\w+)"/.exec(line)?.[1];
     expect(method && first, 'unparsed dispatch branch: ' + line.trim()).toBeTruthy();
     handled++;
     if (/commands\[path\[2\]\]/.test(line)) { for (const name of commandSets.shift()!) routes.push({ method: method!, path: `/api/v1/${first}/:id/${name}` }); continue; }

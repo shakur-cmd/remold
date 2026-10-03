@@ -230,6 +230,16 @@ describe("automations", () => {
     expect(await w.runs(weekly)).toHaveLength(1);
   });
 
+  it("changing the workspace zone moves a switched-on schedule's next due time to its wall clock time there", async () => {
+    const w = await world();
+    const id = await w.automation({ name: "Morning", when: "schedule", schedule: "daily 09:00", actions: [{ type: "inbox", text: "Hi" }] });
+    await w.turnOn(id);
+    const due = async () => ((await w.t.run((ctx: any) => ctx.db.query("automationState").collect())) as any[])[0].dueAt;
+    expect(await due()).toBe(Date.UTC(2026, 9, 5, 9));
+    await w.client.mutation(api.orgs.setTimeZone, { orgId: w.orgId, timeZone: "America/New_York" });
+    expect(await due()).toBe(Date.UTC(2026, 9, 5, 13));
+  });
+
   it("a run happens once even when its job is retried or ticks overlap", async () => {
     const w = await world();
     const id = await w.automation({ name: "Welcome", when: "recordCreated", object: "company", actions: [{ type: "createRecord", object: "project", values: { name: "Onboard {{record.name}}" } }] });
@@ -611,5 +621,32 @@ describe("automations", () => {
 
   it("runs from a cron every minute", () => {
     expect(Object.values((crons as any).crons)).toContainEqual(expect.objectContaining({ name: "automations:tick", schedule: { type: "cron", cron: "* * * * *" } }));
+  });
+
+  it("schedules and dates follow the workspace time zone, through the spring-forward change", async () => {
+    const w = await world();
+    await w.client.mutation(api.orgs.setTimeZone, { orgId: w.orgId, timeZone: "America/New_York" });
+    // Saturday 2026-03-07 12:00 New York; clocks jump on the 8th at 02:00.
+    vi.setSystemTime(Date.UTC(2026, 2, 7, 17));
+    const daily = await w.automation({ name: "Morning", when: "schedule", schedule: "daily 09:00", actions: [{ type: "inbox", text: "Board ({{today}})" }] });
+    await w.turnOn(daily);
+    const closing = await w.automation({ name: "Closing today", when: "dateReached", object: "opportunity", field: "closeDate", actions: [{ type: "inbox", text: "Closing {{record.name}}" }] });
+    await w.turnOn(closing);
+    await w.create("opportunity", { name: "Acme", closeDate: Date.UTC(2026, 2, 8) });
+    vi.setSystemTime(Date.UTC(2026, 2, 8, 12, 59)); // 08:59 EDT on the 8th; 09:00 EDT is 13:00 UTC, not the 14:00 UTC that 09:00 EST would be
+    await w.tick();
+    expect((await w.runs(daily)).length).toBe(0);
+    vi.setSystemTime(Date.UTC(2026, 2, 8, 13, 1));
+    await w.tick(); await w.tick();
+    expect((await w.runs(daily)).length).toBe(1);
+    expect((await w.inbox()).map((i: any) => i.text).sort()).toEqual(["Board (2026-03-08)", "Closing Acme"]);
+    // Late on the 8th in UTC terms it is still the 8th in New York: nothing new fires, and the 9th starts at local midnight.
+    vi.setSystemTime(Date.UTC(2026, 2, 9, 3, 59));
+    await w.tick();
+    expect((await w.runs(closing)).length).toBe(1);
+    vi.setSystemTime(Date.UTC(2026, 2, 9, 13, 1));
+    await w.tick(); await w.tick();
+    expect((await w.runs(daily)).length).toBe(2);
+    expect((await w.inbox()).map((i: any) => i.text)).toContain("Board (2026-03-09)");
   });
 });

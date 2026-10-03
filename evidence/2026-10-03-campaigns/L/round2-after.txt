@@ -1,0 +1,28 @@
+
+ RUN  v5.0.1 /home/shakur/work/jobs/L-queue
+
+ ❯ convex/automations.test.ts (28 tests | 1 failed) 21214ms
+   ❯ automations (28)
+     × nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation 6985ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/automations.test.ts > automations > nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/automations.test.ts:278:3
+    276|   });
+    277|
+    278|   it("nothing runs without the deployment's daily cap, and runs stop a…
+       |   ^
+    279|     const w = await world();
+    280|     const id = await w.automation({ name: "Welcome", when: "recordCrea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 54 passed (55)
+   Start at  10:47:26
+   Duration  55.65s (tests 96%, transform 3%, import 1%)
+

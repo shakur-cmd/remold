@@ -1,15 +1,17 @@
-import { internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { recordGranted, requireAgent, type Principal } from "./identity";
 import { fail } from "./errors";
 import { applyChange } from "./lib/applyChange";
-import { pageRecords, listedRelated } from "./lib/list";
+import { pageRecords, takeRecords, listedRelated } from "./lib/list";
 import { searchRecords } from "./lib/search";
 import { visibleInboxItems, visibleSuggestions } from "./authority/pending";
 import { daily } from "./today";
+import { orgDay } from "./lib/zone";
+import { myQueue } from "./lib/queue";
 import { instantBound, readable, readableMap, resolveValues } from "./lib/values";
-import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex } from "./authority/reads";
+import { canPropose, canReadObject, canReadRecordId, canReadRecord, canReadField, requireObjectRead, requireRecordRead, requireQueryField, visibleTitle, projectEvent, paginateIndex, pageList } from "./authority/reads";
 import { writable } from "./authority/readonly";
 import { canSeeInbox, visibleInbox } from "./authority/inbox";
 import { agentGuard } from "./authority/agentGuards";
@@ -59,10 +61,14 @@ async function suggestionApi(ctx: any, principal: Principal, suggestion: Doc<"su
   return { id: suggestion._id, status: suggestion.status, action: suggestion.change.action, object: object.key, record: record ? { id: record._id, ref: record.ref ?? null, title: await visibleTitle(ctx, principal, record) } : null, values: await readableMap(ctx, principal, visible, suggestion.change.values), before: await readableMap(ctx, principal, visible, suggestion.before), reason: visible.length === fields.length ? suggestion.reason : "", agent: agent?.name ?? null, createdAt: suggestion._creationTime, resolvedAt: suggestion.resolvedAt ?? null, ...(conflicts ? { conflicts } : {}) };
 }
 
+const scopedIds = (principal: Principal, object: Doc<"objects">) => "agent" in principal ? (principal.capabilities ?? []).flatMap(g => g.scope.kind === "records" && g.scope.objectId === object._id && g.scope.records !== "all" ? g.scope.records : []) : [];
+// Delete is possible on the whole object, or on any single record this agent can read and holds a delete grant for.
+const canDelete = (principal: Principal, object: Doc<"objects">) => [undefined, ...scopedIds(principal, object)].some(id => canReadRecordId(principal, object, id) && recordGranted(principal, "delete", object, id));
+
 // Modes describe field authority; /me supplies record scopes and lifecycle guards still apply.
 function fieldWrite(principal: Principal, object: Doc<"objects">, field: Doc<"fields">, action: "create" | "update") {
   if (field.protectedFromAgents) return "none";
-  const scoped = "agent" in principal ? (principal.capabilities ?? []).flatMap(g => g.scope.kind === "records" && g.scope.objectId === object._id && g.scope.records !== "all" ? g.scope.records : []) : [];
+  const scoped = scopedIds(principal, object);
   const records = action === "create" ? [undefined] : [undefined, ...scoped];
   const visible = records.filter(id => canReadRecordId(principal, object, id) && canReadField(principal, object, field, id));
   return visible.some(id => recordGranted(principal, action, object, id, [field._id])) ? "direct" : visible.some(id => canPropose(principal, object, id, [field._id])) ? "propose" : "none";
@@ -71,10 +77,39 @@ function fieldWrite(principal: Principal, object: Doc<"objects">, field: Doc<"fi
 const ownShape = (ctx: any, agent: Doc<"agents">, status?: Doc<"shapeSuggestions">["status"], limit = 1000): Promise<Doc<"shapeSuggestions">[]> => ctx.db.query("shapeSuggestions").withIndex("by_agent", (q: any) => q.eq("orgId", agent.orgId).eq("agentId", agent._id)).order("desc").filter((q: any) => status ? q.eq(q.field("status"), status) : true).take(limit);
 // The hosted MCP endpoint checks the key on every message, including ones that call no tool.
 export const checkKey = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { await requireAgent(ctx, args.keyHash); return null; } });
-export const me = internalQuery({ args: { keyHash }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const [pendingInbox, pendingSuggestions, pendingShape] = await Promise.all([visibleInboxItems(ctx, principal, "pending"), visibleSuggestions(ctx, principal, "pending"), ownShape(ctx, principal.agent, "pending")]); return { org: { id: principal.org._id, name: principal.org.name }, agent: { id: principal.agent._id, name: principal.agent.name, role: principal.agent.role, grants: principal.agent.grants, readsAllObjects: principal.agent.authorityVersion === 1 && !!principal.agent.readAllObjects, readableObjects: (await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect()).sort((a, b) => a.order - b.order).filter((object) => canReadObject(principal, object)).map((object) => object.key), capabilities: (principal.capabilities ?? []).map(g => ({ id: g._id, capability: g.capability, scope: g.scope, mode: g.mode, delegate: g.delegate, expiresAt: g.expiresAt })) }, pendingInbox: pendingInbox.length, pendingSuggestions: pendingSuggestions.length, pendingShapeProposals: pendingShape.length }; } });
+const meOf = async (ctx: QueryCtx, principal: Awaited<ReturnType<typeof requireAgent>>) => { const [pendingInbox, pendingSuggestions, pendingShape] = await Promise.all([visibleInboxItems(ctx, principal, "pending"), visibleSuggestions(ctx, principal, "pending"), ownShape(ctx, principal.agent, "pending")]); return { org: { id: principal.org._id, name: principal.org.name }, agent: { id: principal.agent._id, name: principal.agent.name, role: principal.agent.role, grants: principal.agent.grants, readsAllObjects: principal.agent.authorityVersion === 1 && !!principal.agent.readAllObjects, readableObjects: (await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect()).sort((a, b) => a.order - b.order).filter((object) => canReadObject(principal, object)).map((object) => object.key), capabilities: (principal.capabilities ?? []).map(g => ({ id: g._id, capability: g.capability, scope: g.scope, mode: g.mode, delegate: g.delegate, expiresAt: g.expiresAt })) }, pendingInbox: pendingInbox.length, pendingSuggestions: pendingSuggestions.length, pendingShapeProposals: pendingShape.length }; };
+export const me = internalQuery({ args: { keyHash }, handler: async (ctx, args) => meOf(ctx, await requireAgent(ctx, args.keyHash)) });
 // Archived objects are left out unless asked for; their records and links are untouched.
 // slotsLeft is shown only to an agent that sees every field, since retired and hidden fields hold slots too.
-export const objects = internalQuery({ args: { keyHash, includeArchived: v.optional(v.boolean()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect(); return Promise.all(objects.filter(object => canReadObject(principal, object) && (args.includeArchived || !object.archived)).sort((a, b) => a.order - b.order).map(async (object) => { const all = (await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", principal.org._id).eq("objectId", object._id)).collect()).sort((a, b) => a.order - b.order), readableFields = all.filter((field) => canReadField(principal, object, field)), fields = readableFields.filter((field) => !field.retired), left = slotsLeft(all); return { key: object.key, label: object.label, labelPlural: object.labelPlural, archived: !!object.archived, titleField: fields.find((field) => field._id === object.titleFieldId)?.key ?? null, fields: await Promise.all(fields.map(async (field) => ({ key: field.key, label: field.label, type: field.type, ...(field.options ? { options: field.options } : {}), ...(field.targetObjectId ? { target: (await ctx.db.get(field.targetObjectId))?.key } : {}), required: field.required, indexed: !!field.slot, withTime: !!field.withTime, protectedFromAgents: !!field.protectedFromAgents, write: { create: fieldWrite(principal, object, field, "create"), update: fieldWrite(principal, object, field, "update") } }))), retiredFields: readableFields.filter((field) => field.retired).map((field) => ({ key: field.key, label: field.label, type: field.type })), slotsLeft: readableFields.length === all.length ? { text: left.s, number: left.n, date: left.d, boolean: left.b } : null }; })); } });
+const objectsOf = async (ctx: QueryCtx, principal: Awaited<ReturnType<typeof requireAgent>>, includeArchived = false) => { const objects = await ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect(); return Promise.all(objects.filter(object => canReadObject(principal, object) && (includeArchived || !object.archived)).sort((a, b) => a.order - b.order).map(async (object) => { const all = (await ctx.db.query("fields").withIndex("by_object", (q) => q.eq("orgId", principal.org._id).eq("objectId", object._id)).collect()).sort((a, b) => a.order - b.order), readableFields = all.filter((field) => canReadField(principal, object, field)), fields = readableFields.filter((field) => !field.retired), left = slotsLeft(all); return { key: object.key, label: object.label, labelPlural: object.labelPlural, archived: !!object.archived, titleField: fields.find((field) => field._id === object.titleFieldId)?.key ?? null, fields: await Promise.all(fields.map(async (field) => ({ key: field.key, label: field.label, type: field.type, ...(field.options ? { options: field.options } : {}), ...(field.targetObjectId ? { target: (await ctx.db.get(field.targetObjectId))?.key } : {}), required: field.required, indexed: !!field.slot, withTime: !!field.withTime, protectedFromAgents: !!field.protectedFromAgents, write: { create: fieldWrite(principal, object, field, "create"), update: fieldWrite(principal, object, field, "update") } }))), retiredFields: readableFields.filter((field) => field.retired).map((field) => ({ key: field.key, label: field.label, type: field.type })), slotsLeft: readableFields.length === all.length ? { text: left.s, number: left.n, date: left.d, boolean: left.b } : null }; })); };
+export const objects = internalQuery({ args: { keyHash, includeArchived: v.optional(v.boolean()) }, handler: async (ctx, args) => objectsOf(ctx, await requireAgent(ctx, args.keyHash), args.includeArchived) });
+// Counts are coarse and bounded: at most PROBE rows per object through the same readable listing /records uses
+// (so record-scoped agents count their own records), and BUDGET rows for the whole map, in object order.
+const PROBE = 51, BUDGET = 600, FEATURES: Record<string, string> = { campaign: "campaigns", email: "emails", post: "posts", invoice: "invoices", bookingPage: "bookingPages", automation: "automations" };
+export const map = internalQuery({ args: { keyHash }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), [me, shape, rows] = await Promise.all([meOf(ctx, principal), objectsOf(ctx, principal), ctx.db.query("objects").withIndex("by_org", (q) => q.eq("orgId", principal.org._id)).collect()]);
+  const byKey = new Map(rows.map((o) => [o.key, o]));
+  let budget = BUDGET;
+  const counted: (typeof shape[number] & { count: string })[] = [];
+  for (const o of shape) {
+    const object = byKey.get(o.key)!;
+    if (budget < PROBE) { counted.push({ ...o, count: "unknown" }); continue; }
+    const read = (await takeRecords(ctx, principal.org._id, object._id, PROBE, principal)).length;
+    budget -= read;
+    counted.push({ ...o, count: read === 0 ? "0" : read < PROBE ? "1-50" : "50+" });
+  }
+  const modes = (o: any, action: "create" | "update") => o.fields.map((f: any) => f.write[action]);
+  const direct = counted.flatMap((o) => { const acts: string[] = (["create", "update"] as const).filter((a) => modes(o, a).includes("direct")); if (canDelete(principal, byKey.get(o.key)!)) acts.push("delete"); return acts.length ? [`${o.label} (${acts.join(", ")})`] : []; });
+  const propose = counted.filter((o) => ["create", "update"].some((a) => modes(o, a as "create").includes("propose"))).map((o) => o.label);
+  const canDo = [
+    ...(direct.length ? [`Apply directly with remold_apply_change: ${direct.join(", ")}.`] : []),
+    ...(propose.length ? [`Propose changes for a person to approve with remold_propose_change: ${propose.join(", ")}.`] : []),
+    "Propose a new field or object with remold_propose_shape.",
+    "Read your inbox with remold_inbox.",
+  ];
+  const features = Object.entries(FEATURES).filter(([key]) => counted.some((o) => o.key === key)).map(([, name]) => name);
+  return { org: me.org, agent: me.agent, objects: counted, features, pending: { inbox: me.pendingInbox, suggestions: me.pendingSuggestions, shapeProposals: me.pendingShapeProposals }, canDo };
+} });
 export const listRecords = internalQuery({ args: { keyHash, object: v.string(), cursor: v.optional(v.string()), limit: v.optional(v.number()), sort: v.optional(v.object({ field: v.string(), direction: v.union(v.literal("asc"), v.literal("desc")) })), filter: v.optional(v.object({ field: v.string(), value: v.any() })), filters: v.optional(v.array(v.object({ field: v.string(), value: v.any() }))), range: v.optional(v.object({ field: v.string(), from: v.optional(v.string()), to: v.optional(v.string()) })) }, handler: async (ctx, args) => {
   const principal = await requireAgent(ctx, args.keyHash), item = await objectFor(ctx, principal.org._id, args.object), byKey = new Map(item.fields.map((field) => [field.key, field]));
   requireObjectRead(principal, item.object);
@@ -82,7 +117,7 @@ export const listRecords = internalQuery({ args: { keyHash, object: v.string(), 
   const sort = args.sort ? { fieldId: known(args.sort.field)._id, direction: args.sort.direction } : undefined;
   // Query strings arrive as text; the slot holds the field's real type, so each value is coerced like any agent input.
   const filters = [];
-  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }))[field._id] }); }
+  for (const filter of [...(args.filter ? [args.filter] : []), ...(args.filters ?? [])]) { const field = known(filter.field); filters.push({ fieldId: field._id, value: (await resolveValues(ctx, principal, item.object, item.fields, { [field.key]: filter.value }, undefined, "filter"))[field._id] }); }
   // A bare date as the end of a range means through the end of that day (UTC).
   const bound = (text: string | undefined, end: boolean) => { if (text === undefined) return undefined; const ms = instantBound(text); if (ms === undefined) fail("VALIDATION", "Range bounds must be YYYY-MM-DD or an ISO 8601 time with an offset"); return end && /^\d{4}-\d{2}-\d{2}$/.test(text) ? ms + 86400000 - 1 : ms; };
   // On a with-time field, all-day values match by the calendar date written in each bound, so offset bounds name local days.
@@ -96,10 +131,19 @@ export const getRecord = internalQuery({ args: { keyHash, idOrRef: v.string(), c
 export const search = internalQuery({ args: { keyHash, q: v.string(), object: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash); const item = args.object ? await objectFor(ctx, principal.org._id, args.object) : null, limit = Math.min(args.limit ?? 10, 100); const records = await searchRecords(ctx, principal, args.q.trim(), item?.object._id, limit); return Promise.all(records.map(async (record) => { const recordItem = item && record.objectId === item.object._id ? item : await objectForId(ctx, principal.org._id, record.objectId); return readable(ctx, principal, record, recordItem.object, recordItem.fields); })); } });
 export const related = internalQuery({ args: { keyHash, idOrRef: v.string(), field: v.string() }, handler: async (ctx, args) => { const principal = await requireAgent(ctx, args.keyHash), target = await recordFor(ctx, principal.org._id, args.idOrRef), [objectKey, fieldKey] = args.field.split("."); const targetObject = await ctx.db.get(target.objectId); if (!targetObject) fail("NOT_FOUND"); requireRecordRead(principal, targetObject, target); if (!objectKey || !fieldKey) fail("VALIDATION", "Field must be objectKey.fieldKey"); const item = await objectFor(ctx, principal.org._id, objectKey), field = item.fields.find((value) => value.key === fieldKey); requireObjectRead(principal, item.object); if (field) requireQueryField(principal, item.object, field); if (!field || (field.type !== "lookup" && field.type !== "links") || (field.targetObjectId && field.targetObjectId !== target.objectId)) fail("NOT_FOUND", "Field does not relate to record"); if (field.type === "lookup" && !field.slot) fail("UNINDEXED_FIELD", "Field is not indexed"); let rows = (await listedRelated(ctx, principal, item.object, field, target._id))?.slice(0, 100); if (!rows) { if (field.type === "links") { const links = await ctx.db.query("links").withIndex("by_to", (q) => q.eq("orgId", principal.org._id).eq("fieldId", field._id).eq("toRecordId", target._id)).take(100); rows = (await Promise.all(links.map(link => ctx.db.get(link.fromRecordId)))).filter((r): r is Doc<"records"> => r !== null && canReadRecord(principal, item.object, r)); } else { const name = `${field.slot!.kind}${field.slot!.index}`; rows = (await (ctx.db.query("records") as any).withIndex(`by_${name}`, (q: any) => q.eq("orgId", principal.org._id).eq("objectId", item.object._id).eq(name, target._id)).take(100) as Doc<"records">[]).filter(r => canReadRecord(principal, item.object, r)); } } return Promise.all(rows.map((record) => readable(ctx, principal, record, item.object, item.fields))); } });
 export const today = internalQuery({ args: { keyHash }, handler: async (ctx, args) => {
-  const principal = await requireAgent(ctx, args.keyHash), midnight = Math.floor(Date.now() / 86400000) * 86400000;
-  const selected = await daily(ctx, principal, midnight + 8 * 86400000);
+  const principal = await requireAgent(ctx, args.keyHash), { zone, day, start, end } = await orgDay(ctx, principal.org._id, Date.now());
+  const selected = await daily(ctx, principal, zone, day, 8);
   const show = async (records: Doc<"records">[]) => Promise.all(records.map(async record => { const item = await objectForId(ctx, principal.org._id, record.objectId); return readable(ctx, principal, record, item.object, item.fields); }));
-  return { tasks: await show(selected.tasks), quiet: await show(selected.quiet) };
+  const [tasks, quiet, mine, blocked] = await Promise.all([show(selected.tasks), show(selected.quiet), show(selected.mine), show(selected.waiting.map(w => w.record))]);
+  return { day: { zone, date: new Date(day).toISOString().slice(0, 10), startsAt: new Date(start).toISOString(), endsAt: new Date(end + 1).toISOString() }, mine, waiting: blocked.map((task, i) => ({ task, waitingOn: selected.waiting[i]!.on.map(b => ({ id: b._id, title: b.title })) })), tasks, quiet };
+} });
+// The agent's own ready tasks, in working order, a page at a time.
+export const myTasks = internalQuery({ args: { keyHash, cursor: v.optional(v.string()), limit: v.optional(v.number()) }, handler: async (ctx, args) => {
+  const principal = await requireAgent(ctx, args.keyHash), item = await objectFor(ctx, principal.org._id, "task").catch(() => null);
+  if (!item) return { records: [], cursor: null };
+  const { mine } = await myQueue(ctx, principal, { object: item.object, byKey: new Map(item.fields.map(f => [f.key, f])) }, principal.agent._id);
+  const page = pageList(mine, { cursor: args.cursor ?? null, numItems: Math.min(Math.max(Math.floor(args.limit ?? 25) || 25, 1), 100) });
+  return { records: await Promise.all(page.page.map(record => readable(ctx, principal, record, item.object, item.fields))), cursor: page.isDone ? null : page.continueCursor };
 } });
 
 const isEmpty = (value: unknown) => value === null || value === undefined;

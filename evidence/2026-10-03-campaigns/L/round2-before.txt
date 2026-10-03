@@ -1,0 +1,238 @@
+
+ RUN  v5.0.1 /home/shakur/work/jobs/L-queue
+
+ ❯ convex/automations.test.ts (28 tests | 2 failed) 23004ms
+   ❯ automations (28)
+     × nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation 6195ms
+     × schedules and dates follow the workspace time zone, through the spring-forward change 258ms
+ ❯ convex/queue.test.ts (27 tests | 10 failed) 24929ms
+   ❯ round 2: independent verification findings (10)
+     × B1 shows an open task however many finished tasks are assigned to the same person 13750ms
+     × B1 holds for a member who can read only some tasks 747ms
+     ❯ S1 a Task with no free text slot (4)
+       × still gets an assignee field, an inbox note once, and a status the Settings page can show 208ms
+       × reports no problem when the slot exists 99ms
+       × builds Mine from a scan of the most recent open tasks, skipping finished ones 194ms
+       × looks only at the 2000 most recently updated open tasks 173ms
+     × S2 Today names the task object when the member cannot read the due date 123ms
+     × S3 an agent may filter tasks by another agent: a read is not a handoff 121ms
+     × S4 a CSV assignee column takes a member's or an agent's name, and names who is not found 184ms
+     × keeps a zone's spelling as typed, fixing only its capitalisation 96ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/automations.test.ts > automations > nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ convex/automations.test.ts:278:3
+    276|   });
+    277|
+    278|   it("nothing runs without the deployment's daily cap, and runs stop a…
+       |   ^
+    279|     const w = await world();
+    280|     const id = await w.automation({ name: "Welcome", when: "recordCrea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  convex/automations.test.ts > automations > schedules and dates follow the workspace time zone, through the spring-forward change
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ convex/automations.test.ts:630:42
+    628|     vi.setSystemTime(Date.UTC(2026, 2, 8, 13, 0)); // 09:00 EDT on the…
+    629|     await w.tick();
+    630|     expect((await w.runs(daily)).length).toBe(0);
+       |                                          ^
+    631|     vi.setSystemTime(Date.UTC(2026, 2, 8, 13, 1));
+    632|     await w.tick(); await w.tick();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > B1 shows an open task however many finished tasks are assigned to the same person
+AssertionError: expected [] to deeply equal [ 'Still open' ]
+
+- Expected
++ Received
+
+- [
+-   "Still open",
+- ]
++ []
+
+ ❯ convex/queue.test.ts:228:73
+    226|       await apply({ action: "create", objectId: task.object._id, value…
+    227|     });
+    228|     expect(titles((await client.query(api.today.get, { orgId })).mine)…
+       |                                                                         ^
+    229|   }, 120_000);
+    230|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > B1 holds for a member who can read only some tasks
+Error: Validator error: Missing required field `fields` in object
+ ❯ validateValidator node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:917:31
+ ❯ validateValidator node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:886:17
+ ❯ validateValidator node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:921:21
+ ❯ validateFunctionArgs node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2337:5
+ ❯ Object.mutationFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2132:17
+ ❯ mutation node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2181:20
+ ❯ convex/queue.test.ts:238:5
+    236|       ids.push((await apply({ action: "create", objectId: task.object.…
+    237|     });
+    238|     await client.mutation(api.authority.policies.setMember, { orgId, m…
+       |     ^
+    239|     expect(titles((await ben.query(api.today.get, { orgId })).mine)).t…
+    240|   }, 120_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S1 a Task with no free text slot > still gets an assignee field, an inbox note once, and a status the Settings page can show
+Error: Expected a Convex function exported from module "queue" as `status`, but there is no such export.
+ ❯ resolveFunction node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2401:15
+ ❯ Object.queryFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2085:34
+ ❯ query node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2172:20
+ ❯ convex/queue.test.ts:253:14
+    251|       const { t, client, orgId, task } = await full();
+    252|       expect(task.fields.assignee.slot).toBeUndefined();
+    253|       expect(await client.query(api.queue.status, { orgId })).toEqual(…
+       |              ^
+    254|       await t.mutation(internal.seed.ensureStandard, { orgId });
+    255|       const notes = (await t.run(async (ctx: any) => ctx.db.query("age…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S1 a Task with no free text slot > reports no problem when the slot exists
+Error: Expected a Convex function exported from module "queue" as `status`, but there is no such export.
+ ❯ resolveFunction node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2401:15
+ ❯ Object.queryFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2085:34
+ ❯ query node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2172:20
+ ❯ convex/queue.test.ts:261:14
+    259|     it("reports no problem when the slot exists", async () => {
+    260|       const { client, orgId } = await workspace();
+    261|       expect(await client.query(api.queue.status, { orgId })).toEqual(…
+       |              ^
+    262|     });
+    263|     it("builds Mine from a scan of the most recent open tasks, skippin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S1 a Task with no free text slot > builds Mine from a scan of the most recent open tasks, skipping finished ones
+ConvexError: {"code":"VALIDATION","message":"Unknown or retired field","fieldId":"00000000000000000000010045fields"}
+ ❯ fail convex/errors.ts:7:9
+      5|
+      6| export function fail(code: ErrorCode, message: string = code, extra: R…
+      7|   throw new ConvexError({ code, message, ...extra });
+       |         ^
+      8| }
+      9|
+ ❯ applyChange convex/lib/applyChange.ts:143:66
+ ❯ invokeFunction node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/src/server/impl/registration_impl.ts:90:14
+ ❯ invokeMutation node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/src/server/impl/registration_impl.ts:70:18
+ ❯ runMutationWithHandler node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1989:31
+ ❯ Object.mutationFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2133:32
+ ❯ mutation node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2181:20
+ ❯ add convex/queue.test.ts:23:13
+ ❯ convex/queue.test.ts:265:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S1 a Task with no free text slot > looks only at the 2000 most recently updated open tasks
+ConvexError: {"code":"VALIDATION","message":"Unknown or retired field","fieldId":"00000000000000000000010045fields"}
+ ❯ fail convex/errors.ts:7:9
+      5|
+      6| export function fail(code: ErrorCode, message: string = code, extra: R…
+      7|   throw new ConvexError({ code, message, ...extra });
+       |         ^
+      8| }
+      9|
+ ❯ applyChange convex/lib/applyChange.ts:143:66
+ ❯ invokeFunction node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/src/server/impl/registration_impl.ts:90:14
+ ❯ invokeMutation node_modules/.pnpm/convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0/node_modules/convex/src/server/impl/registration_impl.ts:70:18
+ ❯ runMutationWithHandler node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:1989:31
+ ❯ Object.mutationFromPath node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2133:32
+ ❯ mutation node_modules/.pnpm/convex-test@0.0.59_convex@1.46.0_@clerk+clerk-react@5.61.3_react-dom@19.3.0_react@19.3.0__react@19.3.0__react@19.3.0_/node_modules/convex-test/dist/index.js:2181:20
+ ❯ add convex/queue.test.ts:23:13
+ ❯ convex/queue.test.ts:272:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S2 Today names the task object when the member cannot read the due date
+AssertionError: expected undefined to be 'task' // Object.is equality
+
+- Expected:
+"task"
+
++ Received:
+undefined
+
+ ❯ convex/queue.test.ts:286:26
+    284|     const data = await ben.query(api.today.get, { orgId });
+    285|     expect(titles(data.mine)).toEqual(["Ben's"]);
+    286|     expect(data.taskKey).toBe("task");
+       |                          ^
+    287|   });
+    288|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S3 an agent may filter tasks by another agent: a read is not a handoff
+AssertionError: expected 403 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 403
+
+ ❯ convex/queue.test.ts:294:26
+    292|     for (const value of [other.agentId, "Other"]) {
+    293|       const res = await scoutCall("GET", `/api/v1/records?object=task&…
+    294|       expect(res.status).toBe(200);
+       |                          ^
+    295|       expect(titles(res.json.records)).toEqual(["Other's"]);
+    296|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > S4 a CSV assignee column takes a member's or an agent's name, and names who is not found
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ convex/queue.test.ts:302:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  convex/queue.test.ts > round 2: independent verification findings > keeps a zone's spelling as typed, fixing only its capitalisation
+AssertionError: expected 'Asia/Calcutta' to be 'Asia/Kolkata' // Object.is equality
+
+Expected: "Asia/Kolkata"
+Received: "Asia/Calcutta"
+
+ ❯ convex/queue.test.ts:312:70
+    310|     for (const [typed, saved] of [["Asia/Kolkata", "Asia/Kolkata"], ["…
+    311|       await client.mutation(api.orgs.setTimeZone, { orgId, timeZone: t…
+    312|       expect((await client.query(api.orgs.get, { orgId })).timeZone).t…
+       |                                                                      ^
+    313|     }
+    314|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  12 failed | 51 passed (63)
+   Start at  10:41:34
+   Duration  28.49s (tests 86%, transform 10%, import 4%)
+

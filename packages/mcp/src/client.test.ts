@@ -17,6 +17,16 @@ describe("stdio tool calls", () => {
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer rm_key");
     expect(await requests[0]?.json()).toEqual({ action: "update", record: "brisk-ember-oyster", values: { stage: "Won" }, reason: "qualified" });
   });
+  it("reads the workspace map with one GET", async () => {
+    const { requests, call } = recorder();
+    await call("remold_map", {});
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/map"]]);
+  });
+  it("pages the agent's own tasks", async () => {
+    const { requests, call } = recorder(() => Response.json({ records: [], cursor: null }));
+    await call("remold_my_tasks", { limit: 10, cursor: "list:10" });
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/my-tasks?limit=10&cursor=list%3A10"]]);
+  });
   it("reads a campaign report, previews an email for one person and marks a reply", async () => {
     const { requests, call } = recorder();
     await call("remold_campaign_report", { idOrRef: "calm-river-fox" });

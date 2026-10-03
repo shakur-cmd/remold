@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { attempt } from "@/lib/errors";
+import { agentSetup } from "@/lib/agentSetup";
 
 type Grant = { action: "create" | "update" | "delete"; objectKey: string };
 const ACTIONS = ["create", "update", "delete"] as const;
@@ -46,6 +47,7 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
   const has = (g: Grant) => grants.some((x) => x.action === g.action && x.objectKey === g.objectKey);
   const toggle = (g: Grant) => setGrantsDraft((all) => (has(g) ? all.filter((x) => !(x.action === g.action && x.objectKey === g.objectKey)) : [...all, g]));
 
+  const setup = agentSetup(siteUrl, issued?.key ?? "");
   return (
     <Card>
       <CardHeader>
@@ -105,14 +107,24 @@ export function AgentsCard({ orgId, objects, admin, owner }: { orgId: Id<"orgs">
               </>
             ) : (
               <>
-                <p className="text-muted-foreground">Connect Claude Code:</p>
-                <CopyBlock text={`claude mcp add --transport http remold ${siteUrl}/mcp --header "Authorization: Bearer ${issued.key}"`} label="Claude Code command" />
+                <p className="text-muted-foreground">Paste into your agent. Claude Code:</p>
+                <CopyBlock text={setup.hostedClaudeCommand} label="Claude Code command" />
                 <p className="text-muted-foreground">Codex, in ~/.codex/config.toml:</p>
-                <CopyBlock text={`[mcp_servers.remold]\nurl = "${siteUrl}/mcp"\nhttp_headers = { "Authorization" = "Bearer ${issued.key}" }`} label="Codex config" />
+                <CopyBlock text={setup.hostedCodex} label="Codex config" />
                 <p className="text-muted-foreground">Any other MCP client:</p>
-                <CopyBlock text={JSON.stringify({ mcpServers: { remold: { type: "http", url: `${siteUrl}/mcp`, headers: { Authorization: `Bearer ${issued.key}` } } } }, null, 2)} label="MCP JSON config" />
-                <p className="text-muted-foreground">Or call REST directly:</p>
-                <CopyBlock text={`curl -H "Authorization: Bearer ${issued.key}" ${siteUrl}/api/v1/me`} label="REST example" />
+                <CopyBlock text={setup.hostedJson} label="MCP JSON" />
+                <p className="text-muted-foreground">{setup.test}</p>
+                <details className="grid gap-2">
+                  <summary className="cursor-pointer text-muted-foreground">Run it locally instead (offline or development)</summary>
+                  <p className="text-muted-foreground">Build the connector once with pnpm --filter @remold/mcp build, then replace /absolute/path/to/remold with your checkout. Claude Code:</p>
+                  <CopyBlock text={setup.claudeCommand} label="Claude Code local command" />
+                  <p className="text-muted-foreground">Or in the project's .mcp.json:</p>
+                  <CopyBlock text={setup.claudeJson} label="Claude Code .mcp.json" />
+                  <p className="text-muted-foreground">Codex, in ~/.codex/config.toml:</p>
+                  <CopyBlock text={setup.codex} label="Codex local config" />
+                  <p className="text-muted-foreground">Any other MCP client:</p>
+                  <CopyBlock text={setup.generic} label="Local MCP JSON" />
+                </details>
               </>
             )}
             <Button size="sm" variant="outline" className="justify-self-start" onClick={() => setIssued(null)}>
