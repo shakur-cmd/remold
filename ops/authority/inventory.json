@@ -20,6 +20,16 @@
     "proof": "Hidden field value never appears in any human query or agent REST read"
   },
   {
+    "id": "agentApi:map",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
     "id": "agentApi:listRecords",
     "kind": "query",
     "visibility": "internal",
@@ -2068,6 +2078,16 @@
   },
   {
     "id": "HTTP GET /api/v1/objects",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "Hidden field value never appears in any human query or agent REST read"
+  },
+  {
+    "id": "HTTP GET /api/v1/map",
     "kind": "route",
     "visibility": "http",
     "writes": false,
