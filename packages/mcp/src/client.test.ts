@@ -34,6 +34,15 @@ describe("RemoldClient", () => {
     await client.listRecords({ object: "task", range: { field: "dueDate", from: "2026-02-01" } });
     expect(url?.searchParams.get("range[dueDate]")).toBe("2026-02-01..");
   });
+  it("still accepts the single filter and sends it as REST's filter[field]", async () => {
+    let url: URL | undefined;
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { url = new URL(String(input)); return Response.json({ records: [] }); } });
+    await client.listRecords({ object: "person", filter: { field: "company", value: "Atlas" }, sort: { field: "name", direction: "asc" } });
+    expect([...url!.searchParams]).toEqual([["object", "person"], ["filter[company]", "Atlas"], ["sort", "name"], ["direction", "asc"]]);
+    await client.listRecords({ object: "person", filter: { field: "company", value: "Atlas" }, filters: [{ field: "city", value: "Boston" }] });
+    expect(url?.searchParams.getAll("filter[company]")).toEqual(["Atlas"]);
+    expect(url?.searchParams.getAll("filter[city]")).toEqual(["Boston"]);
+  });
   it("proposes shape changes and lists the agent's own proposals", async () => {
     const requests: Request[] = [];
     const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input, init) => { requests.push(new Request(input, init)); return Response.json({}); } });

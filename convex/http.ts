@@ -11,7 +11,7 @@ import { resendWebhook, unsubscribePage } from "./campaignSend";
 
 const router = httpRouter();
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
-const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, IDEMPOTENCY_MISMATCH: 422, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400 };
+const statusFor: Record<string, number> = { AUTHORITY_MIGRATING: 503, UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, IDEMPOTENCY_MISMATCH: 422, VALIDATION: 400, UNSUPPORTED: 400, UNINDEXED_FIELD: 400, SLOTS_EXHAUSTED: 409 };
 const hash = async (key: string) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 const bad = (code: string, message: string, status = statusFor[code] ?? 400) => json({ error: { code, message } }, status);
 const number = (value: string | null) => { const n = value === null ? NaN : Number(value); return Number.isFinite(n) ? n : undefined; };

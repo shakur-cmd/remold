@@ -31,13 +31,13 @@ export class RemoldClient {
   markReplied(sendId: string) { return this.request("POST", `/sends/${encodeURIComponent(sendId)}/replied`, {}); }
 }
 
-// filters and range become REST's filter[field]=value and range[field]=from..to.
+// filter (the original single form), filters and range become REST's filter[field]=value and range[field]=from..to.
 function params(args: Record<string, unknown>) {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(args)) {
     if (value === undefined) continue;
     if (key === "sort" && typeof value === "object" && value) { const sort = value as Record<string, string>; query.set("sort", sort.field); query.set("direction", sort.direction); }
-    else if (key === "filter" && typeof value === "object" && value) { const filter = value as Record<string, string>; query.set("filter", filter.field); query.set("value", filter.value); }
+    else if (key === "filter" && typeof value === "object" && value) { const filter = value as { field: string; value: string }; query.append(`filter[${filter.field}]`, String(filter.value)); }
     else if (key === "filters" && Array.isArray(value)) for (const filter of value as { field: string; value: string }[]) query.append(`filter[${filter.field}]`, String(filter.value));
     else if (key === "range" && typeof value === "object" && value) { const range = value as { field: string; from?: string; to?: string }; query.set(`range[${range.field}]`, `${range.from ?? ""}..${range.to ?? ""}`); }
     else query.set(key, String(value));
