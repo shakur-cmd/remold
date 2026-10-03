@@ -83,6 +83,8 @@ async function dispatch(ctx: any, request: Request) {
   if (request.method === "POST" && path[0] === "changes" && path.length === 1) return json(await mutation(internal.agentApi.change, { ...body, idempotency: await idempotencyOf(request, url.pathname, body) }));
   if (request.method === "GET" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await query(internal.agentApi.shapeProposals, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "shape" && path[1] === "proposals" && path.length === 2) return json(await mutation(internal.agentApi.proposeShape, body), 201);
+  if (request.method === "GET" && path[0] === "views" && path.length === 1) return json(await query(internal.agentApi.views, { object: q.get("object") ?? undefined }));
+  if (request.method === "GET" && path[0] === "views" && path[2] === "records" && path.length === 3) return json(await query(internal.agentApi.viewRecords, { id: path[1], cursor: q.get("cursor") ?? undefined, limit: number(q.get("limit")), tz: q.get("tz") ?? undefined }));
   if (request.method === "GET" && path[0] === "inbox" && path.length === 1) return json(await query(internal.agentApi.inbox, { status: q.get("status") ?? undefined }));
   if (request.method === "POST" && path[0] === "inbox" && path.length === 1) return json(await mutation(internal.agentApi.inboxAdd, body), 201);
   if (request.method === "POST" && path[0] === "inbox" && path[2] === "resolve" && path.length === 3) return json(await mutation(internal.agentApi.inboxResolve, { id: path[1], ...body }));

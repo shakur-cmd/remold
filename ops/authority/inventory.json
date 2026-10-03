@@ -2596,5 +2596,95 @@
     "readonly": "refused",
     "masks": "n/a",
     "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "views:list",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields"
+  },
+  {
+    "id": "views:create",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "keeps personal views to their owner; only admins share"
+  },
+  {
+    "id": "views:update",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "can be renamed, reordered, pinned and deleted"
+  },
+  {
+    "id": "views:reorder",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "can be renamed, reordered, pinned and deleted"
+  },
+  {
+    "id": "views:remove",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "n/a",
+    "proof": "can be renamed, reordered, pinned and deleted"
+  },
+  {
+    "id": "agentApi:views",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields"
+  },
+  {
+    "id": "agentApi:viewRecords",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields"
+  },
+  {
+    "id": "HTTP GET /api/v1/views",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields"
+  },
+  {
+    "id": "HTTP GET /api/v1/views/:id/records",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields"
   }
 ]

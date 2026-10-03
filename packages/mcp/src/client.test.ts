@@ -52,4 +52,11 @@ describe("RemoldClient", () => {
     expect(await requests[0]?.json()).toEqual({ kind: "addField", object: "opportunity", key: "budget", label: "Budget", type: "number", reason: "tracked" });
     expect([requests[1]?.method, requests[1]?.url]).toEqual(["GET", "https://remold.convex.site/api/v1/shape/proposals?status=applied"]);
   });
+  it("lists saved views and runs one, passing the time zone", async () => {
+    const urls: string[] = [];
+    const client = new RemoldClient({ url: "https://remold.convex.site", key: "rm_key", fetch: async (input) => { urls.push(String(input)); return Response.json({}); } });
+    await client.views({ object: "opportunity" });
+    await client.viewRecords({ id: "view/1", tz: "America/New_York", cursor: "c", limit: 10 });
+    expect(urls).toEqual(["https://remold.convex.site/api/v1/views?object=opportunity", "https://remold.convex.site/api/v1/views/view%2F1/records?tz=America%2FNew_York&cursor=c&limit=10"]);
+  });
 });

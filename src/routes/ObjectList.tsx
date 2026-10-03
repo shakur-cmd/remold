@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useOutletContext, useParams, useSearchParams } from "react-router";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarDays, Columns3, ListFilter, Plus, Rows3, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarDays, Columns2, Columns3, ListFilter, Plus, Rows3, X } from "lucide-react";
 import { cn } from "cn";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Board, type Range } from "@/components/Board";
@@ -18,25 +19,32 @@ import { CsvTools } from "@/components/CsvTools";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { FieldInput, RecordForm } from "@/components/RecordForm";
+import { ViewsBar, type View, type ViewSettings } from "@/components/ViewsBar";
 import { attempt } from "@/lib/errors";
 import { dayRange, formatContact, isEmpty, isSlotted, type Field } from "@/lib/fields";
+import { viewSearch } from "@/lib/views";
 import type { OrgContext } from "@/routes/OrgLayout";
+import { relativeDays, type Relative } from "../../convex/lib/days";
 
 type Sort = { fieldId: Id<"fields">; direction: "asc" | "desc" };
 // A filter whose value is still undefined is being chosen and is not sent yet; null means "is empty".
 type Filter = { fieldId: Id<"fields">; value: unknown };
-type DayRange = { fieldId: Id<"fields">; from: string; to: string };
+type DayRange = { fieldId: Id<"fields">; from: string; to: string; relative?: Relative };
 const MAX_FILTERS = 3;
+const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const RELATIVE: [Relative, string][] = [["today", "Today"], ["next7", "Next 7 days"], ["thisMonth", "This month"], ["overdue", "Overdue"]];
+// The parts that decide what a view shows, in a fixed shape, so two can be compared.
+const settingsKey = (s: ViewSettings) => JSON.stringify([s.layout, s.columns, s.filters.map((f) => [f.fieldId, f.value]), s.range && [s.range.fieldId, s.range.from, s.range.to, s.range.relative], s.sort && [s.sort.fieldId, s.sort.direction], s.layout === "board" && s.groupFieldId, s.layout === "calendar" && s.dateFieldId]);
 
 export function ObjectList() {
-  const { org, objects } = useOutletContext<OrgContext>();
+  const { org, objects, role } = useOutletContext<OrgContext>();
   const { objectKey } = useParams();
   const object = objects.find((o) => o.key === objectKey);
   if (!object) return <Navigate to={`/o/${org._id}`} replace />;
-  return <List key={object._id} orgId={org._id} objectId={object._id} />;
+  return <List key={object._id} orgId={org._id} objectId={object._id} admin={role !== "member"} />;
 }
 
-function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> }) {
+function List({ orgId, objectId, admin }: { orgId: Id<"orgs">; objectId: Id<"objects">; admin: boolean }) {
   const detail = useQuery(api.objects.get, { orgId, objectId });
   const create = useMutation(api.records.create);
   const update = useMutation(api.records.update);
@@ -47,13 +55,29 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [firstPage, setFirstPage] = useState<Id<"fields">[] | null>(null);
+  // Columns picked by hand, in order; null leaves the choice to the list.
+  const [chosen, setChosen] = useState<Id<"fields">[] | null>(null);
+  const [group, setGroup] = useState<Id<"fields"> | undefined>();
+  // The saved view whose settings were last loaded into the list.
+  const [loaded, setLoaded] = useState<Id<"views"> | null>(null);
+  const views = useQuery(api.views.list, { orgId })?.filter((view) => view.objectId === objectId);
+  const active = views?.find((view) => view._id === params.get("v"));
   const board = params.get("view") === "board", calendar = params.get("view") === "calendar";
   const applied = filters.filter((f) => f.value !== undefined);
   const dateField = days && detail?.fields.find((f) => f._id === days.fieldId);
-  const range: Range | undefined = days && dateField && (days.from || days.to) ? { fieldId: days.fieldId, ...dayRange(dateField, days.from, days.to) } : undefined;
+  // Relative ranges are read in the browser's zone each time the list renders.
+  const span = days && (days.relative ? relativeDays(days.relative, Date.now(), zone) : { from: days.from || undefined, to: days.to || undefined });
+  const range: Range | undefined = days && dateField && span && (span.from || span.to) ? { fieldId: days.fieldId, ...dayRange(dateField, span.from ?? "", span.to ?? "") } : undefined;
+  function load(view?: View) {
+    setSort(view?.sort); setFilters(view?.filters ?? []); setChosen(view?.columns.length ? view.columns : null); setGroup(view?.groupFieldId);
+    setDays(view?.range && { fieldId: view.range.fieldId, from: view.range.from ?? "", to: view.range.to ?? "", relative: view.range.relative });
+    setLoaded(view?._id ?? null);
+  }
+  // Opening a view's link (from the menu, or a reload) loads it once the views arrive.
+  if (active && loaded !== active._id) load(active);
   const { results, status, loadMore } = usePaginatedQuery(api.records.list, board || calendar ? "skip" : { orgId, objectId, sort, filters: applied, range }, { initialNumItems: 50 });
 
-  if (!detail) return <Loading />;
+  if (!detail || !views) return <Loading />;
   const { object, fields } = detail;
   // A campaign is a funnel: creating one opens it with the step input ready.
   const noun = object.key === "campaign" ? "funnel" : object.label.toLowerCase();
@@ -63,11 +87,29 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
   const candidates = fields.filter((f) => f._id !== object.titleFieldId && !(f.type === "lookup" && !f.targetObjectId));
   // Chosen once from the first page, so the header does not shift on Load more or while editing.
   const used = firstPage ?? candidates.filter((f) => f.type === "boolean" || results.some((r) => !isEmpty(r.values[f._id]))).map((f) => f._id);
-  const columns = (used.length ? candidates.filter((f) => used.includes(f._id)) : candidates).slice(0, 6);
+  const columns = chosen ? chosen.flatMap((id) => candidates.filter((f) => f._id === id)) : (used.length ? candidates.filter((f) => used.includes(f._id)) : candidates).slice(0, 6);
   if (!firstPage && status !== "LoadingFirstPage" && !board && !calendar) setFirstPage(used);
-  const groupBy = selectFields[0];
+  const groupBy = selectFields.find((f) => f._id === group) ?? selectFields[0];
   const dated = fields.some((f) => f.type === "date" && !f.retired);
   const person = object.key === "person";
+  const calendarDate = fields.find((f) => f.type === "date" && isSlotted(f) && f._id === params.get("date")) ?? fields.find((f) => f.type === "date" && isSlotted(f));
+  const settings: ViewSettings = {
+    layout: board && groupBy ? "board" : calendar && dated ? "calendar" : "table",
+    columns: chosen ?? [],
+    filters: applied,
+    ...(days && (days.relative || days.from || days.to) ? { range: { fieldId: days.fieldId, ...(days.relative ? { relative: days.relative } : { ...(days.from ? { from: days.from } : {}), ...(days.to ? { to: days.to } : {}) }) } } : {}),
+    ...(sort ? { sort } : {}),
+    ...(board && groupBy ? { groupFieldId: groupBy._id } : {}),
+    ...(calendar && calendarDate ? { dateFieldId: calendarDate._id } : {}),
+  };
+  const dirty = !active || settingsKey(settings) !== settingsKey(active);
+  function select(view?: View, created?: Id<"views">) {
+    if (created) { setLoaded(created); setParams((current) => { const next = new URLSearchParams(current); next.set("v", created); return next; }, { replace: true }); return; }
+    load(view);
+    setParams(view ? new URLSearchParams(viewSearch(view)) : {}, { replace: true });
+  }
+  const layoutTo = (layout?: "board" | "calendar") => setParams((current) => { const next = new URLSearchParams(current); if (layout) next.set("view", layout); else next.delete("view"); return next; }, { replace: true });
+  const toggleColumn = (id: Id<"fields">) => { const shown = columns.map((f) => f._id); setChosen(shown.includes(id) ? shown.filter((x) => x !== id) : [...shown, id]); };
 
   function toggleSort(fieldId: Id<"fields">) {
     setSort((current) =>
@@ -82,16 +124,16 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
         <div className="ml-auto flex items-center gap-2">
           {(groupBy || dated) && (
             <div className="flex rounded-md border bg-card p-0.5">
-              <Button variant={board || calendar ? "ghost" : "secondary"} size="icon-sm" aria-label="Table view" onClick={() => setParams({}, { replace: true })}>
+              <Button variant={board || calendar ? "ghost" : "secondary"} size="icon-sm" aria-label="Table view" onClick={() => layoutTo()}>
                 <Rows3 />
               </Button>
               {groupBy && (
-                <Button variant={board ? "secondary" : "ghost"} size="icon-sm" aria-label={`Board by ${groupBy.label}`} onClick={() => setParams({ view: "board" }, { replace: true })}>
+                <Button variant={board ? "secondary" : "ghost"} size="icon-sm" aria-label={`Board by ${groupBy.label}`} onClick={() => layoutTo("board")}>
                   <Columns3 />
                 </Button>
               )}
               {dated && (
-                <Button variant={calendar ? "secondary" : "ghost"} size="icon-sm" aria-label="Calendar view" onClick={() => setParams({ view: "calendar" }, { replace: true })}>
+                <Button variant={calendar ? "secondary" : "ghost"} size="icon-sm" aria-label="Calendar view" onClick={() => layoutTo("calendar")}>
                   <CalendarDays />
                 </Button>
               )}
@@ -126,90 +168,116 @@ function List({ orgId, objectId }: { orgId: Id<"orgs">; objectId: Id<"objects"> 
         </div>
       </div>
 
-      {!calendar && <FilterBar orgId={orgId} fields={fields} titleFieldId={object.titleFieldId} filters={filters} onFilters={setFilters} days={days} onDays={setDays} />}
+      <ViewsBar orgId={orgId} objectId={objectId} views={views} active={active} current={settings} dirty={dirty} admin={admin} onSelect={select} />
 
-      {calendar && dated ? (
-        <Calendar orgId={orgId} object={object} fields={fields} />
-      ) : board && groupBy ? (
-        <Board orgId={orgId} object={object} groupBy={groupBy} fields={fields} filters={applied} range={range} />
+      {active?.blocked ? (
+        <p className="py-12 text-center text-sm text-muted-foreground">This view uses a field you can't see, so it can't show its records to you.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border bg-card">
-          <Table className="text-[13px]">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="h-9 pl-4 text-xs font-medium text-muted-foreground">{fields.find((f) => f._id === object.titleFieldId)?.label ?? "Title"}</TableHead>
-                {columns.map((field) => {
-                  const sortable = isSlotted(field);
-                  const active = sort?.fieldId === field._id;
-                  const Arrow = !active ? ArrowUpDown : sort.direction === "desc" ? ArrowDown : ArrowUp;
-                  return (
-                    <TableHead key={field._id} className={cn("h-9 text-xs font-medium text-muted-foreground", field.type === "number" && "text-right")}>
-                      {sortable ? (
-                        <button type="button" className={cn("group/sort inline-flex items-center gap-1 hover:text-foreground", active && "text-foreground")} onClick={() => toggleSort(field._id)}>
-                          {field.label}
-                          <Arrow className={cn("size-3", active ? "text-primary" : "opacity-0 group-hover/sort:opacity-60")} />
-                        </button>
-                      ) : (
-                        <span>{field.label}</span>
-                      )}
-                    </TableHead>
-                  );
-                })}
-                {person && <TableHead className="h-9 text-xs font-medium text-muted-foreground">Last contact</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {results.map((record) => (
-                <TableRow key={record._id} className="h-9">
-                  <TableCell className="py-1.5 pl-4 font-medium">
-                    <Link to={`/o/${orgId}/${object.key}/${record._id}`} className="block hover:text-primary">
-                      {record.title || "Untitled"}
-                    </Link>
-                  </TableCell>
-                  {columns.map((field) => (
-                    <TableCell key={field._id} className={cn("max-w-64 truncate py-1.5", field.type === "number" && "text-right")}>
-                      {field.type === "boolean" ? (
-                        <Checkbox
-                          checked={record.values[field._id] === true}
-                          aria-label={`${field.label}: ${record.title}`}
-                          onCheckedChange={(checked) => attempt(() => update({ orgId, recordId: record._id, values: { [field._id]: checked === true } }))}
-                        />
-                      ) : (
-                        <FieldValue orgId={orgId} field={field} value={record.values[field._id]} />
-                      )}
-                    </TableCell>
+        <>
+          <div className="flex items-start gap-2">
+            {!calendar && <FilterBar orgId={orgId} fields={fields} titleFieldId={object.titleFieldId} filters={filters} onFilters={setFilters} days={days} onDays={setDays} />}
+            {!board && !calendar && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="ghost" className="ml-auto shrink-0 text-muted-foreground">
+                    <Columns2 /> Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+                  {candidates.map((field) => (
+                    <DropdownMenuItem key={field._id} onSelect={(e) => { e.preventDefault(); toggleColumn(field._id); }}>
+                      <Checkbox checked={columns.some((f) => f._id === field._id)} tabIndex={-1} aria-hidden /> {field.label}
+                    </DropdownMenuItem>
                   ))}
-                  {person && <LastContact orgId={orgId} recordId={record._id} />}
-                </TableRow>
-              ))}
-              {status !== "LoadingFirstPage" && results.length === 0 && (
-                <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={columns.length + (person ? 2 : 1)} className="py-12 text-center text-muted-foreground">
-                    {applied.length || range ? (
-                      `No ${object.labelPlural.toLowerCase()} match these filters.`
-                    ) : (
-                      <>
-                        No {object.labelPlural.toLowerCase()} yet.{" "}
-                        <button type="button" className="text-primary hover:underline" onClick={() => setOpen(true)}>
-                          Add the first one
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+
+          {calendar && dated ? (
+            <Calendar orgId={orgId} object={object} fields={fields} />
+          ) : board && groupBy ? (
+            <Board orgId={orgId} object={object} groupBy={groupBy} fields={fields} filters={applied} range={range} />
+          ) : (
+            <div className="overflow-x-auto rounded-lg border bg-card">
+              <Table className="text-[13px]">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="h-9 pl-4 text-xs font-medium text-muted-foreground">{fields.find((f) => f._id === object.titleFieldId)?.label ?? "Title"}</TableHead>
+                    {columns.map((field) => {
+                      const sortable = isSlotted(field);
+                      const active = sort?.fieldId === field._id;
+                      const Arrow = !active ? ArrowUpDown : sort.direction === "desc" ? ArrowDown : ArrowUp;
+                      return (
+                        <TableHead key={field._id} className={cn("h-9 text-xs font-medium text-muted-foreground", field.type === "number" && "text-right")}>
+                          {sortable ? (
+                            <button type="button" className={cn("group/sort inline-flex items-center gap-1 hover:text-foreground", active && "text-foreground")} onClick={() => toggleSort(field._id)}>
+                              {field.label}
+                              <Arrow className={cn("size-3", active ? "text-primary" : "opacity-0 group-hover/sort:opacity-60")} />
+                            </button>
+                          ) : (
+                            <span>{field.label}</span>
+                          )}
+                        </TableHead>
+                      );
+                    })}
+                    {person && <TableHead className="h-9 text-xs font-medium text-muted-foreground">Last contact</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {results.map((record) => (
+                    <TableRow key={record._id} className="h-9">
+                      <TableCell className="py-1.5 pl-4 font-medium">
+                        <Link to={`/o/${orgId}/${object.key}/${record._id}`} className="block hover:text-primary">
+                          {record.title || "Untitled"}
+                        </Link>
+                      </TableCell>
+                      {columns.map((field) => (
+                        <TableCell key={field._id} className={cn("max-w-64 truncate py-1.5", field.type === "number" && "text-right")}>
+                          {field.type === "boolean" ? (
+                            <Checkbox
+                              checked={record.values[field._id] === true}
+                              aria-label={`${field.label}: ${record.title}`}
+                              onCheckedChange={(checked) => attempt(() => update({ orgId, recordId: record._id, values: { [field._id]: checked === true } }))}
+                            />
+                          ) : (
+                            <FieldValue orgId={orgId} field={field} value={record.values[field._id]} />
+                          )}
+                        </TableCell>
+                      ))}
+                      {person && <LastContact orgId={orgId} recordId={record._id} />}
+                    </TableRow>
+                  ))}
+                  {status !== "LoadingFirstPage" && results.length === 0 && (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={columns.length + (person ? 2 : 1)} className="py-12 text-center text-muted-foreground">
+                        {applied.length || range ? (
+                          `No ${object.labelPlural.toLowerCase()} match these filters.`
+                        ) : (
+                          <>
+                            No {object.labelPlural.toLowerCase()} yet.{" "}
+                            <button type="button" className="text-primary hover:underline" onClick={() => setOpen(true)}>
+                              Add the first one
+                            </button>
+                          </>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {status === "CanLoadMore" && (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={columns.length + (person ? 2 : 1)} className="p-0">
+                        <button type="button" className="w-full py-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => loadMore(50)}>
+                          Load more
                         </button>
-                      </>
-                    )}
-                  </TableCell>
-                </TableRow>
-              )}
-              {status === "CanLoadMore" && (
-                <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={columns.length + (person ? 2 : 1)} className="p-0">
-                    <button type="button" className="w-full py-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => loadMore(50)}>
-                      Load more
-                    </button>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -268,9 +336,26 @@ function FilterBar({ orgId, fields, titleFieldId, filters, onFilters, days, onDa
           </Select>
           {days && (
             <>
-              <Input type="date" className="h-7 w-36" aria-label="From" value={days.from} max={days.to || undefined} onChange={(e) => onDays({ ...days, from: e.target.value })} />
-              <span className="text-xs text-muted-foreground">to</span>
-              <Input type="date" className="h-7 w-36" aria-label="To" value={days.to} min={days.from || undefined} onChange={(e) => onDays({ ...days, to: e.target.value })} />
+              <Select value={days.relative ?? "dates"} onValueChange={(value) => onDays({ ...days, relative: value === "dates" ? undefined : (value as Relative) })}>
+                <SelectTrigger size="sm" className="border-0 shadow-none" aria-label="Which days">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dates">Between dates</SelectItem>
+                  {RELATIVE.map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!days.relative && (
+                <>
+                  <Input type="date" className="h-7 w-36" aria-label="From" value={days.from} max={days.to || undefined} onChange={(e) => onDays({ ...days, from: e.target.value })} />
+                  <span className="text-xs text-muted-foreground">to</span>
+                  <Input type="date" className="h-7 w-36" aria-label="To" value={days.to} min={days.from || undefined} onChange={(e) => onDays({ ...days, to: e.target.value })} />
+                </>
+              )}
               <Button variant="ghost" size="icon-sm" aria-label="Remove date range" onClick={() => onDays(undefined)}>
                 <X />
               </Button>

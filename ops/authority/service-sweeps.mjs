@@ -24,6 +24,7 @@ async function workspace(runtime, tenant, label) {
   const proposeShape = async key => (await (await request(runtime, shaper.key, 'POST', '/api/v1/shape/proposals', { kind: 'addField', object: 'company', key, label: key, type: 'number', reason: 'sweep' })).json()).proposal.id;
   const shapes = { apply: await proposeShape('sweepApply'), dismiss: await proposeShape('sweepDismiss') };
   const inboxId = await t.human.mutation(anyApi.inbox.add, { orgId: t.orgId, text: 'Sweep note' });
+  const view = await t.human.mutation(anyApi.views.create, { orgId: t.orgId, objectId: company._id, name: 'Sweep view', layout: 'table', columns: [city._id], filters: [], shared: true });
   const memberClient = runtime.client('sweep-member-' + randomUUID()), memberUserId = await memberClient.mutation(anyApi.users.store, {});
   const invite = await t.human.mutation(anyApi.invites.create, { orgId: t.orgId, role: 'member' }); await memberClient.mutation(anyApi.invites.accept, { token: invite.token });
   const leaver = runtime.client('sweep-leaver-' + randomUUID()); await leaver.mutation(anyApi.users.store, {}); const leaveInvite = await t.human.mutation(anyApi.invites.create, { orgId: t.orgId, role: 'member' }); await leaver.mutation(anyApi.invites.accept, { token: leaveInvite.token });
@@ -39,7 +40,7 @@ async function workspace(runtime, tenant, label) {
   const claimerOp = await (await request(runtime, claimer.key, 'POST', '/api/v1/operations', { logical: 'claimer-op', bindingId: t.bindingId, capability: 'model.call', payload: t.payload, reservationUnits: 1, maxSteps: 1 })).json();
   const secondSecret = runtime.run('integrations/connections:registerSecret', { orgId: t.orgId, provider: 'fake', environment: 'test', account: 'sweep-second-' + randomUUID(), handle: 'vault:' + randomUUID() });
   const money = await financial(t);
-  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, shaper, shapes, inboxId, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
+  return { t, claimer, claimerOp, leaver, orphan, company, name, city, record, spare, agent, target, grantId, suggestions, shaper, shapes, inboxId, view, memberClient, memberUserId, pendingInvite, joiner, ownerMember, queued, unknownOp, unknownTarget, secondSecret, money };
 }
 
 export async function replaySweeps({ runtime, tenant, test }) {
@@ -96,6 +97,10 @@ export async function replaySweeps({ runtime, tenant, test }) {
       'suggestions:adopt': () => t.human.mutation(fn('suggestions:adopt'), { orgId, suggestionId: w.suggestions.adopt }),
       'shapeSuggestions:apply': () => t.human.mutation(fn('shapeSuggestions:apply'), { orgId, id: w.shapes.apply }),
       'shapeSuggestions:dismiss': () => t.human.mutation(fn('shapeSuggestions:dismiss'), { orgId, id: w.shapes.dismiss }),
+      'views:create': () => t.human.mutation(fn('views:create'), { orgId, objectId: w.company._id, name: 'Denied view', layout: 'table', columns: [], filters: [] }),
+      'views:update': () => t.human.mutation(fn('views:update'), { orgId, viewId: w.view, name: 'Denied rename' }),
+      'views:reorder': () => t.human.mutation(fn('views:reorder'), { orgId, viewIds: [w.view] }),
+      'views:remove': () => t.human.mutation(fn('views:remove'), { orgId, viewId: w.view }),
     };
     const rest = {
       'HTTP POST /api/v1/changes': ['/api/v1/changes', { action: 'create', object: 'company', values: { name: 'Denied' }, reason: 'readonly sweep' }],

@@ -53,6 +53,7 @@ import type * as lib_applyChange from "../lib/applyChange.js";
 import type * as lib_campaign from "../lib/campaign.js";
 import type * as lib_campaignText from "../lib/campaignText.js";
 import type * as lib_daily from "../lib/daily.js";
+import type * as lib_days from "../lib/days.js";
 import type * as lib_email from "../lib/email.js";
 import type * as lib_emailRules from "../lib/emailRules.js";
 import type * as lib_find from "../lib/find.js";
@@ -67,6 +68,7 @@ import type * as lib_shape from "../lib/shape.js";
 import type * as lib_slots from "../lib/slots.js";
 import type * as lib_standard from "../lib/standard.js";
 import type * as lib_values from "../lib/values.js";
+import type * as lib_views from "../lib/views.js";
 import type * as objects from "../objects.js";
 import type * as ops from "../ops.js";
 import type * as orgs from "../orgs.js";
@@ -81,6 +83,7 @@ import type * as telemetry from "../telemetry.js";
 import type * as telemetryHttp from "../telemetryHttp.js";
 import type * as today from "../today.js";
 import type * as users from "../users.js";
+import type * as views from "../views.js";
 
 import type {
   ApiFromModules,
@@ -134,6 +137,7 @@ declare const fullApi: ApiFromModules<{
   "lib/campaign": typeof lib_campaign;
   "lib/campaignText": typeof lib_campaignText;
   "lib/daily": typeof lib_daily;
+  "lib/days": typeof lib_days;
   "lib/email": typeof lib_email;
   "lib/emailRules": typeof lib_emailRules;
   "lib/find": typeof lib_find;
@@ -148,6 +152,7 @@ declare const fullApi: ApiFromModules<{
   "lib/slots": typeof lib_slots;
   "lib/standard": typeof lib_standard;
   "lib/values": typeof lib_values;
+  "lib/views": typeof lib_views;
   objects: typeof objects;
   ops: typeof ops;
   orgs: typeof orgs;
@@ -162,6 +167,7 @@ declare const fullApi: ApiFromModules<{
   telemetryHttp: typeof telemetryHttp;
   today: typeof today;
   users: typeof users;
+  views: typeof views;
 }>;
 
 /**

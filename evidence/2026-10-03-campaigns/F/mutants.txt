@@ -1,0 +1,42 @@
+== mutant: run skips the hidden-field check
+     × run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields 70ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)
+== mutant: retired fields are not dropped
+     × keeps working when a field it uses is retired, with that column, filter and sort dropped and flagged 70ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)
+== mutant: list shows everyone's personal views
+     × keeps personal views to their owner; only admins share 70ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)
+== mutant: hidden columns shown
+     × run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields 58ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)
+== mutant: hidden filter values shown
+     × run by a restricted agent, hides unreadable rows and fields and refuses filters on hidden fields 52ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)
+== mutant: today taken in UTC, ignoring the zone
+     × today is the local date, which differs from the UTC date just after UTC midnight 15ms
+     × this month is its first through last day, leap February included 3ms
+     × refuses a time zone it does not know 4ms
+     × resolves a relative range when it is read, in the caller's time zone, across UTC midnight and a DST change 106ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 15 passed (19)
+== mutant: offset read at UTC midnight, after a clock change
+     × a day whose midnight is skipped starts when the clocks jump, east or west of UTC 13ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)
+== mutant: every day is 24 hours long
+     × a with-time field gets a 23-hour day when clocks spring forward 15ms
+     × a with-time field gets a 25-hour day when clocks fall back 2ms
+     × a day whose midnight is skipped starts when the clocks jump, east or west of UTC 3ms
+     × resolves a relative range when it is read, in the caller's time zone, across UTC midnight and a DST change 111ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 15 passed (19)
+== mutant: agent proposals skip view validation
+     × are refused by the same rules as a person saving the view 136ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  1 failed | 18 passed (19)

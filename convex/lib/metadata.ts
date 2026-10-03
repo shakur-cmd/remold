@@ -6,6 +6,7 @@ import { fail } from "../errors";
 import { canReadField, canReadObject, requireObjectAdministration, requireObjectRead } from "../authority/reads";
 import { unrestrictedHuman } from "../authority/inbox";
 import { allocateSlot, kindFor, type SlotKind } from "./slots";
+import { viewSpec } from "./views";
 
 // The rules for changing a workspace's shape, shared by a person's own Settings
 // mutations and by applying an agent's proposal, so the two cannot drift apart.
@@ -20,6 +21,8 @@ export const shapeChange = v.union(
   // Only the options to add; existing ones are kept as they are when it is applied.
   v.object({ kind: v.literal("addOptions"), objectId: v.id("objects"), fieldId: v.id("fields"), options: v.array(option) }),
   v.object({ kind: v.literal("relabel"), objectId: v.id("objects"), fieldId: v.optional(v.id("fields")), label: v.string(), labelPlural: v.optional(v.string()) }),
+  // A shared view; applying it creates the view as the agent's.
+  v.object({ kind: v.literal("addView"), objectId: v.id("objects"), view: v.object(viewSpec), pinned: v.optional(v.boolean()) }),
 );
 export type ShapeChange = Infer<typeof shapeChange>;
 export type FieldSpec = Infer<typeof fieldSpec>;
