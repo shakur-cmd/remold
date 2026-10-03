@@ -12,8 +12,9 @@
  },
  {
   "step": "tools/list",
-  "count": 23,
+  "count": 28,
   "names": [
+   "remold_map",
    "remold_me",
    "remold_objects",
    "remold_list_records",
@@ -22,10 +23,14 @@
    "remold_search",
    "remold_related",
    "remold_today",
+   "remold_my_tasks",
    "remold_propose_change",
    "remold_apply_change",
    "remold_list_suggestions",
    "remold_propose_shape",
+   "remold_blueprints",
+   "remold_export_blueprint",
+   "remold_propose_blueprint",
    "remold_shape_proposals",
    "remold_views",
    "remold_view_records",
@@ -42,22 +47,22 @@
  {
   "step": "tools/call remold_me",
   "isError": false,
-  "text": "{\n  \"agent\": {\n    \"capabilities\": [],\n    \"grants\": [],\n    \"id\": \"j97dhagt8f2g2kjpdjw464kbfx8fkn9a\",\n    \"name\": \"hosted-check\",\n    \"readableObjects\": [\n      \"company\",\n      \"person\",\n      \"opportunity\",\n      \"project\",\n      \"task\",\n      \"note\",\n      \"activity\",\n      \"campaign\",\n      \"invoice\",\n      \"post\",\n      \"email\",\n      \"automation\"\n    ],\n    \"readsAllObjects\": false,\n    \"ro"
+  "text": "{\n  \"agent\": {\n    \"capabilities\": [],\n    \"grants\": [],\n    \"id\": \"j9743ge8zxw43e2vdkwsx10w8s8fk9ym\",\n    \"name\": \"hosted-check\",\n    \"readableObjects\": [\n      \"company\",\n      \"person\",\n      \"opportunity\",\n      \"project\",\n      \"task\",\n      \"note\",\n      \"activity\",\n      \"campaign\",\n      \"invoice\",\n      \"post\",\n      \"email\",\n      \"automation\"\n    ],\n    \"readsAllObjects\": false,\n    \"ro"
  },
  {
   "step": "tools/call remold_list_records",
   "isError": false,
-  "text": "{\n  \"cursor\": null,\n  \"records\": [\n    {\n      \"createdAt\": 1791039870737.034,\n      \"id\": \"q1719c5rx2nhq03ybje4sg041h8fk2wt\",\n      \"object\": \"company\",\n      \"ref\": \"aspen-grove-steel\",\n      \"title\": \"Atlas Plumbing\",\n      \"updatedAt\": 1791039870737,\n      \"values\": {\n        \"name\": \"Atlas Plumbing\"\n      }\n    }\n  ]\n}"
+  "text": "{\n  \"cursor\": null,\n  \"records\": [\n    {\n      \"createdAt\": 1791049991822.721,\n      \"id\": \"q174d8q4nsgqzwrm70wvdj21qd8fk6y6\",\n      \"object\": \"company\",\n      \"ref\": \"torch-mellow-quick\",\n      \"title\": \"Atlas Plumbing\",\n      \"updatedAt\": 1791049991822,\n      \"values\": {\n        \"name\": \"Atlas Plumbing\"\n      }\n    }\n  ]\n}"
  },
  {
   "step": "tools/call remold_propose_change",
   "isError": false,
-  "text": "{\n  \"suggestion\": {\n    \"action\": \"update\",\n    \"agent\": \"hosted-check\",\n    \"before\": {\n      \"city\": null\n    },\n    \"createdAt\": 1791039870822.229,\n    \"id\": \"qh77kn9m25tqncadr0520k96218fjg37\",\n    \"object\": \"company\",\n    \"reason\": \"moved\",\n    \"record\": {\n      \"id\": \"q1719c5rx2nhq03ybje4sg041h8fk2wt\",\n      \"ref\": \"aspen-grove-steel\",\n      \"title\": \"Atlas Plumbing\"\n    },\n    \"resolvedAt\": "
+  "text": "{\n  \"suggestion\": {\n    \"action\": \"update\",\n    \"agent\": \"hosted-check\",\n    \"before\": {\n      \"city\": null\n    },\n    \"createdAt\": 1791049991912.243,\n    \"id\": \"qh72f8ryp34gv7frhd8j9454e58fkyvz\",\n    \"object\": \"company\",\n    \"reason\": \"moved\",\n    \"record\": {\n      \"id\": \"q174d8q4nsgqzwrm70wvdj21qd8fk6y6\",\n      \"ref\": \"torch-mellow-quick\",\n      \"title\": \"Atlas Plumbing\"\n    },\n    \"resolvedAt\":"
  },
  {
   "step": "tools/call remold_propose_change",
   "isError": false,
-  "text": "{\n  \"suggestion\": {\n    \"action\": \"update\",\n    \"agent\": \"hosted-check\",\n    \"before\": {\n      \"city\": null\n    },\n    \"createdAt\": 1791039870822.229,\n    \"id\": \"qh77kn9m25tqncadr0520k96218fjg37\",\n    \"object\": \"company\",\n    \"reason\": \"moved\",\n    \"record\": {\n      \"id\": \"q1719c5rx2nhq03ybje4sg041h8fk2wt\",\n      \"ref\": \"aspen-grove-steel\",\n      \"title\": \"Atlas Plumbing\"\n    },\n    \"resolvedAt\": "
+  "text": "{\n  \"suggestion\": {\n    \"action\": \"update\",\n    \"agent\": \"hosted-check\",\n    \"before\": {\n      \"city\": null\n    },\n    \"createdAt\": 1791049991912.243,\n    \"id\": \"qh72f8ryp34gv7frhd8j9454e58fkyvz\",\n    \"object\": \"company\",\n    \"reason\": \"moved\",\n    \"record\": {\n      \"id\": \"q174d8q4nsgqzwrm70wvdj21qd8fk6y6\",\n      \"ref\": \"torch-mellow-quick\",\n      \"title\": \"Atlas Plumbing\"\n    },\n    \"resolvedAt\":"
  },
  {
   "step": "idempotent replay",
@@ -107,8 +112,8 @@
   "step": "telemetry (route rest, includes /mcp and the stdio server's REST calls)",
   "observed": {
    "buckets": [
-    20,
-    1,
+    19,
+    2,
     0,
     0,
     0,
@@ -121,11 +126,11 @@
    ],
    "clientErrors": 6,
    "count": 21,
-   "maxMs": 14,
-   "meanMs": 2.8095238095238093,
+   "maxMs": 15,
+   "meanMs": 3.0476190476190474,
    "overflowAboveMs": 10000,
    "p50UpperMs": 10,
-   "p95UpperMs": 10,
+   "p95UpperMs": 25,
    "rateLimited": 0,
    "serverErrorRate": 0,
    "serverErrors": 0,
@@ -144,7 +149,10 @@
    "claude mcp add --transport http remold http://127.0.0.1:3690/mcp --header \"Authorization: Bearer rm_<key>\"",
    "[mcp_servers.remold]\nurl = \"http://127.0.0.1:3690/mcp\"\nhttp_headers = { \"Authorization\" = \"Bearer rm_<key>\" }",
    "{\n  \"mcpServers\": {\n    \"remold\": {\n      \"type\": \"http\",\n      \"url\": \"http://127.0.0.1:3690/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer rm_<key>\"\n      }\n    }\n  }\n}",
-   "curl -H \"Authorization: Bearer rm_<key>\" http://127.0.0.1:3690/api/v1/me"
+   "",
+   "",
+   "",
+   ""
   ],
   "pageErrors": []
  }

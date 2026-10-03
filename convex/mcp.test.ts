@@ -6,6 +6,8 @@ import { internal } from "./_generated/api";
 import { agentFor, api, objectFields, rest, userAndOrg, via } from "./test.helpers";
 import { stdioServer } from "../packages/mcp/src/server";
 import { httpSend } from "../packages/mcp/src/client";
+import { toolList } from "../packages/mcp/src/tools";
+import { mcp } from "./mcp";
 
 // The hosted endpoint is the same MCP server as packages/mcp, served from the Convex site at /mcp.
 const hex = async (key: string) => [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key)))].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -79,6 +81,50 @@ describe("hosted MCP endpoint", () => {
       }
     }
     expect(await suggestionCount(t)).toBe(0);
+  });
+
+  // Round 2, from independent verification: suspended, website-intake and migrating keys get REST's answer on every message kind.
+  it("refuses suspended, intake-only and migrating keys exactly as REST does, for every message kind, and writes nothing", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    await t.run(async (ctx: any) => ctx.db.patch(orgId, { authorityFrozenAt: undefined }));
+    for (const [patch, status] of [[{ state: "suspended" }, 401], [{ purpose: "intake" }, 403], [{ authorityVersion: undefined }, 503]] as const) {
+      const agent = await agentFor(client, orgId, { name: "restricted" });
+      await t.run(async (ctx: any) => ctx.db.patch(agent.agentId, patch));
+      expect((await rest(t, agent.key)("GET", "/api/v1/me")).status).toBe(status);
+      for (const body of [{ jsonrpc: "2.0", id: 1, method: "tools/list" }, { jsonrpc: "2.0", method: "notifications/initialized" }, call("remold_inbox_add", { text: "forbidden" })]) expect((await rpc(t, agent.key)(body)).status).toBe(status);
+    }
+    expect(await t.run(async (ctx: any) => (await ctx.db.query("agentInbox").collect()).length)).toBe(0);
+  });
+
+  it("keeps every id a tool puts in a path inside that tool's own route", async () => {
+    const seen: string[] = [], ctx = { runQuery: async () => null } as any;
+    const pathTools = toolList.filter((tool) => ["idOrRef", "id", "sendId"].some((key) => key in (tool.inputSchema.properties as object))).map((tool) => tool.name);
+    expect(pathTools.length).toBeGreaterThanOrEqual(10);
+    const inputs = ["../operations/any", "../_probe", "../authority/fire", "../intake/lead", "../../operations/any", "?object=company", "a/b", "%2f..%2foperations%2fany", "%2e%2e", "..", ".", ""];
+    for (const name of pathTools) for (const input of inputs) {
+      const body = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: { idOrRef: input, id: input, sendId: input, field: "company.name" } } });
+      await mcp(ctx, new Request("https://local.test/mcp", { method: "POST", body }), { keyHash: async () => "a".repeat(64), run: async (request) => { seen.push(request.url); return Response.json({}); } });
+    }
+    expect(seen).toHaveLength(pathTools.length * inputs.length);
+    for (const url of seen) expect(new URL(url).pathname).not.toMatch(/^\/api\/v1\/(operations|authority|intake|_probe)(\/|$)/);
+    // A slash inside an id stays escaped, so it never adds a path segment.
+    expect(seen.filter((url) => /\/a\/b|\.\.\//.test(new URL(url).pathname))).toEqual([]);
+  });
+
+  it("refuses initialize without a string protocolVersion, a capabilities object and clientInfo with name and version", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const send = rpc(t, (await agentFor(client, orgId, { name: "strict" })).key), clientInfo = { name: "raw", version: "0" };
+    for (const params of [undefined, {}, { protocolVersion: 123, capabilities: {}, clientInfo }, { protocolVersion: "2025-06-18", capabilities: [], clientInfo }, { protocolVersion: "2025-06-18", clientInfo }, { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: {} }, { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "raw" } }])
+      expect(await send({ jsonrpc: "2.0", id: 1, method: "initialize", ...(params === undefined ? {} : { params }) })).toMatchObject({ status: 400, json: { jsonrpc: "2.0", id: 1, error: { code: -32602 } } });
+    expect((await send({ jsonrpc: "2.0", id: 2, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo } })).json.result.protocolVersion).toBe("2025-06-18");
+  });
+
+  it("checks the JSON-RPC envelope before treating a message as a client response, and still accepts valid responses", async () => {
+    const { t, client, orgId } = await userAndOrg();
+    const send = rpc(t, (await agentFor(client, orgId, { name: "envelope" })).key);
+    for (const body of [{ jsonrpc: "2.0", id: { bad: true }, result: 1 }, { jsonrpc: "2.0", id: 3, result: {}, error: { code: 1, message: "x" } }, { jsonrpc: "2.0", id: null, result: {} }, { jsonrpc: "2.0", id: 1.5, result: {} }, { jsonrpc: "2.0", id: 4, error: "nope" }, { jsonrpc: "2.0", id: 5, error: { message: "no code" } }, { jsonrpc: "2.0", method: "notifications/initialized", id: { bad: true } }])
+      expect(await send(body)).toMatchObject({ status: 400, json: { id: null, error: { code: -32600 } } });
+    for (const body of [{ jsonrpc: "2.0", id: 3, result: {} }, { jsonrpc: "2.0", id: "x", error: { code: -1, message: "declined" } }]) expect([(await send(body)).status, (await send(body)).text]).toEqual([202, ""]);
   });
 
   it("answers malformed JSON-RPC, unknown methods and unknown tools with JSON-RPC errors, and checks arguments before calling anything", async () => {

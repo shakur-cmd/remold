@@ -25,15 +25,25 @@ export async function mcp(ctx: ActionCtx, request: Request, rest: { keyHash: () 
   let message: unknown;
   try { message = JSON.parse(await request.text()); } catch { return error(null, -32700, "Parse error: expected one JSON-RPC message", 400); }
   if (Array.isArray(message)) return error(null, -32600, "Send one JSON-RPC message per request; batches are not supported", 400);
-  if (!isObject(message) || message.jsonrpc !== "2.0") return error(null, -32600, "Invalid JSON-RPC message", 400);
-  if (message.method === undefined && "id" in message && ("result" in message || "error" in message)) return new Response(null, { status: 202 });
-  if (typeof message.method !== "string") return error(null, -32600, "Invalid JSON-RPC message", 400);
+  const invalid = () => error(null, -32600, "Invalid JSON-RPC message", 400);
+  if (!isObject(message) || message.jsonrpc !== "2.0") return invalid();
+  const { id, method } = message, validId = typeof id === "string" || Number.isSafeInteger(id);
+  if ("id" in message && !validId) return invalid();
+  // A client's reply to a server request: an id and exactly one of result or a well-formed error. Nothing to answer.
+  if (method === undefined) {
+    const failure = message.error, answered = "id" in message && ("result" in message) !== ("error" in message) && (failure === undefined || (isObject(failure) && Number.isSafeInteger(failure.code) && typeof failure.message === "string"));
+    return answered ? new Response(null, { status: 202 }) : invalid();
+  }
+  if (typeof method !== "string" || "result" in message || "error" in message) return invalid();
   if (!("id" in message)) return new Response(null, { status: 202 });
-  const { id, method } = message, params = message.params ?? {};
-  if (typeof id !== "string" && !Number.isSafeInteger(id)) return error(null, -32600, "Request id must be a string or an integer", 400);
+  const params = message.params ?? {};
   if (!isObject(params)) return error(id, -32602, "params must be an object");
   const result = (value: unknown) => reply({ jsonrpc: "2.0", id, result: value });
-  if (method === "initialize") return result({ protocolVersion: versions.includes(params.protocolVersion as string) ? params.protocolVersion : versions[0], capabilities, serverInfo, instructions });
+  if (method === "initialize") {
+    const info = params.clientInfo;
+    if (typeof params.protocolVersion !== "string" || !isObject(params.capabilities) || !isObject(info) || typeof info.name !== "string" || typeof info.version !== "string") return error(id, -32602, "initialize needs a protocolVersion string, a capabilities object and clientInfo with name and version", 400);
+    return result({ protocolVersion: versions.includes(params.protocolVersion) ? params.protocolVersion : versions[0], capabilities, serverInfo, instructions });
+  }
   if (method === "ping") return result({});
   if (method === "tools/list") return result({ tools: toolList });
   if (method !== "tools/call") return error(id, -32601, `Method not found: ${method}`);

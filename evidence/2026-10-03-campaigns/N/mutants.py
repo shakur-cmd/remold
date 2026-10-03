@@ -1,12 +1,21 @@
 import subprocess, sys
 M = [
+ # Round 2 (independent verification findings 1 to 3)
+ ("suspended keys accepted", "convex/identity.ts", "agent.revokedAt !== undefined || (agent.state !== undefined && agent.state !== \"active\")) fail(\"UNAUTHENTICATED\"", "agent.revokedAt !== undefined) fail(\"UNAUTHENTICATED\""),
+ ("intake-only keys accepted", "convex/identity.ts", "if (agent.purpose !== undefined && agent.purpose !== purpose)", "if (false)"),
+ ("path ids not escaped", "packages/mcp/src/tools.ts", "const id = encodeURIComponent;", "const id = (value: string) => value;"),
+ ("initialize params not checked", "convex/mcp.ts", 'if (typeof params.protocolVersion !== "string" || !isObject(params.capabilities)', 'if (false && (typeof params.protocolVersion !== "string" || !isObject(params.capabilities))'),
+ ("clientInfo fields not checked", "convex/mcp.ts", '|| typeof info.name !== "string" || typeof info.version !== "string")', ")"),
+ ("response with both result and error accepted", "convex/mcp.ts", '("result" in message) !== ("error" in message)', '("result" in message || "error" in message)'),
+ ("bad id on a response accepted", "convex/mcp.ts", 'if ("id" in message && !validId) return invalid();', ""),
+ ("valid client responses refused", "convex/mcp.ts", "return answered ? new Response(null, { status: 202 }) : invalid();", "return invalid();"),
  ("no key check on messages", "convex/mcp.ts", "try { await ctx.runQuery(internal.agentApi.checkKey, { keyHash: await rest.keyHash() }); }", "try { await rest.keyHash(); }"),
  ("no Origin refusal", "convex/mcp.ts", 'if (request.headers.get("origin") !== null)', "if (false)"),
  ("batches accepted as first message", "convex/mcp.ts", "if (Array.isArray(message)) return", "if (Array.isArray(message)) message = message[0]; if (false) return"),
  ("unknown tool as method-not-found", "convex/mcp.ts", "error(id, -32602, `Unknown tool", "error(id, -32601, `Unknown tool"),
  ("idempotency header dropped", "convex/mcp.ts", '...(idempotencyKey === undefined ? {} : { "idempotency-key": idempotencyKey }), ', ""),
  ("GET and DELETE not 405", "convex/mcp.ts", 'if (request.method !== "POST") return new Response(null, { status: 405', 'if (request.method !== "POST") return new Response(null, { status: 400'),
- ("initialize ignores requested version", "convex/mcp.ts", "protocolVersion: versions.includes(params.protocolVersion as string) ? params.protocolVersion : versions[0]", "protocolVersion: versions[0]"),
+ ("initialize ignores requested version", "convex/mcp.ts", "protocolVersion: versions.includes(params.protocolVersion) ? params.protocolVersion : versions[0]", "protocolVersion: versions[0]"),
  ("protocol header not checked", "convex/mcp.ts", "if (version !== null && !versions.includes(version))", "if (false)"),
  ("REST body validation skipped", "convex/http.ts", "if (!ids || (ids.length", "if (false && (ids.length"),
  ("write rate limit off", "convex/http.ts", 'const limit = request.method === "POST" && path[0] !== "intake"', 'const limit = false'),
@@ -29,8 +38,8 @@ for name, path, old, new in M:
         r = subprocess.run(["pnpm", "exec", "vitest", "run", "convex/mcp.test.ts"], capture_output=True, text=True)
         r2 = subprocess.run(["pnpm", "--dir", "packages/mcp", "test"], capture_output=True, text=True)
         killed = r.returncode != 0 or r2.returncode != 0
-        r.stdout += r2.stdout
-        fails = [l.strip() for l in r.stdout.splitlines() if l.strip().startswith("FAIL")][:3]
+        r.stdout += r.stderr + r2.stdout + r2.stderr
+        fails = sorted({l.strip().split(" > ")[-1] for l in r.stdout.splitlines() if l.strip().startswith("FAIL") and " > " in l})[:3]
     finally:
         open(path, "w").write(src)
     caught += killed

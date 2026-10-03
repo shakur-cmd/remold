@@ -1,0 +1,6 @@
+     × refuses initialize without a string protocolVersion, a capabilities object and clientInfo with name and version 11ms
+     × checks the JSON-RPC envelope before treating a message as a client response, and still accepts valid responses 8ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected { status: 200, …(3) } to match object { status: 400, json: { …(3) } }
+AssertionError: expected { status: 202, text: '', …(2) } to match object { status: 400, …(1) }
+      Tests  2 failed | 12 passed (14)

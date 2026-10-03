@@ -102,8 +102,8 @@ try {
     await card.waitFor({ timeout: 30000 });
     await card.getByLabel("Agent name").fill("claude-mac");
     await card.getByRole("button", { name: "Add agent" }).click();
-    await card.getByText("Connect Claude Code:").waitFor({ timeout: 30000 });
-    const shown = await card.locator("pre").allInnerTexts();
+    await card.getByText("Paste into your agent. Claude Code:").waitFor({ timeout: 30000 });
+    const shown = await card.locator("pre").allInnerTexts(); await card.locator("summary").click();
     note("settings panel", { blocks: shown.map((s) => s.replace(/rm_[0-9a-f]{40}/g, "rm_<key>")), pageErrors: errors });
     await card.locator("div", { hasText: /^Key for claude-mac/ }).first().waitFor();
     await card.screenshot({ path: join(out, "settings-agent-connect.png") });

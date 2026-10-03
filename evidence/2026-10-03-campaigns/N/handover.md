@@ -86,3 +86,50 @@ None beyond a normal `pnpm deploy:prod`. After deploy, issuing an agent key in S
 - Not tested with the real Claude Code or Codex CLIs against the local backend (that would use Shakur's subscription); the SDK client is the same transport they use.
 - Each hosted tool call checks the key twice (once at the MCP layer, once in the REST dispatcher): one extra indexed read per call.
 - Tool errors inside 200 MCP replies are not visible as client errors in telemetry (decision 8).
+
+## Round 2 (after independent verification REVISE, Sol 6.1, on 3550b48)
+
+Builder: Claude Opus 5.5. Not yet re-verified.
+
+### Merges
+- Merged `origin/integ/campaigns` twice: e19eeef as asked (commit dddbf66), then 907d000, because integ had moved on to include blueprints by the time I merged (commit a21d633). Doing both now means the coordinator does not have to resolve the blueprint tools later.
+- The shared registry (`packages/mcp/src/tools.ts`) now has all 28 tools from both sides: remold_map, remold_my_tasks (and the new remold_today description), remold_blueprints, remold_export_blueprint and remold_propose_blueprint. The instructions text is integ's, word for word. The checker gained `number` and `const`, which the blueprint schema needs. Evidence: `stdio-round2-vs-integ.txt` compares integ 907d000's own zod stdio server with this branch's tool list. Instructions are equal, names and order are equal, 0 tool differences (the SDK `execution` field aside).
+- `agentSetup()` now returns `hostedClaudeCommand`, `hostedCodex` and `hostedJson` first, then the stdio forms. In Settings the hosted forms are shown first, and the stdio forms sit under "Run it locally instead". The README puts hosted before stdio. `src/lib/agentSetup.test.ts` checks that the README contains every snippet, that hosted comes before stdio, and that `Bearer` is only ever followed by the key.
+- Integ tests that used the removed `RemoldClient` (`convex/blueprints.test.ts`) now use `mcpTool`. All inventory entries from both sides are kept (`agentApi:checkKey` sits beside integ's new rows). The client tests for map and my_tasks were ported to `packages/mcp/src/client.test.ts`.
+
+### Findings fixed
+1. **initialize** now requires a string protocolVersion, a capabilities object, and clientInfo with string name and version. Anything else gets HTTP 400 with JSON-RPC `-32602`.
+2. **Envelope.** The id is checked before a message is classified. A client response is accepted with 202 only if it has an id and exactly one of result or a well-formed error (integer code, string message). Bad ids, both result and error, a non-object error, or a request carrying result/error all get 400 with `-32600`. Valid result and error responses still get 202.
+3. **Coverage.** The hosted tests now go red for:
+   - suspended keys
+   - intake-only keys (and they check migrating keys, 503)
+   - removal of path escaping (Sol's 12 inputs across every tool that takes an id, plus a check that a slash inside an id stays escaped)
+
+### Fail before, pass after
+- `round2-fail-before.txt`: the initialize and envelope tests failed against the round-1 code (200 and 202 where 400 was expected). The suspended/intake and path tests pass on correct code: they are coverage tests, and the mutants below show them going red when each guard is removed.
+- `round2-pass-after.txt`: 14/14 hosted tests pass.
+- `mutants-round2.txt`: 26/26 mutants caught, each with the test that caught it. The 8 new ones:
+  - suspended keys accepted
+  - intake-only keys accepted
+  - path ids not escaped
+  - initialize params not checked
+  - clientInfo fields not checked
+  - a response with both result and error accepted
+  - a bad id on a response accepted
+  - valid client responses refused
+- `round2-verifier-probes.txt`: Sol's `adversarial.test.ts`, copied in temporarily and run unchanged: 3/3 pass (it was 2 pass, 1 fail on 3550b48).
+
+### Suites (`suites-round2.txt`, run outside the sandbox so the alerts loopback test can listen)
+- `pnpm test`: 66 files, 675/675. The alerts redirect test passes on its own as well.
+- `pnpm typecheck`: clean
+- `pnpm test:authority`: 101/101
+- `pnpm verify:release`: 37/37
+- `pnpm build`: ok
+- `pnpm --dir packages/mcp build`: ok
+- `pnpm --dir packages/mcp test`: 14/14
+
+### SERVICE rerun
+I reran `live-harness.mjs` on a local backend. The real SDK client sees 28 tools; stdio and hosted give identical tools, instructions and results; an unknown key gets 401. `settings-agent-connect.png` was re-taken and shows the hosted forms first with the local forms expanded below.
+
+### Rollback
+Unchanged: this round adds no schema change.
