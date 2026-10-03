@@ -237,3 +237,30 @@ describe("stdio and hosted MCP parity", () => {
     await remote.close(); await stdio.close();
   });
 });
+
+describe("booking tools on both transports", () => {
+  it("remold_bookings lists bookings by page and time, the same over stdio and hosted, and the instructions explain booking pages", async () => {
+    process.env.REMOLD_BOOKING_DAILY_CAP = "10";
+    try {
+      const { t, client, orgId } = await userAndOrg();
+      const page = await objectFields(client, orgId, "bookingPage");
+      const ids = (values: Record<string, unknown>) => Object.fromEntries(Object.entries(values).map(([k, v]) => [page.fields[k]._id, v]));
+      const pageId = (await client.mutation(api.records.create, { orgId, objectId: page.object._id, values: ids({ name: "Intro call", hours: "mon-sun 00:00-24:00", timezone: "UTC", noticeHours: 0, daysAhead: 30, live: true }) })).recordId;
+      const shown: any = await t.query(api.bookings.page, { pageId }), [start] = shown.slots;
+      expect(await t.mutation(api.bookings.book, { pageId, start, name: "Ava Stone", email: "ava@people.test" })).toEqual({ status: "confirmed" });
+      const agent = await agentFor(client, orgId, { name: "reader" });
+      const remote = await hosted(t, agent.key), stdio = await local(t, agent.key);
+      expect(remote.getInstructions()).toContain("Read bookings with remold_bookings");
+      const day = new Date(start).toISOString().slice(0, 10);
+      for (const args of [{}, { page: pageId, from: day, to: day }, { from: "2099-01-01" }, { from: "not a date" }]) {
+        const [a, b] = [await remote.callTool({ name: "remold_bookings", arguments: args }), await stdio.callTool({ name: "remold_bookings", arguments: args })];
+        expect(a).toEqual(b);
+      }
+      const listed = JSON.parse((await remote.callTool({ name: "remold_bookings", arguments: { page: pageId, from: day, to: day } }) as any).content[0].text);
+      expect(listed.bookings).toMatchObject([{ name: "Ava Stone", email: "ava@people.test", status: "confirmed", page: { id: pageId }, start: new Date(start).toISOString() }]);
+      expect(JSON.parse((await stdio.callTool({ name: "remold_bookings", arguments: { from: "2099-01-01" } }) as any).content[0].text).bookings).toEqual([]);
+      expect((await stdio.callTool({ name: "remold_bookings", arguments: { from: "not a date" } }) as any).isError).toBe(true);
+      await remote.close(); await stdio.close();
+    } finally { delete process.env.REMOLD_BOOKING_DAILY_CAP; }
+  });
+});

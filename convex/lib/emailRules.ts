@@ -3,6 +3,7 @@ import type { MutationCtx } from "../_generated/server";
 import type { Actor, Principal } from "../identity";
 import { fail } from "../errors";
 import { UNKNOWN, badTags } from "./campaignText";
+import { linkedPages } from "./booking";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const CONTENT = ["subject", "body", "campaign", "followsUp"];
@@ -15,9 +16,11 @@ async function sendable(ctx: MutationCtx, f: Record<string, Doc<"fields">>, valu
   const text = (key: string) => (typeof values[f[key]!._id] === "string" ? (values[f[key]!._id] as string).trim() : "");
   if (!text("subject")) fail("VALIDATION", "An email needs a subject", { fieldId: f.subject!._id });
   if (!text("body")) fail("VALIDATION", "An email needs a body", { fieldId: f.body!._id });
-  for (const key of ["subject", "body"]) { const bad = badTags(text(key)); if (bad.length) fail("VALIDATION", `Unknown merge tag ${bad[0]}. Use {{firstName}}, {{name}} or {{company}}, with a fallback like {{firstName|there}}`, { fieldId: f[key]!._id }); }
+  for (const key of ["subject", "body"]) { const bad = badTags(text(key)); if (bad.length) fail("VALIDATION", `Unknown merge tag ${bad[0]}. Use {{firstName}}, {{name}}, {{company}} or {{bookingLink}}, with a fallback like {{firstName|there}}`, { fieldId: f[key]!._id }); }
   const campaign = values[f.campaign!._id];
   if (!campaign) fail("VALIDATION", "An email needs a campaign", { fieldId: f.campaign!._id });
+  const { missing } = await linkedPages(ctx, campaign as Id<"records">, [text("subject"), text("body")]);
+  if (missing) fail("VALIDATION", missing, { fieldId: f.body!._id });
   // A follow-up chain stays inside one campaign and never loops back on itself.
   let previous = values[f.followsUp!._id] as Id<"records"> | undefined;
   for (let depth = 0; previous; depth++) {

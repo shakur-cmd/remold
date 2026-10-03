@@ -133,4 +133,12 @@ describe("tool argument checks", () => {
   it("reports an unknown tool as missing rather than as a tool result", async () => {
     expect(await recorder().call("remold_nope", {})).toBeUndefined();
   });
+  it("lists bookings by page and time, and describes the booking numbers in the campaign report", async () => {
+    const { requests, call } = recorder(() => Response.json({ bookings: [] }));
+    await call("remold_bookings", { page: "brisk-ember-oyster", from: "2026-11-01", to: "2026-11-30" });
+    await call("remold_bookings", {});
+    expect(requests.map((r) => [r.method, r.url])).toEqual([["GET", "https://remold.convex.site/api/v1/bookings?page=brisk-ember-oyster&from=2026-11-01&to=2026-11-30"], ["GET", "https://remold.convex.site/api/v1/bookings"]]);
+    expect(await call("remold_bookings", { page: 5 })).toMatchObject({ isError: true });
+    expect(toolList.find((tool) => tool.name === "remold_campaign_report")?.description).toMatch(/bookings, paid bookings, revenue and refunds due/);
+  });
 });

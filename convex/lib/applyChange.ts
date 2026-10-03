@@ -7,6 +7,7 @@ import { writable } from "../authority/readonly";
 import { canReadField, scopes, requireObjectRead, requireRecordRead } from "../authority/reads";
 import { agentGuard } from "../authority/agentGuards";
 import { emailCheck, emailRules } from "./emailRules";
+import { pageRules } from "./booking";
 import { automationAfter, automationRules, type Chain } from "./automation";
 import { projections } from "./slots";
 import { uniqueRef } from "./ref";
@@ -183,6 +184,7 @@ export async function applyChange(ctx: MutationCtx, membership: Principal, chang
     const status = fields.find((f) => f.key === "status")!;
     await applyChange(ctx, membership, { action: "update", orgId: change.orgId, recordId, values: { [status._id]: "draft" }, reason: "Changed after approval, so it needs approving again" }, { clearingReference: true, actor: { kind: "automation", id: "Campaign email" }, automation: options.automation });
   }
+  pageRules(object, fields, record?.values ?? null, values);
   await automationAfter(ctx, membership, object, fields, change.action, record?.values ?? null, values, recordId, eventId, options.automation);
   return { recordId, eventId };
 }

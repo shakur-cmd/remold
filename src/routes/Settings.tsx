@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AgentsCard } from "@/components/AgentsCard";
+import { PaymentsCard } from "@/components/Bookings";
 import { BlueprintReview, useBlueprintCheck } from "@/components/BlueprintReview";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +31,7 @@ export function Settings() {
       <OrgCard org={org} admin={admin} />
       <RemindersCard orgId={org._id} />
       {admin && <EmailSendingCard orgId={org._id} />}
+      {admin && <PaymentsCard orgId={org._id} />}
       <MembersCard orgId={org._id} admin={admin} />
       <AgentsCard orgId={org._id} objects={objects} admin={admin} owner={role === "owner"} />
       <BlueprintsCard orgId={org._id} orgName={org.name} objects={objects} admin={admin} />

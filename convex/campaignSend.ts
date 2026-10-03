@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import { httpAction, internalAction, internalMutation, internalQuery, type ActionCtx, type MutationCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
-import { MAX_ATTEMPTS, addNote, decide, exclusion, followUpsOf, logActivity, recipientOf, release, reserve, setStatus, standardItem, stateOf, suppress, value } from "./lib/campaign";
+import { MAX_ATTEMPTS, addNote, decide, linksOf, exclusion, followUpsOf, logActivity, recipientOf, release, reserve, setStatus, standardItem, stateOf, suppress, value } from "./lib/campaign";
 import { addressIn, compose, fromHeader, inboundDomain, normalAddress, replyPart, fingerprint, resendPost, settingsProblems, validAddress, verifySvix, UNKNOWN, type Outcome } from "./lib/campaignText";
 
 // The campaign sender. An approval fixed each email's recipients as queued rows (see
@@ -41,7 +41,7 @@ async function claimFor(ctx: MutationCtx, run: Doc<"emailRuns">, now: number, ro
   const state = await stateOf(ctx, email, now), person = await standardItem(ctx, email.orgId, "person");
   if (!state || state.problems.length || !state.campaign || !person) return [];
   const { org, item, campaign } = state, settings = org.emailSettings!, inbound = inboundDomain(), sendTo = (value(email, item.f.sendTo) as string | undefined) ?? "notReplied";
-  const template = { subject: String(value(email, item.f.subject) ?? ""), body: String(value(email, item.f.body) ?? "") }, out: Claimed[] = [];
+  const template = { subject: String(value(email, item.f.subject) ?? ""), body: String(value(email, item.f.body) ?? "") }, out: Claimed[] = [], { pages } = await linksOf(ctx, email, item);
   for (const send of await ctx.db.query("emailSends").withIndex("by_email_due", (q) => q.eq("emailRecordId", email._id).eq("status", "queued").lte("notBefore", now)).take(room * 4)) {
     if (out.length >= room) break;
     if (send.uncertain && (send.firstAttemptAt ?? now) < now - UNKNOWN_AFTER) { await ctx.db.patch(send._id, { status: "failed", failReason: UNKNOWN }); continue; }
@@ -58,7 +58,7 @@ async function claimFor(ctx: MutationCtx, run: Doc<"emailRuns">, now: number, ro
     let payload = send.uncertain ? send.payload : undefined;
     if (!payload) {
       const record = await ctx.db.get(send.personRecordId), recipient = record ? await recipientOf(ctx, person, record) : { name: "" };
-      const message = compose(template, { ...recipient, token: send.token }, settings.postalAddress!, send.token);
+      const message = compose(template, { ...recipient, token: send.token, pages }, settings.postalAddress!, send.token);
       payload = JSON.stringify({ from: fromHeader(settings.fromName, settings.fromAddress!), to: [send.to], subject: message.subject, text: message.text, html: message.html, headers: message.headers, reply_to: inbound ? `r-${send.token}@${inbound}` : state.replyTo!, tags: [{ name: "send", value: send._id }] });
     }
     await ctx.db.patch(send._id, { status: "sending", lease: now + LEASE, attempts: send.attempts + 1, reservedDay: day, payload, subject: send.subject ?? JSON.parse(payload).subject, firstAttemptAt: send.firstAttemptAt ?? now });

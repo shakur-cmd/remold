@@ -48,7 +48,7 @@ export const approve = mutation({ args: { orgId: v.id("orgs"), emailId: v.id("re
   const member = await requireWriter(ctx, args.orgId, "admin"), item = await standardItem(ctx, args.orgId, "email"), email = await ctx.db.get(args.emailId);
   if (!item?.f.status || !email || email.orgId !== args.orgId || email.objectId !== item.object._id) fail("NOT_FOUND", "Email not found");
   if (!args.confirmed) fail("VALIDATION", "Confirm that everyone on this list agreed to hear from you or already works with you");
-  const people = value(email, item.f.followsUp) ? [] : await newPeople(ctx, email, item, SNAPSHOT_LIMIT), content = contentVersion(email, item, member.org.emailSettings);
+  const people = value(email, item.f.followsUp) ? [] : await newPeople(ctx, email, item, SNAPSHOT_LIMIT), content = await contentVersion(ctx, email, item, member.org.emailSettings);
   if (approvalVersion(content, people) !== args.version) fail("CONFLICT", "The email, its settings or its recipients changed since the preview. Look again before approving.");
   await applyChange(ctx, member, { action: "update", orgId: args.orgId, recordId: email._id, values: { [item.f.status._id]: "approved" }, reason: "Approved for sending" });
   const run = await ctx.db.query("emailRuns").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).unique();

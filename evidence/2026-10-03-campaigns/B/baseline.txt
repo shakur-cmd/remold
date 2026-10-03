@@ -1,0 +1,16 @@
+Baseline at c5e2e6b (campaigns/booking start), before any Job B change:
+pnpm test (run 1): Test Files 1 failed | 50 passed (51); Tests 1 failed | 386 passed (387)
+  FAIL convex/gmailSync.test.ts > last contact > is the newest past activity about each person... Error: Test timed out in 5000ms.
+pnpm test (run 2): Test Files 51 passed (51); Tests 387 passed (387)
+pnpm test (run 3): Test Files 51 passed (51); Tests 387 passed (387)
+pnpm test (run 4): same gmailSync 5000ms timeout, 386/387
+=> 387 tests; gmailSync "last contact" test is a pre-existing load-dependent timeout flake.
+pnpm typecheck: exit 0
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13610.012832
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0

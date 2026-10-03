@@ -5,7 +5,8 @@ import { fail } from "../errors";
 import { writable } from "../authority/readonly";
 import { canReadField, canReadObject, canReadRecord, requireRecordRead, visibleTitle } from "../authority/reads";
 import { applyChange } from "./applyChange";
-import { DAY, compose, deploymentCap, fingerprint, inboundDomain, normalAddress, settingsProblems, validAddress, type EmailSettings, type Recipient } from "./campaignText";
+import { campaignBookings, linkedPages } from "./booking";
+import { DAY, appUrl, compose, deploymentCap, fingerprint, inboundDomain, normalAddress, settingsProblems, validAddress, type EmailSettings, type Recipient } from "./campaignText";
 
 type Ctx = QueryCtx | MutationCtx;
 export type Item = { object: Doc<"objects">; f: Record<string, Doc<"fields">> };
@@ -74,9 +75,12 @@ const timing = (email: Doc<"records">, item: Item) => ({ wait: ((value(email, it
 
 export type Candidate = { personId: Id<"records">; address: string | null; reason?: string };
 // What a person approves: the words, schedule and follow-up rules, and the sender
-// settings they go out with. The sender refuses to send if this changes after approval.
-export function contentVersion(email: Doc<"records">, item: Item, settings: EmailSettings | undefined) {
-  return fingerprint({ content: ["subject", "body", "campaign", "followsUp", "waitDays", "sendTo", "sendAt"].map((key) => value(email, item.f[key]) ?? null), from: [settings?.fromName ?? null, settings?.fromAddress ?? null, settings?.replyTo ?? null, settings?.postalAddress ?? null] });
+// settings they go out with, and the booking pages its links name. The sender refuses
+// to send if this changes after approval.
+export const linksOf = (ctx: Ctx, email: Doc<"records">, item: Item) => linkedPages(ctx, value(email, item.f.campaign) as Id<"records"> | undefined, [String(value(email, item.f.subject) ?? ""), String(value(email, item.f.body) ?? "")]);
+export async function contentVersion(ctx: Ctx, email: Doc<"records">, item: Item, settings: EmailSettings | undefined) {
+  const pages = (await linksOf(ctx, email, item)).versions;
+  return fingerprint({ content: ["subject", "body", "campaign", "followsUp", "waitDays", "sendTo", "sendAt"].map((key) => value(email, item.f[key]) ?? null), from: [settings?.fromName ?? null, settings?.fromAddress ?? null, settings?.replyTo ?? null, settings?.postalAddress ?? null], ...(pages.length ? { pages } : {}) });
 }
 // The same plus exactly who it goes to; a preview shows it and approval must match it.
 export const approvalVersion = (content: string, people: Candidate[]) => fingerprint({ content, people: people.map((c) => [c.personId, c.address, c.reason ?? null]) });
@@ -161,10 +165,13 @@ export async function stateOf(ctx: Ctx, email: Doc<"records">, now: number): Pro
   if (status === "stopped") problems.push("Stopped");
   else if (status !== "approved" && status !== "sending" && status !== "sent") problems.push("Not approved yet");
   else if (!run?.confirmed) problems.push(NOT_CONFIRMED);
-  else if (status !== "sent" && run.contentVersion !== contentVersion(email, item, org.emailSettings)) problems.push(CHANGED);
+  else if (status !== "sent" && run.contentVersion !== await contentVersion(ctx, email, item, org.emailSettings)) problems.push(CHANGED);
   if (!value(email, item.f.followsUp) && sendAt && sendAt > now) problems.push(`Waits until ${new Date(sendAt).toISOString().slice(0, 16).replace("T", " ")} UTC`);
   // Before approval the approving admin is not known yet; their email becomes the default.
   if (run && !inboundDomain() && !replyTo) problems.push("No reply-to address");
+  const links = await linksOf(ctx, email, item);
+  if (links.problem) problems.push(links.problem);
+  if (!appUrl() && links.versions.length) problems.push("Booking links need REMOLD_APP_URL to be set");
   return { org, email, item, campaign, run, replyTo, problems };
 }
 
@@ -234,11 +241,12 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
   if (!campaignObject?.isStandard || campaignObject.key !== "campaign") fail("NOT_FOUND", "Campaign not found");
   requireRecordRead(principal, campaignObject, campaign);
   const item = await standardItem(ctx, principal.org._id, "email"), person = await standardItem(ctx, principal.org._id, "person");
-  if (!item?.f.campaign?.slot || !canReadObject(principal, item.object)) return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: await visibleTitle(ctx, principal, campaign) }, emails: [] };
+  const booked = await campaignBookings(ctx, campaign._id), bookings = booked.counts;
+  if (!item?.f.campaign?.slot || !canReadObject(principal, item.object)) return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: await visibleTitle(ctx, principal, campaign) }, bookings, emails: [] };
   const slot = `${item.f.campaign.slot.kind}${item.f.campaign.slot.index}`, now = Date.now();
   const emails: Doc<"records">[] = (await (ctx.db.query("records") as any).withIndex(`by_${slot}`, (q: any) => q.eq("orgId", principal.org._id).eq("objectId", item.object._id).eq(slot, campaign._id)).collect()).filter((e: Doc<"records">) => canReadRecord(principal, item.object, e));
   const shown = (record: Doc<"records">, key: string) => { const field = item.f[key]; return field && canReadField(principal, item.object, field, record._id) ? record.values[field._id] ?? null : null; };
-  return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: await visibleTitle(ctx, principal, campaign) }, emails: await Promise.all(chain(emails, item).map(async (email) => {
+  return { campaign: { id: campaign._id, ref: campaign.ref ?? null, name: await visibleTitle(ctx, principal, campaign) }, bookings, emails: await Promise.all(chain(emails, item).map(async (email) => {
     const rows = await ctx.db.query("emailSends").withIndex("by_email", (q) => q.eq("emailRecordId", email._id)).collect();
     const count = (test: (s: Doc<"emailSends">) => unknown) => rows.filter(test).length, sent = count((s) => s.status === "sent");
     const counts = { recipients: count((s) => s.status !== "skipped"), queued: count((s) => s.status === "queued" || s.status === "sending"), waiting: count((s) => s.status === "queued" && (s.notBefore ?? 0) > now), sent, failed: count((s) => s.status === "failed"), skipped: count((s) => s.status === "skipped"), delivered: count((s) => s.deliveredAt), opened: count((s) => s.openedAt), clicked: count((s) => s.clickedAt), replied: count((s) => s.repliedAt), bounced: count((s) => s.bouncedAt), unsubscribed: count((s) => s.unsubscribedAt) };
@@ -247,7 +255,7 @@ export async function campaignReport(ctx: Ctx, principal: Principal, campaign: D
       const record = person ? await ctx.db.get(s.personRecordId) : null;
       if (!record || !person || !canReadRecord(principal, person.object, record)) continue;
       const address = person.f.email && canReadField(principal, person.object, person.f.email, record._id) ? s.to || null : null;
-      recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: (await visibleTitle(ctx, principal, record)) || null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt });
+      recipients.push({ sendId: s._id, person: { id: record._id, ref: record.ref ?? null }, name: (await visibleTitle(ctx, principal, record)) || null, address, status: s.status, skipReason: s.skipReason ?? null, failReason: s.failReason ?? null, sentAt: s.sentAt ?? null, opened: !!s.openedAt, clicked: !!s.clickedAt, replied: !!s.repliedAt, bounced: !!s.bouncedAt, unsubscribed: !!s.unsubscribedAt, booked: !!booked.people.get(s.personRecordId)?.booked, paid: !!booked.people.get(s.personRecordId)?.paid });
     }
     const state = await stateOf(ctx, email, now), status = value(email, item.f.status);
     // People linked to the campaign after its approval: they get nothing until an admin approves again.
@@ -288,9 +296,9 @@ export async function emailPreview(ctx: Ctx, principal: Principal, email: Doc<"r
   const readable = (key: string) => !!item.f[key] && canReadField(principal, item.object, item.f[key]!, email._id);
   const template = { subject: readable("subject") ? String(value(email, item.f.subject) ?? "") : "", body: readable("body") ? String(value(email, item.f.body) ?? "") : "" };
   const recipient = target ? await visibleRecipient(ctx, principal, person, target) : null;
-  const rendered = recipient ? { person: { name: recipient.name || null }, ...compose(template, recipient, state.org.emailSettings?.postalAddress ?? "", "preview") } : null;
+  const rendered = recipient ? { person: { name: recipient.name || null }, ...compose(template, { ...recipient, pages: (await linksOf(ctx, email, item)).pages }, state.org.emailSettings?.postalAddress ?? "", "preview") } : null;
   // The version binds an approval to what this preview showed; only someone who could see all of it gets one.
   const whole = ["subject", "body", "campaign", "followsUp", "waitDays", "sendTo", "sendAt"].every((key) => !item.f[key] || readable(key)) && ["name", "email", "company"].every((key) => !person.f[key] || canReadField(principal, person.object, person.f[key]!)) && listed.length === Math.min(candidates.length, 200);
-  const version = whole ? approvalVersion(contentVersion(email, item, state.org.emailSettings), previous ? [] : candidates) : null;
+  const version = whole ? approvalVersion(await contentVersion(ctx, email, item, state.org.emailSettings), previous ? [] : candidates) : null;
   return { version, rendered, recipients: listed.filter(({ c }) => !c.reason).map(({ row }) => row), excluded: listed.filter(({ c }) => c.reason).map(({ row }) => row), counts: { recipients: candidates.filter((c) => !c.reason).length, excluded: candidates.filter((c) => c.reason).length, waiting }, problems: state.problems };
 }

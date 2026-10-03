@@ -1,0 +1,12 @@
+Round 3 fail-before, at c40182f (merge) with the new tests added:
+     × a legacy page with no currency accepts the payment's currency and checks the amount in its units 301ms
+     × a payment link without a currency is refused for new and edited pages, in the app and for agents 123ms
+     × automations cannot publish or take down a booking page, and cannot reach booking statuses 138ms
+     × the same address picking the same time again gets its own hold back, and picking another moves the hold 191ms
+     × an underpaid booking keeps its time until an admin confirms it anyway or releases it, each on the timeline 189ms
+     × releasing an attention booking frees its time and says to refund in Stripe 220ms
+     × paid after the hold ran out and the time was taken: confirm anyway needs the time free, release closes it 230ms
+     × a promotion code payment lands in attention and the owner confirms it anyway 161ms
+     × the webhook answers unknown or malformed workspace ids without touching the rate limiter 525ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  9 failed | 45 passed (54)

@@ -9,25 +9,32 @@ export const validAddress = (value: string) => value.length <= 254 && /^[^\s@,;<
 // "Ava <ava@x.com>" or a bare address, lowercased; null when there is none.
 export const addressIn = (value: string) => { const found = /<([^>]+)>/.exec(value)?.[1] ?? value; const address = normalAddress(found); return validAddress(address) ? address : null; };
 
-// A recipient as merge tags see them. Other features add tags to `mergeTags`;
-// Job B's {{bookingLink}} reads `token`, so a booking can be traced to its send.
-export type Recipient = { name: string; company?: string; token?: string };
-export const mergeTags: Record<string, (recipient: Recipient) => string | undefined> = {
+// A recipient as merge tags see them. `token` is the send token, so a booking made
+// from {{bookingLink}} can be traced to its send; `pages` are the campaign's booking pages.
+export type PageRef = { id: string; ref: string | null };
+export type Recipient = { name: string; company?: string; token?: string; pages?: PageRef[] };
+// The page a {{bookingLink}} names: by code or id, else the campaign's first.
+export const pickPage = <P extends PageRef>(pages: P[], arg?: string) => (arg ? pages.find((p) => p.id === arg || p.ref === arg.toLowerCase()) : pages[0]);
+export const mergeTags: Record<string, (recipient: Recipient, arg?: string) => string | undefined> = {
   firstName: (r) => r.name.trim().split(/\s+/)[0],
   name: (r) => r.name.trim(),
   company: (r) => r.company?.trim(),
+  // {{bookingLink}} is the campaign's first booking page; {{bookingLink:<code or id>}} names one.
+  bookingLink: (r, arg) => { const page = pickPage(r.pages ?? [], arg); return page ? bookingUrl(page.id, r.token) : undefined; },
 };
-const TAG = /\{\{([^{}]*)\}\}/g, INNER = /^\s*([A-Za-z]+)\s*(?:\|([^|]*))?$/;
+const TAG = /\{\{([^{}]*)\}\}/g, INNER = /^\s*([A-Za-z]+)(?::([\w-]+))?\s*(?:\|([^|]*))?$/;
 
 // Every {{...}} that is not a known tag, plus any {{ left unclosed.
 export function badTags(text: string) {
   const bad = [...text.matchAll(TAG)].filter(([, inner]) => { const name = INNER.exec(inner!)?.[1]; return !name || !Object.hasOwn(mergeTags, name); }).map(([whole]) => whole);
   return /\{\{(?![^{}]*\}\})/.test(text) ? [...bad, "{{"] : bad;
 }
+// The tags a text uses, with their argument, e.g. bookingLink:brisk-ember-oyster.
+export const tagsIn = (text: string) => [...text.matchAll(TAG)].flatMap(([, inner]) => { const [, name, arg] = INNER.exec(inner!) ?? []; return name ? [{ name, arg }] : []; });
 // An empty value uses the fallback written after "|", else nothing.
 export const render = (text: string, recipient: Recipient) => text.replace(TAG, (whole, inner: string) => {
-  const [, name, fallback] = INNER.exec(inner) ?? [];
-  return name && Object.hasOwn(mergeTags, name) ? mergeTags[name]!(recipient) || fallback?.trim() || "" : whole;
+  const [, name, arg, fallback] = INNER.exec(inner) ?? [];
+  return name && Object.hasOwn(mergeTags, name) ? mergeTags[name]!(recipient, arg) || fallback?.trim() || "" : whole;
 });
 
 const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -35,6 +42,8 @@ const escape = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;
 export const toHtml = (text: string) => `<div style="font-family:sans-serif;font-size:15px;line-height:1.5">${escape(text).replace(/https?:\/\/[^\s<]*[^\s<.,;:!?)'"]/g, (url) => `<a href="${url}">${url}</a>`).replace(/\n/g, "<br>\n")}</div>`;
 
 export const siteUrl = () => (process.env.CONVEX_SITE_URL ?? "").replace(/\/+$/, "");
+export const appUrl = () => (process.env.REMOLD_APP_URL ?? "").replace(/\/+$/, "");
+export const bookingUrl = (pageId: string, token?: string) => `${appUrl()}/book/${pageId}${token && token !== "preview" ? `?s=${token}` : ""}`;
 export const unsubscribeUrl = (token: string) => `${siteUrl()}/u/${token}`;
 export const fromHeader = (name: string | undefined, address: string) => { const clean = name?.replace(/["\r\n]/g, "").trim(); return clean ? `${/[,;:<>@()[\]\\.]/.test(clean) ? `"${clean}"` : clean} <${address}>` : address; };
 
@@ -86,7 +95,7 @@ export async function verifySvix(secret: string, headers: Headers, body: string,
   const expected = btoa(String.fromCharCode(...mac));
   return signatures.split(" ").some((part) => { const [version, signature] = part.split(","); return version === "v1" && !!signature && sameText(signature, expected); });
 }
-function sameText(a: string, b: string) {
+export function sameText(a: string, b: string) {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);

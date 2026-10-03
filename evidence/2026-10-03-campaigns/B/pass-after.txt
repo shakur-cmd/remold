@@ -1,0 +1,32 @@
+After, at 4d6abbb:
+ ✓ convex/bookings.test.ts > open times > follow the page's hours in its own zone, after the notice and within the horizon 593ms
+ ✓ convex/bookings.test.ts > open times > keep 09:00 local across the end of daylight saving time 74ms
+ ✓ convex/bookings.test.ts > open times > leave out confirmed bookings and live holds on any page in the workspace, and timed meetings 279ms
+ ✓ convex/bookings.test.ts > open times > a payment hold frees its time after 30 minutes, and the cron marks it expired 95ms
+ ✓ convex/bookings.test.ts > booking > two people racing for one time: exactly one gets it 89ms
+ ✓ convex/bookings.test.ts > booking > refuses a time that is not open 90ms
+ ✓ convex/bookings.test.ts > booking > a page that is not live, deleted, in a read-only workspace, or without a daily cap takes no bookings 332ms
+ ✓ convex/bookings.test.ts > booking > stops at the workspace's daily cap 91ms
+ ✓ convex/bookings.test.ts > booking > links an existing person by email without changing them, and creates a new one otherwise 77ms
+ ✓ convex/bookings.test.ts > booking > a filled honeypot looks like success and writes nothing 38ms
+ ✓ convex/bookings.test.ts > booking > a confirmed booking lands on the person's timeline and emails the booker and the owner 88ms
+ ✓ convex/bookings.test.ts > booking > succeeds without email set up; only the owner is told on the page 86ms
+ ✓ convex/bookings.test.ts > booking > the public page shows only what the visitor needs 58ms
+ ✓ convex/bookings.test.ts > page records > check hours, zone, length and payment link 51ms
+ ✓ convex/bookings.test.ts > page records > agents draft and edit pages and may take one down, but only a person publishes 436ms
+ ✓ convex/bookings.test.ts > page records > new workspaces get Booking pages, and the migration adds them to an older workspace once 126ms
+ ✓ convex/bookings.test.ts > payments > the signing secret is write-only and the card shows the webhook address 63ms
+ ✓ convex/bookings.test.ts > payments > a webhook with no secret, a bad signature, a stale time or another workspace's secret writes nothing 172ms
+ ✓ convex/bookings.test.ts > payments > a paid event confirms the booking once, with the amount from the event, even when delivered twice 84ms
+ ✓ convex/bookings.test.ts > payments > paid after the hold ran out and the time was taken: stays paid and asks the owner 102ms
+ ✓ convex/bookings.test.ts > payments > paid after the hold ran out with the time still free: confirmed 62ms
+ ✓ convex/bookings.test.ts > owner and agents > the owner lists a page's bookings upcoming first and cancels one, which frees the time 105ms
+ ✓ convex/bookings.test.ts > owner and agents > agents list bookings over REST, by page and time, and see people only as far as they may 94ms
+ ✓ convex/bookings.test.ts > attribution > {{bookingLink}} carries the send, and the booking and payment show up in the campaign report 114ms
+ ✓ convex/bookings.test.ts > attribution > {{bookingLink:<ref>}} picks one of several pages; a link with no page refuses approval 78ms
+      Tests  25 passed (25)
+MCP:
+ ✓ src/client.test.ts > RemoldClient > lists bookings by page and time 1ms
+      Tests  6 passed (6)
+identity.test.ts (standard object list now ends with bookingPage):
+      Tests  2 passed (2)

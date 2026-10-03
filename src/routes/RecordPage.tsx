@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Board } from "@/components/Board";
 import { AutomationPanel } from "@/components/AutomationPanel";
 import { CampaignEmails } from "@/components/CampaignEmails";
+import { PageBookings } from "@/components/Bookings";
 import { FieldValue } from "@/components/FieldValue";
 import { Loading } from "@/components/Loading";
 import { SuggestionCard } from "@/components/SuggestionCard";
@@ -138,6 +139,7 @@ function Record({ orgId, recordId, admin }: { orgId: Id<"orgs">; recordId: Id<"r
 
         {object.key === "automation" && object.isStandard && <AutomationPanel orgId={orgId} recordId={recordId} />}
         {emails && <CampaignEmails orgId={orgId} recordId={recordId} admin={admin} status={statusField && { field: statusField, value: record.values[statusField._id] }} />}
+        {object.isStandard && object.key === "bookingPage" && <PageBookings orgId={orgId} recordId={recordId} />}
         {deals && <FunnelDeals orgId={orgId} recordId={recordId} entry={deals} />}
 
         <div className="grid gap-1">

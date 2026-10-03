@@ -1,0 +1,25 @@
+Final suites at 4d6abbb, 2026-10-03T13:21:49Z, load: 1.45 2.63 2.76
+pnpm test:
+     × is the newest past activity about each person, and skips activities the reader cannot see 8490ms
+   × follows a page that is not done and shows the records of the next one, without resubscribing 15761ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 50 passed (52)
+      Tests  2 failed | 410 passed (412)
+pnpm exec vitest run --maxWorkers=3:
+ Test Files  52 passed (52)
+      Tests  412 passed (412)
+pnpm typecheck:
+exit 0
+pnpm test:authority:
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+pnpm verify:release:
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+pnpm build:
+✓ built in 2.01s
+pnpm --dir packages/mcp test:
+      Tests  6 passed (6)
+bookings.test.ts alone:
+      Tests  25 passed (25)

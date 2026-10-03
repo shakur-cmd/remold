@@ -1,0 +1,208 @@
+{
+ "ok": true,
+ "orgId": "rh7bh24hcjh71z6p4tj3ybe7ex8fkt2q",
+ "checks": [
+  {
+   "name": "public page keys",
+   "ok": true,
+   "detail": [
+    "currency",
+    "description",
+    "minutes",
+    "name",
+    "open",
+    "paid",
+    "price",
+    "slots"
+   ]
+  },
+  {
+   "name": "open times inside hours in America/New_York (real Convex runtime Intl)",
+   "ok": true,
+   "detail": {
+    "count": 287,
+    "first": "Mon 09:00",
+    "last": "Mon 13:00"
+   }
+  },
+  {
+   "name": "first open time after 12 hours notice",
+   "ok": true
+  },
+  {
+   "name": "three visitors race for one time: one confirmed",
+   "ok": true,
+   "detail": [
+    "confirmed",
+    "taken",
+    "taken"
+   ]
+  },
+  {
+   "name": "paid page holds and redirects to the Payment Link",
+   "ok": true,
+   "detail": {
+    "pay": "https://buy.stripe.com/test_harness?client_reference_id=7256072f26db8c20a5e310d629272d10&prefilled_email=ava%40example.com",
+    "status": "held"
+   }
+  },
+  {
+   "name": "webhook before a secret is saved: 503",
+   "ok": true
+  },
+  {
+   "name": "webhook with a wrong key: 400",
+   "ok": true
+  },
+  {
+   "name": "webhook with a stale time: 400",
+   "ok": true
+  },
+  {
+   "name": "signed paid event: 200",
+   "ok": true
+  },
+  {
+   "name": "same event again: 200",
+   "ok": true
+  },
+  {
+   "name": "underpaid event: 200",
+   "ok": true
+  },
+  {
+   "name": "Finn's hold still waiting",
+   "ok": true
+  },
+  {
+   "name": "the underpaid booking keeps its time until the owner decides",
+   "ok": true
+  },
+  {
+   "name": "the same address picking its own time again gets its payment link back",
+   "ok": true,
+   "detail": {
+    "pay": "https://buy.stripe.com/test_harness?client_reference_id=6f4f556da2274b7dc4f637abad48dcf0&prefilled_email=finn%40example.com",
+    "status": "held"
+   }
+  },
+  {
+   "name": "underpaid booking kept as paid, not confirmed, needs attention",
+   "ok": true,
+   "detail": {
+    "attention": "Paid $1.00, but the page asks for $5.00",
+    "decide": true,
+    "email": "nia@example.com",
+    "end": 1791297000000,
+    "held": false,
+    "id": "jx74kcyvb1zy8mbspwwda3hhdx8fkz54",
+    "name": "Nia Short",
+    "note": null,
+    "paid": "$1.00",
+    "personId": "q97cjk2pn6zaqj3ctqds4n6dcd8fkj0q",
+    "start": 1791296100000,
+    "status": "held",
+    "test": true
+   }
+  },
+  {
+   "name": "paid booking confirmed with the event's amount",
+   "ok": true,
+   "detail": [
+    {
+     "attention": null,
+     "decide": false,
+     "email": "ava@example.com",
+     "end": 1791213300000,
+     "held": false,
+     "id": "jx74b5vd59mx1xrf2s0y34cvmx8fktx2",
+     "name": "Ava Stone",
+     "note": null,
+     "paid": "$5.00",
+     "personId": "q978bh2b852ya3v3m5sk7aw9cd8fk81n",
+     "start": 1791212400000,
+     "status": "confirmed",
+     "test": true
+    },
+    {
+     "attention": null,
+     "decide": false,
+     "email": "finn@example.com",
+     "end": 1791216000000,
+     "held": true,
+     "id": "jx7b863pew80sdtj7jajnez2rd8fjssz",
+     "name": "Finn Hale",
+     "note": null,
+     "paid": null,
+     "personId": "q9793x0p2dpzzc30wpd8hnx47n8fjenv",
+     "start": 1791215100000,
+     "status": "held",
+     "test": false
+    },
+    {
+     "attention": "Paid $1.00, but the page asks for $5.00",
+     "decide": true,
+     "email": "nia@example.com",
+     "end": 1791297000000,
+     "held": false,
+     "id": "jx74kcyvb1zy8mbspwwda3hhdx8fkz54",
+     "name": "Nia Short",
+     "note": null,
+     "paid": "$1.00",
+     "personId": "q97cjk2pn6zaqj3ctqds4n6dcd8fkj0q",
+     "start": 1791296100000,
+     "status": "held",
+     "test": true
+    }
+   ]
+  },
+  {
+   "name": "campaign report counts bookings and revenue (an underpaid booking counts as booked and paid: money came in and needs a decision)",
+   "ok": true,
+   "detail": {
+    "booked": 4,
+    "paid": 2,
+    "refundDue": [],
+    "released": 0,
+    "revenue": [
+     {
+      "amountMinor": 600,
+      "currency": "usd"
+     }
+    ]
+   }
+  },
+  {
+   "name": "visitor sees no owner notice",
+   "ok": true
+  },
+  {
+   "name": "honeypot: non-semantic name, no label, autocomplete off, tabindex -1, aria-hidden, off screen",
+   "ok": true,
+   "detail": {
+    "name": "x_hp7",
+    "autocomplete": "off",
+    "tabIndex": -1,
+    "hidden": "true",
+    "label": 0,
+    "left": -9999
+   }
+  },
+  {
+   "name": "Payments card never shows the secret",
+   "ok": true
+  },
+  {
+   "name": "an admin sees Confirm anyway and Release on the underpaid booking",
+   "ok": true
+  }
+ ],
+ "pageErrors": [
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+ ]
+}

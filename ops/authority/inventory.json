@@ -3346,5 +3346,196 @@
     "masks": "no-record-data",
     "proof": "stops an applying batch when the workspace turns read only and resumes it later",
     "reason": "batch driver; a read-only workspace stops the batch before any item is written"
+  },
+  {
+    "id": "agentApi:bookings",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "agents list bookings over REST, by page and time, and see people only as far as they may"
+  },
+  {
+    "id": "HTTP GET /api/v1/bookings",
+    "kind": "route",
+    "visibility": "http",
+    "writes": false,
+    "principal": "agent",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "agents list bookings over REST, by page and time, and see people only as far as they may"
+  },
+  {
+    "id": "bookings:page",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the public page shows only what the visitor needs",
+    "reason": "public: no sign-in; only the page's name, description, length, price and open times"
+  },
+  {
+    "id": "bookings:book",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "a page that is not live, deleted, in a read-only workspace, or without a daily cap takes no bookings",
+    "reason": "public: no sign-in; a read-only workspace's pages take no bookings"
+  },
+  {
+    "id": "bookings:forPage",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "projected",
+    "proof": "the owner lists a page's bookings upcoming first and cancels one, which frees the time"
+  },
+  {
+    "id": "bookings:cancel",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "bookings:paymentSettings",
+    "kind": "query",
+    "visibility": "public",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "the signing secret is write-only and the card shows the webhook address"
+  },
+  {
+    "id": "bookings:savePaymentSecret",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "bookings:expire",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a payment hold frees its time after 30 minutes, and the cron marks it expired",
+    "reason": "only ends holds that ran out"
+  },
+  {
+    "id": "bookings:secretFor",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "a webhook with no secret, a bad signature, a stale time or another workspace's secret writes nothing",
+    "reason": "webhook verification only"
+  },
+  {
+    "id": "bookings:stripeWebhook",
+    "kind": "httpaction",
+    "visibility": "http",
+    "writes": true,
+    "principal": "human",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "a webhook with no secret, a bad signature, a stale time or another workspace's secret writes nothing",
+    "reason": "a payment Stripe already took is recorded so the owner can refund it; timeline entries and emails are skipped in a read-only workspace"
+  },
+  {
+    "id": "bookings:paid",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "settlement-allowed",
+    "masks": "no-record-data",
+    "proof": "a paid event confirms the booking once, with the amount from the event, even when delivered twice",
+    "reason": "a payment Stripe already took is recorded so the owner can refund it; timeline entries and emails are skipped in a read-only workspace"
+  },
+  {
+    "id": "bookings:mailFor",
+    "kind": "query",
+    "visibility": "internal",
+    "writes": false,
+    "principal": "human",
+    "readonly": "not-a-write",
+    "masks": "no-record-data",
+    "proof": "a confirmed booking lands on the person's timeline and emails the booker and the owner",
+    "reason": "booking emails only"
+  },
+  {
+    "id": "bookings:notify",
+    "kind": "action",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "no-record-data",
+    "proof": "a confirmed booking lands on the person's timeline and emails the booker and the owner",
+    "reason": "sends through campaign email's one-off sender, which refuses a read-only workspace"
+  },
+  {
+    "id": "bookings:hookToken",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "the Stripe webhook is rate limited per workspace",
+    "reason": "rate limit bookkeeping only"
+  },
+  {
+    "id": "bookings:failed",
+    "kind": "mutation",
+    "visibility": "internal",
+    "writes": true,
+    "principal": "human",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a delayed payment confirms when it succeeds and frees the time when it fails",
+    "reason": "only ends a hold whose payment failed"
+  },
+  {
+    "id": "bookings:resolve",
+    "kind": "mutation",
+    "visibility": "public",
+    "writes": true,
+    "principal": "human",
+    "readonly": "refused",
+    "masks": "n/a",
+    "proof": "Readonly workspace refuses every public human write and every agent REST write"
+  },
+  {
+    "id": "cron Expire booking holds",
+    "kind": "cron",
+    "visibility": "cron",
+    "writes": true,
+    "principal": "scheduler",
+    "readonly": "reduction-only",
+    "masks": "no-record-data",
+    "proof": "a payment hold frees its time after 30 minutes, and the cron marks it expired",
+    "reason": "only ends holds that ran out"
   }
 ]

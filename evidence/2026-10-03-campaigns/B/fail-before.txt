@@ -1,0 +1,54 @@
+
+ RUN  v5.0.1 /home/shakur/work/jobs/B-booking
+
+ ❯ convex/bookings.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  convex/bookings.test.ts [ convex/bookings.test.ts ]
+Error: Cannot find module './lib/bookingTime' imported from /home/shakur/work/jobs/B-booking/convex/bookings.test.ts
+ ❯ convex/bookings.test.ts:6:1
+      4| import { agentFor, api, objectFields, rest } from "./test.helpers";
+      5| import { makeTest } from "./test.setup";
+      6| import { openSlots, parseHours } from "./lib/bookingTime";
+       | ^
+      7| import crons from "./crons";
+      8|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:58:16
+   Duration  1.07s (worker 95%, environment 5%)
+
+     × follow the page's hours in its own zone, after the notice and within the horizon 233ms
+     × keep 09:00 local across the end of daylight saving time 52ms
+     × leave out confirmed bookings and live holds on any page in the workspace, and timed meetings 40ms
+     × a payment hold frees its time after 30 minutes, and the cron marks it expired 37ms
+     × two people racing for one time: exactly one gets it 40ms
+     × refuses a time that is not open 39ms
+     × a page that is not live, deleted, in a read-only workspace, or without a daily cap takes no bookings 40ms
+     × stops at the workspace's daily cap 35ms
+     × links an existing person by email without changing them, and creates a new one otherwise 33ms
+     × a filled honeypot looks like success and writes nothing 32ms
+     × a confirmed booking lands on the person's timeline and emails the booker and the owner 34ms
+     × succeeds without email set up; only the owner is told on the page 30ms
+     × the public page shows only what the visitor needs 28ms
+     × check hours, zone, length and payment link 29ms
+     × agents draft and edit pages and may take one down, but only a person publishes 32ms
+     × new workspaces get Booking pages, and the migration adds them to an older workspace once 28ms
+     × the signing secret is write-only and the card shows the webhook address 28ms
+     × a webhook with no secret, a bad signature, a stale time or another workspace's secret writes nothing 30ms
+     × a paid event confirms the booking once, with the amount from the event, even when delivered twice 31ms
+     × paid after the hold ran out and the time was taken: stays paid and asks the owner 29ms
+     × paid after the hold ran out with the time still free: confirmed 29ms
+     × the owner lists a page's bookings upcoming first and cancels one, which frees the time 29ms
+     × agents list bookings over REST, by page and time, and see people only as far as they may 31ms
+     × {{bookingLink}} carries the send, and the booking and payment show up in the campaign report 29ms
+     × {{bookingLink:<ref>}} picks one of several pages; a link with no page refuses approval 28ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed (1)
+      Tests  25 failed (25)
+MCP (packages/mcp, before): × lists bookings by page and time — TypeError: client.bookings is not a function; Tests 1 failed | 5 passed (6)

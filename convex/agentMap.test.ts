@@ -120,7 +120,11 @@ describe("GET /api/v1/map", () => {
     const agent = await agentFor(client, orgId, { name: "f" }), call = rest(t, agent.key);
     const map = (await call("GET", "/api/v1/map")).json;
     expect(map.features).toEqual(expect.arrayContaining(["campaigns", "emails", "posts", "invoices"]));
-    expect(map.features).not.toContain("bookingPages");
+    // Booking pages exist once campaigns/booking is merged; a key that cannot read them does not see the feature.
+    expect(map.features).toContain("bookingPages");
+    const objects = await client.query(api.objects.list, { orgId }), narrow = await agentFor(client, orgId, { name: "narrow" });
+    await t.run((ctx: any) => ctx.db.patch(narrow.agentId, { readObjectIds: objects.filter((o: any) => o.key !== "bookingPage").map((o: any) => o._id) }));
+    expect((await rest(t, narrow.key)("GET", "/api/v1/map")).json.features).not.toContain("bookingPages");
   });
 
   it("is refused without a key", async () => {

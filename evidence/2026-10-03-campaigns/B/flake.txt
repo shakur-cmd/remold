@@ -1,0 +1,13 @@
+gmailSync "last contact ... skips activities the reader cannot see" (5000 ms vitest timeout) under machine load.
+Load average at the time: 9.38 on 8 cores (other build jobs running on this laptop).
+Same test alone, verbose:
+  base c5e2e6b (scratch worktree): 2434ms, 2360ms (and 2636ms)
+  this branch:                     2505ms, 2378ms
+pnpm test on base also failed it 2 of 4 runs (baseline.txt). Under the same load, the full suite on this branch also once timed out
+"follows a page that is not done ... without resubscribing" (15376ms, a 15 s test in another file).
+pnpm exec vitest run --maxWorkers=3 on this branch: Test Files 52 passed (52); Tests 412 passed (412)
+
+Later, same conditions (full default-worker vitest run), base c5e2e6b in a scratch worktree:
+  run 1 (load 7.86): × gmailSync "newest past activity" 7001ms; Tests 1 failed | 386 passed (387)
+  run 2 (load 8.68): × gmailSync 6886ms, × "follows a page that is not done ... without resubscribing" 15089ms; Tests 2 failed | 385 passed (387)
+So both timeouts happen on base code too. They are not caused by this job.

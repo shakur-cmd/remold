@@ -1,0 +1,16 @@
+Round 2 fail-before, at 118e729 (after the merge) with the new tests added:
+     × a filled honeypot gets a neutral error and writes nothing 57ms
+     × new workspaces get Booking pages, and the migration adds them to an older workspace once 46ms
+     × a local time that happens twice is its first instant, east and west of UTC 2ms
+     × the largest legal page (5 minutes, all day, every day, 365 days) computes quickly 10838ms
+     × an underpayment is kept as paid but does not confirm; the owner is asked 73ms
+     × a payment in another currency than the page's does not confirm 66ms
+     × zero-decimal currencies: ¥500 pays a ¥500 page and shows as ¥500 46ms
+     × a delayed payment confirms when it succeeds and frees the time when it fails 61ms
+     × probing closed times uses up the page's rate limit 388ms
+     × the daily cap counts confirmed bookings, not unpaid holds 112ms
+     × at most 3 unpaid holds per page and 1 per address 135ms
+     × the Stripe webhook is rate limited per workspace 129ms
+     × a person stored with the same email in other letter case is not matched; a new person is made and the old one is untouched 67ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  13 failed | 32 passed (45)

@@ -17,6 +17,7 @@ import { attempt } from "@/lib/errors";
 import type { Field } from "@/lib/fields";
 
 type Report = FunctionReturnType<typeof api.campaigns.report>;
+const money = (minor: number, currency: string) => new Intl.NumberFormat(undefined, { style: "currency", currency: currency.toUpperCase() }).format(minor / 100);
 type Email = Report["emails"][number];
 const percent = (rate: number) => `${Math.round(rate * 100)}%`;
 const AUDIENCE: Record<string, string> = { everyone: "everyone", notOpened: "people who did not open", notClicked: "people who did not click", notReplied: "people who did not reply" };
@@ -64,6 +65,11 @@ export function CampaignEmails({ orgId, recordId, status, admin }: { orgId: Id<"
           {last && <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setCreating("followUp")}><Plus /> New follow-up</Button>}
         </div>
       </div>
+      {(report.bookings.booked > 0 || report.bookings.released > 0) && <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums">
+        {[["Bookings", report.bookings.booked], ["Paid", report.bookings.paid], ["Revenue", report.bookings.revenue.map((r) => money(r.amountMinor, r.currency)).join(", ") || money(0, "usd")], ...(report.bookings.released ? [["Refund due", report.bookings.refundDue.map((r) => money(r.amountMinor, r.currency)).join(", ")]] : [])].map(([label, value]) => (
+          <div key={label} className="flex gap-1"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>
+        ))}
+      </dl>}
       <div className="grid gap-2">
         {report.emails.length === 0 && <p className="rounded-lg border bg-card p-3 text-sm text-muted-foreground">No emails yet. Write the first one, then approve it and start the campaign.</p>}
         {report.emails.map((item) => {
@@ -178,7 +184,7 @@ function Recipients({ orgId, rows }: { orgId: Id<"orgs">; rows: Email["recipient
   return (
     <Table className="text-xs">
       <TableHeader>
-        <TableRow><TableHead>Person</TableHead><TableHead>Email</TableHead><TableHead>Status</TableHead><TableHead>Opened</TableHead><TableHead>Clicked</TableHead><TableHead>Replied</TableHead></TableRow>
+        <TableRow><TableHead>Person</TableHead><TableHead>Email</TableHead><TableHead>Status</TableHead><TableHead>Opened</TableHead><TableHead>Clicked</TableHead><TableHead>Replied</TableHead><TableHead>Booked</TableHead><TableHead>Paid</TableHead></TableRow>
       </TableHeader>
       <TableBody>
         {rows.map((row) => (
@@ -189,6 +195,8 @@ function Recipients({ orgId, rows }: { orgId: Id<"orgs">; rows: Email["recipient
             <TableCell>{yes(row.opened)}</TableCell>
             <TableCell>{yes(row.clicked)}</TableCell>
             <TableCell>{row.replied ? "Yes" : row.status === "sent" ? <Button size="xs" variant="ghost" className="-ml-2 text-muted-foreground" onClick={() => attempt(() => mark({ orgId, sendId: row.sendId }), "Marked replied")}>Mark replied</Button> : <span className="text-muted-foreground">No</span>}</TableCell>
+            <TableCell>{yes(row.booked)}</TableCell>
+            <TableCell>{yes(row.paid)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

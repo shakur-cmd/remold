@@ -1,0 +1,34 @@
+Round 4 registry merge suites at cf00702, 2026-10-03T18:29:35Z, load: 2.24 3.81 4.02
+pnpm test:
+     × nothing runs without the deployment's daily cap, and runs stop at the workspace cap and at 200 per automation 6426ms
+   × keeps every post when an insert moves an earlier page boundary while two pages are loaded 15533ms
+     × is the newest past activity about each person, and skips activities the reader cannot see 13446ms
+     × shares the REST write rate limit with the agent's key 1342ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  4 failed | 63 passed (67)
+      Tests  4 failed | 730 passed (734)
+pnpm exec vitest run --maxWorkers=3:
+     × is the newest past activity about each person, and skips activities the reader cannot see 5818ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 66 passed (67)
+      Tests  1 failed | 733 passed (734)
+pnpm typecheck:
+exit 0
+mcp.test.ts 'shares the REST write rate limit' alone (-t): fails 3/3 on this branch AND 3/3 on base 3b9f8a8; whole file passes on both (14/14 base, 15/15 here). Real-clock 120/min bucket refills during the 120-take loop on a cold run; pre-existing in integ's test.
+pnpm test:authority:
+ Test Files  17 passed (17)
+      Tests  101 passed (101)
+pnpm verify:release:
+ℹ tests 37
+ℹ pass 37
+ℹ fail 0
+pnpm build:
+exit 0
+pnpm --dir packages/mcp build:
+exit 0
+pnpm --dir packages/mcp test:
+      Tests  15 passed (15)
+convex/mcp.test.ts:
+      Tests  15 passed (15)
+convex/bookings.test.ts:
+      Tests  58 passed (58)
