@@ -11,7 +11,8 @@ export type ApiRecord = { id: string; ref: string | null; object: string; title:
 const empty = (value: unknown) => value === null || value === undefined;
 const pad = (value: number) => String(value).padStart(2, "0");
 const dateText = (value: number) => { const d = new Date(value); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
-const day = (value: string) => { const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value); if (!match) return undefined; const ms = Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!); return dateText(ms) === value.slice(0, 10) ? ms : undefined; };
+const supported = (ms: number) => Number.isFinite(ms) && ms >= Date.UTC(1000, 0, 1) && ms < Date.UTC(10000, 0, 1);
+const day = (value: string) => { const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(value); if (!match) return undefined; const ms = Date.UTC(+match[1]!, +match[2]! - 1, +match[3]!); return supported(ms) && dateText(ms) === value.slice(0, 10) ? ms : undefined; };
 // With-time date fields hold two kinds of value. A plain date is a whole UTC
 // midnight, as on plain date fields. An instant is never stored as one: an
 // instant at exactly 00:00Z is kept as midnight + 0.5 ms, the only fractional
@@ -19,7 +20,7 @@ const day = (value: string) => { const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/
 const DAY = 86400000, sinceMidnight = (ms: number) => ((ms % DAY) + DAY) % DAY;
 export const allDay = (ms: number) => Number.isInteger(ms) && sinceMidnight(ms) === 0;
 export const fromInstant = (ms: number) => (allDay(ms) ? ms + 0.5 : ms);
-export const dateValue = (field: Doc<"fields">, value: unknown) => typeof value === "number" && (Number.isInteger(value) || (!!field.withTime && sinceMidnight(value) === 0.5));
+export const dateValue = (field: Doc<"fields">, value: unknown) => typeof value === "number" && supported(value) && (Number.isInteger(value) || (!!field.withTime && sinceMidnight(value) === 0.5));
 // The instant a text names, exactly; a time without an offset names no instant, so it is
 // refused rather than a zone guessed. Query bounds use this as is. Stored values go through
 // instant(), which keeps an instant at 00:00Z off the all-day encoding (midnight + 0.5 ms).
@@ -28,7 +29,7 @@ export const instantBound = (value: string) => {
   const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|[+-]\d{2}:?\d{2})$/.exec(value);
   if (!match || day(match[1]!) === undefined || +match[2]! > 23 || +match[3]! > 59 || +(match[4] ?? 0) > 59) return undefined;
   const ms = Date.parse(value.replace(/([+-]\d{2})(\d{2})$/, "$1:$2"));
-  return Number.isFinite(ms) ? ms : undefined;
+  return supported(ms) ? ms : undefined;
 };
 export const instant = (value: string) => { const ms = instantBound(value); return ms === undefined || /^\d{4}-\d{2}-\d{2}$/.test(value) ? ms : fromInstant(ms); };
 
